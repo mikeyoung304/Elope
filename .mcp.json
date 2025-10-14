@@ -2,26 +2,15 @@
   "mcpServers": {
     "filesystem": {
       "command": "npx",
-      "args": [
-        "-y",
-        "@modelcontextprotocol/server-filesystem",
-        "/Users/mikeyoung/CODING/Elope"
-      ]
+      "args": ["-y", "@modelcontextprotocol/server-filesystem", "/Users/mikeyoung/CODING/Elope"]
     },
     "git": {
       "command": "npx",
-      "args": [
-        "-y",
-        "@cyanheads/git-mcp-server"
-      ]
+      "args": ["-y", "@cyanheads/git-mcp-server"]
     },
     "prisma": {
       "command": "npx",
-      "args": [
-        "-y",
-        "prisma",
-        "mcp"
-      ]
+      "args": ["-y", "prisma", "mcp"]
     },
     "postgres": {
       "command": "npx",

@@ -1,0 +1,19 @@
+{
+  "name": "@elope/api",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "API application",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "dev": "tsx watch src/index.ts",
+    "build": "tsc",
+    "start": "node dist/index.js",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {},
+  "devDependencies": {
+    "tsx": "^4.7.0"
+  }
+}
