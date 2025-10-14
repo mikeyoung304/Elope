@@ -33,7 +33,9 @@ importers:
         specifier: ^4.7.0
         version: 4.20.6
 
-  packages/core: {}
+  packages/contracts: {}
+
+  packages/shared: {}
 
 packages:
 
