@@ -5,7 +5,7 @@ export function usePackages() {
   return useQuery({
     queryKey: ["packages"],
     queryFn: async () => {
-      const response = await (api.getPackages.query as any)();
+      const response = await api.getPackages();
       if (response.status !== 200) {
         throw new Error("Failed to fetch packages");
       }
@@ -18,7 +18,7 @@ export function usePackage(slug: string) {
   return useQuery({
     queryKey: ["package", slug],
     queryFn: async () => {
-      const response = await (api.getPackageBySlug.query as any)({ params: { slug } });
+      const response = await api.getPackageBySlug({ params: { slug } });
       if (response.status !== 200) {
         throw new Error("Failed to fetch package");
       }

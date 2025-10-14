@@ -7,6 +7,10 @@ settings:
 importers:
 
   .:
+    dependencies:
+      '@ts-rest/core':
+        specifier: ^3.52.1
+        version: 3.52.1(@types/node@24.7.2)(zod@4.1.12)
     devDependencies:
       '@typescript-eslint/eslint-plugin':
         specifier: ^7.0.0
@@ -96,6 +100,9 @@ importers:
       '@elope/contracts':
         specifier: workspace:*
         version: link:../../packages/contracts
+      '@elope/shared':
+        specifier: workspace:^
+        version: link:../../packages/shared
       '@tanstack/react-query':
         specifier: ^5.62.11
         version: 5.90.3(react@19.2.0)

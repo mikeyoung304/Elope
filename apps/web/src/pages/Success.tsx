@@ -3,6 +3,7 @@ import { useSearchParams, Link } from "react-router-dom";
 import { Container } from "../ui/Container";
 import { Card } from "../ui/Card";
 import { Button } from "../ui/Button";
+import type { LastCheckout } from "../lib/types";
 
 export function Success() {
   const [searchParams] = useSearchParams();
@@ -25,7 +26,7 @@ export function Success() {
         return;
       }
 
-      const checkoutData = JSON.parse(lastCheckoutStr);
+      const checkoutData: LastCheckout = JSON.parse(lastCheckoutStr);
 
       // POST to /v1/dev/simulate-checkout-completed
       const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:3001'}/v1/dev/simulate-checkout-completed`, {
@@ -39,7 +40,7 @@ export function Success() {
           eventDate: checkoutData.eventDate,
           email: checkoutData.email,
           coupleName: checkoutData.coupleName,
-          addOnIds: checkoutData.addOnIds || [],
+          addOnIds: checkoutData.addOnIds,
         }),
       });
 

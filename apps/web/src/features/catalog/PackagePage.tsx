@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
+import { toUtcMidnight } from "@elope/shared";
 import { usePackage } from "./hooks";
 import { Card } from "../../ui/Card";
 import { Button } from "../../ui/Button";
@@ -8,6 +9,7 @@ import { AddOnList } from "../booking/AddOnList";
 import { TotalBox } from "../booking/TotalBox";
 import { useBookingTotal } from "../booking/hooks";
 import { api } from "../../lib/api";
+import type { LastCheckout } from "../../lib/types";
 
 export function PackagePage() {
   const { slug } = useParams<{ slug: string }>();
@@ -36,15 +38,15 @@ export function PackagePage() {
     if (!selectedDate || !packageData) return;
 
     try {
-      // Format date as YYYY-MM-DD
-      const eventDate = selectedDate.toISOString().split('T')[0];
+      // Format date as YYYY-MM-DD using toUtcMidnight
+      const eventDate = toUtcMidnight(selectedDate);
 
       // For mock mode, use placeholder values
       const email = "test@example.com";
       const coupleName = "Test Couple";
 
       // Call createCheckout API
-      const response = await (api.createCheckout.mutation as any)({
+      const response = await api.createCheckout({
         body: {
           packageId: packageData.id,
           eventDate,
@@ -56,13 +58,14 @@ export function PackagePage() {
 
       if (response.status === 200) {
         // Persist checkout data to localStorage
-        localStorage.setItem('lastCheckout', JSON.stringify({
+        const checkoutData: LastCheckout = {
           packageId: packageData.id,
           eventDate,
           email,
           coupleName,
           addOnIds: Array.from(selectedAddOns),
-        }));
+        };
+        localStorage.setItem('lastCheckout', JSON.stringify(checkoutData));
 
         // Redirect to Stripe checkout
         window.location.href = response.body.checkoutUrl;
