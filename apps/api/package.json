@@ -8,11 +8,15 @@
   "types": "dist/index.d.ts",
   "scripts": {
     "dev": "tsx watch src/index.ts",
+    "dev:mock": "cross-env ADAPTERS_PRESET=mock tsx watch src/index.ts",
+    "dev:real": "cross-env ADAPTERS_PRESET=real tsx watch src/index.ts",
     "build": "tsc -b",
     "start": "node dist/index.js",
     "typecheck": "tsc -b --noEmit"
   },
   "dependencies": {
+    "@elope/contracts": "workspace:^",
+    "@elope/shared": "workspace:^",
     "@ts-rest/express": "^3.52.1",
     "bcryptjs": "^3.0.2",
     "body-parser": "^2.2.0",
@@ -30,6 +34,7 @@
     "@types/express": "^5.0.3",
     "@types/jsonwebtoken": "^9.0.10",
     "@types/node": "^24.7.2",
+    "cross-env": "^10.1.0",
     "pino-pretty": "^13.1.2",
     "tsx": "^4.7.0"
   }

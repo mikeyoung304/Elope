@@ -12,7 +12,7 @@ export class BookingService {
   constructor(
     private readonly bookingRepo: BookingRepository,
     private readonly catalogRepo: CatalogRepository,
-    private readonly eventEmitter: EventEmitter
+    private readonly _eventEmitter: EventEmitter
   ) {}
 
   async createCheckout(input: CreateBookingInput): Promise<{ checkoutUrl: string }> {

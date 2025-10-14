@@ -5,11 +5,11 @@
 import type { PaymentProvider, CheckoutSession } from '../domains/payments/port';
 
 export class StripeAdapter implements PaymentProvider {
-  constructor(private readonly secretKey: string) {
+  constructor(private readonly _secretKey: string) {
     // TODO: Initialize Stripe SDK
   }
 
-  async createCheckoutSession(input: {
+  async createCheckoutSession(_input: {
     amountCents: number;
     email: string;
     metadata: Record<string, string>;
@@ -18,7 +18,7 @@ export class StripeAdapter implements PaymentProvider {
     throw new Error('Not implemented - Stripe checkout session');
   }
 
-  async verifyWebhook(payload: string, signature: string): Promise<unknown> {
+  async verifyWebhook(_payload: string, _signature: string): Promise<unknown> {
     // TODO: Implement Stripe webhook verification
     throw new Error('Not implemented - Stripe webhook verification');
   }

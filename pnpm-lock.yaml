@@ -29,6 +29,12 @@ importers:
 
   apps/api:
     dependencies:
+      '@elope/contracts':
+        specifier: workspace:^
+        version: link:../../packages/contracts
+      '@elope/shared':
+        specifier: workspace:^
+        version: link:../../packages/shared
       '@ts-rest/express':
         specifier: ^3.52.1
         version: 3.52.1(@ts-rest/core@3.52.1)(express@5.1.0)(zod@4.1.12)
@@ -75,6 +81,9 @@ importers:
       '@types/node':
         specifier: ^24.7.2
         version: 24.7.2
+      cross-env:
+        specifier: ^10.1.0
+        version: 10.1.0
       pino-pretty:
         specifier: ^13.1.2
         version: 13.1.2
@@ -112,6 +121,10 @@ packages:
       ts-deepmerge: 6.2.1
       zod: 4.1.12
     dev: false
+
+  /@epic-web/invariant@1.0.0:
+    resolution: {integrity: sha512-lrTPqgvfFQtR/eY/qkIzp98OGdNJu0m5ji3q/nJI8v3SXkRKEnWiOxMmbvcSoAIzv/cGiuvRy57k4suKQSAdwA==}
+    dev: true
 
   /@esbuild/aix-ppc64@0.25.10:
     resolution: {integrity: sha512-0NFWnA+7l41irNuaSVlLfgNT12caWJVLzp5eAVhZ0z1qpxbockccEt3s+149rE64VUI3Ml2zt8Nv5JVc4QXTsw==}
@@ -883,6 +896,15 @@ packages:
       object-assign: 4.1.1
       vary: 1.1.2
     dev: false
+
+  /cross-env@10.1.0:
+    resolution: {integrity: sha512-GsYosgnACZTADcmEyJctkJIoqAhHjttw7RsFrVoJNXbsWWqaq6Ym+7kZjq6mS45O0jij6vtiReppKQEtqWy6Dw==}
+    engines: {node: '>=20'}
+    hasBin: true
+    dependencies:
+      '@epic-web/invariant': 1.0.0
+      cross-spawn: 7.0.6
+    dev: true
 
   /cross-spawn@7.0.6:
     resolution: {integrity: sha512-uV2QOWP2nWzsy2aMp8aRibhi9dlzF5Hgh5SHaB9OiTGEyDTiJJyx0uy51QXdyWbtAHNua4XJzUKca3OzKUd3vA==}

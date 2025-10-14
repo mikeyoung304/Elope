@@ -14,6 +14,8 @@ import { BookingsController } from './http/v1/bookings.http';
 import { WebhooksController } from './http/v1/webhooks.http';
 import { AdminController } from './http/v1/admin.http';
 import { BlackoutsController } from './http/v1/blackouts.http';
+import { buildMockAdapters } from './adapters/mock';
+import { logger } from './core/logger';
 
 export interface Container {
   controllers: {
@@ -30,8 +32,36 @@ export function buildContainer(config: Config): Container {
   const eventEmitter = new InProcessEventEmitter();
 
   if (config.ADAPTERS_PRESET === 'mock') {
-    // TODO: Implement mock adapters in next step
-    throw new Error('Mock adapters not yet implemented - will be added in next step');
+    logger.info('🧪 Using MOCK adapters');
+
+    // Build mock adapters
+    const adapters = buildMockAdapters();
+
+    // Build domain services
+    const catalogService = new CatalogService(adapters.catalogRepo);
+    const availabilityService = new AvailabilityService(
+      adapters.calendarProvider,
+      adapters.blackoutRepo,
+      adapters.bookingRepo
+    );
+    const bookingService = new BookingService(
+      adapters.bookingRepo,
+      adapters.catalogRepo,
+      eventEmitter
+    );
+    const identityService = new IdentityService(adapters.userRepo, config.JWT_SECRET);
+
+    // Build controllers
+    const controllers = {
+      packages: new PackagesController(catalogService),
+      availability: new AvailabilityController(availabilityService),
+      bookings: new BookingsController(bookingService),
+      webhooks: new WebhooksController(),
+      admin: new AdminController(identityService, bookingService),
+      blackouts: new BlackoutsController(adapters.blackoutRepo),
+    };
+
+    return { controllers };
   }
 
   // Real adapters mode
