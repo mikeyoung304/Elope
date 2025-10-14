@@ -1,5 +1,6 @@
 /**
- * Core domain contracts and types
+ * Domain contracts and API definitions
  */
 
-export const CORE_VERSION = '0.0.0';
+export * from './dto';
+export { Contracts } from './api.v1';
