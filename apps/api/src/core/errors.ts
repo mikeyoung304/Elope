@@ -41,6 +41,20 @@ export class ConflictError extends DomainError {
   }
 }
 
+export class ForbiddenError extends DomainError {
+  constructor(message: string) {
+    super(message, 'FORBIDDEN', 403);
+    this.name = 'ForbiddenError';
+  }
+}
+
+export class UnprocessableEntityError extends DomainError {
+  constructor(message: string) {
+    super(message, 'UNPROCESSABLE_ENTITY', 422);
+    this.name = 'UnprocessableEntityError';
+  }
+}
+
 export function mapErrorToStatus(error: unknown): { statusCode: number; message: string; code: string } {
   if (error instanceof DomainError) {
     return {
