@@ -7,6 +7,7 @@ import { DatePicker } from "../booking/DatePicker";
 import { AddOnList } from "../booking/AddOnList";
 import { TotalBox } from "../booking/TotalBox";
 import { useBookingTotal } from "../booking/hooks";
+import { api } from "../../lib/api";
 
 export function PackagePage() {
   const { slug } = useParams<{ slug: string }>();
@@ -31,9 +32,47 @@ export function PackagePage() {
     );
   }
 
-  const handleCheckout = () => {
-    // TODO: Implement checkout logic
-    navigate("/success");
+  const handleCheckout = async () => {
+    if (!selectedDate || !packageData) return;
+
+    try {
+      // Format date as YYYY-MM-DD
+      const eventDate = selectedDate.toISOString().split('T')[0];
+
+      // For mock mode, use placeholder values
+      const email = "test@example.com";
+      const coupleName = "Test Couple";
+
+      // Call createCheckout API
+      const response = await (api.createCheckout.mutation as any)({
+        body: {
+          packageId: packageData.id,
+          eventDate,
+          email,
+          coupleName,
+          addOnIds: Array.from(selectedAddOns),
+        },
+      });
+
+      if (response.status === 200) {
+        // Persist checkout data to localStorage
+        localStorage.setItem('lastCheckout', JSON.stringify({
+          packageId: packageData.id,
+          eventDate,
+          email,
+          coupleName,
+          addOnIds: Array.from(selectedAddOns),
+        }));
+
+        // Redirect to Stripe checkout
+        window.location.href = response.body.checkoutUrl;
+      } else {
+        alert('Failed to create checkout session. Please try again.');
+      }
+    } catch (error) {
+      console.error('Checkout error:', error);
+      alert('An error occurred during checkout. Please try again.');
+    }
   };
 
   const toggleAddOn = (addOnId: string) => {
