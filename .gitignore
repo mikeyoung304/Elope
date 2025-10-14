@@ -1,0 +1,38 @@
+# Environment
+.env*
+!.env.example
+
+# Dependencies
+node_modules
+
+# Build outputs
+dist
+build
+.next
+.turbo
+
+# Testing
+coverage
+.nyc_output
+
+# IDE
+.vscode
+.idea
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+npm-debug.log*
+pnpm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Temp
+.tmp
+.temp
