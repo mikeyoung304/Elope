@@ -14,6 +14,7 @@ import { BookingsController } from './http/v1/bookings.http';
 import { WebhooksController } from './http/v1/webhooks.http';
 import { AdminController } from './http/v1/admin.http';
 import { BlackoutsController } from './http/v1/blackouts.http';
+import { DevController } from './http/v1/dev.http';
 import { buildMockAdapters } from './adapters/mock';
 import { logger } from './core/logger';
 
@@ -25,6 +26,7 @@ export interface Container {
     webhooks: WebhooksController;
     admin: AdminController;
     blackouts: BlackoutsController;
+    dev?: DevController;
   };
 }
 
@@ -59,6 +61,7 @@ export function buildContainer(config: Config): Container {
       webhooks: new WebhooksController(),
       admin: new AdminController(identityService, bookingService),
       blackouts: new BlackoutsController(adapters.blackoutRepo),
+      dev: new DevController(bookingService, adapters.catalogRepo),
     };
 
     return { controllers };

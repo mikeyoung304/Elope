@@ -228,3 +228,15 @@ export function buildMockAdapters() {
     userRepo: new MockUserRepository(),
   };
 }
+
+/**
+ * Get current in-memory state for debugging (dev mode only)
+ */
+export function getMockState() {
+  return {
+    packages: Array.from(packages.values()),
+    addOns: Array.from(addOns.values()),
+    blackouts: Array.from(blackouts.values()),
+    bookings: Array.from(bookings.values()),
+  };
+}

@@ -37,6 +37,31 @@ export function createApp(config: Config): express.Application {
   const container = buildContainer(config);
   createV1Router(container.controllers, app);
 
+  // Mount dev routes (mock mode only)
+  if (config.ADAPTERS_PRESET === 'mock' && container.controllers.dev) {
+    logger.info('🧪 Mounting dev simulator routes');
+
+    // POST /v1/dev/simulate-checkout-completed
+    app.post('/v1/dev/simulate-checkout-completed', async (req, res, next) => {
+      try {
+        await container.controllers.dev!.simulateCheckoutCompleted(req.body);
+        res.status(204).send();
+      } catch (error) {
+        next(error);
+      }
+    });
+
+    // GET /v1/dev/debug-state
+    app.get('/v1/dev/debug-state', async (_req, res, next) => {
+      try {
+        const state = await container.controllers.dev!.getDebugState();
+        res.json(state);
+      } catch (error) {
+        next(error);
+      }
+    });
+  }
+
   // Error handling
   app.use(
     (

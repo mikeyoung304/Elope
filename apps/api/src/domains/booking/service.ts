@@ -48,4 +48,43 @@ export class BookingService {
     }
     return booking;
   }
+
+  /**
+   * Handle payment completion (called by webhook or dev simulator)
+   */
+  async onPaymentCompleted(input: {
+    sessionId: string;
+    packageId: string;
+    eventDate: string;
+    email: string;
+    coupleName: string;
+    addOnIds?: string[];
+    totalCents: number;
+  }): Promise<Booking> {
+    // Create PAID booking
+    const booking: Booking = {
+      id: `booking_${Date.now()}`,
+      packageId: input.packageId,
+      coupleName: input.coupleName,
+      email: input.email,
+      eventDate: input.eventDate,
+      addOnIds: input.addOnIds || [],
+      totalCents: input.totalCents,
+      status: 'PAID',
+      createdAt: new Date().toISOString(),
+    };
+
+    // Persist booking (enforces unique-by-date)
+    const created = await this.bookingRepo.create(booking);
+
+    // Emit BookingPaid event for notifications
+    await this._eventEmitter.emit('BookingPaid', {
+      bookingId: created.id,
+      email: created.email,
+      coupleName: created.coupleName,
+      eventDate: created.eventDate,
+    });
+
+    return created;
+  }
 }

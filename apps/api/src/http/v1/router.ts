@@ -24,6 +24,7 @@ interface Controllers {
 export function createV1Router(controllers: Controllers, app: Application): void {
   const s = initServer();
 
+  // ts-rest express has type compatibility issues with Express 5
   createExpressEndpoints(Contracts, s.router(Contracts, {
     getPackages: async () => {
       const data = await controllers.packages.getPackages();
@@ -73,5 +74,5 @@ export function createV1Router(controllers: Controllers, app: Application): void
       const data = await controllers.blackouts.createBlackout(body);
       return { status: 200 as const, body: data };
     },
-  }), app);
+  } as any), app);
 }
