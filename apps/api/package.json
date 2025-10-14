@@ -12,7 +12,10 @@
     "dev:real": "cross-env ADAPTERS_PRESET=real tsx watch src/index.ts",
     "build": "tsc -b",
     "start": "node dist/index.js",
-    "typecheck": "tsc -b --noEmit"
+    "typecheck": "tsc -b --noEmit",
+    "test": "vitest run --reporter=verbose",
+    "test:watch": "vitest",
+    "coverage": "vitest run --coverage"
   },
   "dependencies": {
     "@elope/contracts": "workspace:^",
@@ -34,8 +37,11 @@
     "@types/express": "^5.0.3",
     "@types/jsonwebtoken": "^9.0.10",
     "@types/node": "^24.7.2",
+    "@vitest/coverage-v8": "^3.2.4",
     "cross-env": "^10.1.0",
     "pino-pretty": "^13.1.2",
-    "tsx": "^4.7.0"
+    "ts-node": "^10.9.2",
+    "tsx": "^4.7.0",
+    "vitest": "^3.2.4"
   }
 }
