@@ -61,6 +61,20 @@ export class BookingService {
     addOnIds?: string[];
     totalCents: number;
   }): Promise<Booking> {
+    // Fetch package details for event payload
+    const pkg = await this.catalogRepo.getPackageBySlug(input.packageId);
+    if (!pkg) {
+      throw new NotFoundError(`Package ${input.packageId} not found`);
+    }
+
+    // Fetch add-on details
+    const addOnTitles: string[] = [];
+    if (input.addOnIds && input.addOnIds.length > 0) {
+      const addOns = await this.catalogRepo.getAddOnsByPackageId(pkg.id);
+      const selectedAddOns = addOns.filter((a) => input.addOnIds?.includes(a.id));
+      addOnTitles.push(...selectedAddOns.map((a) => a.title));
+    }
+
     // Create PAID booking
     const booking: Booking = {
       id: `booking_${Date.now()}`,
@@ -77,12 +91,15 @@ export class BookingService {
     // Persist booking (enforces unique-by-date)
     const created = await this.bookingRepo.create(booking);
 
-    // Emit BookingPaid event for notifications
+    // Emit BookingPaid event for notifications with enriched data
     await this._eventEmitter.emit('BookingPaid', {
       bookingId: created.id,
       email: created.email,
       coupleName: created.coupleName,
       eventDate: created.eventDate,
+      packageTitle: pkg.title,
+      addOnTitles,
+      totalCents: input.totalCents,
     });
 
     return created;

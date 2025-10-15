@@ -85,6 +85,52 @@ stripe trigger checkout.session.completed
 
 **Note:** Manual triggers won't include real booking metadata. Use the full checkout flow for realistic testing.
 
+## Email (Postmark)
+
+### Setup for Production
+
+1. **Sign up for Postmark:**
+   - Create an account at https://postmarkapp.com
+   - Create a new server or use the default one
+
+2. **Verify your sender domain:**
+   - Go to **Sender Signatures** in your Postmark dashboard
+   - Add and verify your sending email address or domain
+   - Follow DNS verification steps (SPF, DKIM, Return-Path)
+
+3. **Get your Server API Token:**
+   - Go to your server settings
+   - Copy the **Server API Token** (format: `xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx`)
+   - Add it to `apps/api/.env`:
+     ```
+     POSTMARK_SERVER_TOKEN=your-token-here
+     POSTMARK_FROM_EMAIL=bookings@yourdomain.com
+     ```
+
+### Dev Mode - File Sink Fallback
+
+**In real mode without Postmark credentials**, emails are written to `apps/api/tmp/emails/` as `.eml` files:
+
+```bash
+# Leave POSTMARK_SERVER_TOKEN empty for file-sink mode
+POSTMARK_SERVER_TOKEN=
+POSTMARK_FROM_EMAIL=bookings@example.com
+```
+
+Each email is saved with a timestamp and recipient filename. Check the API logs for file paths.
+
+### Testing Email Flow
+
+1. **With file sink (no token):**
+   - Complete a booking in real mode
+   - Check `apps/api/tmp/emails/` for the confirmation email file
+   - View the raw email content
+
+2. **With Postmark (token set):**
+   - Complete a booking
+   - Check your Postmark dashboard → Activity for sent emails
+   - Verify delivery to the customer email
+
 ## Production checks
 
 ### Health endpoints
@@ -111,8 +157,7 @@ If `/ready` returns `ok: false`, check your `.env` file and ensure all required 
 - `DATABASE_URL`
 - `STRIPE_SECRET_KEY`
 - `STRIPE_WEBHOOK_SECRET`
-- `POSTMARK_SERVER_TOKEN`
-- `POSTMARK_FROM_EMAIL`
+- `POSTMARK_FROM_EMAIL` (POSTMARK_SERVER_TOKEN optional; uses file sink if empty)
 - `GOOGLE_CALENDAR_ID`
 - `GOOGLE_SERVICE_ACCOUNT_JSON_BASE64`
 

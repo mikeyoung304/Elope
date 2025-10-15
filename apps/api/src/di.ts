@@ -25,6 +25,7 @@ import {
   PrismaUserRepository,
 } from './adapters/prisma';
 import { StripePaymentAdapter } from './adapters/stripe.adapter';
+import { PostmarkMailAdapter } from './adapters/postmark.adapter';
 import { logger } from './core/logger';
 
 export interface Container {
@@ -115,10 +116,15 @@ export function buildContainer(config: Config): Container {
     cancelUrl: config.STRIPE_CANCEL_URL || 'http://localhost:5173',
   });
 
+  // Build Postmark mail adapter (with file-sink fallback when no token)
+  const mailProvider = new PostmarkMailAdapter({
+    serverToken: config.POSTMARK_SERVER_TOKEN,
+    fromEmail: config.POSTMARK_FROM_EMAIL || 'bookings@example.com',
+  });
+
   // For now, use mock adapters for services not yet implemented
   const mockAdapters = buildMockAdapters();
   const calendarProvider = mockAdapters.calendarProvider; // TODO: Implement GoogleCalendarAdapter
-  // const emailProvider = mockAdapters.emailProvider; // TODO: Implement PostmarkAdapter
 
   // Build domain services
   const catalogService = new CatalogService(catalogRepo);
@@ -129,6 +135,28 @@ export function buildContainer(config: Config): Container {
   );
   const bookingService = new BookingService(bookingRepo, catalogRepo, eventEmitter);
   const identityService = new IdentityService(userRepo, config.JWT_SECRET);
+
+  // Subscribe to BookingPaid events to send confirmation emails
+  eventEmitter.subscribe<{
+    bookingId: string;
+    email: string;
+    coupleName: string;
+    eventDate: string;
+    packageTitle: string;
+    addOnTitles: string[];
+    totalCents: number;
+  }>('BookingPaid', async (payload) => {
+    try {
+      await mailProvider.sendBookingConfirm(payload.email, {
+        eventDate: payload.eventDate,
+        packageTitle: payload.packageTitle,
+        totalCents: payload.totalCents,
+        addOnTitles: payload.addOnTitles,
+      });
+    } catch (err) {
+      logger.error({ err, bookingId: payload.bookingId }, 'Failed to send booking confirmation email');
+    }
+  });
 
   // Build controllers
   const controllers = {

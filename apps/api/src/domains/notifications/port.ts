@@ -10,6 +10,18 @@ export interface EmailProvider {
   }): Promise<void>;
 }
 
+export interface MailPort {
+  sendBookingConfirm(
+    to: string,
+    payload: {
+      eventDate: string;
+      packageTitle: string;
+      totalCents: number;
+      addOnTitles: string[];
+    }
+  ): Promise<void>;
+}
+
 export interface NotificationService {
   sendBookingConfirmation(bookingId: string, email: string): Promise<void>;
 }
