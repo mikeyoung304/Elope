@@ -3,7 +3,8 @@ import { useNavigate } from "react-router-dom";
 import { Card } from "../../ui/Card";
 import { Button } from "../../ui/Button";
 import { api } from "../../lib/api";
-import type { BookingDto } from "@elope/contracts";
+import type { BookingDto, PackageDto } from "@elope/contracts";
+import { PackagesManager } from "./PackagesManager";
 
 type Blackout = {
   date: string;
@@ -12,9 +13,10 @@ type Blackout = {
 
 export function Dashboard() {
   const navigate = useNavigate();
-  const [activeTab, setActiveTab] = useState<"bookings" | "blackouts">("bookings");
+  const [activeTab, setActiveTab] = useState<"bookings" | "blackouts" | "packages">("bookings");
   const [bookings, setBookings] = useState<BookingDto[]>([]);
   const [blackouts, setBlackouts] = useState<Blackout[]>([]);
+  const [packages, setPackages] = useState<PackageDto[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [newBlackoutDate, setNewBlackoutDate] = useState("");
   const [newBlackoutReason, setNewBlackoutReason] = useState("");
@@ -22,8 +24,10 @@ export function Dashboard() {
   useEffect(() => {
     if (activeTab === "bookings") {
       loadBookings();
-    } else {
+    } else if (activeTab === "blackouts") {
       loadBlackouts();
+    } else if (activeTab === "packages") {
+      loadPackages();
     }
   }, [activeTab]);
 
@@ -50,6 +54,20 @@ export function Dashboard() {
       }
     } catch (error) {
       console.error("Failed to load blackouts:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const loadPackages = async () => {
+    setIsLoading(true);
+    try {
+      const result = await api.getPackages();
+      if (result.status === 200) {
+        setPackages(result.body);
+      }
+    } catch (error) {
+      console.error("Failed to load packages:", error);
     } finally {
       setIsLoading(false);
     }
@@ -104,6 +122,11 @@ export function Dashboard() {
     navigate("/admin/login");
   };
 
+  // Calculate metrics
+  const totalBookings = bookings.length;
+  const totalRevenue = bookings.reduce((sum, b) => sum + b.totalCents, 0);
+  const averageBookingValue = totalBookings > 0 ? totalRevenue / totalBookings : 0;
+
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
@@ -111,6 +134,28 @@ export function Dashboard() {
         <Button onClick={handleLogout} variant="secondary">
           Logout
         </Button>
+      </div>
+
+      {/* Metrics Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+        <Card className="p-6">
+          <div className="text-sm text-gray-600 mb-1">Total Bookings</div>
+          <div className="text-3xl font-bold text-blue-600">{totalBookings}</div>
+        </Card>
+        <Card className="p-6">
+          <div className="text-sm text-gray-600 mb-1">Total Revenue</div>
+          <div className="text-3xl font-bold text-green-600">
+            ${(totalRevenue / 100).toFixed(2)}
+          </div>
+        </Card>
+        <Card className="p-6">
+          <div className="text-sm text-gray-600 mb-1">Total Packages</div>
+          <div className="text-3xl font-bold text-purple-600">{packages.length}</div>
+        </Card>
+        <Card className="p-6">
+          <div className="text-sm text-gray-600 mb-1">Blackout Dates</div>
+          <div className="text-3xl font-bold text-orange-600">{blackouts.length}</div>
+        </Card>
       </div>
 
       {/* Tabs */}
@@ -135,6 +180,16 @@ export function Dashboard() {
             }`}
           >
             Blackouts
+          </button>
+          <button
+            onClick={() => setActiveTab("packages")}
+            className={`py-2 px-1 border-b-2 font-medium text-sm ${
+              activeTab === "packages"
+                ? "border-blue-500 text-blue-600"
+                : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
+            }`}
+          >
+            Packages
           </button>
         </nav>
       </div>
@@ -284,6 +339,11 @@ export function Dashboard() {
             </div>
           </Card>
         </div>
+      )}
+
+      {/* Packages Tab */}
+      {activeTab === "packages" && (
+        <PackagesManager packages={packages} onPackagesChange={loadPackages} />
       )}
     </div>
   );
