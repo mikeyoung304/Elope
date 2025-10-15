@@ -87,9 +87,9 @@ export function createApp(config: Config): express.Application {
       try {
         const reqLogger = res.locals.logger || logger;
         reqLogger.info({ body: req.body }, 'simulate-checkout-completed requested');
-        await container.controllers.dev!.simulateCheckoutCompleted(req.body);
-        reqLogger.info('simulate-checkout-completed completed');
-        res.status(204).send();
+        const result = await container.controllers.dev!.simulateCheckoutCompleted(req.body);
+        reqLogger.info({ bookingId: result.bookingId }, 'simulate-checkout-completed completed');
+        res.status(200).json(result);
       } catch (error) {
         next(error);
       }

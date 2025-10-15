@@ -67,6 +67,18 @@ export const Contracts = c.router({
     summary: 'Create a checkout session',
   },
 
+  getBookingById: {
+    method: 'GET',
+    path: '/v1/bookings/:id',
+    pathParams: z.object({
+      id: z.string(),
+    }),
+    responses: {
+      200: BookingDtoSchema,
+    },
+    summary: 'Get booking by ID (public endpoint for confirmation)',
+  },
+
   // Webhook endpoint (raw body)
   stripeWebhook: {
     method: 'POST',

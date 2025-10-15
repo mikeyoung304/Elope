@@ -24,7 +24,7 @@ export class DevController {
     email: string;
     coupleName: string;
     addOnIds?: string[];
-  }): Promise<void> {
+  }): Promise<{ bookingId: string }> {
     logger.info({
       sessionId: input.sessionId,
       packageId: input.packageId,
@@ -49,7 +49,7 @@ export class DevController {
     }
 
     // Call the same domain path used by webhook handler
-    await this.bookingService.onPaymentCompleted({
+    const booking = await this.bookingService.onPaymentCompleted({
       sessionId: input.sessionId,
       packageId: pkg.id,
       eventDate: normalizedDate,
@@ -59,7 +59,9 @@ export class DevController {
       totalCents,
     });
 
-    logger.info('✅ Checkout simulation completed');
+    logger.info({ bookingId: booking.id }, '✅ Checkout simulation completed');
+
+    return { bookingId: booking.id };
   }
 
   /**

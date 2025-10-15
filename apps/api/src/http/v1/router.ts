@@ -48,6 +48,11 @@ export function createV1Router(controllers: Controllers, app: Application): void
       return { status: 200 as const, body: data };
     },
 
+    getBookingById: async ({ params }: { params: { id: string } }) => {
+      const data = await controllers.bookings.getBookingById(params.id);
+      return { status: 200 as const, body: data };
+    },
+
     stripeWebhook: async () => {
       // TODO: Extract raw body and signature from request
       await controllers.webhooks.handleStripeWebhook('', '');
