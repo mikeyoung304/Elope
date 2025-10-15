@@ -1,5 +1,130 @@
 # Runbook
 
+## Secrets & Doctor
+
+Before starting development, validate your environment configuration using the doctor script:
+
+```bash
+pnpm doctor
+# or from the api directory:
+pnpm -C apps/api run doctor
+```
+
+### Doctor Output Examples
+
+**Mock mode (all good):**
+```
+🏥 Environment Configuration Doctor
+
+Checking environment variables...
+
+Mode: MOCK
+
+Core Configuration:
+  ✓ ADAPTERS_PRESET [optional]
+    Adapter mode (mock or real)
+  ✓ JWT_SECRET [optional]
+    JWT signing secret (MUST change in production)
+  ✓ API_PORT [optional]
+    API server port (default: 3001)
+  ✓ CORS_ORIGIN [optional]
+    CORS origin (default: http://localhost:5173)
+
+📝 Mock mode active - database, Stripe, Postmark, and Google Calendar not required
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+✅ All required variables are set!
+
+💡 Run `pnpm -C apps/api run dev` to start the API server
+   See RUNBOOK.md for more troubleshooting help.
+```
+
+**Real mode (missing required vars):**
+```
+🏥 Environment Configuration Doctor
+
+Mode: REAL
+
+Core Configuration:
+  ✓ ADAPTERS_PRESET [optional]
+  ✓ JWT_SECRET [optional]
+  ✓ API_PORT [optional]
+  ✓ CORS_ORIGIN [optional]
+
+Database (PostgreSQL):
+  ✗ DATABASE_URL [REQUIRED]
+    PostgreSQL connection string
+    Not set
+
+Payment Processing (Stripe):
+  ✗ STRIPE_SECRET_KEY [REQUIRED]
+    Stripe API secret key
+    Not set
+  ✗ STRIPE_WEBHOOK_SECRET [REQUIRED]
+    Stripe webhook signing secret
+    Not set
+  ✓ STRIPE_SUCCESS_URL [optional]
+  ✓ STRIPE_CANCEL_URL [optional]
+
+Email (Postmark):
+  ⚠ POSTMARK_SERVER_TOKEN [optional]
+    Email API token (fallback: file-sink)
+    Not set
+  ⚠ POSTMARK_FROM_EMAIL [optional]
+    From email address
+    Not set
+
+Calendar Integration (Google Calendar):
+  ⚠ GOOGLE_CALENDAR_ID [optional]
+    Calendar ID (fallback: mock calendar)
+    Not set
+  ⚠ GOOGLE_SERVICE_ACCOUNT_JSON_BASE64 [optional]
+    Base64 service account JSON
+    Not set
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+❌ 3 required variable(s) missing:
+   - DATABASE_URL
+   - STRIPE_SECRET_KEY
+   - STRIPE_WEBHOOK_SECRET
+
+Fix these issues before running in real mode.
+See SECRETS.md for details on each variable.
+
+⚠️  4 optional variable(s) missing (graceful fallbacks active):
+   - POSTMARK_SERVER_TOKEN
+   - POSTMARK_FROM_EMAIL
+   - GOOGLE_CALENDAR_ID
+   - GOOGLE_SERVICE_ACCOUNT_JSON_BASE64
+```
+
+### Fixing Missing Variables
+
+1. **Copy the example env file:**
+   ```bash
+   cp apps/api/.env.example apps/api/.env
+   ```
+
+2. **Edit `apps/api/.env` with your values:**
+   - See `SECRETS.md` for detailed documentation on each variable
+   - For mock mode: only `JWT_SECRET` is required (already set in example)
+   - For real mode: you'll need database, Stripe, and optionally Postmark/GCal credentials
+
+3. **Re-run the doctor to verify:**
+   ```bash
+   pnpm doctor
+   ```
+
+4. **Common issues:**
+   - **JWT_SECRET not set**: Add a secure random string (e.g., `openssl rand -hex 32`)
+   - **Real mode missing DB**: See "Database Setup" section below
+   - **Real mode missing Stripe**: See "Stripe Local Testing" section below
+   - **Optional services**: Postmark and Google Calendar are optional in real mode (graceful fallbacks)
+
+See `SECRETS.md` for the complete environment variable reference.
+
 ## Local dev
 
 ```bash

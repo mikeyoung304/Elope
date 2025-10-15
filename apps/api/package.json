@@ -7,6 +7,7 @@
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "scripts": {
+    "doctor": "tsx scripts/doctor.ts",
     "dev": "tsx watch src/index.ts",
     "dev:mock": "cross-env ADAPTERS_PRESET=mock tsx watch src/index.ts",
     "dev:real": "cross-env ADAPTERS_PRESET=real tsx watch src/index.ts",
