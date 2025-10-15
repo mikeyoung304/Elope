@@ -3,7 +3,7 @@ import { useSearchParams, Link } from "react-router-dom";
 import { Container } from "../ui/Container";
 import { Card } from "../ui/Card";
 import { Button } from "../ui/Button";
-import { api } from "../lib/api";
+import { api, baseUrl } from "../lib/api";
 import type { LastCheckout } from "../lib/types";
 import type { BookingDto, PackageDto } from "@elope/contracts";
 
@@ -64,10 +64,10 @@ export function Success() {
       const checkoutData: LastCheckout = JSON.parse(lastCheckoutStr);
 
       // POST to /v1/dev/simulate-checkout-completed
-      const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:3001'}/v1/dev/simulate-checkout-completed`, {
-        method: 'POST',
+      const response = await fetch(`${baseUrl}/v1/dev/simulate-checkout-completed`, {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify({
           sessionId,

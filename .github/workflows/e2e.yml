@@ -85,6 +85,6 @@ jobs:
           if [ ! -z "$API_PID" ]; then
             kill $API_PID || true
           fi
-          # Kill any remaining processes on ports 3001 and 5173
+          # Kill any remaining processes on ports 3001 and 3000
           lsof -ti:3001 | xargs kill -9 || true
-          lsof -ti:5173 | xargs kill -9 || true
+          lsof -ti:3000 | xargs kill -9 || true

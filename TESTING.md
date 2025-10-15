@@ -52,7 +52,7 @@ pnpm -r build                       # Build all packages
 
 The E2E test suite uses Playwright and requires:
 1. **API server running on `http://localhost:3001` (mock mode)**
-2. Web dev server auto-started by Playwright on `http://localhost:5173`
+2. Web dev server auto-started by Playwright on `http://localhost:3000`
 
 ### Prerequisites
 

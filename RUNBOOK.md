@@ -28,7 +28,7 @@ Core Configuration:
   ✓ API_PORT [optional]
     API server port (default: 3001)
   ✓ CORS_ORIGIN [optional]
-    CORS origin (default: http://localhost:5173)
+    CORS origin (default: http://localhost:3000)
 
 📝 Mock mode active - database, Stripe, Postmark, and Google Calendar not required
 
