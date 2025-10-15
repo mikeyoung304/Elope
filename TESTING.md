@@ -15,7 +15,10 @@
 - `catalog.service` — package/add-on CRUD operations ✅
 - `identity.service` — login success/fail ✅
 
-### E2E Tests (7 scenarios)
+### E2E Tests (9 scenarios)
+- **Mock Booking Flow** (2 scenarios):
+  - Complete booking with add-on and API availability check
+  - Form validation (checkout disabled without required fields)
 - **Booking Flow** (2 scenarios):
   - Complete booking journey (homepage → confirmation)
   - Form validation (checkout disabled without required fields)
@@ -84,6 +87,13 @@ pnpm test:e2e:headed
 
 ### Test Scenarios
 
+**Mock Booking Flow** (2 tests):
+- Complete booking with add-on and API availability verification
+  - Selects first package, chooses future date, adds add-on
+  - Completes mock checkout and payment
+  - Verifies date becomes unavailable via direct API call
+- Form validation (checkout disabled without required fields)
+
 **Booking Flow** (2 tests):
 - Complete booking journey from homepage to confirmation
 - Form validation (checkout disabled without required fields)
@@ -108,6 +118,13 @@ pnpm test:e2e:headed
 - Use `pnpm test:e2e:headed` to debug visually
 
 **CI/CD**:
+- E2E tests run automatically in GitHub Actions via `.github/workflows/e2e.yml`
+- API server starts in mock mode; Playwright auto-starts web server
 - Tests are CI-ready with automatic retries (2 attempts)
 - Playwright generates HTML reports on failure
-- Screenshots/videos captured on failure
+- Screenshots/videos captured on failure and uploaded as artifacts
+
+**Running a single test file**:
+```bash
+pnpm test:e2e e2e/tests/booking-mock.spec.ts
+```

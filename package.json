@@ -22,7 +22,8 @@
     "prettier": "^3.2.5",
     "puppeteer": "^24.24.1",
     "tsx": "^4.7.0",
-    "typescript": "^5.3.3"
+    "typescript": "^5.3.3",
+    "wait-on": "^9.0.1"
   },
   "engines": {
     "node": ">=20.0.0",
