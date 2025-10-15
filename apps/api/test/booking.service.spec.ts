@@ -13,6 +13,7 @@ import {
   buildBooking,
 } from './helpers/fakes';
 import { NotFoundError } from '../src/core/errors';
+import { BookingConflictError } from '../src/domains/booking/errors';
 
 describe('BookingService', () => {
   let service: BookingService;
@@ -80,6 +81,10 @@ describe('BookingService', () => {
 
   describe('onPaymentCompleted', () => {
     it('inserts a PAID booking and emits BookingPaid event', async () => {
+      // Arrange
+      const pkg = buildPackage({ id: 'pkg_1', slug: 'pkg_1', title: 'Test Package' });
+      catalogRepo.addPackage(pkg);
+
       // Act
       const booking = await service.onPaymentCompleted({
         sessionId: 'sess_123',
@@ -106,7 +111,11 @@ describe('BookingService', () => {
       });
     });
 
-    it('throws error if date is already booked (duplicate date)', async () => {
+    it('throws BookingConflictError if date is already booked (duplicate date)', async () => {
+      // Arrange
+      const pkg = buildPackage({ id: 'pkg_1', slug: 'pkg_1', title: 'Test Package' });
+      catalogRepo.addPackage(pkg);
+
       // Arrange: pre-existing booking for same date
       bookingRepo.addBooking(buildBooking({ eventDate: '2025-07-01' }));
 
@@ -120,14 +129,16 @@ describe('BookingService', () => {
           coupleName: 'Another Couple',
           totalCents: 100000,
         })
-      ).rejects.toThrow('Date already booked');
+      ).rejects.toThrow(BookingConflictError);
     });
 
     it('duplicate date error should map to 409 Conflict', async () => {
       // Arrange
+      const pkg = buildPackage({ id: 'pkg_1', slug: 'pkg_1', title: 'Test Package' });
+      catalogRepo.addPackage(pkg);
       bookingRepo.addBooking(buildBooking({ eventDate: '2025-07-01' }));
 
-      // Act & Assert: verify error message contains info that should be mapped to 409
+      // Act & Assert: verify BookingConflictError is thrown (maps to 409)
       try {
         await service.onPaymentCompleted({
           sessionId: 'sess_123',
@@ -137,11 +148,10 @@ describe('BookingService', () => {
           coupleName: 'Another Couple',
           totalCents: 100000,
         });
-        expect.fail('Should have thrown error');
+        expect.fail('Should have thrown BookingConflictError');
       } catch (error) {
-        expect(error).toBeInstanceOf(Error);
+        expect(error).toBeInstanceOf(BookingConflictError);
         expect((error as Error).message).toContain('already booked');
-        // Note: HTTP layer would map this to 409 based on error message
       }
     });
   });

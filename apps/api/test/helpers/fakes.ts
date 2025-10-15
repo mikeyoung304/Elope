@@ -4,6 +4,7 @@
 
 import type { BookingRepository } from '../../src/domains/booking/port';
 import type { Booking } from '../../src/domains/booking/entities';
+import { BookingConflictError } from '../../src/domains/booking/errors';
 import type { CatalogRepository } from '../../src/domains/catalog/port';
 import type { Package, AddOn } from '../../src/domains/catalog/entities';
 import type { BlackoutRepository, CalendarProvider } from '../../src/domains/availability/port';
@@ -21,7 +22,7 @@ export class FakeBookingRepository implements BookingRepository {
     // Enforce unique-by-date constraint
     const exists = this.bookings.some((b) => b.eventDate === booking.eventDate);
     if (exists) {
-      throw new Error('Date already booked');
+      throw new BookingConflictError(booking.eventDate);
     }
     this.bookings.push(booking);
     return booking;

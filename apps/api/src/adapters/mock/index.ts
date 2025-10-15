@@ -14,6 +14,7 @@ import type {
 import type { PaymentProvider, CheckoutSession } from '../../domains/payments/port';
 import type { EmailProvider } from '../../domains/notifications/port';
 import type { User, UserRepository } from '../../domains/identity/port';
+import { BookingConflictError } from '../../domains/booking/errors';
 import bcrypt from 'bcryptjs';
 
 // In-memory storage
@@ -300,7 +301,7 @@ export class MockBookingRepository implements BookingRepository {
 
     // Enforce unique by date
     if (bookingsByDate.has(dateKey)) {
-      throw new Error(`Date ${dateKey} is already booked`);
+      throw new BookingConflictError(dateKey);
     }
 
     bookings.set(booking.id, booking);
