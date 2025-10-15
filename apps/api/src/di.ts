@@ -26,6 +26,7 @@ import {
 } from './adapters/prisma';
 import { StripePaymentAdapter } from './adapters/stripe.adapter';
 import { PostmarkMailAdapter } from './adapters/postmark.adapter';
+import { GoogleCalendarAdapter } from './adapters/gcal.adapter';
 import { logger } from './core/logger';
 
 export interface Container {
@@ -122,9 +123,19 @@ export function buildContainer(config: Config): Container {
     fromEmail: config.POSTMARK_FROM_EMAIL || 'bookings@example.com',
   });
 
-  // For now, use mock adapters for services not yet implemented
-  const mockAdapters = buildMockAdapters();
-  const calendarProvider = mockAdapters.calendarProvider; // TODO: Implement GoogleCalendarAdapter
+  // Build Google Calendar adapter (or fallback to mock if creds missing)
+  let calendarProvider;
+  if (config.GOOGLE_CALENDAR_ID && config.GOOGLE_SERVICE_ACCOUNT_JSON_BASE64) {
+    logger.info('📅 Using Google Calendar adapter');
+    calendarProvider = new GoogleCalendarAdapter({
+      calendarId: config.GOOGLE_CALENDAR_ID,
+      serviceAccountJsonBase64: config.GOOGLE_SERVICE_ACCOUNT_JSON_BASE64,
+    });
+  } else {
+    logger.warn('⚠️  Google Calendar credentials not configured; using mock calendar (all dates available)');
+    const mockAdapters = buildMockAdapters();
+    calendarProvider = mockAdapters.calendarProvider;
+  }
 
   // Build domain services
   const catalogService = new CatalogService(catalogRepo);

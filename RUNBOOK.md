@@ -131,6 +131,106 @@ Each email is saved with a timestamp and recipient filename. Check the API logs 
    - Check your Postmark dashboard → Activity for sent emails
    - Verify delivery to the customer email
 
+## Google Calendar Integration
+
+### Setup for Production
+
+The API uses Google Calendar's **freeBusy API** to check date availability. Results are cached for 60 seconds to minimize API calls.
+
+**Requirements:**
+- Google Cloud project with Calendar API enabled
+- Service account with calendar read access
+- Calendar shared with the service account
+
+### Step-by-Step Setup
+
+1. **Create a Google Cloud Project:**
+   - Go to https://console.cloud.google.com/
+   - Create a new project (or use an existing one)
+
+2. **Enable the Google Calendar API:**
+   - In the Cloud Console, go to **APIs & Services** → **Library**
+   - Search for "Google Calendar API"
+   - Click **Enable**
+
+3. **Create a Service Account:**
+   - Go to **IAM & Admin** → **Service Accounts**
+   - Click **Create Service Account**
+   - Give it a name (e.g., "Elope Calendar Reader")
+   - Click **Create and Continue**
+   - Skip the optional permissions
+   - Click **Done**
+
+4. **Generate Service Account Key:**
+   - Click on your newly created service account
+   - Go to the **Keys** tab
+   - Click **Add Key** → **Create new key**
+   - Choose **JSON** format
+   - Download the JSON file (keep it secure!)
+
+5. **Encode the Service Account JSON:**
+   ```bash
+   # macOS/Linux:
+   cat service-account.json | base64
+
+   # Copy the output and add to .env:
+   GOOGLE_SERVICE_ACCOUNT_JSON_BASE64=<base64-encoded-json>
+   ```
+
+6. **Share Your Calendar:**
+   - Open Google Calendar (https://calendar.google.com)
+   - Find the calendar you want to integrate
+   - Click the three dots → **Settings and sharing**
+   - Scroll to **Share with specific people**
+   - Click **Add people**
+   - Paste the service account email (from the JSON file, looks like: `xxx@xxx.iam.gserviceaccount.com`)
+   - Set permission to **See only free/busy (hide details)**
+   - Click **Send**
+
+7. **Get Your Calendar ID:**
+   - In the same calendar settings page
+   - Scroll to **Integrate calendar**
+   - Copy the **Calendar ID** (usually looks like: `your-email@gmail.com` or `xxxxx@group.calendar.google.com`)
+   - Add it to `apps/api/.env`:
+     ```
+     GOOGLE_CALENDAR_ID=your-calendar-id@gmail.com
+     ```
+
+### Dev Mode - Mock Calendar Fallback
+
+**In real mode without Google Calendar credentials**, a mock calendar adapter is used (all dates return as available):
+
+```bash
+# Leave credentials empty for mock fallback
+GOOGLE_CALENDAR_ID=
+GOOGLE_SERVICE_ACCOUNT_JSON_BASE64=
+```
+
+The API will log a warning on startup and gracefully degrade to the mock behavior.
+
+### Testing Calendar Integration
+
+1. **With mock calendar (no credentials):**
+   - All dates will show as available
+   - API logs: `⚠️  Google Calendar credentials not configured; using mock calendar`
+
+2. **With Google Calendar (credentials set):**
+   - Create an event in your Google Calendar
+   - Query the availability API for that date:
+     ```bash
+     curl http://localhost:3001/v1/availability/check/2025-10-20
+     # Should return available: false if the date has events
+     ```
+   - Check API logs for successful freeBusy API calls
+   - Results are cached for 60 seconds
+
+### Troubleshooting
+
+- **401 Unauthorized:** Check service account JSON is valid and base64 encoded correctly
+- **403 Forbidden:** Ensure Calendar API is enabled in Google Cloud Console
+- **404 Not Found:** Verify calendar is shared with the service account email
+- **All dates showing available:** Check GOOGLE_CALENDAR_ID matches the shared calendar
+
 ## Production checks
 
 ### Health endpoints
