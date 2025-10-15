@@ -30,6 +30,9 @@ export interface Container {
     adminPackages: AdminPackagesController;
     dev?: DevController;
   };
+  services: {
+    identity: IdentityService;
+  };
 }
 
 export function buildContainer(config: Config): Container {
@@ -67,7 +70,11 @@ export function buildContainer(config: Config): Container {
       dev: new DevController(bookingService, adapters.catalogRepo),
     };
 
-    return { controllers };
+    const services = {
+      identity: identityService,
+    };
+
+    return { controllers, services };
   }
 
   // Real adapters mode

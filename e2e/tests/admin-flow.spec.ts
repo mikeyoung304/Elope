@@ -32,12 +32,11 @@ test.describe('Admin Flow', () => {
     await page.fill('#password', 'admin123');
 
     // 3. Click login button and wait for navigation
-    await Promise.all([
-      page.waitForURL('/admin', { timeout: 10000 }),
-      page.getByRole('button', { name: /Login/i }).click(),
-    ]);
+    await page.getByRole('button', { name: /Login/i }).click();
+    await page.waitForURL('/admin', { timeout: 10000 });
 
-    // 4. Verify we're on admin dashboard
+    // 4. Wait for dashboard to fully load
+    await page.waitForLoadState('networkidle');
 
     // 5. Verify dashboard loads with heading
     await expect(page.getByRole('heading', { name: /Admin Dashboard/i })).toBeVisible();
@@ -59,10 +58,9 @@ test.describe('Admin Flow', () => {
     await page.goto('/admin/login');
     await page.fill('#email', 'admin@elope.com');
     await page.fill('#password', 'admin123');
-    await Promise.all([
-      page.waitForURL('/admin', { timeout: 10000 }),
-      page.getByRole('button', { name: /Login/i }).click(),
-    ]);
+    await page.getByRole('button', { name: /Login/i }).click();
+    await page.waitForURL('/admin', { timeout: 10000 });
+    await page.waitForLoadState('networkidle');
 
     // 1. Click "Packages" tab
     await page.getByRole('button', { name: 'Packages' }).click();
@@ -155,10 +153,9 @@ test.describe('Admin Flow', () => {
     await page.goto('/admin/login');
     await page.fill('#email', 'admin@elope.com');
     await page.fill('#password', 'admin123');
-    await Promise.all([
-      page.waitForURL('/admin', { timeout: 10000 }),
-      page.getByRole('button', { name: /Login/i }).click(),
-    ]);
+    await page.getByRole('button', { name: /Login/i }).click();
+    await page.waitForURL('/admin', { timeout: 10000 });
+    await page.waitForLoadState('networkidle');
 
     // 1. Click "Blackouts" tab
     await page.getByRole('button', { name: 'Blackouts' }).click();
@@ -190,10 +187,9 @@ test.describe('Admin Flow', () => {
     await page.goto('/admin/login');
     await page.fill('#email', 'admin@elope.com');
     await page.fill('#password', 'admin123');
-    await Promise.all([
-      page.waitForURL('/admin', { timeout: 10000 }),
-      page.getByRole('button', { name: /Login/i }).click(),
-    ]);
+    await page.getByRole('button', { name: /Login/i }).click();
+    await page.waitForURL('/admin', { timeout: 10000 });
+    await page.waitForLoadState('networkidle');
 
     // Bookings tab should be active by default
     await expect(page.getByRole('heading', { name: /Bookings/i })).toBeVisible();
@@ -213,10 +209,9 @@ test.describe('Admin Flow', () => {
     await page.goto('/admin/login');
     await page.fill('#email', 'admin@elope.com');
     await page.fill('#password', 'admin123');
-    await Promise.all([
-      page.waitForURL('/admin', { timeout: 10000 }),
-      page.getByRole('button', { name: /Login/i }).click(),
-    ]);
+    await page.getByRole('button', { name: /Login/i }).click();
+    await page.waitForURL('/admin', { timeout: 10000 });
+    await page.waitForLoadState('networkidle');
 
     // Click logout button
     await page.getByRole('button', { name: /Logout/i }).click();

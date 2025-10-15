@@ -29,17 +29,16 @@ test.describe('Booking Flow', () => {
     await expect(page.locator('#packages')).toBeInViewport();
 
     // 3. Wait for packages to load (API call completes)
-    // The loading state shows "Loading packages..." text
-    await expect(page.getByText('Loading packages...')).toBeHidden({ timeout: 10000 });
+    await page.waitForLoadState('networkidle');
 
-    // Click on the first package card
-    // The catalog grid wraps each package in a Link component
+    // Wait for packages to be rendered
     const firstPackageLink = page.locator('a[href*="/package/"]').first();
     await expect(firstPackageLink).toBeVisible({ timeout: 10000 });
     await firstPackageLink.click();
 
     // 4. Verify package details page loaded
     await expect(page).toHaveURL(/\/package\/.+/);
+    await page.waitForLoadState('networkidle');
 
     // Verify package title and details are visible
     await expect(page.locator('h1').first()).toBeVisible();
@@ -51,12 +50,12 @@ test.describe('Booking Flow', () => {
 
     // Find and click an available date in the calendar
     // react-day-picker uses button elements for selectable dates
-    // We'll look for a button that's not disabled and click it
     const dateButton = page.locator('.rdp-day').filter({ hasNot: page.locator('.rdp-day_disabled') }).first();
+    await expect(dateButton).toBeVisible();
     await dateButton.click();
 
-    // Wait for availability check to complete
-    await page.waitForTimeout(1000);
+    // Wait for availability check API call to complete
+    await page.waitForLoadState('networkidle');
 
     // Verify date was selected (should show blue background)
     await expect(page.locator('.rdp-day_selected')).toBeVisible();
@@ -82,6 +81,7 @@ test.describe('Booking Flow', () => {
     // 9. Verify redirect to Success page
     // In mock mode, should redirect to /success?session_id=mock_xxx
     await expect(page).toHaveURL(/\/success\?session_id=/);
+    await page.waitForLoadState('networkidle');
 
     // Verify success page loaded
     await expect(page.locator('h1')).toContainText(/Almost There|Booking Confirmed/i);
@@ -112,13 +112,13 @@ test.describe('Booking Flow', () => {
   test('validation prevents checkout without required fields', async ({ page }) => {
     // Navigate to a package page
     await page.goto('/');
+    await page.waitForLoadState('networkidle');
 
-    // Wait for packages to load
-    await expect(page.getByText('Loading packages...')).toBeHidden({ timeout: 10000 });
-
+    // Wait for packages to render
     const firstPackageLink = page.locator('a[href*="/package/"]').first();
     await expect(firstPackageLink).toBeVisible({ timeout: 10000 });
     await firstPackageLink.click();
+    await page.waitForLoadState('networkidle');
 
     // Verify checkout button is disabled without date and contact info
     const checkoutButton = page.getByRole('button', { name: /Select a date/i });
@@ -126,8 +126,9 @@ test.describe('Booking Flow', () => {
 
     // Select a date
     const dateButton = page.locator('.rdp-day').filter({ hasNot: page.locator('.rdp-day_disabled') }).first();
+    await expect(dateButton).toBeVisible();
     await dateButton.click();
-    await page.waitForTimeout(1000);
+    await page.waitForLoadState('networkidle');
 
     // Button should now ask for details
     await expect(page.getByRole('button', { name: /Enter your details/i })).toBeDisabled();

@@ -76,7 +76,7 @@ export function createApp(config: Config): express.Application {
 
   // Mount v1 router
   const container = buildContainer(config);
-  createV1Router(container.controllers, app);
+  createV1Router(container.controllers, container.services.identity, app);
 
   // Mount dev routes (mock mode only)
   if (config.ADAPTERS_PRESET === 'mock' && container.controllers.dev) {
