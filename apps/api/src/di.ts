@@ -17,6 +17,14 @@ import { BlackoutsController } from './http/v1/blackouts.http';
 import { AdminPackagesController } from './http/v1/admin-packages.http';
 import { DevController } from './http/v1/dev.http';
 import { buildMockAdapters } from './adapters/mock';
+import { PrismaClient } from './generated/prisma';
+import {
+  PrismaCatalogRepository,
+  PrismaBookingRepository,
+  PrismaBlackoutRepository,
+  PrismaUserRepository,
+} from './adapters/prisma';
+import { StripePaymentAdapter } from './adapters/stripe.adapter';
 import { logger } from './core/logger';
 
 export interface Container {
@@ -63,7 +71,7 @@ export function buildContainer(config: Config): Container {
       packages: new PackagesController(catalogService),
       availability: new AvailabilityController(availabilityService),
       bookings: new BookingsController(bookingService),
-      webhooks: new WebhooksController(),
+      webhooks: new WebhooksController(adapters.paymentProvider, bookingService),
       admin: new AdminController(identityService, bookingService),
       blackouts: new BlackoutsController(adapters.blackoutRepo),
       adminPackages: new AdminPackagesController(catalogService),
@@ -78,13 +86,65 @@ export function buildContainer(config: Config): Container {
   }
 
   // Real adapters mode
+  logger.info('🚀 Using REAL adapters with Prisma + PostgreSQL + Stripe');
+
   if (!config.DATABASE_URL) {
     throw new Error('DATABASE_URL required for real adapters mode');
   }
-  if (!config.STRIPE_SECRET_KEY) {
-    throw new Error('STRIPE_SECRET_KEY required for real adapters mode');
+
+  // Initialize Prisma Client
+  const prisma = new PrismaClient({
+    log: ['error', 'warn'],
+  });
+
+  // Build real repository adapters
+  const catalogRepo = new PrismaCatalogRepository(prisma);
+  const bookingRepo = new PrismaBookingRepository(prisma);
+  const blackoutRepo = new PrismaBlackoutRepository(prisma);
+  const userRepo = new PrismaUserRepository(prisma);
+
+  // Build Stripe payment adapter
+  if (!config.STRIPE_SECRET_KEY || !config.STRIPE_WEBHOOK_SECRET) {
+    throw new Error('STRIPE_SECRET_KEY and STRIPE_WEBHOOK_SECRET required for real adapters mode');
   }
 
-  // TODO: Implement real adapters
-  throw new Error('Real adapters not yet implemented');
+  const paymentProvider = new StripePaymentAdapter({
+    secretKey: config.STRIPE_SECRET_KEY,
+    webhookSecret: config.STRIPE_WEBHOOK_SECRET,
+    successUrl: config.STRIPE_SUCCESS_URL || 'http://localhost:5173/success',
+    cancelUrl: config.STRIPE_CANCEL_URL || 'http://localhost:5173',
+  });
+
+  // For now, use mock adapters for services not yet implemented
+  const mockAdapters = buildMockAdapters();
+  const calendarProvider = mockAdapters.calendarProvider; // TODO: Implement GoogleCalendarAdapter
+  // const emailProvider = mockAdapters.emailProvider; // TODO: Implement PostmarkAdapter
+
+  // Build domain services
+  const catalogService = new CatalogService(catalogRepo);
+  const availabilityService = new AvailabilityService(
+    calendarProvider,
+    blackoutRepo,
+    bookingRepo
+  );
+  const bookingService = new BookingService(bookingRepo, catalogRepo, eventEmitter);
+  const identityService = new IdentityService(userRepo, config.JWT_SECRET);
+
+  // Build controllers
+  const controllers = {
+    packages: new PackagesController(catalogService),
+    availability: new AvailabilityController(availabilityService),
+    bookings: new BookingsController(bookingService),
+    webhooks: new WebhooksController(paymentProvider, bookingService),
+    admin: new AdminController(identityService, bookingService),
+    blackouts: new BlackoutsController(blackoutRepo),
+    adminPackages: new AdminPackagesController(catalogService),
+    // No dev controller in real mode
+  };
+
+  const services = {
+    identity: identityService,
+  };
+
+  return { controllers, services };
 }

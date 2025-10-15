@@ -1,0 +1,91 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// Wedding package catalog
+model Package {
+  id          String   @id @default(cuid())
+  slug        String   @unique
+  title       String
+  description String
+  priceCents  Int
+  photoUrl    String?
+  addOns      AddOn[]
+  bookings    Booking[]
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("packages")
+}
+
+// Add-ons for packages
+model AddOn {
+  id         String   @id @default(cuid())
+  packageId  String
+  package    Package  @relation(fields: [packageId], references: [id], onDelete: Cascade)
+  title      String
+  priceCents Int
+  photoUrl   String?
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@index([packageId])
+  @@map("addons")
+}
+
+// Wedding bookings
+model Booking {
+  id         String        @id @default(cuid())
+  packageId  String
+  package    Package       @relation(fields: [packageId], references: [id])
+  coupleName String
+  email      String
+  phone      String?
+  eventDate  DateTime      @unique @db.Date
+  addOnIds   String[]
+  totalCents Int
+  status     BookingStatus @default(PAID)
+  createdAt  DateTime      @default(now())
+  updatedAt  DateTime      @updatedAt
+
+  @@index([packageId])
+  @@index([email])
+  @@map("bookings")
+}
+
+enum BookingStatus {
+  PAID
+  REFUNDED
+  CANCELED
+}
+
+// Blackout dates (unavailable dates)
+model BlackoutDate {
+  id        String   @id @default(cuid())
+  date      DateTime @unique @db.Date
+  reason    String?
+  createdAt DateTime @default(now())
+
+  @@map("blackout_dates")
+}
+
+// Admin users
+model AdminUser {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  passwordHash String
+  role         String   @default("admin")
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@map("admin_users")
+}

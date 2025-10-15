@@ -28,10 +28,19 @@ export function createApp(config: Config): express.Application {
   );
 
   // Body parsing
+  // IMPORTANT: Stripe webhook needs raw body for signature verification
+  // Apply raw body parser to webhook endpoint BEFORE json() middleware
+  app.use(
+    '/v1/webhooks/stripe',
+    express.raw({ type: 'application/json' }),
+    requestLogger
+  );
+
+  // Apply JSON parsing to all other routes
   app.use(express.json());
   app.use(express.urlencoded({ extended: true }));
 
-  // Request ID + logging middleware
+  // Request ID + logging middleware (for non-webhook routes)
   app.use(requestLogger);
 
   // Health check endpoint

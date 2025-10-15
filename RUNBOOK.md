@@ -21,6 +21,70 @@ pnpm -C apps/web run dev
 4. Verify Postmark domain and sender.
 5. Share Google Calendar with service account.
 
+## Stripe Local Testing
+
+### Prerequisites
+
+1. **Get Stripe test keys:**
+   - Go to https://dashboard.stripe.com/test/apikeys
+   - Copy your **Secret key** (starts with `sk_test_`)
+   - Add it to `apps/api/.env`:
+     ```
+     STRIPE_SECRET_KEY=sk_test_xxx
+     ```
+
+2. **Install Stripe CLI:**
+   ```bash
+   brew install stripe/stripe-cli/stripe
+   # or download from https://stripe.com/docs/stripe-cli
+   ```
+
+3. **Login to Stripe:**
+   ```bash
+   stripe login
+   ```
+
+### Testing Webhooks Locally
+
+1. **Start the webhook forwarder:**
+   ```bash
+   stripe listen --forward-to localhost:3001/v1/webhooks/stripe
+   ```
+
+   This will output a webhook signing secret like `whsec_xxx...`
+
+2. **Update your `.env`:**
+   ```
+   STRIPE_WEBHOOK_SECRET=whsec_xxx...
+   ```
+
+3. **Restart the API:**
+   ```bash
+   pnpm -C apps/api run dev:real
+   ```
+
+4. **Test a checkout:**
+   - Use Stripe test card: `4242 4242 4242 4242`
+   - Any future date, any CVC, any ZIP
+   - Complete the payment flow
+   - The webhook will be forwarded to your local API
+
+5. **Verify the booking:**
+   ```bash
+   curl http://localhost:3001/v1/admin/bookings
+   ```
+
+### Stripe CLI Webhook Testing
+
+You can also trigger test webhooks manually:
+
+```bash
+# Simulate a successful checkout
+stripe trigger checkout.session.completed
+```
+
+**Note:** Manual triggers won't include real booking metadata. Use the full checkout flow for realistic testing.
+
 ## Production checks
 
 ### Health endpoints
