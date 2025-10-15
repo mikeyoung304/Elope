@@ -11,6 +11,7 @@ import type { BookingsController } from './bookings.http';
 import type { WebhooksController } from './webhooks.http';
 import type { AdminController } from './admin.http';
 import type { BlackoutsController } from './blackouts.http';
+import type { AdminPackagesController } from './admin-packages.http';
 
 interface Controllers {
   packages: PackagesController;
@@ -19,6 +20,7 @@ interface Controllers {
   webhooks: WebhooksController;
   admin: AdminController;
   blackouts: BlackoutsController;
+  adminPackages: AdminPackagesController;
 }
 
 export function createV1Router(controllers: Controllers, app: Application): void {
@@ -73,6 +75,42 @@ export function createV1Router(controllers: Controllers, app: Application): void
       // TODO: Add authentication middleware
       const data = await controllers.blackouts.createBlackout(body);
       return { status: 200 as const, body: data };
+    },
+
+    adminCreatePackage: async ({ body }: { body: { slug: string; title: string; description: string; priceCents: number; photoUrl?: string } }) => {
+      // TODO: Add authentication middleware
+      const data = await controllers.adminPackages.createPackage(body);
+      return { status: 200 as const, body: data };
+    },
+
+    adminUpdatePackage: async ({ params, body }: { params: { id: string }; body: { slug?: string; title?: string; description?: string; priceCents?: number; photoUrl?: string } }) => {
+      // TODO: Add authentication middleware
+      const data = await controllers.adminPackages.updatePackage(params.id, body);
+      return { status: 200 as const, body: data };
+    },
+
+    adminDeletePackage: async ({ params }: { params: { id: string } }) => {
+      // TODO: Add authentication middleware
+      await controllers.adminPackages.deletePackage(params.id);
+      return { status: 204 as const, body: undefined };
+    },
+
+    adminCreateAddOn: async ({ params, body }: { params: { packageId: string }; body: { packageId: string; title: string; priceCents: number; photoUrl?: string } }) => {
+      // TODO: Add authentication middleware
+      const data = await controllers.adminPackages.createAddOn(params.packageId, body);
+      return { status: 200 as const, body: data };
+    },
+
+    adminUpdateAddOn: async ({ params, body }: { params: { id: string }; body: { packageId?: string; title?: string; priceCents?: number; photoUrl?: string } }) => {
+      // TODO: Add authentication middleware
+      const data = await controllers.adminPackages.updateAddOn(params.id, body);
+      return { status: 200 as const, body: data };
+    },
+
+    adminDeleteAddOn: async ({ params }: { params: { id: string } }) => {
+      // TODO: Add authentication middleware
+      await controllers.adminPackages.deleteAddOn(params.id);
+      return { status: 204 as const, body: undefined };
     },
   } as any), app);
 }

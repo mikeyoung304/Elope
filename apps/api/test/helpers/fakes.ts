@@ -61,8 +61,104 @@ export class FakeCatalogRepository implements CatalogRepository {
     return this.packages.find((p) => p.slug === slug) || null;
   }
 
+  async getPackageById(id: string): Promise<Package | null> {
+    return this.packages.find((p) => p.id === id) || null;
+  }
+
   async getAddOnsByPackageId(packageId: string): Promise<AddOn[]> {
     return this.addOns.filter((a) => a.packageId === packageId);
+  }
+
+  async createPackage(data: {
+    slug: string;
+    title: string;
+    description: string;
+    priceCents: number;
+    photoUrl?: string;
+  }): Promise<Package> {
+    const pkg: Package = {
+      id: `pkg_${Date.now()}_${Math.random()}`,
+      ...data,
+    };
+    this.packages.push(pkg);
+    return pkg;
+  }
+
+  async updatePackage(
+    id: string,
+    data: {
+      slug?: string;
+      title?: string;
+      description?: string;
+      priceCents?: number;
+      photoUrl?: string;
+    }
+  ): Promise<Package> {
+    const index = this.packages.findIndex((p) => p.id === id);
+    if (index === -1) {
+      throw new Error(`Package with id "${id}" not found`);
+    }
+
+    const updated: Package = {
+      ...this.packages[index],
+      ...data,
+    };
+    this.packages[index] = updated;
+    return updated;
+  }
+
+  async deletePackage(id: string): Promise<void> {
+    const index = this.packages.findIndex((p) => p.id === id);
+    if (index === -1) {
+      throw new Error(`Package with id "${id}" not found`);
+    }
+    this.packages.splice(index, 1);
+    // Also delete associated add-ons
+    this.addOns = this.addOns.filter((a) => a.packageId !== id);
+  }
+
+  async createAddOn(data: {
+    packageId: string;
+    title: string;
+    priceCents: number;
+    photoUrl?: string;
+  }): Promise<AddOn> {
+    const addOn: AddOn = {
+      id: `addon_${Date.now()}_${Math.random()}`,
+      ...data,
+    };
+    this.addOns.push(addOn);
+    return addOn;
+  }
+
+  async updateAddOn(
+    id: string,
+    data: {
+      packageId?: string;
+      title?: string;
+      priceCents?: number;
+      photoUrl?: string;
+    }
+  ): Promise<AddOn> {
+    const index = this.addOns.findIndex((a) => a.id === id);
+    if (index === -1) {
+      throw new Error(`AddOn with id "${id}" not found`);
+    }
+
+    const updated: AddOn = {
+      ...this.addOns[index],
+      ...data,
+    };
+    this.addOns[index] = updated;
+    return updated;
+  }
+
+  async deleteAddOn(id: string): Promise<void> {
+    const index = this.addOns.findIndex((a) => a.id === id);
+    if (index === -1) {
+      throw new Error(`AddOn with id "${id}" not found`);
+    }
+    this.addOns.splice(index, 1);
   }
 
   // Test helpers

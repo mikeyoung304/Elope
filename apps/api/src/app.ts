@@ -40,11 +40,12 @@ export function createApp(config: Config): express.Application {
   });
 
   // Readiness check endpoint
-  app.get('/ready', (_req, res) => {
+  app.get('/ready', (_req, res): void => {
     const mode = config.ADAPTERS_PRESET;
 
     if (mode === 'mock') {
-      return res.json({ ok: true, mode: 'mock' });
+      res.json({ ok: true, mode: 'mock' });
+      return;
     }
 
     // Real mode: verify required env vars are present
@@ -66,7 +67,8 @@ export function createApp(config: Config): express.Application {
     }
 
     if (missing.length > 0) {
-      return res.status(503).json({ ok: false, missing });
+      res.status(503).json({ ok: false, missing });
+      return;
     }
 
     res.json({ ok: true, mode: 'real' });

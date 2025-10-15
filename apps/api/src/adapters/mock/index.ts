@@ -34,18 +34,54 @@ function seedData(): void {
     id: 'pkg_basic',
     slug: 'basic-elopement',
     title: 'Basic Elopement',
-    description: 'Simple, intimate ceremony with professional photography',
-    priceCents: 100000, // $1,000
-    photoUrl: '/images/basic.jpg',
+    description: 'Simple, intimate ceremony with professional photography and officiant',
+    priceCents: 99900, // $999
+    photoUrl: 'https://images.unsplash.com/photo-1519741497674-611481863552?w=800&h=600&fit=crop',
   });
 
   packages.set('pkg_micro', {
     id: 'pkg_micro',
     slug: 'micro-ceremony',
     title: 'Micro Ceremony',
-    description: 'Intimate micro-wedding with up to 10 guests',
-    priceCents: 250000, // $2,500
-    photoUrl: '/images/micro.jpg',
+    description: 'Intimate micro-wedding with up to 10 guests, photography, and champagne toast',
+    priceCents: 249900, // $2,499
+    photoUrl: 'https://images.unsplash.com/photo-1583939003579-730e3918a45a?w=800&h=600&fit=crop',
+  });
+
+  packages.set('pkg_garden', {
+    id: 'pkg_garden',
+    slug: 'garden-romance',
+    title: 'Garden Romance',
+    description: 'Outdoor garden ceremony with floral arch, photography, and reception for up to 20 guests',
+    priceCents: 449900, // $4,499
+    photoUrl: 'https://images.unsplash.com/photo-1464366400600-7168b8af9bc3?w=800&h=600&fit=crop',
+  });
+
+  packages.set('pkg_luxury', {
+    id: 'pkg_luxury',
+    slug: 'luxury-escape',
+    title: 'Luxury Escape',
+    description: 'Premium all-inclusive experience with venue, catering, photography, videography, and coordinator',
+    priceCents: 899900, // $8,999
+    photoUrl: 'https://images.unsplash.com/photo-1511285560929-80b456fea0bc?w=800&h=600&fit=crop',
+  });
+
+  packages.set('pkg_destination', {
+    id: 'pkg_destination',
+    slug: 'destination-bliss',
+    title: 'Destination Bliss',
+    description: 'Beachfront or mountain ceremony with travel coordination, photography, and celebration dinner',
+    priceCents: 599900, // $5,999
+    photoUrl: 'https://images.unsplash.com/photo-1537633552985-df8429e8048b?w=800&h=600&fit=crop',
+  });
+
+  packages.set('pkg_courthouse', {
+    id: 'pkg_courthouse',
+    slug: 'courthouse-chic',
+    title: 'Courthouse Chic',
+    description: 'Stylish courthouse wedding with photography, marriage license assistance, and celebration lunch',
+    priceCents: 79900, // $799
+    photoUrl: 'https://images.unsplash.com/photo-1606800052052-a08af7148866?w=800&h=600&fit=crop',
   });
 
   // Add-ons
@@ -54,7 +90,7 @@ function seedData(): void {
     packageId: 'pkg_basic',
     title: 'Video Recording',
     priceCents: 50000, // $500
-    photoUrl: '/images/video.jpg',
+    photoUrl: 'https://images.unsplash.com/photo-1492691527719-9d1e07e534b4?w=400&h=300&fit=crop',
   });
 
   addOns.set('addon_flowers', {
@@ -62,7 +98,7 @@ function seedData(): void {
     packageId: 'pkg_basic',
     title: 'Floral Arrangement',
     priceCents: 15000, // $150
-    photoUrl: '/images/flowers.jpg',
+    photoUrl: 'https://images.unsplash.com/photo-1490750967868-88aa4486c946?w=400&h=300&fit=crop',
   });
 
   addOns.set('addon_makeup', {
@@ -70,7 +106,31 @@ function seedData(): void {
     packageId: 'pkg_micro',
     title: 'Hair & Makeup',
     priceCents: 30000, // $300
-    photoUrl: '/images/makeup.jpg',
+    photoUrl: 'https://images.unsplash.com/photo-1487412947147-5cebf100ffc2?w=400&h=300&fit=crop',
+  });
+
+  addOns.set('addon_music', {
+    id: 'addon_music',
+    packageId: 'pkg_garden',
+    title: 'Live Music (Acoustic)',
+    priceCents: 75000, // $750
+    photoUrl: 'https://images.unsplash.com/photo-1511379938547-c1f69419868d?w=400&h=300&fit=crop',
+  });
+
+  addOns.set('addon_cake', {
+    id: 'addon_cake',
+    packageId: 'pkg_garden',
+    title: 'Custom Wedding Cake',
+    priceCents: 35000, // $350
+    photoUrl: 'https://images.unsplash.com/photo-1535254973040-607b474cb50d?w=400&h=300&fit=crop',
+  });
+
+  addOns.set('addon_album', {
+    id: 'addon_album',
+    packageId: 'pkg_luxury',
+    title: 'Premium Photo Album',
+    priceCents: 45000, // $450
+    photoUrl: 'https://images.unsplash.com/photo-1512428813834-c702c7702b78?w=400&h=300&fit=crop',
   });
 
   // Admin user
@@ -82,7 +142,7 @@ function seedData(): void {
     role: 'admin',
   });
 
-  console.log('✅ Mock data seeded: 2 packages, 3 add-ons, 1 admin user');
+  console.log('✅ Mock data seeded: 6 packages, 6 add-ons, 1 admin user');
 }
 
 // Initialize seed data
@@ -99,8 +159,137 @@ export class MockCatalogRepository implements CatalogRepository {
     return pkg || null;
   }
 
+  async getPackageById(id: string): Promise<Package | null> {
+    return packages.get(id) || null;
+  }
+
   async getAddOnsByPackageId(packageId: string): Promise<AddOn[]> {
     return Array.from(addOns.values()).filter((a) => a.packageId === packageId);
+  }
+
+  async createPackage(data: {
+    slug: string;
+    title: string;
+    description: string;
+    priceCents: number;
+    photoUrl?: string;
+  }): Promise<Package> {
+    // Check slug uniqueness
+    const existing = await this.getPackageBySlug(data.slug);
+    if (existing) {
+      throw new Error(`Package with slug "${data.slug}" already exists`);
+    }
+
+    const pkg: Package = {
+      id: `pkg_${Date.now()}`,
+      ...data,
+    };
+    packages.set(pkg.id, pkg);
+    return pkg;
+  }
+
+  async updatePackage(
+    id: string,
+    data: {
+      slug?: string;
+      title?: string;
+      description?: string;
+      priceCents?: number;
+      photoUrl?: string;
+    }
+  ): Promise<Package> {
+    const pkg = packages.get(id);
+    if (!pkg) {
+      throw new Error(`Package with id "${id}" not found`);
+    }
+
+    // Check slug uniqueness if updating slug
+    if (data.slug && data.slug !== pkg.slug) {
+      const existing = await this.getPackageBySlug(data.slug);
+      if (existing) {
+        throw new Error(`Package with slug "${data.slug}" already exists`);
+      }
+    }
+
+    const updated: Package = {
+      ...pkg,
+      ...data,
+    };
+    packages.set(id, updated);
+    return updated;
+  }
+
+  async deletePackage(id: string): Promise<void> {
+    const pkg = packages.get(id);
+    if (!pkg) {
+      throw new Error(`Package with id "${id}" not found`);
+    }
+
+    // Also delete associated add-ons
+    const packageAddOns = Array.from(addOns.values()).filter(
+      (a) => a.packageId === id
+    );
+    packageAddOns.forEach((addOn) => addOns.delete(addOn.id));
+
+    packages.delete(id);
+  }
+
+  async createAddOn(data: {
+    packageId: string;
+    title: string;
+    priceCents: number;
+    photoUrl?: string;
+  }): Promise<AddOn> {
+    // Verify package exists
+    const pkg = packages.get(data.packageId);
+    if (!pkg) {
+      throw new Error(`Package with id "${data.packageId}" not found`);
+    }
+
+    const addOn: AddOn = {
+      id: `addon_${Date.now()}`,
+      ...data,
+    };
+    addOns.set(addOn.id, addOn);
+    return addOn;
+  }
+
+  async updateAddOn(
+    id: string,
+    data: {
+      packageId?: string;
+      title?: string;
+      priceCents?: number;
+      photoUrl?: string;
+    }
+  ): Promise<AddOn> {
+    const addOn = addOns.get(id);
+    if (!addOn) {
+      throw new Error(`AddOn with id "${id}" not found`);
+    }
+
+    // Verify package exists if updating packageId
+    if (data.packageId && data.packageId !== addOn.packageId) {
+      const pkg = packages.get(data.packageId);
+      if (!pkg) {
+        throw new Error(`Package with id "${data.packageId}" not found`);
+      }
+    }
+
+    const updated: AddOn = {
+      ...addOn,
+      ...data,
+    };
+    addOns.set(id, updated);
+    return updated;
+  }
+
+  async deleteAddOn(id: string): Promise<void> {
+    const addOn = addOns.get(id);
+    if (!addOn) {
+      throw new Error(`AddOn with id "${id}" not found`);
+    }
+    addOns.delete(id);
   }
 }
 
