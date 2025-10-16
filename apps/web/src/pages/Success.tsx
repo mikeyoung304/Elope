@@ -155,6 +155,7 @@ export function Success() {
               onClick={handleMarkAsPaid}
               disabled={isSimulating}
               className="bg-yellow-600 hover:bg-yellow-700"
+              data-testid="mock-paid"
             >
               {isSimulating ? 'Simulating...' : 'Mark as Paid (mock)'}
             </Button>

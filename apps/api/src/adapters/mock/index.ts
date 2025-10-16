@@ -430,3 +430,16 @@ export function getMockState() {
     bookings: Array.from(bookings.values()),
   };
 }
+
+/**
+ * Reset mock state to initial seeded state (E2E test determinism)
+ */
+export function resetMockState() {
+  // Clear dynamic data (bookings, blackouts, calendar)
+  bookings.clear();
+  bookingsByDate.clear();
+  blackouts.clear();
+  calendarBusyDates.clear();
+
+  console.log('🔄 Mock state reset to seed data');
+}

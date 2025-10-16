@@ -48,9 +48,9 @@ test.describe('Booking Flow', () => {
     const futureDate = new Date();
     futureDate.setDate(futureDate.getDate() + 7);
 
-    // Find and click an available date in the calendar
+    // Find and click an available date in the calendar (button inside non-disabled day cell)
     // react-day-picker uses button elements for selectable dates
-    const dateButton = page.locator('.rdp-day').filter({ hasNot: page.locator('.rdp-day_disabled') }).first();
+    const dateButton = page.locator('.rdp-day:not([data-hidden]):not([data-outside]):not(.rdp-day_disabled) button').first();
     await expect(dateButton).toBeVisible();
     await dateButton.click();
 
@@ -124,8 +124,8 @@ test.describe('Booking Flow', () => {
     const checkoutButton = page.getByRole('button', { name: /Select a date/i });
     await expect(checkoutButton).toBeDisabled();
 
-    // Select a date
-    const dateButton = page.locator('.rdp-day').filter({ hasNot: page.locator('.rdp-day_disabled') }).first();
+    // Select a date (button inside non-disabled day cell)
+    const dateButton = page.locator('.rdp-day:not([data-hidden]):not([data-outside]):not(.rdp-day_disabled) button').first();
     await expect(dateButton).toBeVisible();
     await dateButton.click();
     await page.waitForLoadState('networkidle');

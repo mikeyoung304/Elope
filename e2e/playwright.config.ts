@@ -27,13 +27,19 @@ export default defineConfig({
   // Reporter to use
   reporter: 'html',
 
+  // Expect timeout
+  expect: { timeout: 7000 },
+
   // Shared settings for all the projects below
   use: {
     // Base URL to use in actions like `await page.goto('/')`
     baseURL: 'http://localhost:3000',
 
-    // Collect trace when retrying the failed test
-    trace: 'on-first-retry',
+    // Deterministic timezone for E2E tests
+    timezoneId: 'UTC',
+
+    // Collect trace on failures and retries
+    trace: 'retain-on-failure',
 
     // Take screenshot only on failure
     screenshot: 'only-on-failure',
@@ -67,6 +73,10 @@ export default defineConfig({
     url: 'http://localhost:3000',
     reuseExistingServer: !process.env.CI,
     timeout: 120 * 1000,
-    // Defaults in api.ts handle VITE_API_URL and VITE_APP_MODE
+    env: {
+      VITE_API_URL: 'http://localhost:3001',
+      VITE_APP_MODE: 'mock',
+      VITE_E2E: '1',
+    },
   },
 });

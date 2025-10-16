@@ -5,7 +5,7 @@
 import { toUtcMidnight } from '@elope/shared';
 import type { BookingService } from '../../domains/booking/service';
 import type { CatalogRepository } from '../../domains/catalog/port';
-import { getMockState } from '../../adapters/mock';
+import { getMockState, resetMockState } from '../../adapters/mock';
 import { logger } from '../../core/logger';
 
 export class DevController {
@@ -70,5 +70,13 @@ export class DevController {
   async getDebugState() {
     logger.info('🔍 Fetching debug state');
     return getMockState();
+  }
+
+  /**
+   * Reset in-memory state to initial seed (E2E test determinism)
+   */
+  async reset(): Promise<void> {
+    logger.info('🔄 Resetting mock state');
+    resetMockState();
   }
 }

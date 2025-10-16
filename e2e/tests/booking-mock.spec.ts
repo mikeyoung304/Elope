@@ -12,6 +12,13 @@ import { test, expect } from '@playwright/test';
  * 6. Verify date becomes unavailable via API
  */
 test.describe('Mock Booking Flow', () => {
+  // Reset mock state before each test for determinism
+  test.beforeEach(async ({ page, request }) => {
+    // Reset API state
+    const resetResponse = await request.post('http://localhost:3001/v1/dev/reset');
+    expect(resetResponse.ok()).toBeTruthy();
+  });
+
   test('complete booking with add-on and verify availability', async ({ page, request }) => {
     // Step 1: Go to Home and click first package
     await page.goto('/');
@@ -26,33 +33,30 @@ test.describe('Mock Booking Flow', () => {
     // Wait for packages section to be visible
     await expect(page.locator('#packages')).toBeInViewport();
 
-    // Wait for packages to load
-    await page.waitForLoadState('networkidle');
-
     // Click first package card
     const firstPackageLink = page.locator('a[href*="/package/"]').first();
-    await expect(firstPackageLink).toBeVisible({ timeout: 10000 });
+    await expect(firstPackageLink).toBeVisible();
     await firstPackageLink.click();
 
     // Step 2: Choose a future date
     await expect(page).toHaveURL(/\/package\/.+/);
-    await page.waitForLoadState('networkidle');
 
     // Extract package slug from URL for later API check
     const url = page.url();
     const packageSlug = url.split('/package/')[1];
     expect(packageSlug).toBeTruthy();
 
-    // Click first available date in calendar
+    // Click first available date in calendar (button inside non-disabled day cell)
     const dateButton = page
-      .locator('.rdp-day')
-      .filter({ hasNot: page.locator('.rdp-day_disabled') })
+      .locator('.rdp-day:not([data-hidden]):not([data-outside]):not(.rdp-day_disabled) button')
       .first();
     await expect(dateButton).toBeVisible();
     await dateButton.click();
 
-    // Wait for availability check
-    await page.waitForLoadState('networkidle');
+    // Wait for availability check to complete
+    await page.waitForResponse(response =>
+      response.url().includes('/v1/availability') && response.status() === 200
+    );
 
     // Verify date was selected
     await expect(page.locator('.rdp-day_selected')).toBeVisible();
@@ -80,13 +84,12 @@ test.describe('Mock Booking Flow', () => {
     await page.fill('#email', 'mock-e2e@example.com');
 
     // Step 4: Click Checkout → redirected to local success (mock)
-    const checkoutButton = page.getByRole('button', { name: /Proceed to Checkout/i });
+    const checkoutButton = page.getByTestId('checkout');
     await expect(checkoutButton).toBeEnabled();
     await checkoutButton.click();
 
     // Verify redirect to success page with session_id
-    await expect(page).toHaveURL(/\/success\?session_id=mock_session_/);
-    await page.waitForLoadState('networkidle');
+    await page.waitForURL(/\/success\?session_id=mock_session_/);
 
     // Extract session ID for tracking
     const successUrl = page.url();
@@ -94,8 +97,8 @@ test.describe('Mock Booking Flow', () => {
     expect(sessionId).toContain('mock_session_');
 
     // Step 5: Click "Mark as Paid (mock)" → expect success message
-    const markPaidButton = page.getByRole('button', { name: /Mark as Paid/i });
-    await expect(markPaidButton).toBeVisible({ timeout: 5000 });
+    const markPaidButton = page.getByTestId('mock-paid');
+    await expect(markPaidButton).toBeEnabled();
     await markPaidButton.click();
 
     // Wait for booking confirmation
@@ -111,17 +114,10 @@ test.describe('Mock Booking Flow', () => {
     expect(confirmationText).toContain('booking_');
 
     // Step 6: Verify date becomes unavailable via API
-    // Calculate the date that was selected (need to construct proper YYYY-MM-DD format)
-    // For now, we'll use a date 7 days in the future which is what we clicked
-    const today = new Date();
-    const bookedDate = new Date(today);
-    bookedDate.setDate(today.getDate() + 1); // First available date
-
-    // Format as YYYY-MM-DD
-    const year = bookedDate.getFullYear();
-    const month = String(bookedDate.getMonth() + 1).padStart(2, '0');
-    const day = String(bookedDate.getDate()).padStart(2, '0');
-    const formattedDate = `${year}-${month}-${day}`;
+    // Calculate the first available date (tomorrow from today)
+    const bookedDate = new Date();
+    bookedDate.setDate(bookedDate.getDate() + 1);
+    const formattedDate = bookedDate.toISOString().split('T')[0];
 
     // Check availability via API
     const availabilityResponse = await request.get(
@@ -143,31 +139,32 @@ test.describe('Mock Booking Flow', () => {
   test('validates required fields before checkout', async ({ page }) => {
     // Navigate to first package
     await page.goto('/');
-    await page.waitForLoadState('networkidle');
 
     // Click "View Packages" button
     await page.getByRole('button', { name: /View Packages/i }).click();
 
     // Wait for packages section
     await expect(page.locator('#packages')).toBeInViewport();
-    await page.waitForLoadState('networkidle');
 
     const firstPackageLink = page.locator('a[href*="/package/"]').first();
-    await expect(firstPackageLink).toBeVisible({ timeout: 10000 });
+    await expect(firstPackageLink).toBeVisible();
     await firstPackageLink.click();
-    await page.waitForLoadState('networkidle');
+    await expect(page).toHaveURL(/\/package\/.+/);
 
     // Verify checkout button is disabled initially
     const checkoutButton = page.getByRole('button', { name: /Select a date/i });
     await expect(checkoutButton).toBeDisabled();
 
-    // Select a date
+    // Select a date (button inside non-disabled day cell)
     const dateButton = page
-      .locator('.rdp-day')
-      .filter({ hasNot: page.locator('.rdp-day_disabled') })
+      .locator('.rdp-day:not([data-hidden]):not([data-outside]):not(.rdp-day_disabled) button')
       .first();
     await dateButton.click();
-    await page.waitForLoadState('networkidle');
+
+    // Wait for availability check
+    await page.waitForResponse(response =>
+      response.url().includes('/v1/availability') && response.status() === 200
+    );
 
     // Button should now ask for details
     await expect(page.getByRole('button', { name: /Enter your details/i })).toBeDisabled();

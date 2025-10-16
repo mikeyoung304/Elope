@@ -18,6 +18,8 @@ export function PackagePage() {
 
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined);
   const [selectedAddOns, setSelectedAddOns] = useState<Set<string>>(new Set());
+  const [coupleName, setCoupleName] = useState('');
+  const [email, setEmail] = useState('');
 
   const packageData = pkg;
   const total = useBookingTotal(packageData?.priceCents || 0, packageData?.addOns || [], selectedAddOns);
@@ -35,23 +37,19 @@ export function PackagePage() {
   }
 
   const handleCheckout = async () => {
-    if (!selectedDate || !packageData) return;
+    if (!selectedDate || !packageData || !coupleName.trim() || !email.trim()) return;
 
     try {
       // Format date as YYYY-MM-DD using toUtcMidnight
       const eventDate = toUtcMidnight(selectedDate);
-
-      // For mock mode, use placeholder values
-      const email = "test@example.com";
-      const coupleName = "Test Couple";
 
       // Call createCheckout API
       const response = await api.createCheckout({
         body: {
           packageId: packageData.id,
           eventDate,
-          email,
-          coupleName,
+          email: email.trim(),
+          coupleName: coupleName.trim(),
           addOnIds: Array.from(selectedAddOns),
         },
       });
@@ -61,8 +59,8 @@ export function PackagePage() {
         const checkoutData: LastCheckout = {
           packageId: packageData.id,
           eventDate,
-          email,
-          coupleName,
+          email: email.trim(),
+          coupleName: coupleName.trim(),
           addOnIds: Array.from(selectedAddOns),
         };
         localStorage.setItem('lastCheckout', JSON.stringify(checkoutData));
@@ -118,6 +116,40 @@ export function PackagePage() {
           />
         </Card>
 
+        <Card className="p-6">
+          <h2 className="text-xl font-semibold mb-4">Your Details</h2>
+          <div className="space-y-4">
+            <div>
+              <label htmlFor="coupleName" className="block text-sm font-medium text-gray-700 mb-1">
+                Your Names
+              </label>
+              <input
+                id="coupleName"
+                type="text"
+                value={coupleName}
+                onChange={(e) => setCoupleName(e.target.value)}
+                placeholder="e.g., Sarah & Alex"
+                className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                required
+              />
+            </div>
+            <div>
+              <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
+                Email Address
+              </label>
+              <input
+                id="email"
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="your.email@example.com"
+                className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                required
+              />
+            </div>
+          </div>
+        </Card>
+
         {packageData.addOns && packageData.addOns.length > 0 && (
           <Card className="p-6">
             <h2 className="text-xl font-semibold mb-4">Add-Ons</h2>
@@ -135,10 +167,15 @@ export function PackagePage() {
           <TotalBox total={total} />
           <Button
             onClick={handleCheckout}
-            disabled={!selectedDate}
+            disabled={!selectedDate || !coupleName.trim() || !email.trim()}
             className="w-full"
+            data-testid="checkout"
           >
-            {selectedDate ? "Checkout" : "Select a date to continue"}
+            {!selectedDate
+              ? "Select a date"
+              : !coupleName.trim() || !email.trim()
+              ? "Enter your details"
+              : "Proceed to Checkout"}
           </Button>
         </div>
       </div>

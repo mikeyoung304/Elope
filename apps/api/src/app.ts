@@ -113,6 +113,19 @@ export function createApp(config: Config): express.Application {
         next(error);
       }
     });
+
+    // POST /v1/dev/reset
+    app.post('/v1/dev/reset', async (_req, res, next) => {
+      try {
+        const reqLogger = res.locals.logger || logger;
+        reqLogger.info('reset requested');
+        await container.controllers.dev!.reset();
+        reqLogger.info('reset completed');
+        res.status(200).json({ ok: true });
+      } catch (error) {
+        next(error);
+      }
+    });
   }
 
   // 404 handler (must come after all routes)

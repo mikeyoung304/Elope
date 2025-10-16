@@ -15,3 +15,11 @@ code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
     monospace;
 }
+
+/* Disable animations in E2E test mode for deterministic behavior */
+[data-e2e="1"] *,
+[data-e2e="1"] *::before,
+[data-e2e="1"] *::after {
+  transition: none !important;
+  animation: none !important;
+}
