@@ -1,10 +1,24 @@
+/**
+ * Router with lazy loading for code splitting
+ * P0/P1 Implementation
+ */
+
 import { createBrowserRouter } from "react-router-dom";
+import { lazy, Suspense } from "react";
 import { AppShell } from "./app/AppShell";
-import { Home } from "./pages/Home";
-import { Package } from "./pages/Package";
-import { Success } from "./pages/Success";
-import { AdminLogin } from "./pages/AdminLogin";
-import { Admin } from "./pages/Admin";
+import { Loading } from "./ui/Loading";
+
+// Lazy load pages for code splitting
+const Home = lazy(() => import("./pages/Home").then(m => ({ default: m.Home })));
+const Package = lazy(() => import("./pages/Package").then(m => ({ default: m.Package })));
+const Success = lazy(() => import("./pages/Success").then(m => ({ default: m.Success })));
+const AdminLogin = lazy(() => import("./pages/AdminLogin").then(m => ({ default: m.AdminLogin })));
+const Admin = lazy(() => import("./pages/Admin").then(m => ({ default: m.Admin })));
+
+// Wrapper with Suspense
+const SuspenseWrapper = ({ children }: { children: React.ReactNode }) => (
+  <Suspense fallback={<Loading label="Loading page" />}>{children}</Suspense>
+);
 
 export const router = createBrowserRouter([
   {
@@ -13,23 +27,23 @@ export const router = createBrowserRouter([
     children: [
       {
         index: true,
-        element: <Home />,
+        element: <SuspenseWrapper><Home /></SuspenseWrapper>,
       },
       {
         path: "package/:slug",
-        element: <Package />,
+        element: <SuspenseWrapper><Package /></SuspenseWrapper>,
       },
       {
         path: "success",
-        element: <Success />,
+        element: <SuspenseWrapper><Success /></SuspenseWrapper>,
       },
       {
         path: "admin/login",
-        element: <AdminLogin />,
+        element: <SuspenseWrapper><AdminLogin /></SuspenseWrapper>,
       },
       {
         path: "admin",
-        element: <Admin />,
+        element: <SuspenseWrapper><Admin /></SuspenseWrapper>,
       },
     ],
   },

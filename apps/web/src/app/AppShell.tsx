@@ -1,5 +1,11 @@
+/**
+ * AppShell with accessibility enhancements
+ * P0/P1: Skip link, ARIA landmarks, focus management
+ */
+
 import { Outlet, Link } from "react-router-dom";
 import { Container } from "../ui/Container";
+import "../styles/a11y.css";
 
 const appMode = import.meta.env.VITE_APP_MODE;
 const isE2EMode = import.meta.env.VITE_E2E === "1";
@@ -9,6 +15,11 @@ export function AppShell() {
 
   return (
     <div className="min-h-screen bg-gray-50" data-e2e={isE2EMode ? "1" : undefined}>
+      {/* Skip link for keyboard navigation */}
+      <a className="skip-link" href="#main">
+        Skip to content
+      </a>
+
       {isMockMode && (
         <div className="bg-yellow-100 border-b border-yellow-200 py-2">
           <Container>
@@ -25,7 +36,7 @@ export function AppShell() {
             <Link to="/" className="text-2xl font-bold text-blue-600">
               Elope
             </Link>
-            <nav className="flex gap-6">
+            <nav aria-label="Primary navigation" className="flex gap-6">
               <Link to="/" className="text-gray-600 hover:text-gray-900">
                 Packages
               </Link>
@@ -40,7 +51,7 @@ export function AppShell() {
         </Container>
       </header>
 
-      <main>
+      <main id="main" tabIndex={-1}>
         <Outlet />
       </main>
 

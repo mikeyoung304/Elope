@@ -12,6 +12,7 @@ import { buildContainer } from './di';
 import { createV1Router } from './http/v1/router';
 import { errorHandler, notFoundHandler } from './http/middleware/error-handler';
 import { requestLogger } from './http/middleware/request-logger';
+import { skipIfHealth, adminLimiter } from './http/middleware/rateLimiter';
 
 export function createApp(config: Config): express.Application {
   const app = express();
@@ -26,6 +27,12 @@ export function createApp(config: Config): express.Application {
       credentials: true,
     })
   );
+
+  // Rate limiting (skip health/ready endpoints, apply globally)
+  app.use(skipIfHealth);
+
+  // Stricter rate limiting for admin routes
+  app.use('/v1/admin', adminLimiter);
 
   // Body parsing
   // IMPORTANT: Stripe webhook needs raw body for signature verification

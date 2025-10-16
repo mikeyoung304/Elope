@@ -11,81 +11,139 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-// Wedding package catalog
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  name      String?
+  role      UserRole @default(USER)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+enum UserRole {
+  USER
+  ADMIN
+}
+
+model Customer {
+  id        String    @id @default(cuid())
+  email     String?   @unique
+  phone     String?
+  name      String
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  bookings  Booking[]
+}
+
+model Venue {
+  id        String    @id @default(cuid())
+  name      String
+  address   String?
+  city      String?
+  state     String?
+  zip       String?
+  capacity  Int?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  bookings  Booking[]
+}
+
 model Package {
-  id          String   @id @default(cuid())
-  slug        String   @unique
-  title       String
-  description String
-  priceCents  Int
-  photoUrl    String?
-  addOns      AddOn[]
+  id          String         @id @default(cuid())
+  slug        String         @unique
+  name        String
+  description String?
+  basePrice   Int
+  active      Boolean        @default(true)
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+  addOns      PackageAddOn[]
   bookings    Booking[]
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-
-  @@map("packages")
 }
 
-// Add-ons for packages
 model AddOn {
-  id         String   @id @default(cuid())
-  packageId  String
-  package    Package  @relation(fields: [packageId], references: [id], onDelete: Cascade)
-  title      String
-  priceCents Int
-  photoUrl   String?
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
-
-  @@index([packageId])
-  @@map("addons")
+  id          String         @id @default(cuid())
+  slug        String         @unique
+  name        String
+  description String?
+  price       Int
+  active      Boolean        @default(true)
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+  packages    PackageAddOn[]
+  bookingRefs BookingAddOn[]
 }
 
-// Wedding bookings
+model PackageAddOn {
+  packageId String
+  addOnId   String
+  package   Package @relation(fields: [packageId], references: [id], onDelete: Cascade)
+  addOn     AddOn   @relation(fields: [addOnId], references: [id], onDelete: Cascade)
+
+  @@id([packageId, addOnId])
+}
+
 model Booking {
   id         String        @id @default(cuid())
+  customerId String
   packageId  String
-  package    Package       @relation(fields: [packageId], references: [id])
-  coupleName String
-  email      String
-  phone      String?
-  eventDate  DateTime      @unique @db.Date
-  addOnIds   String[]
-  totalCents Int
-  status     BookingStatus @default(PAID)
+  venueId    String?
+  date       DateTime
+  startTime  DateTime?
+  endTime    DateTime?
+  status     BookingStatus @default(PENDING)
+  totalPrice Int
+  notes      String?
   createdAt  DateTime      @default(now())
   updatedAt  DateTime      @updatedAt
-
-  @@index([packageId])
-  @@index([email])
-  @@map("bookings")
+  customer   Customer      @relation(fields: [customerId], references: [id])
+  package    Package       @relation(fields: [packageId], references: [id])
+  venue      Venue?        @relation(fields: [venueId], references: [id])
+  addOns     BookingAddOn[]
+  payments   Payment[]
 }
 
 enum BookingStatus {
-  PAID
-  REFUNDED
+  PENDING
+  CONFIRMED
   CANCELED
+  FULFILLED
 }
 
-// Blackout dates (unavailable dates)
+model BookingAddOn {
+  bookingId String
+  addOnId   String
+  quantity  Int     @default(1)
+  unitPrice Int
+  booking   Booking @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  addOn     AddOn   @relation(fields: [addOnId], references: [id], onDelete: Restrict)
+
+  @@id([bookingId, addOnId])
+}
+
+model Payment {
+  id          String        @id @default(cuid())
+  bookingId   String
+  amount      Int
+  currency    String        @default("USD")
+  status      PaymentStatus @default(PENDING)
+  processor   String
+  processorId String?
+  createdAt   DateTime      @default(now())
+  booking     Booking       @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+}
+
+enum PaymentStatus {
+  PENDING
+  AUTHORIZED
+  CAPTURED
+  CANCELED
+  FAILED
+}
+
 model BlackoutDate {
   id        String   @id @default(cuid())
-  date      DateTime @unique @db.Date
+  date      DateTime @unique
   reason    String?
   createdAt DateTime @default(now())
-
-  @@map("blackout_dates")
-}
-
-// Admin users
-model AdminUser {
-  id           String   @id @default(cuid())
-  email        String   @unique
-  passwordHash String
-  role         String   @default("admin")
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
-
-  @@map("admin_users")
 }

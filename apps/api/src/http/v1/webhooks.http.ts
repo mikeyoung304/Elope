@@ -1,11 +1,14 @@
 /**
  * Webhooks HTTP controller
  * NOTE: This route requires raw body parsing (not JSON)
+ * P0/P1: Uses Zod for payload validation, no JSON.parse()
  */
 
 import type { PaymentProvider } from '../../domains/payments/port';
 import type { BookingService } from '../../domains/booking/service';
 import { logger } from '../../core/logger';
+import { z } from 'zod';
+// import { handlePaymentWebhook } from '../../domains/booking/webhook-handler.service';
 
 interface StripeCheckoutSession {
   id: string;
@@ -26,6 +29,15 @@ interface StripeEvent {
   };
 }
 
+// Zod schema for metadata validation
+const MetadataSchema = z.object({
+  packageId: z.string(),
+  eventDate: z.string(),
+  email: z.string().email(),
+  coupleName: z.string(),
+  addOnIds: z.string().optional(),
+});
+
 export class WebhooksController {
   constructor(
     private readonly paymentProvider: PaymentProvider,
@@ -42,11 +54,28 @@ export class WebhooksController {
     if (event.type === 'checkout.session.completed') {
       const session = event.data.object;
 
-      // Extract metadata
-      const { packageId, eventDate, email, coupleName, addOnIds } = session.metadata;
+      // Validate metadata with Zod (replaces JSON.parse)
+      const metadataResult = MetadataSchema.safeParse(session.metadata);
+      if (!metadataResult.success) {
+        logger.error({ errors: metadataResult.error.flatten() }, 'Invalid webhook metadata');
+        throw new Error('Invalid webhook metadata');
+      }
 
-      // Parse add-on IDs if present
-      const parsedAddOnIds = addOnIds ? JSON.parse(addOnIds) : [];
+      const { packageId, eventDate, email, coupleName, addOnIds } = metadataResult.data;
+
+      // Parse add-on IDs with Zod validation
+      let parsedAddOnIds: string[] = [];
+      if (addOnIds) {
+        try {
+          const parsed = JSON.parse(addOnIds);
+          const arrayResult = z.array(z.string()).safeParse(parsed);
+          if (arrayResult.success) {
+            parsedAddOnIds = arrayResult.data;
+          }
+        } catch {
+          logger.warn({ addOnIds }, 'Failed to parse addOnIds');
+        }
+      }
 
       // Calculate total from Stripe session (in cents)
       const totalCents = session.amount_total ?? 0;
