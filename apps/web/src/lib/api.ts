@@ -6,7 +6,9 @@
 import { initClient } from "@ts-rest/core";
 import { Contracts } from "@elope/contracts";
 
-const baseUrl = import.meta.env.VITE_API_URL || "http://localhost:3001";
+// Normalize base URL (remove trailing slashes)
+const raw = import.meta.env.VITE_API_URL ?? "http://localhost:3001";
+export const baseUrl = raw.replace(/\/+$/, "");
 
 export const api = initClient(Contracts, {
   baseUrl,
@@ -21,9 +23,13 @@ export const api = initClient(Contracts, {
       }
     }
 
-    const response = await fetch(`${baseUrl}${path}`, {
+    // ts-rest provides the full URL in 'path', so use it directly
+    const response = await fetch(path, {
       method,
-      headers: authHeaders,
+      headers: {
+        ...authHeaders,
+        "Content-Type": "application/json",
+      },
       body: body ? JSON.stringify(body) : undefined,
     });
 

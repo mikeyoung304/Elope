@@ -14,8 +14,68 @@
 pnpm typecheck
 pnpm -r build
 pnpm -r lint
-pnpm -C apps/api run dev
+pnpm -C apps/api run dev        # dev (uses mock adapters by default)
+pnpm -C apps/api run dev:real   # dev with real database
 pnpm -C apps/web run dev
+```
+
+## Database Setup (Phase 2.3+)
+
+### Prerequisites
+
+Install PostgreSQL 14+. Options:
+- **Local:** `brew install postgresql@16` (macOS) or Docker
+- **Cloud:** Railway, Render, Supabase, or Neon
+
+### Initial Setup
+
+1. **Create a database:**
+   ```bash
+   createdb elope_dev
+   ```
+
+2. **Set DATABASE_URL in `apps/api/.env`:**
+   ```bash
+   DATABASE_URL="postgresql://username:password@localhost:5432/elope_dev?schema=public"
+   ```
+
+3. **Run migrations:**
+   ```bash
+   cd apps/api
+   pnpm exec prisma migrate dev
+   ```
+
+4. **Seed the database:**
+   ```bash
+   pnpm exec prisma db seed
+   ```
+   This creates:
+   - Admin user: `admin@example.com` / password: `admin123`
+   - 3 wedding packages with add-ons
+   - Sample blackout dates
+
+5. **Start API in real mode:**
+   ```bash
+   pnpm run dev:real
+   ```
+
+### Database Commands
+
+```bash
+# View data in Prisma Studio
+pnpm exec prisma studio
+
+# Generate Prisma Client after schema changes
+pnpm exec prisma generate
+
+# Create a new migration
+pnpm exec prisma migrate dev --name migration_name
+
+# Reset database (WARNING: deletes all data)
+pnpm exec prisma migrate reset
+
+# Check migration status
+pnpm exec prisma migrate status
 ```
 
 ## Env presets
@@ -24,11 +84,13 @@ pnpm -C apps/web run dev
 # apps/api
 ADAPTERS_PRESET=mock # or real
 API_PORT=3001
-CORS_ORIGIN=http://localhost:5173
+CORS_ORIGIN=http://localhost:3000
 JWT_SECRET=change-me
 
-# real-only
-DATABASE_URL=postgresql://...
+# real-only (Phase 2.3+)
+DATABASE_URL=postgresql://username:password@localhost:5432/elope_dev?schema=public
+
+# real-only (Phase 2.4+ - not yet implemented)
 STRIPE_SECRET_KEY=sk_test_xxx
 STRIPE_WEBHOOK_SECRET=whsec_xxx
 POSTMARK_SERVER_TOKEN=...

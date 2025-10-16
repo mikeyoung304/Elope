@@ -5,7 +5,7 @@
 import { toUtcMidnight } from '@elope/shared';
 import type { BookingService } from '../../domains/booking/service';
 import type { CatalogRepository } from '../../domains/catalog/port';
-import { getMockState } from '../../adapters/mock';
+import { getMockState, resetMockState } from '../../adapters/mock';
 import { logger } from '../../core/logger';
 
 export class DevController {
@@ -24,7 +24,7 @@ export class DevController {
     email: string;
     coupleName: string;
     addOnIds?: string[];
-  }): Promise<void> {
+  }): Promise<{ bookingId: string }> {
     logger.info({
       sessionId: input.sessionId,
       packageId: input.packageId,
@@ -49,7 +49,7 @@ export class DevController {
     }
 
     // Call the same domain path used by webhook handler
-    await this.bookingService.onPaymentCompleted({
+    const booking = await this.bookingService.onPaymentCompleted({
       sessionId: input.sessionId,
       packageId: pkg.id,
       eventDate: normalizedDate,
@@ -59,7 +59,9 @@ export class DevController {
       totalCents,
     });
 
-    logger.info('✅ Checkout simulation completed');
+    logger.info({ bookingId: booking.id }, '✅ Checkout simulation completed');
+
+    return { bookingId: booking.id };
   }
 
   /**
@@ -68,5 +70,13 @@ export class DevController {
   async getDebugState() {
     logger.info('🔍 Fetching debug state');
     return getMockState();
+  }
+
+  /**
+   * Reset in-memory state to initial seed (E2E test determinism)
+   */
+  async reset(): Promise<void> {
+    logger.info('🔄 Resetting mock state');
+    resetMockState();
   }
 }

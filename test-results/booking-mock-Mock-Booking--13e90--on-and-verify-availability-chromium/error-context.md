@@ -1,0 +1,174 @@
+# Page snapshot
+
+```yaml
+- generic [ref=e3]:
+  - paragraph [ref=e6]: Mock Mode - Using mock data
+  - banner [ref=e7]:
+    - generic [ref=e9]:
+      - link "Elope" [ref=e10] [cursor=pointer]:
+        - /url: /
+      - navigation [ref=e11]:
+        - link "Packages" [ref=e12] [cursor=pointer]:
+          - /url: /
+        - link "Admin" [ref=e13] [cursor=pointer]:
+          - /url: /admin/login
+  - main [ref=e14]:
+    - generic [ref=e16]:
+      - generic [ref=e17]:
+        - generic [ref=e18]:
+          - img "Basic Elopement" [ref=e19]
+          - generic [ref=e20]:
+            - heading "Basic Elopement" [level=1] [ref=e21]
+            - paragraph [ref=e22]: Simple, intimate ceremony with professional photography and officiant
+            - generic [ref=e24]: "Base Price: $999.00"
+        - generic [ref=e25]:
+          - heading "Select Date" [level=2] [ref=e26]
+          - generic [ref=e27]:
+            - paragraph [ref=e29]: Select a date for your ceremony. Dates are checked in real-time for availability.
+            - generic [ref=e31]:
+              - navigation [ref=e32]:
+                - button "Go to the Previous Month" [ref=e33] [cursor=pointer]:
+                  - img [ref=e34]
+                - button "Go to the Next Month" [ref=e36] [cursor=pointer]:
+                  - img [ref=e37]
+              - generic [ref=e39]:
+                - status [ref=e41]: October 2025
+                - grid "October 2025" [ref=e42]:
+                  - rowgroup [ref=e43]:
+                    - row [ref=e44]:
+                      - columnheader [ref=e45]: Su
+                      - columnheader [ref=e46]: Mo
+                      - columnheader [ref=e47]: Tu
+                      - columnheader [ref=e48]: We
+                      - columnheader [ref=e49]: Th
+                      - columnheader [ref=e50]: Fr
+                      - columnheader [ref=e51]: Sa
+                  - rowgroup [ref=e52]:
+                    - row "Wednesday, October 1st, 2025 Thursday, October 2nd, 2025 Friday, October 3rd, 2025 Saturday, October 4th, 2025" [ref=e53]:
+                      - gridcell "Wednesday, October 1st, 2025" [ref=e54]:
+                        - button "Wednesday, October 1st, 2025" [disabled] [ref=e55]: "1"
+                      - gridcell "Thursday, October 2nd, 2025" [ref=e56]:
+                        - button "Thursday, October 2nd, 2025" [disabled] [ref=e57]: "2"
+                      - gridcell "Friday, October 3rd, 2025" [ref=e58]:
+                        - button "Friday, October 3rd, 2025" [disabled] [ref=e59]: "3"
+                      - gridcell "Saturday, October 4th, 2025" [ref=e60]:
+                        - button "Saturday, October 4th, 2025" [disabled] [ref=e61]: "4"
+                    - row "Sunday, October 5th, 2025 Monday, October 6th, 2025 Tuesday, October 7th, 2025 Wednesday, October 8th, 2025 Thursday, October 9th, 2025 Friday, October 10th, 2025 Saturday, October 11th, 2025" [ref=e62]:
+                      - gridcell "Sunday, October 5th, 2025" [ref=e63]:
+                        - button "Sunday, October 5th, 2025" [disabled] [ref=e64]: "5"
+                      - gridcell "Monday, October 6th, 2025" [ref=e65]:
+                        - button "Monday, October 6th, 2025" [disabled] [ref=e66]: "6"
+                      - gridcell "Tuesday, October 7th, 2025" [ref=e67]:
+                        - button "Tuesday, October 7th, 2025" [disabled] [ref=e68]: "7"
+                      - gridcell "Wednesday, October 8th, 2025" [ref=e69]:
+                        - button "Wednesday, October 8th, 2025" [disabled] [ref=e70]: "8"
+                      - gridcell "Thursday, October 9th, 2025" [ref=e71]:
+                        - button "Thursday, October 9th, 2025" [disabled] [ref=e72]: "9"
+                      - gridcell "Friday, October 10th, 2025" [ref=e73]:
+                        - button "Friday, October 10th, 2025" [disabled] [ref=e74]: "10"
+                      - gridcell "Saturday, October 11th, 2025" [ref=e75]:
+                        - button "Saturday, October 11th, 2025" [disabled] [ref=e76]: "11"
+                    - row "Sunday, October 12th, 2025 Monday, October 13th, 2025 Tuesday, October 14th, 2025 Wednesday, October 15th, 2025 Today, Thursday, October 16th, 2025 Friday, October 17th, 2025 Saturday, October 18th, 2025" [ref=e77]:
+                      - gridcell "Sunday, October 12th, 2025" [ref=e78]:
+                        - button "Sunday, October 12th, 2025" [disabled] [ref=e79]: "12"
+                      - gridcell "Monday, October 13th, 2025" [ref=e80]:
+                        - button "Monday, October 13th, 2025" [disabled] [ref=e81]: "13"
+                      - gridcell "Tuesday, October 14th, 2025" [ref=e82]:
+                        - button "Tuesday, October 14th, 2025" [disabled] [ref=e83]: "14"
+                      - gridcell "Wednesday, October 15th, 2025" [ref=e84]:
+                        - button "Wednesday, October 15th, 2025" [disabled] [ref=e85]: "15"
+                      - gridcell "Today, Thursday, October 16th, 2025" [ref=e86]:
+                        - button "Today, Thursday, October 16th, 2025" [ref=e87] [cursor=pointer]: "16"
+                      - gridcell "Friday, October 17th, 2025" [ref=e88]:
+                        - button "Friday, October 17th, 2025" [ref=e89] [cursor=pointer]: "17"
+                      - gridcell "Saturday, October 18th, 2025" [ref=e90]:
+                        - button "Saturday, October 18th, 2025" [ref=e91] [cursor=pointer]: "18"
+                    - row "Sunday, October 19th, 2025 Monday, October 20th, 2025 Tuesday, October 21st, 2025 Wednesday, October 22nd, 2025 Thursday, October 23rd, 2025 Friday, October 24th, 2025 Saturday, October 25th, 2025" [ref=e92]:
+                      - gridcell "Sunday, October 19th, 2025" [ref=e93]:
+                        - button "Sunday, October 19th, 2025" [ref=e94] [cursor=pointer]: "19"
+                      - gridcell "Monday, October 20th, 2025" [ref=e95]:
+                        - button "Monday, October 20th, 2025" [ref=e96] [cursor=pointer]: "20"
+                      - gridcell "Tuesday, October 21st, 2025" [ref=e97]:
+                        - button "Tuesday, October 21st, 2025" [ref=e98] [cursor=pointer]: "21"
+                      - gridcell "Wednesday, October 22nd, 2025" [ref=e99]:
+                        - button "Wednesday, October 22nd, 2025" [ref=e100] [cursor=pointer]: "22"
+                      - gridcell "Thursday, October 23rd, 2025" [ref=e101]:
+                        - button "Thursday, October 23rd, 2025" [ref=e102] [cursor=pointer]: "23"
+                      - gridcell "Friday, October 24th, 2025" [ref=e103]:
+                        - button "Friday, October 24th, 2025" [ref=e104] [cursor=pointer]: "24"
+                      - gridcell "Saturday, October 25th, 2025" [ref=e105]:
+                        - button "Saturday, October 25th, 2025" [ref=e106] [cursor=pointer]: "25"
+                    - row "Sunday, October 26th, 2025 Monday, October 27th, 2025 Tuesday, October 28th, 2025 Wednesday, October 29th, 2025 Thursday, October 30th, 2025 Friday, October 31st, 2025" [ref=e107]:
+                      - gridcell "Sunday, October 26th, 2025" [ref=e108]:
+                        - button "Sunday, October 26th, 2025" [ref=e109] [cursor=pointer]: "26"
+                      - gridcell "Monday, October 27th, 2025" [ref=e110]:
+                        - button "Monday, October 27th, 2025" [ref=e111] [cursor=pointer]: "27"
+                      - gridcell "Tuesday, October 28th, 2025" [ref=e112]:
+                        - button "Tuesday, October 28th, 2025" [ref=e113] [cursor=pointer]: "28"
+                      - gridcell "Wednesday, October 29th, 2025" [ref=e114]:
+                        - button "Wednesday, October 29th, 2025" [ref=e115] [cursor=pointer]: "29"
+                      - gridcell "Thursday, October 30th, 2025" [ref=e116]:
+                        - button "Thursday, October 30th, 2025" [ref=e117] [cursor=pointer]: "30"
+                      - gridcell "Friday, October 31st, 2025" [ref=e118]:
+                        - button "Friday, October 31st, 2025" [ref=e119] [cursor=pointer]: "31"
+            - generic [ref=e120]:
+              - generic [ref=e123]: Selected
+              - generic [ref=e126]: Available
+              - generic [ref=e129]: Unavailable
+        - generic [ref=e130]:
+          - heading "Your Details" [level=2] [ref=e131]
+          - generic [ref=e132]:
+            - generic [ref=e133]:
+              - generic [ref=e134]: Your Names
+              - textbox "Your Names" [ref=e135]:
+                - /placeholder: e.g., Sarah & Alex
+            - generic [ref=e136]:
+              - generic [ref=e137]: Email Address
+              - textbox "Email Address" [ref=e138]:
+                - /placeholder: your.email@example.com
+        - generic [ref=e139]:
+          - heading "Add-Ons" [level=2] [ref=e140]
+          - generic [ref=e141]:
+            - generic [ref=e142] [cursor=pointer]:
+              - checkbox "Video Recording +$500.00" [ref=e143]
+              - generic [ref=e145]:
+                - heading "Video Recording" [level=3] [ref=e147]
+                - generic [ref=e148]: +$500.00
+            - generic [ref=e149] [cursor=pointer]:
+              - checkbox "Floral Arrangement +$150.00" [ref=e150]
+              - generic [ref=e152]:
+                - heading "Floral Arrangement" [level=3] [ref=e154]
+                - generic [ref=e155]: +$150.00
+      - generic [ref=e157]:
+        - generic [ref=e158]:
+          - generic [ref=e159]:
+            - generic [ref=e160]: Total
+            - generic [ref=e161]: $999.00
+          - paragraph [ref=e162]: All-inclusive pricing
+        - button "Select a date" [disabled] [ref=e163]
+  - contentinfo [ref=e164]:
+    - generic [ref=e166]:
+      - generic [ref=e167]:
+        - generic [ref=e168]:
+          - heading "Elope" [level=3] [ref=e169]
+          - paragraph [ref=e170]: Making your special day stress-free and unforgettable. From intimate ceremonies to luxury celebrations.
+        - generic [ref=e171]:
+          - heading "Quick Links" [level=4] [ref=e172]
+          - list [ref=e173]:
+            - listitem [ref=e174]:
+              - link "Packages" [ref=e175] [cursor=pointer]:
+                - /url: /
+            - listitem [ref=e176]:
+              - link "About Us" [ref=e177] [cursor=pointer]:
+                - /url: "#about"
+            - listitem [ref=e178]:
+              - link "Admin" [ref=e179] [cursor=pointer]:
+                - /url: /admin/login
+        - generic [ref=e180]:
+          - heading "Contact" [level=4] [ref=e181]
+          - list [ref=e182]:
+            - listitem [ref=e183]: hello@elope.com
+            - listitem [ref=e184]: (555) 123-4567
+            - listitem [ref=e185]: Available 7 days/week
+      - paragraph [ref=e187]: © 2025 Elope. All rights reserved.
+```

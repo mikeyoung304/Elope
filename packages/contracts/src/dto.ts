@@ -71,3 +71,54 @@ export const AdminLoginDtoSchema = z.object({
 });
 
 export type AdminLoginDto = z.infer<typeof AdminLoginDtoSchema>;
+
+// Admin Package CRUD DTOs
+export const CreatePackageDtoSchema = z.object({
+  slug: z.string().min(1),
+  title: z.string().min(1),
+  description: z.string().min(1),
+  priceCents: z.number().int().min(0),
+  photoUrl: z.string().url().optional(),
+});
+
+export type CreatePackageDto = z.infer<typeof CreatePackageDtoSchema>;
+
+export const UpdatePackageDtoSchema = z.object({
+  slug: z.string().min(1).optional(),
+  title: z.string().min(1).optional(),
+  description: z.string().min(1).optional(),
+  priceCents: z.number().int().min(0).optional(),
+  photoUrl: z.string().url().optional(),
+});
+
+export type UpdatePackageDto = z.infer<typeof UpdatePackageDtoSchema>;
+
+export const PackageResponseDtoSchema = z.object({
+  id: z.string(),
+  slug: z.string(),
+  title: z.string(),
+  description: z.string(),
+  priceCents: z.number().int(),
+  photoUrl: z.string().url().optional(),
+});
+
+export type PackageResponseDto = z.infer<typeof PackageResponseDtoSchema>;
+
+// Admin AddOn CRUD DTOs
+export const CreateAddOnDtoSchema = z.object({
+  packageId: z.string().min(1),
+  title: z.string().min(1),
+  priceCents: z.number().int().min(0),
+  photoUrl: z.string().url().optional(),
+});
+
+export type CreateAddOnDto = z.infer<typeof CreateAddOnDtoSchema>;
+
+export const UpdateAddOnDtoSchema = z.object({
+  packageId: z.string().min(1).optional(),
+  title: z.string().min(1).optional(),
+  priceCents: z.number().int().min(0).optional(),
+  photoUrl: z.string().url().optional(),
+});
+
+export type UpdateAddOnDto = z.infer<typeof UpdateAddOnDtoSchema>;

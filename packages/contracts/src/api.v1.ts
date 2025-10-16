@@ -10,6 +10,12 @@ import {
   CreateCheckoutDtoSchema,
   AdminLoginDtoSchema,
   BookingDtoSchema,
+  CreatePackageDtoSchema,
+  UpdatePackageDtoSchema,
+  PackageResponseDtoSchema,
+  CreateAddOnDtoSchema,
+  UpdateAddOnDtoSchema,
+  AddOnDtoSchema,
 } from './dto';
 
 const c = initContract();
@@ -59,6 +65,18 @@ export const Contracts = c.router({
       }),
     },
     summary: 'Create a checkout session',
+  },
+
+  getBookingById: {
+    method: 'GET',
+    path: '/v1/bookings/:id',
+    pathParams: z.object({
+      id: z.string(),
+    }),
+    responses: {
+      200: BookingDtoSchema,
+    },
+    summary: 'Get booking by ID (public endpoint for confirmation)',
   },
 
   // Webhook endpoint (raw body)
@@ -121,5 +139,82 @@ export const Contracts = c.router({
       }),
     },
     summary: 'Create a blackout date (requires authentication)',
+  },
+
+  // Admin Package CRUD endpoints
+  adminCreatePackage: {
+    method: 'POST',
+    path: '/v1/admin/packages',
+    body: CreatePackageDtoSchema,
+    responses: {
+      200: PackageResponseDtoSchema,
+    },
+    summary: 'Create a new package (requires authentication)',
+  },
+
+  adminUpdatePackage: {
+    method: 'PUT',
+    path: '/v1/admin/packages/:id',
+    pathParams: z.object({
+      id: z.string(),
+    }),
+    body: UpdatePackageDtoSchema,
+    responses: {
+      200: PackageResponseDtoSchema,
+    },
+    summary: 'Update a package (requires authentication)',
+  },
+
+  adminDeletePackage: {
+    method: 'DELETE',
+    path: '/v1/admin/packages/:id',
+    pathParams: z.object({
+      id: z.string(),
+    }),
+    body: z.undefined(),
+    responses: {
+      204: z.void(),
+    },
+    summary: 'Delete a package (requires authentication)',
+  },
+
+  // Admin AddOn CRUD endpoints
+  adminCreateAddOn: {
+    method: 'POST',
+    path: '/v1/admin/packages/:packageId/addons',
+    pathParams: z.object({
+      packageId: z.string(),
+    }),
+    body: CreateAddOnDtoSchema,
+    responses: {
+      200: AddOnDtoSchema,
+    },
+    summary: 'Create a new add-on for a package (requires authentication)',
+  },
+
+  adminUpdateAddOn: {
+    method: 'PUT',
+    path: '/v1/admin/addons/:id',
+    pathParams: z.object({
+      id: z.string(),
+    }),
+    body: UpdateAddOnDtoSchema,
+    responses: {
+      200: AddOnDtoSchema,
+    },
+    summary: 'Update an add-on (requires authentication)',
+  },
+
+  adminDeleteAddOn: {
+    method: 'DELETE',
+    path: '/v1/admin/addons/:id',
+    pathParams: z.object({
+      id: z.string(),
+    }),
+    body: z.undefined(),
+    responses: {
+      204: z.void(),
+    },
+    summary: 'Delete an add-on (requires authentication)',
   },
 });

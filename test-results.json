@@ -1,0 +1,24 @@
+{
+  "passed": [
+    "Hero headline",
+    "Statistics",
+    "Testimonials section",
+    "Admin login",
+    "Footer"
+  ],
+  "failed": [
+    "Package count",
+    "Package images",
+    "Package navigation",
+    "Date picker",
+    "Dashboard metrics"
+  ],
+  "screenshots": [
+    "01-hero.png",
+    "02-packages.png",
+    "03-testimonials.png",
+    "05-admin-login.png",
+    "06-admin-dashboard.png",
+    "07-footer.png"
+  ]
+}

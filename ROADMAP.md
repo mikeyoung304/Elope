@@ -1,12 +1,14 @@
 # Roadmap
 
-## MVP
+## MVP ✅ COMPLETE (v0.1.0)
 
-- Packages + add‑ons
-- Availability check (mock busy, later GCal)
-- Checkout (mock, later Stripe Checkout)
-- Confirmation email (console, later Postmark)
-- Admin (bookings, packages CRUD, blackout dates)
+- ✅ Packages + add‑ons (catalog domain with CRUD)
+- ✅ Availability check (mock busy, later GCal)
+- ✅ Checkout (mock, later Stripe Checkout)
+- ✅ Confirmation email (console, later Postmark)
+- ✅ Admin (bookings, packages CRUD, blackout dates)
+- ✅ Success page with booking details
+- ✅ E2E test suite (Playwright - 7 scenarios)
 
 ## Phase 2
 

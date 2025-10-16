@@ -1,0 +1,149 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  name      String?
+  role      UserRole @default(USER)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+enum UserRole {
+  USER
+  ADMIN
+}
+
+model Customer {
+  id        String    @id @default(cuid())
+  email     String?   @unique
+  phone     String?
+  name      String
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  bookings  Booking[]
+}
+
+model Venue {
+  id        String    @id @default(cuid())
+  name      String
+  address   String?
+  city      String?
+  state     String?
+  zip       String?
+  capacity  Int?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  bookings  Booking[]
+}
+
+model Package {
+  id          String         @id @default(cuid())
+  slug        String         @unique
+  name        String
+  description String?
+  basePrice   Int
+  active      Boolean        @default(true)
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+  addOns      PackageAddOn[]
+  bookings    Booking[]
+}
+
+model AddOn {
+  id          String         @id @default(cuid())
+  slug        String         @unique
+  name        String
+  description String?
+  price       Int
+  active      Boolean        @default(true)
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+  packages    PackageAddOn[]
+  bookingRefs BookingAddOn[]
+}
+
+model PackageAddOn {
+  packageId String
+  addOnId   String
+  package   Package @relation(fields: [packageId], references: [id], onDelete: Cascade)
+  addOn     AddOn   @relation(fields: [addOnId], references: [id], onDelete: Cascade)
+
+  @@id([packageId, addOnId])
+}
+
+model Booking {
+  id         String        @id @default(cuid())
+  customerId String
+  packageId  String
+  venueId    String?
+  date       DateTime
+  startTime  DateTime?
+  endTime    DateTime?
+  status     BookingStatus @default(PENDING)
+  totalPrice Int
+  notes      String?
+  createdAt  DateTime      @default(now())
+  updatedAt  DateTime      @updatedAt
+  customer   Customer      @relation(fields: [customerId], references: [id])
+  package    Package       @relation(fields: [packageId], references: [id])
+  venue      Venue?        @relation(fields: [venueId], references: [id])
+  addOns     BookingAddOn[]
+  payments   Payment[]
+}
+
+enum BookingStatus {
+  PENDING
+  CONFIRMED
+  CANCELED
+  FULFILLED
+}
+
+model BookingAddOn {
+  bookingId String
+  addOnId   String
+  quantity  Int     @default(1)
+  unitPrice Int
+  booking   Booking @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  addOn     AddOn   @relation(fields: [addOnId], references: [id], onDelete: Restrict)
+
+  @@id([bookingId, addOnId])
+}
+
+model Payment {
+  id          String        @id @default(cuid())
+  bookingId   String
+  amount      Int
+  currency    String        @default("USD")
+  status      PaymentStatus @default(PENDING)
+  processor   String
+  processorId String?
+  createdAt   DateTime      @default(now())
+  booking     Booking       @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+}
+
+enum PaymentStatus {
+  PENDING
+  AUTHORIZED
+  CAPTURED
+  CANCELED
+  FAILED
+}
+
+model BlackoutDate {
+  id        String   @id @default(cuid())
+  date      DateTime @unique
+  reason    String?
+  createdAt DateTime @default(now())
+}

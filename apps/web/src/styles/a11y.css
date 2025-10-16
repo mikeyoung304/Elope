@@ -1,0 +1,41 @@
+/**
+ * Accessibility styles
+ * P0/P1 Implementation
+ */
+
+/* Skip link for keyboard navigation */
+.skip-link {
+  position: absolute;
+  left: -9999px;
+  top: 0;
+  z-index: 9999;
+  padding: 8px 12px;
+  background: #fff;
+  color: #000;
+  text-decoration: none;
+  border: 2px solid #000;
+}
+
+.skip-link:focus {
+  left: 8px;
+  top: 8px;
+}
+
+/* Focus visible styles for keyboard navigation */
+*:focus {
+  outline: 2px solid #000;
+  outline-offset: 2px;
+}
+
+/* Screen reader only text */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
+}
