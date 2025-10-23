@@ -1,0 +1,61 @@
+{
+  "name": "@elope/api",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "API application",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "doctor": "tsx scripts/doctor.ts",
+    "dev": "tsx watch src/index.ts",
+    "dev:mock": "cross-env ADAPTERS_PRESET=mock tsx watch src/index.ts",
+    "dev:real": "cross-env ADAPTERS_PRESET=real tsx watch src/index.ts",
+    "build": "tsc -b",
+    "start": "node dist/index.js",
+    "typecheck": "tsc -b --noEmit",
+    "test": "vitest run --reporter=verbose",
+    "test:watch": "vitest",
+    "coverage": "vitest run --coverage",
+    "prisma:generate": "prisma generate",
+    "db:migrate": "prisma migrate dev --name initial_schema",
+    "db:seed": "tsx prisma/seed.ts"
+  },
+  "dependencies": {
+    "@elope/contracts": "*",
+    "@elope/shared": "*",
+    "@prisma/client": "^6.17.1",
+    "@ts-rest/express": "^3.52.1",
+    "bcryptjs": "^3.0.2",
+    "body-parser": "^2.2.0",
+    "cors": "^2.8.5",
+    "dotenv": "^17.2.3",
+    "express": "^4.21.2",
+    "express-rate-limit": "^8.1.0",
+    "helmet": "^8.1.0",
+    "jsonwebtoken": "^9.0.2",
+    "pino": "^10.0.0",
+    "prisma": "^6.17.1",
+    "stripe": "^19.1.0",
+    "zod": "^4.1.12"
+  },
+  "devDependencies": {
+    "@types/bcryptjs": "^3.0.0",
+    "@types/cors": "^2.8.19",
+    "@types/express": "^4.17.21",
+    "@types/jsonwebtoken": "^9.0.10",
+    "@types/node": "^24.7.2",
+    "@types/supertest": "^6.0.3",
+    "@vitest/coverage-v8": "^3.2.4",
+    "concurrently": "^9.2.1",
+    "cross-env": "^10.1.0",
+    "pino-pretty": "^13.1.2",
+    "supertest": "^7.1.4",
+    "ts-node": "^10.9.2",
+    "tsx": "^4.7.0",
+    "vitest": "^3.2.4"
+  },
+  "prisma": {
+    "seed": "tsx prisma/seed.ts"
+  }
+}

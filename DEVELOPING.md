@@ -19,7 +19,7 @@ pnpm -C apps/api run dev:real   # dev with real database
 pnpm -C apps/web run dev
 ```
 
-## Database Setup (Phase 2.3+)
+## Database Setup ✅ COMPLETE
 
 ### Prerequisites
 
@@ -50,9 +50,9 @@ Install PostgreSQL 14+. Options:
    pnpm exec prisma db seed
    ```
    This creates:
-   - Admin user: `admin@example.com` / password: `admin123`
-   - 3 wedding packages with add-ons
-   - Sample blackout dates
+   - Admin user: `admin@example.com` / password: `admin`
+   - 3 wedding packages (Classic, Garden, Luxury) with 4 add-ons
+   - Sample blackout date (Dec 25, 2025)
 
 5. **Start API in real mode:**
    ```bash
@@ -84,18 +84,24 @@ pnpm exec prisma migrate status
 # apps/api
 ADAPTERS_PRESET=mock # or real
 API_PORT=3001
-CORS_ORIGIN=http://localhost:3000
+CORS_ORIGIN=http://localhost:5173
 JWT_SECRET=change-me
 
-# real-only (Phase 2.3+)
+# Real mode - Database (✅ IMPLEMENTED)
 DATABASE_URL=postgresql://username:password@localhost:5432/elope_dev?schema=public
 
-# real-only (Phase 2.4+ - not yet implemented)
+# Real mode - Stripe (✅ IMPLEMENTED)
 STRIPE_SECRET_KEY=sk_test_xxx
 STRIPE_WEBHOOK_SECRET=whsec_xxx
-POSTMARK_SERVER_TOKEN=...
+STRIPE_SUCCESS_URL=http://localhost:5173/success
+STRIPE_CANCEL_URL=http://localhost:5173
+
+# Real mode - Email (✅ IMPLEMENTED with file-sink fallback)
+POSTMARK_SERVER_TOKEN=...          # Optional: falls back to file-sink
 POSTMARK_FROM_EMAIL=bookings@yourdomain.com
-GOOGLE_CALENDAR_ID=...
+
+# Real mode - Calendar (✅ IMPLEMENTED with mock fallback)
+GOOGLE_CALENDAR_ID=...            # Optional: falls back to mock calendar
 GOOGLE_SERVICE_ACCOUNT_JSON_BASE64=...
 ```
 

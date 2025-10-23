@@ -138,13 +138,22 @@ pnpm -C apps/web run dev
 - `POST /v1/dev/simulate-checkout-completed` — mark a session as paid
 - `GET /v1/dev/debug-state` — inspect in‑memory data
 
-## Switching to real mode
+## Switching to real mode ✅ COMPLETE
 
-1. Set `ADAPTERS_PRESET=real` and fill real envs.
-2. Run Prisma migrations and seed admin.
-3. Configure Stripe webhook → `/v1/webhooks/stripe`.
-4. Verify Postmark domain and sender.
-5. Share Google Calendar with service account.
+Real mode is now fully operational with:
+- **PostgreSQL**: Prisma ORM with migrations + seed data
+- **Stripe**: Test mode with webhook support
+- **Email**: File-sink fallback (Postmark optional)
+- **Calendar**: Mock fallback (Google Calendar optional)
+
+### Setup Steps:
+1. Set `ADAPTERS_PRESET=real` in `apps/api/.env`
+2. Configure `DATABASE_URL` and run migrations
+3. Seed database: creates admin (`admin@example.com` / `admin`)
+4. Add Stripe test keys (`STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`)
+5. Start Stripe webhook forwarder: `stripe listen --forward-to localhost:3001/v1/webhooks/stripe`
+6. (Optional) Configure Postmark for real email delivery
+7. (Optional) Share Google Calendar with service account
 
 ## Stripe Local Testing
 

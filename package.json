@@ -3,8 +3,13 @@
   "version": "0.0.0",
   "private": true,
   "description": "Modular monolith workspace",
+  "workspaces": [
+    "client",
+    "server",
+    "packages/*"
+  ],
   "scripts": {
-    "doctor": "tsx apps/api/scripts/doctor.ts",
+    "doctor": "tsx server/scripts/doctor.ts",
     "lint": "eslint . --ext .ts,.tsx",
     "format": "prettier --write \"**/*.{ts,tsx,json,md}\"",
     "format:check": "prettier --check \"**/*.{ts,tsx,json,md}\"",
@@ -12,13 +17,16 @@
     "test:e2e": "playwright test -c e2e/playwright.config.ts",
     "test:e2e:ui": "playwright test -c e2e/playwright.config.ts --ui",
     "test:e2e:headed": "playwright test -c e2e/playwright.config.ts --headed",
-    "dev:all": "pnpm exec concurrently -n api,web,stripe -c cyan,magenta,yellow \"pnpm -C apps/api run dev:real\" \"pnpm -C apps/web run dev\" \"stripe listen --forward-to localhost:3001/v1/webhooks/stripe\"",
-    "dev:all:real": "pnpm run dev:all"
+    "dev:api": "npm run dev --workspace=server",
+    "dev:client": "npm run dev --workspace=client",
+    "dev:all": "concurrently -n server,client,stripe -c cyan,magenta,yellow \"npm run dev:api\" \"npm run dev:client\" \"stripe listen --forward-to localhost:3001/v1/webhooks/stripe\"",
+    "test": "npm run test --workspace=server"
   },
   "devDependencies": {
     "@playwright/test": "^1.56.0",
     "@typescript-eslint/eslint-plugin": "^7.0.0",
     "@typescript-eslint/parser": "^7.0.0",
+    "concurrently": "^8.2.2",
     "eslint": "^8.56.0",
     "eslint-config-prettier": "^9.1.0",
     "prettier": "^3.2.5",
@@ -29,9 +37,8 @@
   },
   "engines": {
     "node": ">=20.0.0",
-    "pnpm": ">=8.0.0"
+    "npm": ">=8.0.0"
   },
-  "packageManager": "pnpm@8.15.0",
   "dependencies": {
     "@ts-rest/core": "^3.52.1"
   }

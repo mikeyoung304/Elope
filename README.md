@@ -19,16 +19,39 @@ A stability‑first modular monolith built with TypeScript, pnpm workspaces, con
 
 ## Quick start
 
+### Mock Mode (No Setup Required)
 ```bash
 pnpm i
-pnpm -C apps/api run dev   # API (mock mode default)
+pnpm -C apps/api run dev   # API (mock mode)
 pnpm -C apps/web run dev   # Web
+```
+
+### Real Mode (PostgreSQL + Stripe)
+```bash
+# 1. Setup PostgreSQL
+createdb elope_dev
+
+# 2. Configure environment (see DEVELOPING.md)
+cp apps/api/.env.example apps/api/.env
+# Edit .env with DATABASE_URL, STRIPE keys, etc.
+
+# 3. Run migrations and seed
+cd apps/api
+pnpm exec prisma migrate dev
+pnpm exec prisma db seed
+
+# 4. Start services
+pnpm -C apps/api run dev:real  # API with real adapters
+pnpm -C apps/web run dev        # Web
+stripe listen --forward-to localhost:3001/v1/webhooks/stripe  # Stripe webhooks
 ```
 
 ## Switching modes
 
 - **Mock:** `ADAPTERS_PRESET=mock` (no external keys required)
-- **Real:** `ADAPTERS_PRESET=real` (Stripe/Postmark/GCal/DB envs required)
+- **Real:** `ADAPTERS_PRESET=real` (requires PostgreSQL + Stripe)
+  - Postmark email → graceful fallback to file-sink
+  - Google Calendar → graceful fallback to mock calendar
 
 ## Docs
 
