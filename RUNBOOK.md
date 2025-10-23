@@ -5,9 +5,9 @@
 Before starting development, validate your environment configuration using the doctor script:
 
 ```bash
-pnpm doctor
+npm run doctor
 # or from the api directory:
-pnpm -C apps/api run doctor
+npm run doctor
 ```
 
 ### Doctor Output Examples
@@ -36,7 +36,7 @@ Core Configuration:
 
 ✅ All required variables are set!
 
-💡 Run `pnpm -C apps/api run dev` to start the API server
+💡 Run `npm run dev:api` to start the API server
    See RUNBOOK.md for more troubleshooting help.
 ```
 
@@ -104,17 +104,17 @@ See SECRETS.md for details on each variable.
 
 1. **Copy the example env file:**
    ```bash
-   cp apps/api/.env.example apps/api/.env
+   cp server/.env.example server/.env
    ```
 
-2. **Edit `apps/api/.env` with your values:**
+2. **Edit `server/.env` with your values:**
    - See `SECRETS.md` for detailed documentation on each variable
    - For mock mode: only `JWT_SECRET` is required (already set in example)
    - For real mode: you'll need database, Stripe, and optionally Postmark/GCal credentials
 
 3. **Re-run the doctor to verify:**
    ```bash
-   pnpm doctor
+   npm run doctor
    ```
 
 4. **Common issues:**
@@ -129,8 +129,8 @@ See `SECRETS.md` for the complete environment variable reference.
 
 ```bash
 # Mock mode default
-pnpm -C apps/api run dev
-pnpm -C apps/web run dev
+npm run dev:api
+npm run dev:client
 ```
 
 ### Dev simulators (mock mode only)
@@ -147,7 +147,7 @@ Real mode is now fully operational with:
 - **Calendar**: Mock fallback (Google Calendar optional)
 
 ### Setup Steps:
-1. Set `ADAPTERS_PRESET=real` in `apps/api/.env`
+1. Set `ADAPTERS_PRESET=real` in `server/.env`
 2. Configure `DATABASE_URL` and run migrations
 3. Seed database: creates admin (`admin@example.com` / `admin`)
 4. Add Stripe test keys (`STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`)
@@ -162,7 +162,7 @@ Real mode is now fully operational with:
 1. **Get Stripe test keys:**
    - Go to https://dashboard.stripe.com/test/apikeys
    - Copy your **Secret key** (starts with `sk_test_`)
-   - Add it to `apps/api/.env`:
+   - Add it to `server/.env`:
      ```
      STRIPE_SECRET_KEY=sk_test_xxx
      ```
@@ -194,7 +194,7 @@ Real mode is now fully operational with:
 
 3. **Restart the API:**
    ```bash
-   pnpm -C apps/api run dev:real
+   npm run dev:api:real
    ```
 
 4. **Test a checkout:**
@@ -235,7 +235,7 @@ stripe trigger checkout.session.completed
 3. **Get your Server API Token:**
    - Go to your server settings
    - Copy the **Server API Token** (format: `xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx`)
-   - Add it to `apps/api/.env`:
+   - Add it to `server/.env`:
      ```
      POSTMARK_SERVER_TOKEN=your-token-here
      POSTMARK_FROM_EMAIL=bookings@yourdomain.com
@@ -243,7 +243,7 @@ stripe trigger checkout.session.completed
 
 ### Dev Mode - File Sink Fallback
 
-**In real mode without Postmark credentials**, emails are written to `apps/api/tmp/emails/` as `.eml` files:
+**In real mode without Postmark credentials**, emails are written to `server/tmp/emails/` as `.eml` files:
 
 ```bash
 # Leave POSTMARK_SERVER_TOKEN empty for file-sink mode
@@ -257,7 +257,7 @@ Each email is saved with a timestamp and recipient filename. Check the API logs 
 
 1. **With file sink (no token):**
    - Complete a booking in real mode
-   - Check `apps/api/tmp/emails/` for the confirmation email file
+   - Check `server/tmp/emails/` for the confirmation email file
    - View the raw email content
 
 2. **With Postmark (token set):**
@@ -325,7 +325,7 @@ The API uses Google Calendar's **freeBusy API** to check date availability. Resu
    - In the same calendar settings page
    - Scroll to **Integrate calendar**
    - Copy the **Calendar ID** (usually looks like: `your-email@gmail.com` or `xxxxx@group.calendar.google.com`)
-   - Add it to `apps/api/.env`:
+   - Add it to `server/.env`:
      ```
      GOOGLE_CALENDAR_ID=your-calendar-id@gmail.com
      ```

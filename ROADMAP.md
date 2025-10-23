@@ -32,6 +32,21 @@
 - Analytics (Plausible)
 - SEO polish (OG images, sitemap)
 
+## Stack Migration ✅ COMPLETE (Phase 1 - 2025-10-23)
+
+Migrated from hexagonal architecture to layered architecture to align with rebuild-6.0:
+- ✅ **Architecture**: Hexagonal → Layered (domains → services, ports consolidated)
+- ✅ **Package Manager**: pnpm → npm workspaces
+- ✅ **Directory Structure**: apps/api → server, apps/web → client
+- ✅ **Dependencies**: Express 5→4, React 19→18
+- ✅ **Import Paths**: Fixed 21+ files with updated paths
+- ✅ **TypeScript Config**: Added esModuleInterop, removed base config extends
+- ✅ **Library Consolidation**: Created unified ports.ts, entities.ts, errors.ts
+
+**Pending**: Prisma schema alignment (field name mismatches)
+
+See MIGRATION_LOG.md for detailed changelog.
+
 ## Phase 3
 
 - Deposits / rescheduling rules

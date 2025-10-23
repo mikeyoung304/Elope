@@ -1,19 +1,19 @@
 # Elope (Micro‑Wedding / Elopement Booking)
 
-A stability‑first modular monolith built with TypeScript, pnpm workspaces, contract‑first API, and mock‑first adapters. Goal: ship a clean MVP fast, then swap mocks for real providers (Stripe, Postmark, Google Calendar, Postgres) with minimal code change.
+A stability‑first modular monolith built with TypeScript, npm workspaces, contract‑first API, and mock‑first adapters. Goal: ship a clean MVP fast, then swap mocks for real providers (Stripe, Postmark, Google Calendar, Postgres) with minimal code change.
 
 ## Core principles
 
 - **Simplicity over novelty.** One backend app + one web app; shared types.
 - **Contract‑first FE/BE** via zod + ts‑rest (or OpenAPI).
-- **Domains own business logic**; ports/adapters isolate vendors.
+- **Layered architecture:** services own business logic; adapters isolate vendors.
 - **Mock‑first:** build end‑to‑end with in‑memory adapters, then flip a switch to real.
 - **Bulletproof by default:** strict TypeScript, zod validation, error taxonomy, tests.
 
 ## High‑level
 
-- `apps/api` → Express + TS, hexagonal (domains/ports/adapters)
-- `apps/web` → React + Vite + Tailwind + TanStack Query
+- `server/` → Express 4 + TS, layered (routes/services/adapters)
+- `client/` → React 18 + Vite + Tailwind + TanStack Query
 - `packages/contracts` → API schemas & endpoints
 - `packages/shared` → DTOs & small utils (money/date)
 
@@ -21,9 +21,9 @@ A stability‑first modular monolith built with TypeScript, pnpm workspaces, con
 
 ### Mock Mode (No Setup Required)
 ```bash
-pnpm i
-pnpm -C apps/api run dev   # API (mock mode)
-pnpm -C apps/web run dev   # Web
+npm install
+npm run dev:api     # API (mock mode)
+npm run dev:client  # Web
 ```
 
 ### Real Mode (PostgreSQL + Stripe)
@@ -32,17 +32,18 @@ pnpm -C apps/web run dev   # Web
 createdb elope_dev
 
 # 2. Configure environment (see DEVELOPING.md)
-cp apps/api/.env.example apps/api/.env
+cp server/.env.example server/.env
 # Edit .env with DATABASE_URL, STRIPE keys, etc.
 
 # 3. Run migrations and seed
-cd apps/api
-pnpm exec prisma migrate dev
-pnpm exec prisma db seed
+cd server
+npm run prisma:generate
+npm exec prisma migrate dev
+npm exec prisma db seed
 
 # 4. Start services
-pnpm -C apps/api run dev:real  # API with real adapters
-pnpm -C apps/web run dev        # Web
+npm run dev:api    # API with real adapters (or use npm run dev:all)
+npm run dev:client # Web
 stripe listen --forward-to localhost:3001/v1/webhooks/stripe  # Stripe webhooks
 ```
 

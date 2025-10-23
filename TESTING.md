@@ -33,19 +33,19 @@
 
 ```bash
 # Unit tests
-pnpm -C apps/api run test           # Run all unit tests
-pnpm -C apps/api run test:watch     # Watch mode
-pnpm -C apps/api run coverage       # With coverage
+npm run --workspace=server test           # Run all unit tests
+npm run --workspace=server test:watch     # Watch mode
+npm run --workspace=server coverage       # With coverage
 
 # E2E tests (requires both servers running)
-pnpm -C apps/api run dev            # Terminal 1: API server
-pnpm test:e2e                       # Terminal 2: Run E2E tests
-pnpm test:e2e:ui                    # Interactive UI mode
-pnpm test:e2e:headed                # See browser during tests
+npm run --workspace=server dev            # Terminal 1: API server
+npm run test:e2e                       # Terminal 2: Run E2E tests
+npm run test:e2e:ui                    # Interactive UI mode
+npm run test:e2e:headed                # See browser during tests
 
 # Full workspace validation
-pnpm -w run typecheck               # TypeScript check
-pnpm -r build                       # Build all packages
+npm run typecheck               # TypeScript check
+npm run build                       # Build all packages
 ```
 
 ## E2E Test Setup
@@ -61,7 +61,7 @@ Before running E2E tests, ensure the API server is running in mock mode:
 ```bash
 # Terminal 1: Start API server
 cd /Users/mikeyoung/CODING/Elope
-pnpm -C apps/api run dev
+npm run --workspace=server dev
 ```
 
 ### Environment Variables
@@ -76,13 +76,13 @@ These are automatically injected when Playwright starts the web dev server.
 
 ```bash
 # Run all E2E tests (headless)
-pnpm test:e2e
+npm run test:e2e
 
 # Interactive UI mode (recommended for debugging)
-pnpm test:e2e:ui
+npm run test:e2e:ui
 
 # Headed mode (see browser during tests)
-pnpm test:e2e:headed
+npm run test:e2e:headed
 ```
 
 ### Test Scenarios
@@ -115,7 +115,7 @@ pnpm test:e2e:headed
 **Test Flakiness**:
 - Tests use `waitForLoadState('networkidle')` to ensure API calls complete
 - If tests timeout, increase timeout in `e2e/playwright.config.ts`
-- Use `pnpm test:e2e:headed` to debug visually
+- Use `npm run test:e2e:headed` to debug visually
 
 **CI/CD**:
 - E2E tests run automatically in GitHub Actions via `.github/workflows/e2e.yml`
@@ -126,5 +126,5 @@ pnpm test:e2e:headed
 
 **Running a single test file**:
 ```bash
-pnpm test:e2e e2e/tests/booking-mock.spec.ts
+npm run test:e2e e2e/tests/booking-mock.spec.ts
 ```

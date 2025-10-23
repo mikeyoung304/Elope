@@ -1,6 +1,8 @@
 # Environment Variables
 
-## API (apps/api)
+## API (server/)
+
+Configure via `server/.env`:
 
 ```bash
 ADAPTERS_PRESET=mock|real
@@ -12,6 +14,8 @@ JWT_SECRET=change-me  # Generate with: openssl rand -hex 32
 DATABASE_URL=postgresql://...
 STRIPE_SECRET_KEY=sk_test_xxx
 STRIPE_WEBHOOK_SECRET=whsec_xxx
+STRIPE_SUCCESS_URL=http://localhost:5173/success
+STRIPE_CANCEL_URL=http://localhost:5173
 
 # Real mode - Optional (graceful fallbacks)
 POSTMARK_SERVER_TOKEN=...  # Falls back to file-sink if not set
@@ -20,7 +24,9 @@ GOOGLE_CALENDAR_ID=...  # Falls back to mock calendar if not set
 GOOGLE_SERVICE_ACCOUNT_JSON_BASE64=...
 ```
 
-## WEB (apps/web)
+## WEB (client/)
+
+Configure via `client/.env` (if needed):
 
 ```bash
 VITE_API_URL=http://localhost:3001
