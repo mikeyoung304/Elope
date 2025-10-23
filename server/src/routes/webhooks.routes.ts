@@ -8,6 +8,7 @@ import type { PaymentProvider } from '../lib/ports';
 import type { BookingService } from '../services/booking.service';
 import { logger } from '../lib/core/logger';
 import { z } from 'zod';
+import type Stripe from 'stripe';
 // import { handlePaymentWebhook } from '../../domains/booking/webhook-handler.service';
 
 interface StripeCheckoutSession {
@@ -20,13 +21,6 @@ interface StripeCheckoutSession {
     addOnIds?: string;
   };
   amount_total: number;
-}
-
-interface StripeEvent {
-  type: string;
-  data: {
-    object: StripeCheckoutSession;
-  };
 }
 
 // Zod schema for metadata validation
@@ -46,13 +40,13 @@ export class WebhooksController {
 
   async handleStripeWebhook(rawBody: string, signature: string): Promise<void> {
     // Verify webhook signature
-    const event = (await this.paymentProvider.verifyWebhook(rawBody, signature)) as StripeEvent;
+    const event = await this.paymentProvider.verifyWebhook(rawBody, signature);
 
     logger.info({ type: event.type }, 'Stripe webhook received');
 
     // Process checkout.session.completed event
     if (event.type === 'checkout.session.completed') {
-      const session = event.data.object;
+      const session = event.data.object as unknown as StripeCheckoutSession;
 
       // Validate metadata with Zod (replaces JSON.parse)
       const metadataResult = MetadataSchema.safeParse(session.metadata);

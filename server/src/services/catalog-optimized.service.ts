@@ -3,7 +3,7 @@
  * P0/P1 Implementation: Uses Prisma include for eager loading
  */
 
-import { PrismaClient } from './generated/prisma';
+import { PrismaClient } from '../generated/prisma';
 
 const prisma = new PrismaClient();
 

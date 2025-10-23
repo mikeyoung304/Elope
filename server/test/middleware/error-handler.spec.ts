@@ -4,7 +4,7 @@
 
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import type { Request, Response, NextFunction } from 'express';
-import { errorHandler } from '../../src/http/middleware/error-handler';
+import { errorHandler } from '../../src/middleware/error-handler';
 import {
   DomainError,
   NotFoundError,
@@ -13,8 +13,8 @@ import {
   ForbiddenError,
   ConflictError,
   UnprocessableEntityError,
-} from '../../src/core/errors';
-import { BookingConflictError } from '../../src/domains/booking/errors';
+} from '../../src/lib/core/errors';
+import { BookingConflictError } from '../../src/lib/errors';
 
 describe('Error Handler Middleware', () => {
   let req: Partial<Request>;

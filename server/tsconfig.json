@@ -11,15 +11,12 @@
     "forceConsistentCasingInFileNames": true,
     "resolveJsonModule": true,
     "allowSyntheticDefaultImports": true,
-    "declaration": true,
-    "declarationMap": true,
+    "declaration": false,
     "sourceMap": true,
     "noUnusedLocals": false,
     "noUnusedParameters": false,
     "noImplicitReturns": true,
     "noFallthroughCasesInSwitch": true,
-    "composite": true,
-    "incremental": true,
     "types": ["node"],
     "baseUrl": ".",
     "paths": {
@@ -27,6 +24,6 @@
       "@elope/shared": ["../packages/shared/src"]
     }
   },
-  "include": ["src/**/*", "src/lib/**/*"],
-  "exclude": ["node_modules", "dist"]
+  "include": ["src/**/*"],
+  "exclude": ["node_modules", "dist", "test"]
 }

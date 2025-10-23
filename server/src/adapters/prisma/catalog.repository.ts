@@ -49,6 +49,13 @@ export class PrismaCatalogRepository implements CatalogRepository {
           },
         },
       },
+      include: {
+        packages: {
+          select: {
+            packageId: true,
+          },
+        },
+      },
       orderBy: { createdAt: 'asc' },
     });
 
@@ -68,10 +75,9 @@ export class PrismaCatalogRepository implements CatalogRepository {
     const pkg = await this.prisma.package.create({
       data: {
         slug: data.slug,
-        title: data.title,
+        name: data.title,
         description: data.description,
-        priceCents: data.priceCents,
-        photoUrl: data.photoUrl,
+        basePrice: data.priceCents,
       },
     });
 
@@ -103,10 +109,9 @@ export class PrismaCatalogRepository implements CatalogRepository {
       where: { id },
       data: {
         ...(data.slug !== undefined && { slug: data.slug }),
-        ...(data.title !== undefined && { title: data.title }),
+        ...(data.title !== undefined && { name: data.title }),
         ...(data.description !== undefined && { description: data.description }),
-        ...(data.priceCents !== undefined && { priceCents: data.priceCents }),
-        ...(data.photoUrl !== undefined && { photoUrl: data.photoUrl }),
+        ...(data.priceCents !== undefined && { basePrice: data.priceCents }),
       },
     });
 
@@ -141,10 +146,21 @@ export class PrismaCatalogRepository implements CatalogRepository {
 
     const addOn = await this.prisma.addOn.create({
       data: {
-        packageId: data.packageId,
-        title: data.title,
-        priceCents: data.priceCents,
-        photoUrl: data.photoUrl,
+        slug: `${data.title.toLowerCase().replace(/\s+/g, '-')}-${Date.now()}`,
+        name: data.title,
+        price: data.priceCents,
+        packages: {
+          create: {
+            packageId: data.packageId,
+          },
+        },
+      },
+      include: {
+        packages: {
+          select: {
+            packageId: true,
+          },
+        },
       },
     });
 
@@ -155,6 +171,13 @@ export class PrismaCatalogRepository implements CatalogRepository {
     // Check if add-on exists
     const existing = await this.prisma.addOn.findUnique({
       where: { id },
+      include: {
+        packages: {
+          select: {
+            packageId: true,
+          },
+        },
+      },
     });
 
     if (!existing) {
@@ -162,7 +185,7 @@ export class PrismaCatalogRepository implements CatalogRepository {
     }
 
     // If updating packageId, verify new package exists
-    if (data.packageId && data.packageId !== existing.packageId) {
+    if (data.packageId && data.packageId !== existing.packages[0]?.packageId) {
       const pkg = await this.prisma.package.findUnique({
         where: { id: data.packageId },
       });
@@ -175,10 +198,23 @@ export class PrismaCatalogRepository implements CatalogRepository {
     const addOn = await this.prisma.addOn.update({
       where: { id },
       data: {
-        ...(data.packageId !== undefined && { packageId: data.packageId }),
-        ...(data.title !== undefined && { title: data.title }),
-        ...(data.priceCents !== undefined && { priceCents: data.priceCents }),
-        ...(data.photoUrl !== undefined && { photoUrl: data.photoUrl }),
+        ...(data.title !== undefined && { name: data.title }),
+        ...(data.priceCents !== undefined && { price: data.priceCents }),
+        ...(data.packageId !== undefined && {
+          packages: {
+            deleteMany: {},
+            create: {
+              packageId: data.packageId,
+            },
+          },
+        }),
+      },
+      include: {
+        packages: {
+          select: {
+            packageId: true,
+          },
+        },
       },
     });
 
@@ -204,34 +240,33 @@ export class PrismaCatalogRepository implements CatalogRepository {
   private toDomainPackage(pkg: {
     id: string;
     slug: string;
-    title: string;
-    description: string;
-    priceCents: number;
-    photoUrl: string | null;
+    name: string;
+    description: string | null;
+    basePrice: number;
+    active: boolean;
   }): Package {
     return {
       id: pkg.id,
       slug: pkg.slug,
-      title: pkg.title,
-      description: pkg.description,
-      priceCents: pkg.priceCents,
-      ...(pkg.photoUrl && { photoUrl: pkg.photoUrl }),
+      title: pkg.name,
+      description: pkg.description || '',
+      priceCents: pkg.basePrice,
+      photoUrl: undefined,
     };
   }
 
   private toDomainAddOn(addOn: {
     id: string;
-    packageId: string;
-    title: string;
-    priceCents: number;
-    photoUrl: string | null;
+    name: string;
+    price: number;
+    packages: { packageId: string }[];
   }): AddOn {
     return {
       id: addOn.id,
-      packageId: addOn.packageId,
-      title: addOn.title,
-      priceCents: addOn.priceCents,
-      ...(addOn.photoUrl && { photoUrl: addOn.photoUrl }),
+      packageId: addOn.packages[0]?.packageId || '',
+      title: addOn.name,
+      priceCents: addOn.price,
+      photoUrl: undefined,
     };
   }
 }

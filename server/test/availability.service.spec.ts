@@ -3,7 +3,7 @@
  */
 
 import { describe, it, expect, beforeEach } from 'vitest';
-import { AvailabilityService } from '../src/domains/availability/service';
+import { AvailabilityService } from '../src/services/availability.service';
 import {
   FakeCalendarProvider,
   FakeBlackoutRepository,

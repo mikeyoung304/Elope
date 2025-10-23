@@ -3,7 +3,7 @@
  * P0/P1 Implementation: Uses Prisma transactions + Zod validation
  */
 
-import { PrismaClient, PaymentStatus, BookingStatus } from './generated/prisma';
+import { PrismaClient, PaymentStatus, BookingStatus } from '../generated/prisma';
 import { z } from 'zod';
 
 const prisma = new PrismaClient();
@@ -37,23 +37,30 @@ export async function handlePaymentWebhook(raw: unknown): Promise<void> {
 
   // Execute within a Prisma transaction for atomicity
   await prisma.$transaction(async (tx) => {
-    // Upsert payment record
-    const payment = await tx.payment.upsert({
+    // Find existing payment by processorId or create new one
+    const existing = await tx.payment.findFirst({
       where: { processorId: data.processorId },
-      update: {
-        status,
-        amount: data.amount,
-        currency: data.currency,
-      },
-      create: {
-        processor: 'square',
-        processorId: data.processorId,
-        bookingId: data.bookingId,
-        amount: data.amount,
-        currency: data.currency,
-        status,
-      },
     });
+
+    const payment = existing
+      ? await tx.payment.update({
+          where: { id: existing.id },
+          data: {
+            status,
+            amount: data.amount,
+            currency: data.currency,
+          },
+        })
+      : await tx.payment.create({
+          data: {
+            processor: 'square',
+            processorId: data.processorId,
+            bookingId: data.bookingId,
+            amount: data.amount,
+            currency: data.currency,
+            status,
+          },
+        });
 
     // Update booking status based on payment status
     if (payment.status === 'CAPTURED') {

@@ -4,9 +4,9 @@
 
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import type { Request, Response, NextFunction } from 'express';
-import { createAuthMiddleware } from '../../src/http/middleware/auth';
+import { createAuthMiddleware } from '../../src/middleware/auth';
 import { IdentityService } from '../../src/domains/identity/service';
-import { UnauthorizedError } from '../../src/core/errors';
+import { UnauthorizedError } from '../../src/lib/core/errors';
 import type { TokenPayload } from '../../src/domains/identity/port';
 
 describe('Auth Middleware', () => {

@@ -7,7 +7,7 @@ import { describe, it, expect, beforeAll } from 'vitest';
 import request from 'supertest';
 import type { Express } from 'express';
 import { createApp } from '../../src/app';
-import { loadConfig } from '../../src/core/config';
+import { loadConfig } from '../../src/lib/core/config';
 
 describe('GET /v1/packages', () => {
   let app: Express;

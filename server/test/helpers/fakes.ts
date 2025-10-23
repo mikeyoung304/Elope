@@ -2,16 +2,16 @@
  * Test fakes and builders for unit tests
  */
 
-import type { BookingRepository } from '../../src/domains/booking/port';
-import type { Booking } from '../../src/domains/booking/entities';
-import { BookingConflictError } from '../../src/domains/booking/errors';
-import type { CatalogRepository } from '../../src/domains/catalog/port';
-import type { Package, AddOn } from '../../src/domains/catalog/entities';
-import type { BlackoutRepository, CalendarProvider } from '../../src/domains/availability/port';
-import type { PaymentProvider, CheckoutSession } from '../../src/domains/payments/port';
-import type { EmailProvider } from '../../src/domains/notifications/port';
-import type { UserRepository, User } from '../../src/domains/identity/port';
-import type { EventEmitter } from '../../src/core/events';
+import type { BookingRepository } from '../../src/lib/ports';
+import type { Booking } from '../../src/lib/entities';
+import { BookingConflictError } from '../../src/lib/errors';
+import type { CatalogRepository } from '../../src/lib/ports';
+import type { Package, AddOn } from '../../src/lib/entities';
+import type { BlackoutRepository, CalendarProvider } from '../../src/lib/ports';
+import type { PaymentProvider, CheckoutSession } from '../../src/lib/ports';
+import type { EmailProvider } from '../../src/lib/ports';
+import type { UserRepository, User } from '../../src/lib/ports';
+import type { EventEmitter } from '../../src/lib/core/events';
 
 // --- Fake Repositories ---
 

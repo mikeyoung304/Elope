@@ -20,7 +20,7 @@ export class StripePaymentAdapter implements PaymentProvider {
 
   constructor(options: StripeAdapterOptions) {
     this.stripe = new Stripe(options.secretKey, {
-      apiVersion: '2024-12-18.acacia',
+      apiVersion: '2025-09-30.clover',
       typescript: true,
     });
     this.webhookSecret = options.webhookSecret;

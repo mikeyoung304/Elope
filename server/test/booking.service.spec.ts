@@ -3,7 +3,7 @@
  */
 
 import { describe, it, expect, beforeEach } from 'vitest';
-import { BookingService } from '../src/domains/booking/service';
+import { BookingService } from '../src/services/booking.service';
 import {
   FakeBookingRepository,
   FakeCatalogRepository,
@@ -12,8 +12,8 @@ import {
   buildAddOn,
   buildBooking,
 } from './helpers/fakes';
-import { NotFoundError } from '../src/core/errors';
-import { BookingConflictError } from '../src/domains/booking/errors';
+import { NotFoundError } from '../src/lib/core/errors';
+import { BookingConflictError } from '../src/lib/errors';
 
 describe('BookingService', () => {
   let service: BookingService;

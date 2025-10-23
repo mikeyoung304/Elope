@@ -3,6 +3,7 @@
  */
 
 import type { Package, AddOn, Booking } from './entities';
+import type Stripe from 'stripe';
 
 // ============================================================================
 // Repository Ports
@@ -73,7 +74,7 @@ export interface PaymentProvider {
   verifyWebhook(
     payload: string,
     signature: string
-  ): Promise<{ type: string; data: { id: string } }>;
+  ): Promise<Stripe.Event>;
 }
 
 /**

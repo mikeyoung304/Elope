@@ -16,6 +16,7 @@ import type { EmailProvider } from '../lib/ports';
 import type { User, UserRepository } from '../lib/ports';
 import { BookingConflictError } from '../lib/errors';
 import bcrypt from 'bcryptjs';
+import type Stripe from 'stripe';
 
 // In-memory storage
 const packages = new Map<string, Package>();
@@ -374,14 +375,23 @@ export class MockPaymentProvider implements PaymentProvider {
   async verifyWebhook(
     _payload: string,
     _signature: string
-  ): Promise<{ type: string; data: { id: string } }> {
+  ): Promise<Stripe.Event> {
     // Mock webhook verification - always succeeds
     return {
+      id: 'evt_mock_123',
+      object: 'event',
+      api_version: '2025-09-30.clover',
+      created: Math.floor(Date.now() / 1000),
       type: 'checkout.session.completed',
       data: {
-        id: 'mock_session_verified',
+        object: {
+          id: 'mock_session_verified',
+        } as Stripe.Checkout.Session,
       },
-    };
+      livemode: false,
+      pending_webhooks: 0,
+      request: null,
+    } as Stripe.Event;
   }
 }
 
