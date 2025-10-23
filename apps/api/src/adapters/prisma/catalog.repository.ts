@@ -42,7 +42,13 @@ export class PrismaCatalogRepository implements CatalogRepository {
 
   async getAddOnsByPackageId(packageId: string): Promise<AddOn[]> {
     const addOns = await this.prisma.addOn.findMany({
-      where: { packageId },
+      where: {
+        packages: {
+          some: {
+            packageId: packageId,
+          },
+        },
+      },
       orderBy: { createdAt: 'asc' },
     });
 

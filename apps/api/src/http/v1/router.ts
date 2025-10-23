@@ -68,10 +68,10 @@ export function createV1Router(
       return { status: 200 as const, body: data };
     },
 
-    stripeWebhook: async ({ request }: { request: any }) => {
+    stripeWebhook: async ({ req }: { req: any }) => {
       // Extract raw body (Buffer) and Stripe signature header
-      const rawBody = request.body ? request.body.toString('utf8') : '';
-      const signature = request.headers['stripe-signature'] || '';
+      const rawBody = req.body ? req.body.toString('utf8') : '';
+      const signature = req.headers['stripe-signature'] || '';
 
       await controllers.webhooks.handleStripeWebhook(rawBody, signature);
       return { status: 204 as const, body: undefined };

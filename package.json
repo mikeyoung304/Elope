@@ -11,7 +11,9 @@
     "typecheck": "tsc --noEmit",
     "test:e2e": "playwright test -c e2e/playwright.config.ts",
     "test:e2e:ui": "playwright test -c e2e/playwright.config.ts --ui",
-    "test:e2e:headed": "playwright test -c e2e/playwright.config.ts --headed"
+    "test:e2e:headed": "playwright test -c e2e/playwright.config.ts --headed",
+    "dev:all": "pnpm exec concurrently -n api,web,stripe -c cyan,magenta,yellow \"pnpm -C apps/api run dev:real\" \"pnpm -C apps/web run dev\" \"stripe listen --forward-to localhost:3001/v1/webhooks/stripe\"",
+    "dev:all:real": "pnpm run dev:all"
   },
   "devDependencies": {
     "@playwright/test": "^1.56.0",
