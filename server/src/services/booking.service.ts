@@ -2,7 +2,7 @@
  * Booking domain service
  */
 
-import type { BookingRepository } from '../lib/ports';
+import type { BookingRepository, PaymentProvider } from '../lib/ports';
 import type { Booking, CreateBookingInput } from '../lib/entities';
 import type { CatalogRepository } from '../lib/ports';
 import type { EventEmitter } from '../lib/core/events';
@@ -12,7 +12,8 @@ export class BookingService {
   constructor(
     private readonly bookingRepo: BookingRepository,
     private readonly catalogRepo: CatalogRepository,
-    private readonly _eventEmitter: EventEmitter
+    private readonly _eventEmitter: EventEmitter,
+    private readonly paymentProvider: PaymentProvider
   ) {}
 
   async createCheckout(input: CreateBookingInput): Promise<{ checkoutUrl: string }> {
@@ -30,11 +31,20 @@ export class BookingService {
       totalCents += selectedAddOns.reduce((sum, a) => sum + a.priceCents, 0);
     }
 
-    // TODO: Create Stripe checkout session
-    // For now, return a placeholder URL
-    const checkoutUrl = `https://checkout.stripe.com/placeholder`;
+    // Create Stripe checkout session
+    const session = await this.paymentProvider.createCheckoutSession({
+      amountCents: totalCents,
+      email: input.email,
+      metadata: {
+        packageId: pkg.id,
+        eventDate: input.eventDate,
+        email: input.email,
+        coupleName: input.coupleName,
+        addOnIds: JSON.stringify(input.addOnIds || []),
+      },
+    });
 
-    return { checkoutUrl };
+    return { checkoutUrl: session.url };
   }
 
   async getAllBookings(): Promise<Booking[]> {

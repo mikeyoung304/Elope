@@ -64,7 +64,8 @@ export function buildContainer(config: Config): Container {
     const bookingService = new BookingService(
       adapters.bookingRepo,
       adapters.catalogRepo,
-      eventEmitter
+      eventEmitter,
+      adapters.paymentProvider
     );
     const identityService = new IdentityService(adapters.userRepo, config.JWT_SECRET);
 
@@ -144,7 +145,7 @@ export function buildContainer(config: Config): Container {
     blackoutRepo,
     bookingRepo
   );
-  const bookingService = new BookingService(bookingRepo, catalogRepo, eventEmitter);
+  const bookingService = new BookingService(bookingRepo, catalogRepo, eventEmitter, paymentProvider);
   const identityService = new IdentityService(userRepo, config.JWT_SECRET);
 
   // Subscribe to BookingPaid events to send confirmation emails

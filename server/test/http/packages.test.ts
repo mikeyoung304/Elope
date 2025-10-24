@@ -55,13 +55,13 @@ describe('GET /v1/packages/:slug', () => {
 
   it('returns single package by slug', async () => {
     const res = await request(app)
-      .get('/v1/packages/classic')
+      .get('/v1/packages/basic-elopement')
       .expect('Content-Type', /json/)
       .expect(200);
 
     expect(res.body).toHaveProperty('id');
     expect(res.body).toHaveProperty('slug');
-    expect(res.body.slug).toBe('classic');
+    expect(res.body.slug).toBe('basic-elopement');
   });
 
   it('returns 404 for non-existent package', async () => {

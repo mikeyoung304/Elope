@@ -8,6 +8,7 @@ import {
   FakeBookingRepository,
   FakeCatalogRepository,
   FakeEventEmitter,
+  FakePaymentProvider,
   buildPackage,
   buildAddOn,
   buildBooking,
@@ -20,12 +21,14 @@ describe('BookingService', () => {
   let bookingRepo: FakeBookingRepository;
   let catalogRepo: FakeCatalogRepository;
   let eventEmitter: FakeEventEmitter;
+  let paymentProvider: FakePaymentProvider;
 
   beforeEach(() => {
     bookingRepo = new FakeBookingRepository();
     catalogRepo = new FakeCatalogRepository();
     eventEmitter = new FakeEventEmitter();
-    service = new BookingService(bookingRepo, catalogRepo, eventEmitter);
+    paymentProvider = new FakePaymentProvider();
+    service = new BookingService(bookingRepo, catalogRepo, eventEmitter, paymentProvider);
   });
 
   describe('createCheckout', () => {
@@ -43,7 +46,7 @@ describe('BookingService', () => {
       });
 
       // Assert
-      expect(result.checkoutUrl).toContain('checkout.stripe.com');
+      expect(result.checkoutUrl).toContain('fake-checkout.com');
     });
 
     it('includes add-on prices in total calculation', async () => {

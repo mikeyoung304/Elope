@@ -35,7 +35,7 @@ export class DevController {
     const normalizedDate = toUtcMidnight(input.eventDate);
 
     // Get package to calculate total
-    const pkg = await this.catalogRepo.getPackageBySlug(input.packageId);
+    const pkg = await this.catalogRepo.getPackageById(input.packageId);
     if (!pkg) {
       throw new Error(`Package ${input.packageId} not found`);
     }
