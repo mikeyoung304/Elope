@@ -51,6 +51,20 @@ export interface UserRepository {
   findByEmail(email: string): Promise<User | null>;
 }
 
+/**
+ * Webhook Repository - Webhook event tracking and deduplication
+ */
+export interface WebhookRepository {
+  recordWebhook(input: {
+    eventId: string;
+    eventType: string;
+    rawPayload: string;
+  }): Promise<void>;
+  markProcessed(eventId: string): Promise<void>;
+  markFailed(eventId: string, errorMessage: string): Promise<void>;
+  isDuplicate(eventId: string): Promise<boolean>;
+}
+
 // ============================================================================
 // Provider Ports
 // ============================================================================

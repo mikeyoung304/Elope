@@ -7,8 +7,9 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
 }
 
 model User {
@@ -89,7 +90,7 @@ model Booking {
   customerId String
   packageId  String
   venueId    String?
-  date       DateTime
+  date       DateTime      @unique
   startTime  DateTime?
   endTime    DateTime?
   status     BookingStatus @default(PENDING)
@@ -102,6 +103,8 @@ model Booking {
   venue      Venue?        @relation(fields: [venueId], references: [id])
   addOns     BookingAddOn[]
   payments   Payment[]
+
+  @@index([date])
 }
 
 enum BookingStatus {
@@ -129,9 +132,11 @@ model Payment {
   currency    String        @default("USD")
   status      PaymentStatus @default(PENDING)
   processor   String
-  processorId String?
+  processorId String?       @unique
   createdAt   DateTime      @default(now())
   booking     Booking       @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+
+  @@index([processorId])
 }
 
 enum PaymentStatus {
@@ -147,4 +152,28 @@ model BlackoutDate {
   date      DateTime @unique
   reason    String?
   createdAt DateTime @default(now())
+
+  @@index([date])
+}
+
+model WebhookEvent {
+  id          String        @id @default(uuid())
+  eventId     String        @unique // Stripe event ID
+  eventType   String
+  rawPayload  String        @db.Text
+  status      WebhookStatus @default(PENDING)
+  attempts    Int           @default(1)
+  lastError   String?       @db.Text
+  processedAt DateTime?
+  createdAt   DateTime      @default(now())
+
+  @@index([eventId])
+  @@index([status])
+}
+
+enum WebhookStatus {
+  PENDING
+  PROCESSED
+  FAILED
+  DUPLICATE
 }

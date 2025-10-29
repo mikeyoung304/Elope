@@ -10,6 +10,7 @@ import type { BookingRepository } from '../lib/ports';
 import type {
   BlackoutRepository,
   CalendarProvider,
+  WebhookRepository,
 } from '../lib/ports';
 import type { PaymentProvider, CheckoutSession } from '../lib/ports';
 import type { EmailProvider } from '../lib/ports';
@@ -26,6 +27,11 @@ const bookingsByDate = new Map<string, string>(); // date -> booking ID
 const blackouts = new Map<string, { date: string; reason?: string }>();
 const calendarBusyDates = new Set<string>();
 const users = new Map<string, User>();
+const webhookEvents = new Map<string, {
+  eventId: string;
+  eventType: string;
+  status: 'PENDING' | 'PROCESSED' | 'FAILED' | 'DUPLICATE';
+}>();
 
 // Seed data on module load
 function seedData(): void {
@@ -416,6 +422,45 @@ export class MockUserRepository implements UserRepository {
   }
 }
 
+// Mock Webhook Repository
+export class MockWebhookRepository implements WebhookRepository {
+  async isDuplicate(eventId: string): Promise<boolean> {
+    const existing = webhookEvents.get(eventId);
+    if (existing) {
+      existing.status = 'DUPLICATE';
+      return true;
+    }
+    return false;
+  }
+
+  async recordWebhook(input: {
+    eventId: string;
+    eventType: string;
+    rawPayload: string;
+  }): Promise<void> {
+    webhookEvents.set(input.eventId, {
+      eventId: input.eventId,
+      eventType: input.eventType,
+      status: 'PENDING',
+    });
+  }
+
+  async markProcessed(eventId: string): Promise<void> {
+    const event = webhookEvents.get(eventId);
+    if (event) {
+      event.status = 'PROCESSED';
+    }
+  }
+
+  async markFailed(eventId: string, errorMessage: string): Promise<void> {
+    const event = webhookEvents.get(eventId);
+    if (event) {
+      event.status = 'FAILED';
+    }
+    console.log(`❌ [MOCK WEBHOOK] Failed: ${eventId} - ${errorMessage}`);
+  }
+}
+
 // Export builder function
 export function buildMockAdapters() {
   return {
@@ -426,6 +471,7 @@ export function buildMockAdapters() {
     paymentProvider: new MockPaymentProvider(),
     emailProvider: new MockEmailProvider(),
     userRepo: new MockUserRepository(),
+    webhookRepo: new MockWebhookRepository(),
   };
 }
 
@@ -445,11 +491,12 @@ export function getMockState() {
  * Reset mock state to initial seeded state (E2E test determinism)
  */
 export function resetMockState() {
-  // Clear dynamic data (bookings, blackouts, calendar)
+  // Clear dynamic data (bookings, blackouts, calendar, webhooks)
   bookings.clear();
   bookingsByDate.clear();
   blackouts.clear();
   calendarBusyDates.clear();
+  webhookEvents.clear();
 
   console.log('🔄 Mock state reset to seed data');
 }

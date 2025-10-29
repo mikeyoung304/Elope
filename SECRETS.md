@@ -195,3 +195,294 @@ The script will:
 - Exit with code 0 in mock mode (warnings only)
 
 See `RUNBOOK.md` for example output and troubleshooting.
+
+---
+
+## Secret Rotation Procedure
+
+### When to Rotate Secrets
+
+**Immediate Rotation Required:**
+- Secret exposed in git history
+- Secret exposed in logs or error messages
+- Suspected security breach or unauthorized access
+- Employee with secret access leaves company
+- Secret shared via insecure channel (email, Slack, etc.)
+
+**Regular Rotation Schedule:**
+- **JWT_SECRET**: Every 90 days
+- **Stripe keys**: Only if compromised (Stripe manages rotation)
+- **Database credentials**: Every 180 days (coordinate with Supabase)
+- **Postmark token**: Only if compromised
+- **Google service account**: Every 365 days
+
+### Rotation Steps
+
+#### 1. JWT_SECRET Rotation
+
+```bash
+# 1. Generate new secret
+NEW_SECRET=$(openssl rand -base64 32)
+
+# 2. Update environment variable (server/.env)
+# OLD: JWT_SECRET=old_secret_here
+# NEW: JWT_SECRET=new_secret_here
+
+# 3. Deploy new secret to production
+# (All existing tokens become invalid)
+
+# 4. Verify application still works
+npm run dev:api
+
+# 5. Test admin login creates new valid token
+curl -X POST http://localhost:3001/v1/admin/login \
+  -H "Content-Type: application/json" \
+  -d '{"email":"admin@example.com","password":"admin"}'
+```
+
+**Impact:** All users will be logged out (must re-login).
+
+#### 2. Stripe Keys Rotation
+
+```bash
+# 1. Generate new keys in Stripe Dashboard
+# Navigate to: https://dashboard.stripe.com/test/apikeys
+# Click "Create restricted key" or "Reveal test key token"
+
+# 2. Update environment variables (server/.env)
+# STRIPE_SECRET_KEY=sk_test_NEW_KEY
+# STRIPE_WEBHOOK_SECRET=whsec_NEW_SECRET
+
+# 3. Update webhook endpoint in Stripe Dashboard
+# Navigate to: https://dashboard.stripe.com/test/webhooks
+# Update endpoint with new signing secret
+
+# 4. Deploy to production
+# (All in-flight checkout sessions may fail)
+
+# 5. Test end-to-end booking flow
+npm run dev:api
+# Complete test booking in frontend
+```
+
+**Impact:** In-flight checkout sessions may fail (customers must restart booking).
+
+#### 3. Database Credentials Rotation
+
+```bash
+# WARNING: Coordinate with Supabase to avoid downtime
+
+# 1. Create new database password in Supabase Dashboard
+# Navigate to: Settings > Database > Connection string
+# Click "Reset database password"
+
+# 2. Update DATABASE_URL and DIRECT_URL in server/.env
+# NEW_PASSWORD="new_password_here"
+# DATABASE_URL="postgresql://postgres:NEW_PASSWORD@db.supabase.co:5432/postgres"
+# DIRECT_URL="postgresql://postgres:NEW_PASSWORD@db.supabase.co:5432/postgres"
+
+# 3. URL-encode password if it contains special characters
+# @ becomes %40, ! becomes %21, etc.
+
+# 4. Deploy to production IMMEDIATELY
+# (Old password becomes invalid)
+
+# 5. Verify database connection
+npm run dev:api
+# Check logs for database connection errors
+```
+
+**Impact:** Application downtime until new credentials deployed.
+
+#### 4. Postmark Token Rotation
+
+```bash
+# 1. Generate new server token in Postmark
+# Navigate to: https://account.postmarkapp.com/api_tokens
+# Click "Create a new Server API Token"
+
+# 2. Update environment variable (server/.env)
+# POSTMARK_SERVER_TOKEN=new_token_here
+
+# 3. Deploy to production
+# (Old token becomes invalid)
+
+# 4. Test email sending
+npm run dev:api
+# Trigger test booking confirmation email
+```
+
+**Impact:** Emails may fail until new token deployed.
+
+### Secret Rotation Log
+
+| Secret | Last Rotated | Next Rotation Due | Rotated By |
+|--------|--------------|-------------------|------------|
+| JWT_SECRET | 2025-10-29 | 2026-01-27 (90 days) | Initial setup |
+| STRIPE_SECRET_KEY | Never | On compromise | N/A |
+| STRIPE_WEBHOOK_SECRET | Never | On compromise | N/A |
+| DATABASE_URL | 2025-10-29 | 2026-04-27 (180 days) | Supabase setup |
+| POSTMARK_SERVER_TOKEN | Never | On compromise | N/A |
+| GOOGLE_SERVICE_ACCOUNT | Never | 2026-10-29 (365 days) | N/A |
+
+**Update this table after each rotation.**
+
+---
+
+## Git History Sanitization
+
+### Problem
+
+During development, several secrets were accidentally committed to git history:
+- Default JWT_SECRET in `.env.example`
+- Stripe test keys in code comments
+- Database credentials in early setup commits
+
+**Risk Level:**
+- **High**: Database credentials (production access)
+- **Medium**: Stripe test keys (limited damage, but possible abuse)
+- **Low**: Default JWT_SECRET (should be changed anyway)
+
+### Decision
+
+**Status**: DOCUMENTED (Not executed yet)
+**Priority**: P1 (Should fix before public repository)
+**See**: DECISIONS.md ADR-003 (Git History Rewrite)
+
+### Sanitization Procedure
+
+**IMPORTANT: This rewrites git history. All developers must re-clone repository.**
+
+```bash
+# 1. Backup repository
+git clone --mirror . ../elope-backup
+
+# 2. Install git-filter-repo
+pip install git-filter-repo
+
+# 3. Create file with secrets to remove
+cat > secrets-to-remove.txt <<EOF
+jwt_secret_exposed_value
+sk_test_stripe_key_here
+postgresql://postgres:PASSWORD@db.supabase.co
+whsec_webhook_secret_here
+EOF
+
+# 4. Run filter-repo to remove secrets (DRY RUN)
+git filter-repo --replace-text secrets-to-remove.txt --dry-run
+
+# 5. Review changes (check no false positives)
+git log --all --oneline | head -20
+
+# 6. Run filter-repo for real (WARNING: Destructive)
+git filter-repo --replace-text secrets-to-remove.txt --force
+
+# 7. Force push to remote (WARNING: Rewrites history)
+git push --force --all origin
+git push --force --tags origin
+
+# 8. Notify all developers to re-clone
+# Send email with re-clone instructions
+
+# 9. Rotate all exposed secrets immediately
+# See "Secret Rotation Procedure" above
+```
+
+### Post-Sanitization Checklist
+
+After history rewrite:
+- [ ] Backup created and verified
+- [ ] All secrets removed from history
+- [ ] All developers notified
+- [ ] All developers have re-cloned
+- [ ] CI/CD pipelines updated (if needed)
+- [ ] All exposed secrets rotated
+- [ ] Git-secrets pre-commit hook installed
+- [ ] Documentation updated with new commit SHAs
+
+### Prevention: Git-Secrets Pre-Commit Hook
+
+**Install git-secrets** (prevents future secret commits):
+
+```bash
+# 1. Install git-secrets
+brew install git-secrets  # macOS
+# OR
+sudo apt-get install git-secrets  # Linux
+
+# 2. Configure for repository
+cd /Users/mikeyoung/CODING/Elope
+git secrets --install
+git secrets --register-aws  # Built-in patterns
+
+# 3. Add custom patterns
+git secrets --add 'jwt_secret|JWT_SECRET'
+git secrets --add 'sk_test_|sk_live_'
+git secrets --add 'whsec_'
+git secrets --add 'postgresql://.*:.*@'
+
+# 4. Test (should fail)
+echo "JWT_SECRET=test123" > test.txt
+git add test.txt
+git commit -m "Test commit"
+# Should fail with: "test.txt:1:JWT_SECRET=test123"
+
+# 5. Clean up test
+git reset HEAD test.txt
+rm test.txt
+```
+
+### Best Practices
+
+**DO:**
+- Use `.env` files (never committed)
+- Use environment variables in production
+- Use secrets management service (AWS Secrets Manager, HashiCorp Vault)
+- Rotate secrets on schedule
+- Audit git history regularly
+- Use git-secrets or similar tools
+
+**DON'T:**
+- Commit secrets to git (even in private repos)
+- Share secrets via email or Slack
+- Use same secret across multiple environments
+- Use default/example secrets in production
+- Store secrets in code comments
+- Hardcode secrets in source files
+
+---
+
+## Emergency Secret Exposure Response
+
+If a secret is exposed publicly:
+
+1. **Immediate (Within 1 hour):**
+   - Rotate exposed secret immediately
+   - Deploy new secret to production
+   - Verify application still works
+
+2. **Short-term (Within 24 hours):**
+   - Audit logs for unauthorized access
+   - Notify security team
+   - Document incident
+
+3. **Long-term (Within 1 week):**
+   - Sanitize git history (if exposed in commits)
+   - Implement prevention measures (git-secrets)
+   - Review secret management practices
+   - Update team training
+
+**Emergency Contacts:**
+- Engineering Lead: [Contact Info]
+- Security Team: [Contact Info]
+- Supabase Support: https://supabase.com/support
+- Stripe Support: https://support.stripe.com
+
+---
+
+## References
+
+- OWASP: [Secrets Management Cheat Sheet](https://cheatsheetseries.owasp.org/cheatsheets/Secrets_Management_Cheat_Sheet.html)
+- GitHub: [Removing Sensitive Data](https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/removing-sensitive-data-from-a-repository)
+- Git-Secrets: [Documentation](https://github.com/awslabs/git-secrets)
+- DECISIONS.md: ADR-003 (Git History Rewrite)

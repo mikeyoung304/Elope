@@ -6,72 +6,91 @@ import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library';
 import type { PrismaClient } from '../../generated/prisma';
 import type { BookingRepository } from '../lib/ports';
 import type { Booking } from '../lib/entities';
-import { BookingConflictError } from '../lib/errors';
+import { BookingConflictError, BookingLockTimeoutError } from '../lib/errors';
 
 export class PrismaBookingRepository implements BookingRepository {
   constructor(private readonly prisma: PrismaClient) {}
 
   async create(booking: Booking): Promise<Booking> {
     try {
-      // First, create or find the customer
-      const customer = await this.prisma.customer.upsert({
-        where: { email: booking.email },
-        update: {
-          name: booking.coupleName,
-          phone: booking.phone,
-        },
-        create: {
-          email: booking.email,
-          name: booking.coupleName,
-          phone: booking.phone,
-        },
-      });
+      return await this.prisma.$transaction(async (tx) => {
+        // Lock the date to prevent concurrent bookings
+        const lockQuery = `
+          SELECT 1 FROM "Booking"
+          WHERE date = $1
+          FOR UPDATE NOWAIT
+        `;
 
-      // Map domain status to Prisma BookingStatus
-      const mapToPrismaStatus = (status: string): 'PENDING' | 'CONFIRMED' | 'CANCELED' | 'FULFILLED' => {
-        switch (status) {
-          case 'PAID':
-            return 'CONFIRMED';
-          case 'CANCELED':
-            return 'CANCELED';
-          case 'REFUNDED':
-            return 'CANCELED';
-          default:
-            return 'PENDING';
+        try {
+          await tx.$queryRawUnsafe(lockQuery, new Date(booking.eventDate));
+        } catch (lockError) {
+          // Lock timeout or already locked - throw specific error
+          throw new BookingLockTimeoutError(booking.eventDate);
         }
-      };
 
-      const created = await this.prisma.booking.create({
-        data: {
-          id: booking.id,
-          customerId: customer.id,
-          packageId: booking.packageId,
-          date: new Date(booking.eventDate),
-          totalPrice: booking.totalCents,
-          status: mapToPrismaStatus(booking.status),
-          addOns: {
-            create: booking.addOnIds.map((addOnId) => ({
-              addOnId,
-              quantity: 1,
-              unitPrice: 0, // This should ideally come from the AddOn price
-            })),
+        // Check if date is already booked
+        const existing = await tx.booking.findFirst({
+          where: { date: new Date(booking.eventDate) }
+        });
+
+        if (existing) {
+          throw new BookingConflictError(booking.eventDate);
+        }
+
+        // Create or find the customer
+        const customer = await tx.customer.upsert({
+          where: { email: booking.email },
+          update: {
+            name: booking.coupleName,
+            phone: booking.phone,
           },
-        },
-        include: {
-          customer: true,
-          addOns: {
-            select: {
-              addOnId: true,
+          create: {
+            email: booking.email,
+            name: booking.coupleName,
+            phone: booking.phone,
+          },
+        });
+
+        // Create booking
+        const created = await tx.booking.create({
+          data: {
+            id: booking.id,
+            customerId: customer.id,
+            packageId: booking.packageId,
+            date: new Date(booking.eventDate),
+            totalPrice: booking.totalCents,
+            status: this.mapToPrismaStatus(booking.status),
+            addOns: {
+              create: booking.addOnIds.map((addOnId) => ({
+                addOnId,
+                quantity: 1,
+                unitPrice: 0, // This should ideally come from the AddOn price
+              })),
             },
           },
-        },
-      });
+          include: {
+            customer: true,
+            addOns: {
+              select: {
+                addOnId: true,
+              },
+            },
+          },
+        });
 
-      return this.toDomainBooking(created);
+        return this.toDomainBooking(created);
+      }, {
+        timeout: 5000, // 5 second timeout
+        isolationLevel: 'Serializable' // Strongest isolation
+      });
     } catch (error) {
       // Handle unique constraint violation on eventDate
       if (error instanceof PrismaClientKnownRequestError && error.code === 'P2002') {
         throw new BookingConflictError(booking.eventDate);
+      }
+      // Re-throw our custom errors
+      if (error instanceof BookingLockTimeoutError || error instanceof BookingConflictError) {
+        throw error;
       }
       throw error;
     }
@@ -117,7 +136,20 @@ export class PrismaBookingRepository implements BookingRepository {
     return booking !== null;
   }
 
-  // Mapper
+  // Mappers
+  private mapToPrismaStatus(status: string): 'PENDING' | 'CONFIRMED' | 'CANCELED' | 'FULFILLED' {
+    switch (status) {
+      case 'PAID':
+        return 'CONFIRMED';
+      case 'CANCELED':
+        return 'CANCELED';
+      case 'REFUNDED':
+        return 'CANCELED';
+      default:
+        return 'PENDING';
+    }
+  }
+
   private toDomainBooking(booking: {
     id: string;
     packageId: string;

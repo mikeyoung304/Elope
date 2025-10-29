@@ -335,3 +335,79 @@ export function buildUser(overrides?: Partial<User>): User {
     ...overrides,
   };
 }
+
+// --- Webhook Repository ---
+
+export interface WebhookEvent {
+  id?: string;
+  eventId: string;
+  eventType: string;
+  status: 'PENDING' | 'PROCESSED' | 'FAILED' | 'DUPLICATE';
+  rawPayload?: string;
+  lastError?: string;
+  attempts?: number;
+  createdAt?: Date;
+  processedAt?: Date;
+}
+
+export interface WebhookRepository {
+  recordWebhook(input: {
+    eventId: string;
+    eventType: string;
+    rawPayload: string;
+  }): Promise<void>;
+  isDuplicate(eventId: string): Promise<boolean>;
+  markProcessed(eventId: string): Promise<void>;
+  markFailed(eventId: string, errorMessage: string): Promise<void>;
+}
+
+export class FakeWebhookRepository implements WebhookRepository {
+  public events: WebhookEvent[] = [];
+
+  async recordWebhook(input: {
+    eventId: string;
+    eventType: string;
+    rawPayload: string;
+  }): Promise<void> {
+    const event: WebhookEvent = {
+      id: `wh_${Date.now()}`,
+      eventId: input.eventId,
+      eventType: input.eventType,
+      status: 'PENDING',
+      rawPayload: input.rawPayload,
+      attempts: 1,
+      createdAt: new Date(),
+    };
+    this.events.push(event);
+  }
+
+  async isDuplicate(eventId: string): Promise<boolean> {
+    return this.events.some((e) => e.eventId === eventId);
+  }
+
+  async markProcessed(eventId: string): Promise<void> {
+    const event = this.events.find((e) => e.eventId === eventId);
+    if (event) {
+      event.status = 'PROCESSED';
+      event.processedAt = new Date();
+    }
+  }
+
+  async markFailed(eventId: string, errorMessage: string): Promise<void> {
+    const event = this.events.find((e) => e.eventId === eventId);
+    if (event) {
+      event.status = 'FAILED';
+      event.lastError = errorMessage;
+      event.attempts = (event.attempts || 0) + 1;
+    }
+  }
+
+  // Test helper
+  addEvent(event: WebhookEvent): void {
+    this.events.push(event);
+  }
+
+  clear(): void {
+    this.events = [];
+  }
+}

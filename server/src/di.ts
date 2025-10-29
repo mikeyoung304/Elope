@@ -23,6 +23,7 @@ import {
   PrismaBookingRepository,
   PrismaBlackoutRepository,
   PrismaUserRepository,
+  PrismaWebhookRepository,
 } from './adapters/prisma';
 import { StripePaymentAdapter } from './adapters/stripe.adapter';
 import { PostmarkMailAdapter } from './adapters/postmark.adapter';
@@ -74,7 +75,7 @@ export function buildContainer(config: Config): Container {
       packages: new PackagesController(catalogService),
       availability: new AvailabilityController(availabilityService),
       bookings: new BookingsController(bookingService),
-      webhooks: new WebhooksController(adapters.paymentProvider, bookingService),
+      webhooks: new WebhooksController(adapters.paymentProvider, bookingService, adapters.webhookRepo),
       admin: new AdminController(identityService, bookingService),
       blackouts: new BlackoutsController(adapters.blackoutRepo),
       adminPackages: new AdminPackagesController(catalogService),
@@ -105,6 +106,7 @@ export function buildContainer(config: Config): Container {
   const bookingRepo = new PrismaBookingRepository(prisma);
   const blackoutRepo = new PrismaBlackoutRepository(prisma);
   const userRepo = new PrismaUserRepository(prisma);
+  const webhookRepo = new PrismaWebhookRepository(prisma);
 
   // Build Stripe payment adapter
   if (!config.STRIPE_SECRET_KEY || !config.STRIPE_WEBHOOK_SECRET) {
@@ -175,7 +177,7 @@ export function buildContainer(config: Config): Container {
     packages: new PackagesController(catalogService),
     availability: new AvailabilityController(availabilityService),
     bookings: new BookingsController(bookingService),
-    webhooks: new WebhooksController(paymentProvider, bookingService),
+    webhooks: new WebhooksController(paymentProvider, bookingService, webhookRepo),
     admin: new AdminController(identityService, bookingService),
     blackouts: new BlackoutsController(blackoutRepo),
     adminPackages: new AdminPackagesController(catalogService),
