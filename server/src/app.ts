@@ -6,6 +6,7 @@ import express from 'express';
 import helmet from 'helmet';
 import cors from 'cors';
 import { randomUUID } from 'crypto';
+import swaggerUi from 'swagger-ui-express';
 import type { Config } from './lib/core/config';
 import { logger } from './lib/core/logger';
 import { buildContainer } from './di';
@@ -13,6 +14,8 @@ import { createV1Router } from './routes/index';
 import { errorHandler, notFoundHandler } from './middleware/error-handler';
 import { requestLogger } from './middleware/request-logger';
 import { skipIfHealth, adminLimiter } from './middleware/rateLimiter';
+import { openApiSpec } from './api-docs';
+import { cacheMiddleware } from './middleware/cache';
 
 export function createApp(config: Config): express.Application {
   const app = express();
@@ -49,6 +52,13 @@ export function createApp(config: Config): express.Application {
 
   // Request ID + logging middleware (for non-webhook routes)
   app.use(requestLogger);
+
+  // Apply caching middleware to public catalog endpoints
+  // Cache packages for 5 minutes (they rarely change)
+  app.use('/v1/packages', cacheMiddleware({ ttl: 300 }));
+
+  // Cache availability queries for 2 minutes (more dynamic)
+  app.use('/v1/availability', cacheMiddleware({ ttl: 120 }));
 
   // Health check endpoint
   app.get('/health', (_req, res) => {
@@ -89,6 +99,30 @@ export function createApp(config: Config): express.Application {
 
     res.json({ ok: true, mode: 'real' });
   });
+
+  // API Documentation endpoints
+  // Serve OpenAPI spec as JSON
+  app.get('/api/docs/openapi.json', (_req, res) => {
+    res.setHeader('Content-Type', 'application/json');
+    res.send(openApiSpec);
+  });
+
+  // Serve Swagger UI
+  app.use(
+    '/api/docs',
+    swaggerUi.serve,
+    swaggerUi.setup(openApiSpec, {
+      customCss: '.swagger-ui .topbar { display: none }',
+      customSiteTitle: 'Elope API Documentation',
+      customfavIcon: '/favicon.ico',
+      swaggerOptions: {
+        persistAuthorization: true,
+        displayRequestDuration: true,
+        filter: true,
+        tryItOutEnabled: true,
+      },
+    })
+  );
 
   // Mount v1 router
   const container = buildContainer(config);

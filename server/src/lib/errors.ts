@@ -49,13 +49,6 @@ export class BookingLockTimeoutError extends ConflictError {
 // Webhook Errors
 // ============================================================================
 
-export class WebhookDuplicateError extends ConflictError {
-  constructor(eventId: string) {
-    super(`Webhook event ${eventId} has already been processed`);
-    this.name = 'WebhookDuplicateError';
-  }
-}
-
 export class WebhookValidationError extends UnprocessableEntityError {
   constructor(message: string) {
     super(`Webhook validation failed: ${message}`);

@@ -4,6 +4,7 @@
 
 import type { PrismaClient } from '../../generated/prisma';
 import type { BlackoutRepository } from '../lib/ports';
+import { toISODate } from '../lib/date-utils';
 
 export class PrismaBlackoutRepository implements BlackoutRepository {
   constructor(private readonly prisma: PrismaClient) {}
@@ -22,7 +23,7 @@ export class PrismaBlackoutRepository implements BlackoutRepository {
     });
 
     return blackouts.map((b) => ({
-      date: b.date.toISOString().split('T')[0], // YYYY-MM-DD
+      date: toISODate(b.date),
       ...(b.reason && { reason: b.reason }),
     }));
   }

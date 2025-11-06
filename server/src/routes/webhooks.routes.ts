@@ -14,6 +14,19 @@ import {
 import { z } from 'zod';
 import type Stripe from 'stripe';
 
+// Zod schema for Stripe session (runtime validation)
+const StripeSessionSchema = z.object({
+  id: z.string(),
+  amount_total: z.number().nullable(),
+  metadata: z.object({
+    packageId: z.string(),
+    eventDate: z.string(),
+    email: z.string().email(),
+    coupleName: z.string(),
+    addOnIds: z.string().optional(),
+  }),
+});
+
 interface StripeCheckoutSession {
   id: string;
   metadata: {
@@ -23,7 +36,7 @@ interface StripeCheckoutSession {
     coupleName: string;
     addOnIds?: string;
   };
-  amount_total: number;
+  amount_total: number | null;
 }
 
 // Zod schema for metadata validation
@@ -42,6 +55,52 @@ export class WebhooksController {
     private readonly webhookRepo: WebhookRepository
   ) {}
 
+  /**
+   * Handles incoming Stripe webhook events with comprehensive validation and error handling
+   *
+   * Implements critical security and reliability features:
+   * - Cryptographic signature verification to prevent spoofing
+   * - Idempotency protection using event ID deduplication
+   * - Zod-based payload validation (no unsafe JSON.parse)
+   * - Error tracking with webhook repository
+   * - Race condition protection for booking creation
+   *
+   * Process flow:
+   * 1. Verify webhook signature with Stripe secret
+   * 2. Check for duplicate event ID (idempotency)
+   * 3. Record webhook event in database
+   * 4. Validate payload structure with Zod
+   * 5. Process checkout.session.completed events
+   * 6. Mark as processed or failed for retry logic
+   *
+   * @param rawBody - Raw webhook payload string (required for signature verification)
+   * @param signature - Stripe signature header (stripe-signature)
+   *
+   * @returns Promise that resolves when webhook is processed (or identified as duplicate)
+   *
+   * @throws {WebhookValidationError} If signature verification fails or payload is invalid
+   * @throws {WebhookProcessingError} If booking creation or database operations fail
+   *
+   * @example
+   * ```typescript
+   * // Express route handler
+   * app.post('/webhooks/stripe', express.raw({ type: 'application/json' }), async (req, res) => {
+   *   try {
+   *     await webhooksController.handleStripeWebhook(
+   *       req.body.toString(),
+   *       req.headers['stripe-signature']
+   *     );
+   *     res.status(200).send('OK');
+   *   } catch (error) {
+   *     if (error instanceof WebhookValidationError) {
+   *       res.status(400).json({ error: error.message });
+   *     } else {
+   *       res.status(500).json({ error: 'Internal error' });
+   *     }
+   *   }
+   * });
+   * ```
+   */
   async handleStripeWebhook(rawBody: string, signature: string): Promise<void> {
     let event: Stripe.Event;
 
@@ -74,7 +133,17 @@ export class WebhooksController {
     try {
       // Process checkout.session.completed event
       if (event.type === 'checkout.session.completed') {
-        const session = event.data.object as unknown as StripeCheckoutSession;
+        // Validate and parse session data
+        const sessionResult = StripeSessionSchema.safeParse(event.data.object);
+        if (!sessionResult.success) {
+          logger.error({ errors: sessionResult.error.flatten() }, 'Invalid session structure from Stripe');
+          await this.webhookRepo.markFailed(
+            event.id,
+            `Invalid session structure: ${JSON.stringify(sessionResult.error.flatten())}`
+          );
+          throw new WebhookValidationError('Invalid Stripe session structure');
+        }
+        const session = sessionResult.data;
 
         // Validate metadata with Zod (replaces JSON.parse)
         const metadataResult = MetadataSchema.safeParse(session.metadata);
@@ -94,12 +163,27 @@ export class WebhooksController {
         if (addOnIds) {
           try {
             const parsed = JSON.parse(addOnIds);
-            const arrayResult = z.array(z.string()).safeParse(parsed);
-            if (arrayResult.success) {
-              parsedAddOnIds = arrayResult.data;
+
+            // Validate it's an array
+            if (!Array.isArray(parsed)) {
+              logger.warn({ addOnIds, parsed }, 'addOnIds is not an array, ignoring');
+            } else {
+              // Validate all elements are strings
+              const arrayResult = z.array(z.string()).safeParse(parsed);
+              if (arrayResult.success) {
+                parsedAddOnIds = arrayResult.data;
+              } else {
+                logger.warn({
+                  addOnIds,
+                  errors: arrayResult.error.flatten()
+                }, 'addOnIds array contains non-string values, ignoring');
+              }
             }
-          } catch {
-            logger.warn({ addOnIds }, 'Failed to parse addOnIds');
+          } catch (error) {
+            logger.warn({
+              addOnIds,
+              error: error instanceof Error ? error.message : String(error)
+            }, 'Invalid JSON in addOnIds, ignoring');
           }
         }
 

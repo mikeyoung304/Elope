@@ -6,10 +6,31 @@
 import type { PrismaClient } from '../../generated/prisma';
 import type { WebhookRepository } from '../../lib/ports';
 import { logger } from '../../lib/core/logger';
+import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library';
 
 export class PrismaWebhookRepository implements WebhookRepository {
   constructor(private readonly prisma: PrismaClient) {}
 
+  /**
+   * Checks if a webhook event has already been processed
+   *
+   * Implements idempotency protection by tracking webhook event IDs.
+   * If the event exists but isn't marked as DUPLICATE or PROCESSED,
+   * updates its status to DUPLICATE and increments attempt counter.
+   *
+   * @param eventId - Stripe event ID (e.g., "evt_1234...")
+   *
+   * @returns True if event is a duplicate, false if new
+   *
+   * @example
+   * ```typescript
+   * const isDupe = await webhookRepo.isDuplicate('evt_abc123');
+   * if (isDupe) {
+   *   console.log('Already processed - returning 200 OK to Stripe');
+   *   return;
+   * }
+   * ```
+   */
   async isDuplicate(eventId: string): Promise<boolean> {
     const existing = await this.prisma.webhookEvent.findUnique({
       where: { eventId },
@@ -32,6 +53,28 @@ export class PrismaWebhookRepository implements WebhookRepository {
     return false;
   }
 
+  /**
+   * Records a new webhook event for processing
+   *
+   * Creates a database record with PENDING status to track webhook lifecycle.
+   * Gracefully handles duplicate eventId via unique constraint (P2002 error).
+   *
+   * @param input - Webhook event metadata
+   * @param input.eventId - Stripe event ID
+   * @param input.eventType - Event type (e.g., "checkout.session.completed")
+   * @param input.rawPayload - Raw JSON payload from Stripe
+   *
+   * @returns Promise that resolves when recorded (or duplicate detected)
+   *
+   * @example
+   * ```typescript
+   * await webhookRepo.recordWebhook({
+   *   eventId: 'evt_abc123',
+   *   eventType: 'checkout.session.completed',
+   *   rawPayload: JSON.stringify(event)
+   * });
+   * ```
+   */
   async recordWebhook(input: {
     eventId: string;
     eventType: string;
@@ -50,11 +93,40 @@ export class PrismaWebhookRepository implements WebhookRepository {
 
       logger.info({ eventId: input.eventId, eventType: input.eventType }, 'Webhook event recorded');
     } catch (error) {
-      // If unique constraint violation, it's a race condition - webhook already exists
-      logger.warn({ eventId: input.eventId }, 'Webhook already recorded (race condition)');
+      // Only ignore unique constraint violations (duplicate eventId)
+      if (error instanceof PrismaClientKnownRequestError && error.code === 'P2002') {
+        logger.info({ eventId: input.eventId }, 'Webhook already recorded (duplicate eventId)');
+        return;  // Graceful handling of duplicates
+      }
+
+      // Log and re-throw other errors
+      logger.error({
+        error,
+        eventId: input.eventId,
+        eventType: input.eventType
+      }, 'Failed to record webhook event');
+
+      // Re-throw unexpected errors
+      throw error;
     }
   }
 
+  /**
+   * Marks a webhook event as successfully processed
+   *
+   * Updates status to PROCESSED and sets processedAt timestamp.
+   * Called after successful booking creation and event emission.
+   *
+   * @param eventId - Stripe event ID
+   *
+   * @returns Promise that resolves when updated
+   *
+   * @example
+   * ```typescript
+   * await webhookRepo.markProcessed('evt_abc123');
+   * // Event now marked as PROCESSED with timestamp
+   * ```
+   */
   async markProcessed(eventId: string): Promise<void> {
     await this.prisma.webhookEvent.update({
       where: { eventId },
@@ -67,6 +139,27 @@ export class PrismaWebhookRepository implements WebhookRepository {
     logger.info({ eventId }, 'Webhook marked as processed');
   }
 
+  /**
+   * Marks a webhook event as failed with error details
+   *
+   * Updates status to FAILED, stores error message, and increments attempt counter.
+   * Used for retry logic and debugging webhook processing failures.
+   *
+   * @param eventId - Stripe event ID
+   * @param errorMessage - Error description for troubleshooting
+   *
+   * @returns Promise that resolves when updated
+   *
+   * @example
+   * ```typescript
+   * try {
+   *   await processWebhook(event);
+   * } catch (error) {
+   *   await webhookRepo.markFailed('evt_abc123', error.message);
+   *   // Event marked as FAILED with error logged
+   * }
+   * ```
+   */
   async markFailed(eventId: string, errorMessage: string): Promise<void> {
     await this.prisma.webhookEvent.update({
       where: { eventId },

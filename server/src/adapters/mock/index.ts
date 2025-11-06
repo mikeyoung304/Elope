@@ -142,7 +142,8 @@ function seedData(): void {
   });
 
   // Admin user
-  const passwordHash = bcrypt.hashSync('admin123', 10);
+  // OWASP 2023 recommendation for bcrypt rounds
+  const passwordHash = bcrypt.hashSync('admin123', 12);
   users.set('admin@elope.com', {
     id: 'user_admin',
     email: 'admin@elope.com',
@@ -160,6 +161,14 @@ seedData();
 export class MockCatalogRepository implements CatalogRepository {
   async getAllPackages(): Promise<Package[]> {
     return Array.from(packages.values());
+  }
+
+  async getAllPackagesWithAddOns(): Promise<Array<Package & { addOns: AddOn[] }>> {
+    const allPackages = Array.from(packages.values());
+    return allPackages.map((pkg) => ({
+      ...pkg,
+      addOns: Array.from(addOns.values()).filter((a) => a.packageId === pkg.id),
+    }));
   }
 
   async getPackageBySlug(slug: string): Promise<Package | null> {
@@ -327,6 +336,27 @@ export class MockBookingRepository implements BookingRepository {
   async isDateBooked(date: string): Promise<boolean> {
     const dateKey = toUtcMidnight(date);
     return bookingsByDate.has(dateKey);
+  }
+
+  async getUnavailableDates(startDate: Date, endDate: Date): Promise<Date[]> {
+    const unavailable: Date[] = [];
+    const start = new Date(startDate);
+    const end = new Date(endDate);
+
+    // Iterate through all bookings
+    for (const booking of bookings.values()) {
+      const bookingDate = new Date(booking.eventDate);
+
+      // Check if booking is within date range and not canceled/refunded
+      if (bookingDate >= start &&
+          bookingDate <= end &&
+          booking.status === 'PAID') {
+        unavailable.push(bookingDate);
+      }
+    }
+
+    // Sort by date
+    return unavailable.sort((a, b) => a.getTime() - b.getTime());
   }
 }
 

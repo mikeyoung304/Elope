@@ -58,6 +58,11 @@ export function createV1Router(
       return { status: 200 as const, body: data };
     },
 
+    getUnavailableDates: async ({ query }: { query: { startDate: string; endDate: string } }) => {
+      const data = await controllers.availability.getUnavailableDates(query.startDate, query.endDate);
+      return { status: 200 as const, body: data };
+    },
+
     createCheckout: async ({ body }: { body: { packageId: string; eventDate: string; coupleName: string; email: string; addOnIds?: string[] } }) => {
       const data = await controllers.bookings.createCheckout(body);
       return { status: 200 as const, body: data };

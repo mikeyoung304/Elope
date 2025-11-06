@@ -1,19 +1,21 @@
 import { useState } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams } from "react-router-dom";
 import { toUtcMidnight } from "@elope/shared";
 import { usePackage } from "./hooks";
-import { Card } from "../../ui/Card";
-import { Button } from "../../ui/Button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
 import { DatePicker } from "../booking/DatePicker";
 import { AddOnList } from "../booking/AddOnList";
 import { TotalBox } from "../booking/TotalBox";
 import { useBookingTotal } from "../booking/hooks";
 import { api } from "../../lib/api";
+import { formatCurrency } from "@/lib/utils";
 import type { LastCheckout } from "../../lib/types";
 
 export function PackagePage() {
   const { slug } = useParams<{ slug: string }>();
-  const navigate = useNavigate();
   const { data: pkg, isLoading, error } = usePackage(slug || "");
 
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined);
@@ -25,12 +27,16 @@ export function PackagePage() {
   const total = useBookingTotal(packageData?.priceCents || 0, packageData?.addOns || [], selectedAddOns);
 
   if (isLoading) {
-    return <div className="text-center py-12">Loading package...</div>;
+    return (
+      <div className="text-center py-12 text-lavender-100 text-xl">
+        Loading package...
+      </div>
+    );
   }
 
   if (error || !packageData) {
     return (
-      <div className="text-center py-12 text-red-600">
+      <div className="text-center py-12 text-lavender-50 text-xl">
         Package not found
       </div>
     );
@@ -90,74 +96,91 @@ export function PackagePage() {
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-      <div className="lg:col-span-2 space-y-6">
-        <Card>
+      <div className="lg:col-span-2 space-y-8">
+        <Card className="overflow-hidden bg-navy-800 border-navy-600">
           {packageData.photoUrl && (
-            <img
-              src={packageData.photoUrl}
-              alt={packageData.title}
-              className="w-full h-96 object-cover"
-            />
+            <div className="relative aspect-[16/9] overflow-hidden">
+              <img
+                src={packageData.photoUrl}
+                alt={packageData.title}
+                className="w-full h-full object-cover"
+              />
+            </div>
           )}
-          <div className="p-6">
-            <h1 className="text-3xl font-bold mb-4">{packageData.title}</h1>
-            <p className="text-gray-700 mb-4">{packageData.description}</p>
-            <div className="flex items-center gap-4 text-sm text-gray-600">
-              <span>Base Price: ${(packageData.priceCents / 100).toFixed(2)}</span>
+          <CardContent className="p-8">
+            <h1 className="font-heading text-5xl font-bold mb-4 text-lavender-50">
+              {packageData.title}
+            </h1>
+            <p className="text-lavender-100 mb-6 leading-relaxed text-xl">
+              {packageData.description}
+            </p>
+            <div className="flex items-center gap-2 pt-4 border-t border-navy-600">
+              <span className="text-lg text-lavender-200">Base Price:</span>
+              <span className="text-4xl font-heading font-semibold text-lavender-300">
+                {formatCurrency(packageData.priceCents)}
+              </span>
             </div>
-          </div>
+          </CardContent>
         </Card>
 
-        <Card className="p-6">
-          <h2 className="text-xl font-semibold mb-4">Select Date</h2>
-          <DatePicker
-            selected={selectedDate}
-            onSelect={setSelectedDate}
-          />
+        <Card className="bg-navy-800 border-navy-600">
+          <CardHeader>
+            <CardTitle className="text-lavender-50 text-3xl">Select Date</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <DatePicker
+              selected={selectedDate}
+              onSelect={setSelectedDate}
+            />
+          </CardContent>
         </Card>
 
-        <Card className="p-6">
-          <h2 className="text-xl font-semibold mb-4">Your Details</h2>
-          <div className="space-y-4">
-            <div>
-              <label htmlFor="coupleName" className="block text-sm font-medium text-gray-700 mb-1">
-                Your Names
-              </label>
-              <input
-                id="coupleName"
-                type="text"
-                value={coupleName}
-                onChange={(e) => setCoupleName(e.target.value)}
-                placeholder="e.g., Sarah & Alex"
-                className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                required
-              />
+        <Card className="bg-navy-800 border-navy-600">
+          <CardHeader>
+            <CardTitle className="text-lavender-50 text-3xl">Your Details</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-6">
+              <div className="space-y-2">
+                <Label htmlFor="coupleName" className="text-lavender-100 text-lg">Your Names</Label>
+                <Input
+                  id="coupleName"
+                  type="text"
+                  value={coupleName}
+                  onChange={(e) => setCoupleName(e.target.value)}
+                  placeholder="e.g., Sarah & Alex"
+                  required
+                  className="bg-navy-900 border-navy-600 text-lavender-50 placeholder:text-navy-400 focus:border-lavender-500 focus:ring-lavender-500 text-lg h-12"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="email" className="text-lavender-100 text-lg">Email Address</Label>
+                <Input
+                  id="email"
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="your.email@example.com"
+                  required
+                  className="bg-navy-900 border-navy-600 text-lavender-50 placeholder:text-navy-400 focus:border-lavender-500 focus:ring-lavender-500 text-lg h-12"
+                />
+              </div>
             </div>
-            <div>
-              <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
-                Email Address
-              </label>
-              <input
-                id="email"
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="your.email@example.com"
-                className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                required
-              />
-            </div>
-          </div>
+          </CardContent>
         </Card>
 
         {packageData.addOns && packageData.addOns.length > 0 && (
-          <Card className="p-6">
-            <h2 className="text-xl font-semibold mb-4">Add-Ons</h2>
-            <AddOnList
-              addOns={packageData.addOns}
-              selected={selectedAddOns}
-              onToggle={toggleAddOn}
-            />
+          <Card className="bg-navy-800 border-navy-600">
+            <CardHeader>
+              <CardTitle className="text-lavender-50 text-3xl">Add-Ons</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <AddOnList
+                addOns={packageData.addOns}
+                selected={selectedAddOns}
+                onToggle={toggleAddOn}
+              />
+            </CardContent>
           </Card>
         )}
       </div>
@@ -168,7 +191,8 @@ export function PackagePage() {
           <Button
             onClick={handleCheckout}
             disabled={!selectedDate || !coupleName.trim() || !email.trim()}
-            className="w-full"
+            className="w-full text-xl h-14"
+            size="lg"
             data-testid="checkout"
           >
             {!selectedDate

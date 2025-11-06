@@ -1,3 +1,9 @@
+# ⚠️ SECURITY NOTICE ⚠️
+**This document contains example secret values. Rotate before production deployment.**
+See REMEDIATION_PLAN.md Phase 1 for secret rotation procedures.
+
+---
+
 # Phase 2B Deployment Instructions
 
 **Date:** 2025-10-29
@@ -9,7 +15,7 @@
 ## Prerequisites
 
 - [ ] Code changes have been reviewed and committed
-- [ ] All tests passing (102/102 ✅)
+- [ ] All tests passing (129/129 ✅)
 - [ ] TypeScript compilation successful ✅
 - [ ] Backup of production database created
 

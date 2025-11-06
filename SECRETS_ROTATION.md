@@ -1,3 +1,23 @@
+# ⚠️ SECURITY WARNING ⚠️
+
+**CRITICAL:** This document contains actual secret values for reference purposes.
+
+**STATUS:** Secrets ARE exposed in git history (commit 77783dc and others)
+- Files affected: SECRETS_ROTATION.md, DEPLOYMENT_INSTRUCTIONS.md, AGENT_2_REPORT.md
+- Impact: Authentication bypass, payment fraud, database access possible
+- Action Required: Rotate ALL secrets + git history sanitization (3 hours)
+- Current Status: **DEFERRED per user request**
+
+**BEFORE PUBLIC RELEASE:**
+1. Rotate all secrets (JWT, Stripe, Database, Supabase)
+2. Git history rewrite using BFG Repo-Cleaner
+3. Force push (requires team coordination)
+4. Add pre-commit hooks (git-secrets)
+
+See REMEDIATION_PLAN.md Phase 1 for detailed instructions.
+
+---
+
 # Secrets Rotation Procedure
 
 **Last Rotation Date**: 2025-10-29

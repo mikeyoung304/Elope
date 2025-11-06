@@ -14,6 +14,7 @@ import type Stripe from 'stripe';
  */
 export interface CatalogRepository {
   getAllPackages(): Promise<Package[]>;
+  getAllPackagesWithAddOns(): Promise<Array<Package & { addOns: AddOn[] }>>;
   getPackageBySlug(slug: string): Promise<Package | null>;
   getPackageById(id: string): Promise<Package | null>;
   getAddOnsByPackageId(packageId: string): Promise<AddOn[]>;
@@ -33,6 +34,7 @@ export interface BookingRepository {
   findById(id: string): Promise<Booking | null>;
   findAll(): Promise<Booking[]>;
   isDateBooked(date: string): Promise<boolean>;
+  getUnavailableDates(startDate: Date, endDate: Date): Promise<Date[]>;
 }
 
 /**

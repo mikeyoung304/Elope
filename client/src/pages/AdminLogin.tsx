@@ -1,6 +1,5 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Container } from "../ui/Container";
 import { Login } from "../features/admin/Login";
 import { api } from "../lib/api";
 
@@ -33,8 +32,8 @@ export function AdminLogin() {
   };
 
   return (
-    <Container className="py-12">
+    <div className="min-h-screen flex items-center justify-center px-4">
       <Login onLogin={handleLogin} error={error} isLoading={isLoading} />
-    </Container>
+    </div>
   );
 }

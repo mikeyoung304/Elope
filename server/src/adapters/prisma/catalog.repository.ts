@@ -24,6 +24,29 @@ export class PrismaCatalogRepository implements CatalogRepository {
     return packages.map(this.toDomainPackage);
   }
 
+  async getAllPackagesWithAddOns(): Promise<Array<Package & { addOns: AddOn[] }>> {
+    const packages = await this.prisma.package.findMany({
+      include: {
+        addOns: {
+          include: {
+            addOn: true,
+          },
+        },
+      },
+      orderBy: { createdAt: 'asc' },
+    });
+
+    return packages.map((pkg) => ({
+      ...this.toDomainPackage(pkg),
+      addOns: pkg.addOns.map((pa) => this.toDomainAddOn({
+        id: pa.addOn.id,
+        name: pa.addOn.name,
+        price: pa.addOn.price,
+        packages: [{ packageId: pkg.id }],
+      })),
+    }));
+  }
+
   async getPackageBySlug(slug: string): Promise<Package | null> {
     const pkg = await this.prisma.package.findUnique({
       where: { slug },

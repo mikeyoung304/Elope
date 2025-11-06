@@ -58,6 +58,13 @@ export class FakeCatalogRepository implements CatalogRepository {
     return [...this.packages];
   }
 
+  async getAllPackagesWithAddOns(): Promise<Array<Package & { addOns: AddOn[] }>> {
+    return this.packages.map((pkg) => ({
+      ...pkg,
+      addOns: this.addOns.filter((a) => a.packageId === pkg.id),
+    }));
+  }
+
   async getPackageBySlug(slug: string): Promise<Package | null> {
     return this.packages.find((p) => p.slug === slug) || null;
   }

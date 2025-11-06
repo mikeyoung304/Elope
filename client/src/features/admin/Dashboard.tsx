@@ -1,10 +1,24 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
-import { Card } from "../../ui/Card";
-import { Button } from "../../ui/Button";
+import { Calendar, DollarSign, Package, XCircle, LogOut, Loader2 } from "lucide-react";
+import { Card } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { api } from "../../lib/api";
+import { cn, formatCurrency } from "@/lib/utils";
 import type { BookingDto, PackageDto } from "@elope/contracts";
 import { PackagesManager } from "./PackagesManager";
+import { BookingList } from "./BookingList";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { Badge } from "@/components/ui/badge";
 
 type Blackout = {
   date: string;
@@ -31,7 +45,7 @@ export function Dashboard() {
     }
   }, [activeTab]);
 
-  const loadBookings = async () => {
+  const loadBookings = useCallback(async () => {
     setIsLoading(true);
     try {
       const result = await api.adminGetBookings();
@@ -43,9 +57,9 @@ export function Dashboard() {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, []);
 
-  const loadBlackouts = async () => {
+  const loadBlackouts = useCallback(async () => {
     setIsLoading(true);
     try {
       const result = await api.adminGetBlackouts();
@@ -57,9 +71,9 @@ export function Dashboard() {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, []);
 
-  const loadPackages = async () => {
+  const loadPackages = useCallback(async () => {
     setIsLoading(true);
     try {
       const result = await api.getPackages();
@@ -71,9 +85,9 @@ export function Dashboard() {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, []);
 
-  const handleAddBlackout = async (e: React.FormEvent) => {
+  const handleAddBlackout = useCallback(async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newBlackoutDate) return;
 
@@ -93,9 +107,9 @@ export function Dashboard() {
     } catch (error) {
       console.error("Failed to create blackout:", error);
     }
-  };
+  }, [newBlackoutDate, newBlackoutReason, loadBlackouts]);
 
-  const exportToCSV = () => {
+  const exportToCSV = useCallback(() => {
     if (bookings.length === 0) return;
 
     const headers = ["Couple", "Email", "Date", "Package ID", "Total"];
@@ -115,79 +129,115 @@ export function Dashboard() {
     a.download = `bookings-${new Date().toISOString().split("T")[0]}.csv`;
     a.click();
     URL.revokeObjectURL(url);
-  };
+  }, [bookings]);
 
-  const handleLogout = () => {
+  const handleLogout = useCallback(() => {
     localStorage.removeItem("adminToken");
     navigate("/admin/login");
-  };
+  }, [navigate]);
 
-  // Calculate metrics
-  const totalBookings = bookings.length;
-  const totalRevenue = bookings.reduce((sum, b) => sum + b.totalCents, 0);
-  const averageBookingValue = totalBookings > 0 ? totalRevenue / totalBookings : 0;
+  // Calculate metrics with useMemo
+  const metrics = useMemo(() => {
+    const totalBookings = bookings.length;
+    const totalRevenue = bookings.reduce((sum, b) => sum + b.totalCents, 0);
+    const averageBookingValue = totalBookings > 0 ? totalRevenue / totalBookings : 0;
+    return { totalBookings, totalRevenue, averageBookingValue };
+  }, [bookings]);
 
   return (
     <div className="space-y-6">
+      {/* Header */}
       <div className="flex justify-between items-center">
-        <h1 className="text-3xl font-bold">Admin Dashboard</h1>
-        <Button onClick={handleLogout} variant="secondary">
+        <h1 className="text-4xl font-bold text-lavender-50">Admin Dashboard</h1>
+        <Button
+          onClick={handleLogout}
+          variant="outline"
+          size="lg"
+          className="border-navy-600 text-lavender-100 hover:bg-navy-800 text-lg"
+        >
+          <LogOut className="w-5 h-5 mr-2" />
           Logout
         </Button>
       </div>
 
       {/* Metrics Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-        <Card className="p-6">
-          <div className="text-sm text-gray-600 mb-1">Total Bookings</div>
-          <div className="text-3xl font-bold text-blue-600">{totalBookings}</div>
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <Card className="p-6 bg-navy-800 border-navy-600">
+          <div className="flex items-center gap-3 mb-2">
+            <div className="p-2 bg-navy-700 rounded">
+              <Calendar className="w-5 h-5 text-lavender-300" />
+            </div>
+            <div className="text-base text-lavender-100">Total Bookings</div>
+          </div>
+          <div className="text-4xl font-bold text-lavender-50">{metrics.totalBookings}</div>
         </Card>
-        <Card className="p-6">
-          <div className="text-sm text-gray-600 mb-1">Total Revenue</div>
-          <div className="text-3xl font-bold text-green-600">
-            ${(totalRevenue / 100).toFixed(2)}
+
+        <Card className="p-6 bg-navy-800 border-navy-600">
+          <div className="flex items-center gap-3 mb-2">
+            <div className="p-2 bg-navy-700 rounded">
+              <DollarSign className="w-5 h-5 text-lavender-300" />
+            </div>
+            <div className="text-base text-lavender-100">Total Revenue</div>
+          </div>
+          <div className="text-4xl font-bold text-lavender-300">
+            {formatCurrency(metrics.totalRevenue)}
           </div>
         </Card>
-        <Card className="p-6">
-          <div className="text-sm text-gray-600 mb-1">Total Packages</div>
-          <div className="text-3xl font-bold text-purple-600">{packages.length}</div>
+
+        <Card className="p-6 bg-navy-800 border-navy-600">
+          <div className="flex items-center gap-3 mb-2">
+            <div className="p-2 bg-navy-700 rounded">
+              <Package className="w-5 h-5 text-lavender-300" />
+            </div>
+            <div className="text-base text-lavender-100">Total Packages</div>
+          </div>
+          <div className="text-4xl font-bold text-lavender-50">{packages.length}</div>
         </Card>
-        <Card className="p-6">
-          <div className="text-sm text-gray-600 mb-1">Blackout Dates</div>
-          <div className="text-3xl font-bold text-orange-600">{blackouts.length}</div>
+
+        <Card className="p-6 bg-navy-800 border-navy-600">
+          <div className="flex items-center gap-3 mb-2">
+            <div className="p-2 bg-navy-700 rounded">
+              <XCircle className="w-5 h-5 text-lavender-300" />
+            </div>
+            <div className="text-base text-lavender-100">Blackout Dates</div>
+          </div>
+          <div className="text-4xl font-bold text-lavender-300">{blackouts.length}</div>
         </Card>
       </div>
 
       {/* Tabs */}
-      <div className="border-b border-gray-200">
+      <div className="border-b border-navy-600">
         <nav className="flex -mb-px space-x-8">
           <button
             onClick={() => setActiveTab("bookings")}
-            className={`py-2 px-1 border-b-2 font-medium text-sm ${
+            className={cn(
+              "py-2 px-1 border-b-2 font-medium text-lg transition-colors",
               activeTab === "bookings"
-                ? "border-blue-500 text-blue-600"
-                : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
-            }`}
+                ? "border-lavender-500 text-lavender-300"
+                : "border-transparent text-lavender-100 hover:text-lavender-300 hover:border-navy-500"
+            )}
           >
             Bookings
           </button>
           <button
             onClick={() => setActiveTab("blackouts")}
-            className={`py-2 px-1 border-b-2 font-medium text-sm ${
+            className={cn(
+              "py-2 px-1 border-b-2 font-medium text-lg transition-colors",
               activeTab === "blackouts"
-                ? "border-blue-500 text-blue-600"
-                : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
-            }`}
+                ? "border-lavender-500 text-lavender-300"
+                : "border-transparent text-lavender-100 hover:text-lavender-300 hover:border-navy-500"
+            )}
           >
             Blackouts
           </button>
           <button
             onClick={() => setActiveTab("packages")}
-            className={`py-2 px-1 border-b-2 font-medium text-sm ${
+            className={cn(
+              "py-2 px-1 border-b-2 font-medium text-lg transition-colors",
               activeTab === "packages"
-                ? "border-blue-500 text-blue-600"
-                : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
-            }`}
+                ? "border-lavender-500 text-lavender-300"
+                : "border-transparent text-lavender-100 hover:text-lavender-300 hover:border-navy-500"
+            )}
           >
             Packages
           </button>
@@ -196,147 +246,90 @@ export function Dashboard() {
 
       {/* Bookings Tab */}
       {activeTab === "bookings" && (
-        <Card className="p-6">
-          <div className="flex justify-between items-center mb-4">
-            <h2 className="text-xl font-semibold">Bookings</h2>
-            <Button onClick={exportToCSV} variant="secondary" disabled={bookings.length === 0}>
-              Export CSV
-            </Button>
-          </div>
-          <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-gray-200">
-              <thead>
-                <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Couple
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Date
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Package
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Total
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
-                {isLoading ? (
-                  <tr>
-                    <td className="px-6 py-4 text-sm text-gray-500" colSpan={4}>
-                      Loading...
-                    </td>
-                  </tr>
-                ) : bookings.length === 0 ? (
-                  <tr>
-                    <td className="px-6 py-4 text-sm text-gray-500" colSpan={4}>
-                      No bookings yet
-                    </td>
-                  </tr>
-                ) : (
-                  bookings.map((booking) => (
-                    <tr key={booking.id}>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                        {booking.coupleName}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        {booking.eventDate}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        {booking.packageId}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        ${(booking.totalCents / 100).toFixed(2)}
-                      </td>
-                    </tr>
-                  ))
-                )}
-              </tbody>
-            </table>
-          </div>
-        </Card>
+        <BookingList bookings={bookings} isLoading={isLoading} onExportCSV={exportToCSV} />
       )}
 
       {/* Blackouts Tab */}
       {activeTab === "blackouts" && (
         <div className="space-y-6">
-          <Card className="p-6">
-            <h2 className="text-xl font-semibold mb-4">Add Blackout Date</h2>
+          <Card className="p-6 bg-navy-800 border-navy-600">
+            <h2 className="text-2xl font-semibold mb-4 text-lavender-50">Add Blackout Date</h2>
             <form onSubmit={handleAddBlackout} className="flex gap-4">
               <div className="flex-1">
-                <label htmlFor="blackoutDate" className="block text-sm font-medium mb-1">
+                <Label htmlFor="blackoutDate" className="text-lavender-100 text-lg">
                   Date
-                </label>
-                <input
+                </Label>
+                <Input
                   id="blackoutDate"
                   type="date"
                   value={newBlackoutDate}
                   onChange={(e) => setNewBlackoutDate(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="bg-navy-900 border-navy-600 text-lavender-50 focus:border-lavender-500 text-lg h-12"
                   required
                 />
               </div>
               <div className="flex-1">
-                <label htmlFor="blackoutReason" className="block text-sm font-medium mb-1">
+                <Label htmlFor="blackoutReason" className="text-lavender-100 text-lg">
                   Reason (optional)
-                </label>
-                <input
+                </Label>
+                <Input
                   id="blackoutReason"
                   type="text"
                   value={newBlackoutReason}
                   onChange={(e) => setNewBlackoutReason(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  placeholder="Holiday, maintenance, etc."
+                  className="bg-navy-900 border-navy-600 text-lavender-50 placeholder:text-navy-400 focus:border-lavender-500 text-lg h-12"
                 />
               </div>
               <div className="flex items-end">
-                <Button type="submit">Add</Button>
+                <Button type="submit" className="bg-lavender-500 hover:bg-lavender-600 text-lg h-12 px-6">
+                  Add
+                </Button>
               </div>
             </form>
           </Card>
 
-          <Card className="p-6">
-            <h2 className="text-xl font-semibold mb-4">Blackout Dates</h2>
-            <div className="overflow-x-auto">
-              <table className="min-w-full divide-y divide-gray-200">
-                <thead>
-                  <tr>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Date
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Reason
-                    </th>
-                  </tr>
-                </thead>
-                <tbody className="bg-white divide-y divide-gray-200">
-                  {isLoading ? (
-                    <tr>
-                      <td className="px-6 py-4 text-sm text-gray-500" colSpan={2}>
-                        Loading...
-                      </td>
-                    </tr>
-                  ) : blackouts.length === 0 ? (
-                    <tr>
-                      <td className="px-6 py-4 text-sm text-gray-500" colSpan={2}>
-                        No blackout dates
-                      </td>
-                    </tr>
-                  ) : (
-                    blackouts.map((blackout) => (
-                      <tr key={blackout.date}>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+          <Card className="p-6 bg-navy-800 border-navy-600">
+            <h2 className="text-2xl font-semibold mb-6 text-lavender-50">Blackout Dates</h2>
+            <Table>
+              <TableHeader>
+                <TableRow className="border-navy-600 hover:bg-navy-700">
+                  <TableHead className="text-lavender-100 text-lg">Date</TableHead>
+                  <TableHead className="text-lavender-100 text-lg">Reason</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {isLoading ? (
+                  <TableRow className="hover:bg-navy-700">
+                    <TableCell colSpan={2} className="text-center py-8">
+                      <Loader2 className="w-6 h-6 animate-spin mx-auto text-lavender-300" />
+                    </TableCell>
+                  </TableRow>
+                ) : blackouts.length === 0 ? (
+                  <TableRow className="hover:bg-navy-700">
+                    <TableCell colSpan={2} className="text-center py-8 text-lavender-100 text-lg">
+                      No blackout dates
+                    </TableCell>
+                  </TableRow>
+                ) : (
+                  blackouts.map((blackout) => (
+                    <TableRow key={blackout.date} className="border-navy-600 hover:bg-navy-700">
+                      <TableCell className="font-medium">
+                        <Badge
+                          variant="outline"
+                          className="border-navy-500 bg-navy-700 text-lavender-200 text-base"
+                        >
                           {blackout.date}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                          {blackout.reason || "—"}
-                        </td>
-                      </tr>
-                    ))
-                  )}
-                </tbody>
-              </table>
-            </div>
+                        </Badge>
+                      </TableCell>
+                      <TableCell className="text-lavender-100 text-base">
+                        {blackout.reason || "—"}
+                      </TableCell>
+                    </TableRow>
+                  ))
+                )}
+              </TableBody>
+            </Table>
           </Card>
         </div>
       )}

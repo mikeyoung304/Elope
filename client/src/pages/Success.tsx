@@ -1,9 +1,12 @@
 import { useState, useEffect } from "react";
 import { useSearchParams, Link } from "react-router-dom";
+import { CheckCircle, AlertCircle, Calendar, Mail, Users, Package, Plus } from "lucide-react";
 import { Container } from "../ui/Container";
-import { Card } from "../ui/Card";
-import { Button } from "../ui/Button";
+import { Card, CardHeader, CardTitle, CardContent, CardFooter } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { api, baseUrl } from "../lib/api";
+import { cn, formatCurrency, formatDate } from "@/lib/utils";
 import type { LastCheckout } from "../lib/types";
 import type { BookingDto, PackageDto } from "@elope/contracts";
 
@@ -108,16 +111,8 @@ export function Success() {
     }
   }, [bookingIdParam]);
 
-  // Helper to format currency
-  const formatCurrency = (cents: number) => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD',
-    }).format(cents / 100);
-  };
-
-  // Helper to format date
-  const formatDate = (dateStr: string) => {
+  // Helper to format date with proper timezone handling
+  const formatEventDate = (dateStr: string) => {
     const date = new Date(dateStr + 'T00:00:00');
     return date.toLocaleDateString('en-US', {
       weekday: 'long',
@@ -128,164 +123,227 @@ export function Success() {
   };
 
   return (
-    <Container className="py-12">
-      <Card className="max-w-2xl mx-auto p-12">
-        <div className="mb-6 text-center">
-          <svg
-            className="mx-auto h-16 w-16 text-green-600"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
-            />
-          </svg>
-        </div>
-
-        {showMockButton && (
-          <div className="mb-8 p-6 bg-yellow-50 border border-yellow-200 rounded-lg">
-            <p className="text-sm text-yellow-800 mb-4">
-              <strong>Mock Mode:</strong> Click below to simulate payment completion
-            </p>
-            <Button
-              onClick={handleMarkAsPaid}
-              disabled={isSimulating}
-              className="bg-yellow-600 hover:bg-yellow-700"
-              data-testid="mock-paid"
-            >
-              {isSimulating ? 'Simulating...' : 'Mark as Paid (mock)'}
-            </Button>
-          </div>
-        )}
-
-        {isPaid && isMockMode && !bookingDetails && (
-          <div className="mb-8 p-6 bg-green-50 border border-green-200 rounded-lg">
-            <p className="text-green-800 font-semibold mb-2">
-              Payment simulation completed successfully!
-            </p>
-            <p className="text-green-700 text-sm">
-              Your booking has been created in the system.
-            </p>
-          </div>
-        )}
-
-        <h1 className="text-3xl font-bold mb-4 text-center">
-          {bookingDetails ? 'Booking Confirmed!' : isPaid ? 'Booking Confirmed!' : 'Almost There!'}
-        </h1>
-
-        {isLoadingBooking && (
-          <div className="text-center py-8">
-            <p className="text-gray-600">Loading booking details...</p>
-          </div>
-        )}
-
-        {bookingError && (
-          <div className="mb-8 p-6 bg-red-50 border border-red-200 rounded-lg">
-            <p className="text-red-800 font-semibold">{bookingError}</p>
-          </div>
-        )}
-
-        {bookingDetails && (
-          <div className="space-y-6 text-left">
-            <div className="bg-green-50 border border-green-200 rounded-lg p-6">
-              <p className="text-green-800 font-semibold mb-2">
-                Payment Received!
-              </p>
-              <p className="text-green-700 text-sm">
-                Thank you for your booking. We'll send you a confirmation email shortly at{' '}
-                <strong>{bookingDetails.email}</strong>
-              </p>
+    <Container className="py-12 md:py-20">
+      <Card className="max-w-3xl mx-auto bg-navy-800 border-navy-600 shadow-lg">
+        <CardHeader className="text-center space-y-4 pb-8">
+          <div className="flex justify-center">
+            <div className={cn(
+              "inline-flex items-center justify-center w-16 h-16 rounded-full transition-colors",
+              bookingDetails ? "bg-navy-700" : "bg-navy-700"
+            )}>
+              {bookingDetails ? (
+                <CheckCircle className="w-8 h-8 text-lavender-300" />
+              ) : (
+                <AlertCircle className="w-8 h-8 text-lavender-200" />
+              )}
             </div>
+          </div>
+          <CardTitle className="font-heading text-4xl md:text-5xl text-lavender-50">
+            {bookingDetails ? 'Booking Confirmed!' : isPaid ? 'Booking Confirmed!' : 'Almost There!'}
+          </CardTitle>
+        </CardHeader>
 
-            <div className="border-t pt-6">
-              <h2 className="text-xl font-semibold mb-4">Booking Details</h2>
-
-              <div className="space-y-3">
-                <div className="flex justify-between">
-                  <span className="text-gray-600">Confirmation Number:</span>
-                  <span className="font-mono font-semibold">{bookingDetails.id}</span>
+        <CardContent className="space-y-6">
+          {/* Mock Mode Button */}
+          {showMockButton && (
+            <div className="p-6 border border-navy-600 bg-navy-700 rounded-lg">
+              <div className="flex items-start gap-3 mb-4">
+                <AlertCircle className="w-5 h-5 text-lavender-200 mt-0.5" />
+                <div>
+                  <p className="text-lg font-medium text-lavender-50 mb-1">
+                    Mock Mode Active
+                  </p>
+                  <p className="text-base text-lavender-100">
+                    Click below to simulate payment completion
+                  </p>
                 </div>
+              </div>
+              <Button
+                onClick={handleMarkAsPaid}
+                disabled={isSimulating}
+                variant="outline"
+                className="w-full border-navy-600 text-lavender-100 hover:bg-navy-600 text-lg h-12"
+                data-testid="mock-paid"
+              >
+                {isSimulating ? 'Simulating...' : 'Mark as Paid (mock)'}
+              </Button>
+            </div>
+          )}
 
-                <div className="flex justify-between">
-                  <span className="text-gray-600">Couple Name:</span>
-                  <span className="font-semibold">{bookingDetails.coupleName}</span>
-                </div>
-
-                <div className="flex justify-between">
-                  <span className="text-gray-600">Email:</span>
-                  <span>{bookingDetails.email}</span>
-                </div>
-
-                <div className="flex justify-between">
-                  <span className="text-gray-600">Event Date:</span>
-                  <span className="font-semibold">{formatDate(bookingDetails.eventDate)}</span>
-                </div>
-
-                <div className="flex justify-between">
-                  <span className="text-gray-600">Package:</span>
-                  <span className="font-semibold">
-                    {packageData ? packageData.title : bookingDetails.packageId}
-                  </span>
-                </div>
-
-                {bookingDetails.addOnIds.length > 0 && (
-                  <div>
-                    <span className="text-gray-600">Add-ons:</span>
-                    <ul className="list-disc list-inside ml-4 mt-1">
-                      {bookingDetails.addOnIds.map((addOnId) => {
-                        const addOn = packageData?.addOns.find(a => a.id === addOnId);
-                        return (
-                          <li key={addOnId}>
-                            {addOn ? addOn.title : addOnId}
-                          </li>
-                        );
-                      })}
-                    </ul>
-                  </div>
-                )}
-
-                <div className="flex justify-between pt-4 border-t border-gray-200">
-                  <span className="text-lg font-semibold">Total Paid:</span>
-                  <span className="text-lg font-bold text-green-700">
-                    {formatCurrency(bookingDetails.totalCents)}
-                  </span>
-                </div>
-
-                <div className="flex justify-between">
-                  <span className="text-gray-600">Status:</span>
-                  <span className="px-2 py-1 bg-green-100 text-green-800 rounded text-sm font-semibold">
-                    {bookingDetails.status}
-                  </span>
+          {/* Mock Mode Success Message */}
+          {isPaid && isMockMode && !bookingDetails && (
+            <div className="p-6 border border-navy-600 bg-navy-700 rounded-lg">
+              <div className="flex items-start gap-3">
+                <CheckCircle className="w-5 h-5 text-lavender-300 mt-0.5" />
+                <div>
+                  <p className="text-lg font-medium text-lavender-50 mb-1">
+                    Payment simulation completed successfully!
+                  </p>
+                  <p className="text-base text-lavender-100">
+                    Your booking has been created in the system.
+                  </p>
                 </div>
               </div>
             </div>
-          </div>
-        )}
+          )}
 
-        {!bookingDetails && !isLoadingBooking && !isPaid && (
-          <p className="text-xl text-gray-600 mb-8 text-center">
-            Please complete the payment to confirm your booking.
-          </p>
-        )}
+          {/* Loading State */}
+          {isLoadingBooking && (
+            <div className="text-center py-12">
+              <div className="inline-flex items-center gap-3 text-lavender-100">
+                <div className="w-5 h-5 border-2 border-current border-t-transparent rounded-full animate-spin" />
+                <p className="text-lg">Loading booking details...</p>
+              </div>
+            </div>
+          )}
 
+          {/* Error Message */}
+          {bookingError && (
+            <div className="p-6 border border-navy-600 bg-navy-700 rounded-lg">
+              <div className="flex items-start gap-3">
+                <AlertCircle className="w-5 h-5 text-lavender-200 mt-0.5" />
+                <p className="text-lg font-medium text-lavender-50">{bookingError}</p>
+              </div>
+            </div>
+          )}
+
+          {/* Booking Details */}
+          {bookingDetails && (
+            <div className="space-y-8">
+              {/* Success Message */}
+              <div className="p-6 border border-navy-600 bg-navy-700 rounded-lg">
+                <div className="flex items-start gap-3">
+                  <CheckCircle className="w-5 h-5 text-lavender-300 mt-0.5" />
+                  <div>
+                    <p className="text-lg font-medium text-lavender-50 mb-1">
+                      Payment Received!
+                    </p>
+                    <p className="text-base text-lavender-100">
+                      Thank you for your booking. We'll send you a confirmation email shortly at{' '}
+                      <span className="font-medium text-lavender-50">{bookingDetails.email}</span>
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Booking Information */}
+              <div className="space-y-6">
+                <div>
+                  <h2 className="font-heading text-2xl font-semibold mb-4 text-lavender-50">Booking Details</h2>
+                  <div className="space-y-4">
+                    {/* Confirmation Number */}
+                    <div className="flex items-start justify-between gap-4 pb-4 border-b border-navy-600">
+                      <span className="text-base text-lavender-100">Confirmation Number</span>
+                      <span className="text-base font-mono font-medium text-lavender-50 text-right">{bookingDetails.id}</span>
+                    </div>
+
+                    {/* Couple Name */}
+                    <div className="flex items-start justify-between gap-4">
+                      <div className="flex items-center gap-2 text-base text-lavender-100">
+                        <Users className="w-5 h-5" />
+                        <span>Couple Name</span>
+                      </div>
+                      <span className="text-base font-medium text-lavender-50 text-right">{bookingDetails.coupleName}</span>
+                    </div>
+
+                    {/* Email */}
+                    <div className="flex items-start justify-between gap-4">
+                      <div className="flex items-center gap-2 text-base text-lavender-100">
+                        <Mail className="w-5 h-5" />
+                        <span>Email</span>
+                      </div>
+                      <span className="text-base text-lavender-50 text-right">{bookingDetails.email}</span>
+                    </div>
+
+                    {/* Event Date */}
+                    <div className="flex items-start justify-between gap-4">
+                      <div className="flex items-center gap-2 text-base text-lavender-100">
+                        <Calendar className="w-5 h-5" />
+                        <span>Event Date</span>
+                      </div>
+                      <span className="text-base font-medium text-lavender-50 text-right">{formatEventDate(bookingDetails.eventDate)}</span>
+                    </div>
+
+                    {/* Package */}
+                    <div className="flex items-start justify-between gap-4">
+                      <div className="flex items-center gap-2 text-base text-lavender-100">
+                        <Package className="w-5 h-5" />
+                        <span>Package</span>
+                      </div>
+                      <span className="text-base font-medium text-lavender-50 text-right">
+                        {packageData ? packageData.title : bookingDetails.packageId}
+                      </span>
+                    </div>
+
+                    {/* Add-ons */}
+                    {bookingDetails.addOnIds.length > 0 && (
+                      <div className="flex items-start justify-between gap-4">
+                        <div className="flex items-center gap-2 text-base text-lavender-100">
+                          <Plus className="w-5 h-5" />
+                          <span>Add-ons</span>
+                        </div>
+                        <div className="flex flex-col gap-1.5 text-right">
+                          {bookingDetails.addOnIds.map((addOnId) => {
+                            const addOn = packageData?.addOns.find(a => a.id === addOnId);
+                            return (
+                              <span key={addOnId} className="text-base text-lavender-50">
+                                {addOn ? addOn.title : addOnId}
+                              </span>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Status */}
+                    <div className="flex items-start justify-between gap-4">
+                      <span className="text-base text-lavender-100">Status</span>
+                      <Badge variant="outline" className="text-lavender-200 border-navy-500 bg-navy-700 text-base">
+                        {bookingDetails.status}
+                      </Badge>
+                    </div>
+
+                    {/* Total */}
+                    <div className="flex items-center justify-between gap-4 pt-4 border-t border-navy-600">
+                      <span className="font-medium text-lavender-50 text-xl">Total Paid</span>
+                      <span className="text-3xl font-heading font-semibold text-lavender-50">
+                        {formatCurrency(bookingDetails.totalCents)}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Pending Payment Message */}
+          {!bookingDetails && !isLoadingBooking && !isPaid && (
+            <div className="text-center py-8">
+              <p className="text-lavender-100 text-lg">
+                Please complete the payment to confirm your booking.
+              </p>
+            </div>
+          )}
+
+          {/* Help Text */}
+          {!isPaid && !showMockButton && !bookingDetails && (
+            <div className="text-center pt-4">
+              <p className="text-base text-lavender-100">
+                If you have any questions, please don't hesitate to contact us.
+              </p>
+            </div>
+          )}
+        </CardContent>
+
+        {/* Footer with Action Button */}
         {(bookingDetails || isPaid) && (
-          <div className="mt-8 text-center">
-            <Link to="/">
-              <Button className="mt-4">
+          <CardFooter className="justify-center pt-6">
+            <Button asChild className="bg-lavender-500 hover:bg-lavender-600 text-white text-xl h-14 px-8">
+              <Link to="/">
                 Back to Home
-              </Button>
-            </Link>
-          </div>
-        )}
-
-        {!isPaid && !showMockButton && !bookingDetails && (
-          <p className="text-gray-500 text-center">
-            If you have any questions, please don't hesitate to contact us.
-          </p>
+              </Link>
+            </Button>
+          </CardFooter>
         )}
       </Card>
     </Container>

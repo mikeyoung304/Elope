@@ -186,10 +186,10 @@ describe('WebhooksController', () => {
         controller.handleStripeWebhook(rawBody, 'valid_signature')
       ).rejects.toThrow(WebhookValidationError);
 
-      // Webhook should be recorded and marked as failed
+      // Webhook should be recorded but marked as FAILED (validation error)
       expect(webhookRepo.events.length).toBe(1);
       expect(webhookRepo.events[0]?.status).toBe('FAILED');
-      expect(webhookRepo.events[0]?.lastError).toContain('Invalid metadata');
+      expect(webhookRepo.events[0]?.lastError).toContain('Invalid session structure');
     });
 
     it('should handle database failure and mark webhook as failed', async () => {

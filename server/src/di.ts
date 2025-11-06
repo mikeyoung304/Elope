@@ -4,6 +4,7 @@
 
 import type { Config } from './lib/core/config';
 import { InProcessEventEmitter } from './lib/core/events';
+import { CacheService } from './lib/cache';
 import { CatalogService } from './services/catalog.service';
 import { AvailabilityService } from './services/availability.service';
 import { BookingService } from './services/booking.service';
@@ -49,14 +50,18 @@ export interface Container {
 export function buildContainer(config: Config): Container {
   const eventEmitter = new InProcessEventEmitter();
 
+  // Initialize cache service (15 minute default TTL)
+  const cacheService = new CacheService(900);
+  logger.info('✅ Cache service initialized with 900s TTL');
+
   if (config.ADAPTERS_PRESET === 'mock') {
     logger.info('🧪 Using MOCK adapters');
 
     // Build mock adapters
     const adapters = buildMockAdapters();
 
-    // Build domain services
-    const catalogService = new CatalogService(adapters.catalogRepo);
+    // Build domain services with caching
+    const catalogService = new CatalogService(adapters.catalogRepo, cacheService);
     const availabilityService = new AvailabilityService(
       adapters.calendarProvider,
       adapters.blackoutRepo,
@@ -98,8 +103,27 @@ export function buildContainer(config: Config): Container {
 
   // Initialize Prisma Client
   const prisma = new PrismaClient({
-    log: ['error', 'warn'],
+    datasources: {
+      db: {
+        url: config.DATABASE_URL,
+      },
+    },
+    log: process.env.NODE_ENV === 'production'
+      ? ['error', 'warn']
+      : ['query', 'error', 'warn'],
+    // Connection pool handled by Prisma/Supabase automatically
+    // Recommended for serverless: 1-5 connections per instance
+    // Prisma default: (num_physical_cpus * 2) + effective_spindle_count
   });
+
+  // Add slow query monitoring
+  if (process.env.NODE_ENV !== 'production') {
+    prisma.$on('query' as never, ((e: { duration: number; query: string }) => {
+      if (e.duration > 1000) {
+        logger.warn({ duration: e.duration, query: e.query }, 'Slow query detected (>1s)');
+      }
+    }) as never);
+  }
 
   // Build real repository adapters
   const catalogRepo = new PrismaCatalogRepository(prisma);
@@ -140,8 +164,8 @@ export function buildContainer(config: Config): Container {
     calendarProvider = mockAdapters.calendarProvider;
   }
 
-  // Build domain services
-  const catalogService = new CatalogService(catalogRepo);
+  // Build domain services with caching
+  const catalogService = new CatalogService(catalogRepo, cacheService);
   const availabilityService = new AvailabilityService(
     calendarProvider,
     blackoutRepo,

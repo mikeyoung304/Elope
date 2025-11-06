@@ -93,7 +93,7 @@ describe('CatalogService', () => {
       // Act & Assert
       await expect(service.createPackage(data)).rejects.toThrow(ValidationError);
       await expect(service.createPackage(data)).rejects.toThrow(
-        'slug, title, and description are required'
+        'Package: Missing required fields: slug'
       );
     });
 
@@ -252,7 +252,7 @@ describe('CatalogService', () => {
       // Act & Assert
       await expect(service.createAddOn(data)).rejects.toThrow(ValidationError);
       await expect(service.createAddOn(data)).rejects.toThrow(
-        'packageId and title are required'
+        'AddOn: Missing required fields: packageId'
       );
     });
 

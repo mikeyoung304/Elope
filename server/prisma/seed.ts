@@ -3,9 +3,22 @@ import bcrypt from 'bcryptjs';
 
 const prisma = new PrismaClient();
 
+// OWASP 2023 recommendation for bcrypt rounds
+const BCRYPT_ROUNDS = 12;
+
 async function main() {
   // Create admin user
-  const passwordHash = await bcrypt.hash('admin', 10);
+  // Require strong admin password from environment
+  const adminPassword = process.env.ADMIN_DEFAULT_PASSWORD;
+  if (!adminPassword) {
+    console.warn('⚠️  ADMIN_DEFAULT_PASSWORD not set, using insecure default "admin"');
+    console.warn('⚠️  Set ADMIN_DEFAULT_PASSWORD environment variable before production!');
+  }
+  if (adminPassword && adminPassword.length < 12) {
+    throw new Error('ADMIN_DEFAULT_PASSWORD must be at least 12 characters');
+  }
+
+  const passwordHash = await bcrypt.hash(adminPassword || 'admin', BCRYPT_ROUNDS);
   await prisma.user.upsert({
     where: { email: 'admin@example.com' },
     update: {},

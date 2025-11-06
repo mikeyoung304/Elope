@@ -27,6 +27,46 @@ enum UserRole {
   ADMIN
 }
 
+// Multi-tenant model - each tenant is an independent wedding business
+model Tenant {
+  id   String @id @default(cuid())
+  slug String @unique // URL-safe identifier (e.g., "bellaweddings")
+  name String // Display name (e.g., "Bella Weddings")
+
+  // API Authentication
+  apiKeyPublic String @unique // pk_live_tenant_xyz (safe for client-side)
+  apiKeySecret String // Hashed secret key (admin operations only)
+
+  // Commission Settings
+  commissionPercent Decimal @default(10.0) @db.Decimal(5, 2) // Platform commission %
+
+  // Branding Configuration
+  branding Json @default("{}") // {primaryColor, logo, fontFamily, etc.}
+
+  // Stripe Connect
+  stripeAccountId String? @unique // Stripe Connected Account ID
+  stripeOnboarded Boolean @default(false) // Has completed Stripe onboarding
+
+  // Encrypted Secrets Storage
+  secrets Json @default("{}") // {stripe: {ciphertext, iv, authTag}}
+
+  // Status
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  packages      Package[]
+  addOns        AddOn[]
+  bookings      Booking[]
+  blackoutDates BlackoutDate[]
+  webhookEvents WebhookEvent[]
+
+  @@index([slug])
+  @@index([apiKeyPublic])
+  @@index([isActive])
+}
+
 model Customer {
   id        String    @id @default(cuid())
   email     String?   @unique
@@ -52,28 +92,40 @@ model Venue {
 
 model Package {
   id          String         @id @default(cuid())
-  slug        String         @unique
+  tenantId    String // Tenant isolation
+  slug        String
   name        String
   description String?
   basePrice   Int
   active      Boolean        @default(true)
   createdAt   DateTime       @default(now())
   updatedAt   DateTime       @updatedAt
+  tenant      Tenant         @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   addOns      PackageAddOn[]
   bookings    Booking[]
+
+  @@unique([tenantId, slug]) // Each tenant has unique package slugs
+  @@index([tenantId, active])
+  @@index([tenantId])
 }
 
 model AddOn {
   id          String         @id @default(cuid())
-  slug        String         @unique
+  tenantId    String // Tenant isolation
+  slug        String
   name        String
   description String?
   price       Int
   active      Boolean        @default(true)
   createdAt   DateTime       @default(now())
   updatedAt   DateTime       @updatedAt
+  tenant      Tenant         @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   packages    PackageAddOn[]
   bookingRefs BookingAddOn[]
+
+  @@unique([tenantId, slug]) // Each tenant has unique add-on slugs
+  @@index([tenantId, active])
+  @@index([tenantId])
 }
 
 model PackageAddOn {
@@ -87,24 +139,43 @@ model PackageAddOn {
 
 model Booking {
   id         String        @id @default(cuid())
+  tenantId   String // Tenant isolation
   customerId String
   packageId  String
   venueId    String?
-  date       DateTime      @unique
+  date       DateTime      @db.Date
   startTime  DateTime?
   endTime    DateTime?
   status     BookingStatus @default(PENDING)
   totalPrice Int
   notes      String?
-  createdAt  DateTime      @default(now())
-  updatedAt  DateTime      @updatedAt
-  customer   Customer      @relation(fields: [customerId], references: [id])
-  package    Package       @relation(fields: [packageId], references: [id])
-  venue      Venue?        @relation(fields: [venueId], references: [id])
-  addOns     BookingAddOn[]
-  payments   Payment[]
 
-  @@index([date])
+  // Platform Commission (multi-tenant)
+  commissionAmount  Int     @default(0) // In cents (platform fee)
+  commissionPercent Decimal @default(0) @db.Decimal(5, 2) // Snapshot of rate at booking time
+
+  // Stripe Payment
+  stripePaymentIntentId String? @unique // Stripe PaymentIntent ID
+
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  confirmedAt DateTime? // When payment completed
+
+  tenant   Tenant         @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  customer Customer       @relation(fields: [customerId], references: [id])
+  package  Package        @relation(fields: [packageId], references: [id])
+  venue    Venue?         @relation(fields: [venueId], references: [id])
+  addOns   BookingAddOn[]
+  payments Payment[]
+
+  @@unique([tenantId, date]) // Each tenant can only have one booking per date
+  @@index([tenantId, status])
+  @@index([tenantId, date])
+  @@index([tenantId, status, date])
+  @@index([tenantId])
+  @@index([customerId])
+  @@index([stripePaymentIntentId])
+  @@index([createdAt])
 }
 
 enum BookingStatus {
@@ -149,15 +220,20 @@ enum PaymentStatus {
 
 model BlackoutDate {
   id        String   @id @default(cuid())
-  date      DateTime @unique
+  tenantId  String // Tenant isolation
+  date      DateTime @db.Date
   reason    String?
   createdAt DateTime @default(now())
+  tenant    Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
 
-  @@index([date])
+  @@unique([tenantId, date]) // Each tenant manages their own blackout dates
+  @@index([tenantId, date])
+  @@index([tenantId])
 }
 
 model WebhookEvent {
   id          String        @id @default(uuid())
+  tenantId    String // Tenant isolation
   eventId     String        @unique // Stripe event ID
   eventType   String
   rawPayload  String        @db.Text
@@ -166,9 +242,14 @@ model WebhookEvent {
   lastError   String?       @db.Text
   processedAt DateTime?
   createdAt   DateTime      @default(now())
+  tenant      Tenant        @relation(fields: [tenantId], references: [id], onDelete: Cascade)
 
+  @@index([tenantId, status])
+  @@index([tenantId, createdAt])
+  @@index([tenantId])
   @@index([eventId])
   @@index([status])
+  @@index([status, createdAt])
 }
 
 enum WebhookStatus {

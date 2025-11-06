@@ -37,6 +37,13 @@ export const AvailabilityDtoSchema = z.object({
 
 export type AvailabilityDto = z.infer<typeof AvailabilityDtoSchema>;
 
+// Batch Availability DTO (for date range queries)
+export const BatchAvailabilityDtoSchema = z.object({
+  unavailableDates: z.array(z.string().regex(/^\d{4}-\d{2}-\d{2}$/)),
+});
+
+export type BatchAvailabilityDto = z.infer<typeof BatchAvailabilityDtoSchema>;
+
 // Booking DTO
 export const BookingDtoSchema = z.object({
   id: z.string(),

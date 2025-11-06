@@ -55,6 +55,21 @@ export const Contracts = c.router({
     summary: 'Check availability for a date',
   },
 
+  getUnavailableDates: {
+    method: 'GET',
+    path: '/v1/availability/unavailable',
+    query: z.object({
+      startDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
+      endDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
+    }),
+    responses: {
+      200: z.object({
+        dates: z.array(z.string().regex(/^\d{4}-\d{2}-\d{2}$/)),
+      }),
+    },
+    summary: 'Get all unavailable dates in a date range (batch query)',
+  },
+
   createCheckout: {
     method: 'POST',
     path: '/v1/bookings/checkout',
