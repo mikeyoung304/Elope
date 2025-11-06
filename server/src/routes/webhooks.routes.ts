@@ -19,33 +19,42 @@ const StripeSessionSchema = z.object({
   id: z.string(),
   amount_total: z.number().nullable(),
   metadata: z.object({
+    tenantId: z.string(), // CRITICAL: Multi-tenant data isolation
     packageId: z.string(),
     eventDate: z.string(),
     email: z.string().email(),
     coupleName: z.string(),
     addOnIds: z.string().optional(),
+    commissionAmount: z.string().optional(),
+    commissionPercent: z.string().optional(),
   }),
 });
 
 interface StripeCheckoutSession {
   id: string;
   metadata: {
+    tenantId: string;
     packageId: string;
     eventDate: string;
     email: string;
     coupleName: string;
     addOnIds?: string;
+    commissionAmount?: string;
+    commissionPercent?: string;
   };
   amount_total: number | null;
 }
 
 // Zod schema for metadata validation
 const MetadataSchema = z.object({
+  tenantId: z.string(), // CRITICAL: Multi-tenant data isolation
   packageId: z.string(),
   eventDate: z.string(),
   email: z.string().email(),
   coupleName: z.string(),
   addOnIds: z.string().optional(),
+  commissionAmount: z.string().optional(),
+  commissionPercent: z.string().optional(),
 });
 
 export class WebhooksController {
@@ -114,16 +123,27 @@ export class WebhooksController {
 
     logger.info({ eventId: event.id, type: event.type }, 'Stripe webhook received');
 
-    // Idempotency check - prevent duplicate processing
-    const isDupe = await this.webhookRepo.isDuplicate(event.id);
+    // Extract tenantId from metadata (for idempotency and recording)
+    // We need to extract it early, before full validation
+    let tenantId = 'unknown';
+    try {
+      const tempSession = event.data.object as any;
+      tenantId = tempSession?.metadata?.tenantId || 'unknown';
+    } catch (err) {
+      logger.warn({ eventId: event.id }, 'Could not extract tenantId from webhook metadata');
+    }
+
+    // Idempotency check - prevent duplicate processing (tenant-scoped)
+    const isDupe = await this.webhookRepo.isDuplicate(tenantId, event.id);
     if (isDupe) {
-      logger.info({ eventId: event.id }, 'Duplicate webhook ignored - returning 200 OK to Stripe');
+      logger.info({ eventId: event.id, tenantId }, 'Duplicate webhook ignored - returning 200 OK to Stripe');
       // Return early without throwing - Stripe expects 200 for successful receipt
       return;
     }
 
-    // Record webhook event
+    // Record webhook event (tenant-scoped)
     await this.webhookRepo.recordWebhook({
+      tenantId,
       eventId: event.id,
       eventType: event.type,
       rawPayload: rawBody,
@@ -138,6 +158,7 @@ export class WebhooksController {
         if (!sessionResult.success) {
           logger.error({ errors: sessionResult.error.flatten() }, 'Invalid session structure from Stripe');
           await this.webhookRepo.markFailed(
+            tenantId,
             event.id,
             `Invalid session structure: ${JSON.stringify(sessionResult.error.flatten())}`
           );
@@ -150,13 +171,14 @@ export class WebhooksController {
         if (!metadataResult.success) {
           logger.error({ errors: metadataResult.error.flatten() }, 'Invalid webhook metadata');
           await this.webhookRepo.markFailed(
+            tenantId,
             event.id,
             `Invalid metadata: ${JSON.stringify(metadataResult.error.flatten())}`
           );
           throw new WebhookValidationError('Invalid webhook metadata');
         }
 
-        const { packageId, eventDate, email, coupleName, addOnIds } = metadataResult.data;
+        const { tenantId: validatedTenantId, packageId, eventDate, email, coupleName, addOnIds, commissionAmount, commissionPercent } = metadataResult.data;
 
         // Parse add-on IDs with Zod validation
         let parsedAddOnIds: string[] = [];
@@ -194,6 +216,7 @@ export class WebhooksController {
           {
             eventId: event.id,
             sessionId: session.id,
+            tenantId: validatedTenantId,
             packageId,
             eventDate,
             email,
@@ -201,8 +224,12 @@ export class WebhooksController {
           'Processing checkout completion'
         );
 
-        // Create booking in database
-        await this.bookingService.onPaymentCompleted({
+        // Parse commission data from metadata
+        const commissionAmountNum = commissionAmount ? parseInt(commissionAmount, 10) : undefined;
+        const commissionPercentNum = commissionPercent ? parseFloat(commissionPercent) : undefined;
+
+        // Create booking in database (tenant-scoped)
+        await this.bookingService.onPaymentCompleted(validatedTenantId, {
           sessionId: session.id,
           packageId,
           eventDate,
@@ -210,20 +237,22 @@ export class WebhooksController {
           coupleName,
           addOnIds: parsedAddOnIds,
           totalCents,
+          commissionAmount: commissionAmountNum,
+          commissionPercent: commissionPercentNum,
         });
 
-        logger.info({ eventId: event.id, sessionId: session.id }, 'Booking created successfully');
+        logger.info({ eventId: event.id, sessionId: session.id, tenantId: validatedTenantId }, 'Booking created successfully');
       } else {
         logger.info({ eventId: event.id, type: event.type }, 'Ignoring unhandled webhook event type');
       }
 
-      // Mark webhook as successfully processed
-      await this.webhookRepo.markProcessed(event.id);
+      // Mark webhook as successfully processed (tenant-scoped)
+      await this.webhookRepo.markProcessed(tenantId, event.id);
     } catch (error) {
       // Don't mark as failed if it's a validation error (already handled)
       if (!(error instanceof WebhookValidationError)) {
         const errorMessage = error instanceof Error ? error.message : String(error);
-        await this.webhookRepo.markFailed(event.id, errorMessage);
+        await this.webhookRepo.markFailed(tenantId, event.id, errorMessage);
 
         logger.error(
           {

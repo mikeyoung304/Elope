@@ -65,24 +65,24 @@ export class PrismaBookingRepository implements BookingRepository {
    * }
    * ```
    */
-  async create(booking: Booking): Promise<Booking> {
+  async create(tenantId: string, booking: Booking): Promise<Booking> {
     try {
       return await this.prisma.$transaction(async (tx) => {
-        // Lock the date to prevent concurrent bookings
+        // Lock the date to prevent concurrent bookings for this tenant
         const lockQuery = `
           SELECT 1 FROM "Booking"
-          WHERE date = $1
+          WHERE "tenantId" = $1 AND date = $2
           FOR UPDATE NOWAIT
         `;
 
         try {
-          await tx.$queryRawUnsafe(lockQuery, new Date(booking.eventDate));
+          await tx.$queryRawUnsafe(lockQuery, tenantId, new Date(booking.eventDate));
         } catch (lockError) {
           // Check specific PostgreSQL error codes
           if (lockError instanceof PrismaClientKnownRequestError) {
             // P2034 = Transaction failed due to lock timeout
             if (lockError.code === 'P2034') {
-              logger.warn({ date: booking.eventDate, error: lockError.code }, 'Lock timeout on booking date');
+              logger.warn({ tenantId, date: booking.eventDate, error: lockError.code }, 'Lock timeout on booking date');
               throw new BookingLockTimeoutError(booking.eventDate);
             }
           }
@@ -90,6 +90,7 @@ export class PrismaBookingRepository implements BookingRepository {
           // Log unexpected errors for debugging
           logger.error({
             error: lockError,
+            tenantId,
             date: booking.eventDate,
             query: lockQuery
           }, 'Unexpected error during lock acquisition');
@@ -98,9 +99,9 @@ export class PrismaBookingRepository implements BookingRepository {
           throw lockError;
         }
 
-        // Check if date is already booked
+        // Check if date is already booked for this tenant
         const existing = await tx.booking.findFirst({
-          where: { date: new Date(booking.eventDate) }
+          where: { tenantId, date: new Date(booking.eventDate) }
         });
 
         if (existing) {
@@ -133,10 +134,11 @@ export class PrismaBookingRepository implements BookingRepository {
           addOns.forEach(a => addOnPrices.set(a.id, a.price));
         }
 
-        // Create booking
+        // Create booking with tenant isolation
         const created = await tx.booking.create({
           data: {
             id: booking.id,
+            tenantId,
             customerId: customer.id,
             packageId: booking.packageId,
             date: new Date(booking.eventDate),
@@ -193,9 +195,9 @@ export class PrismaBookingRepository implements BookingRepository {
    * }
    * ```
    */
-  async findById(id: string): Promise<Booking | null> {
-    const booking = await this.prisma.booking.findUnique({
-      where: { id },
+  async findById(tenantId: string, id: string): Promise<Booking | null> {
+    const booking = await this.prisma.booking.findFirst({
+      where: { tenantId, id },
       include: {
         customer: true,
         addOns: {
@@ -222,8 +224,9 @@ export class PrismaBookingRepository implements BookingRepository {
    * console.log(`Total bookings: ${bookings.length}`);
    * ```
    */
-  async findAll(): Promise<Booking[]> {
+  async findAll(tenantId: string): Promise<Booking[]> {
     const bookings = await this.prisma.booking.findMany({
+      where: { tenantId },
       orderBy: { createdAt: 'desc' },
       include: {
         customer: true,
@@ -255,9 +258,9 @@ export class PrismaBookingRepository implements BookingRepository {
    * }
    * ```
    */
-  async isDateBooked(date: string): Promise<boolean> {
+  async isDateBooked(tenantId: string, date: string): Promise<boolean> {
     const booking = await this.prisma.booking.findFirst({
-      where: { date: new Date(date) },
+      where: { tenantId, date: new Date(date) },
     });
 
     return booking !== null;
@@ -283,9 +286,10 @@ export class PrismaBookingRepository implements BookingRepository {
    * // Returns: [Date('2025-06-15'), Date('2025-06-22'), ...]
    * ```
    */
-  async getUnavailableDates(startDate: Date, endDate: Date): Promise<Date[]> {
+  async getUnavailableDates(tenantId: string, startDate: Date, endDate: Date): Promise<Date[]> {
     const bookings = await this.prisma.booking.findMany({
       where: {
+        tenantId,
         date: {
           gte: startDate,
           lte: endDate,

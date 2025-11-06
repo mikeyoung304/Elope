@@ -8,6 +8,7 @@ import { CacheService } from './lib/cache';
 import { CatalogService } from './services/catalog.service';
 import { AvailabilityService } from './services/availability.service';
 import { BookingService } from './services/booking.service';
+import { CommissionService } from './services/commission.service';
 import { IdentityService } from './services/identity.service';
 import { PackagesController } from './routes/packages.routes';
 import { AvailabilityController } from './routes/availability.routes';
@@ -25,6 +26,7 @@ import {
   PrismaBlackoutRepository,
   PrismaUserRepository,
   PrismaWebhookRepository,
+  PrismaTenantRepository,
 } from './adapters/prisma';
 import { StripePaymentAdapter } from './adapters/stripe.adapter';
 import { PostmarkMailAdapter } from './adapters/postmark.adapter';
@@ -60,6 +62,12 @@ export function buildContainer(config: Config): Container {
     // Build mock adapters
     const adapters = buildMockAdapters();
 
+    // Mock PrismaClient for CommissionService (uses in-memory mock data)
+    const mockPrisma = new PrismaClient();
+
+    // Create CommissionService with mock Prisma
+    const commissionService = new CommissionService(mockPrisma);
+
     // Build domain services with caching
     const catalogService = new CatalogService(adapters.catalogRepo, cacheService);
     const availabilityService = new AvailabilityService(
@@ -71,7 +79,8 @@ export function buildContainer(config: Config): Container {
       adapters.bookingRepo,
       adapters.catalogRepo,
       eventEmitter,
-      adapters.paymentProvider
+      adapters.paymentProvider,
+      commissionService
     );
     const identityService = new IdentityService(adapters.userRepo, config.JWT_SECRET);
 
@@ -131,6 +140,10 @@ export function buildContainer(config: Config): Container {
   const blackoutRepo = new PrismaBlackoutRepository(prisma);
   const userRepo = new PrismaUserRepository(prisma);
   const webhookRepo = new PrismaWebhookRepository(prisma);
+  const tenantRepo = new PrismaTenantRepository(prisma);
+
+  // Create CommissionService with real Prisma
+  const commissionService = new CommissionService(prisma);
 
   // Build Stripe payment adapter
   if (!config.STRIPE_SECRET_KEY || !config.STRIPE_WEBHOOK_SECRET) {
@@ -171,7 +184,13 @@ export function buildContainer(config: Config): Container {
     blackoutRepo,
     bookingRepo
   );
-  const bookingService = new BookingService(bookingRepo, catalogRepo, eventEmitter, paymentProvider);
+  const bookingService = new BookingService(
+    bookingRepo,
+    catalogRepo,
+    eventEmitter,
+    paymentProvider,
+    commissionService
+  );
   const identityService = new IdentityService(userRepo, config.JWT_SECRET);
 
   // Subscribe to BookingPaid events to send confirmation emails

@@ -53,7 +53,7 @@ export class CatalogService {
     }
 
     // Cache miss - fetch from repository with tenant isolation
-    const packages = await this.repository.getAllPackagesWithAddOns();
+    const packages = await this.repository.getAllPackagesWithAddOns(tenantId);
 
     // Cache for 15 minutes (900 seconds)
     this.cache?.set(cacheKey, packages, 900);
@@ -92,11 +92,11 @@ export class CatalogService {
     }
 
     // Cache miss - fetch from repository with tenant isolation
-    const pkg = await this.repository.getPackageBySlug(slug);
+    const pkg = await this.repository.getPackageBySlug(tenantId, slug);
     if (!pkg) {
       throw new NotFoundError(`Package with slug "${slug}" not found`);
     }
-    const addOns = await this.repository.getAddOnsByPackageId(pkg.id);
+    const addOns = await this.repository.getAddOnsByPackageId(tenantId, pkg.id);
     const result = { ...pkg, addOns };
 
     // Cache for 15 minutes
@@ -109,28 +109,28 @@ export class CatalogService {
   // NOTE: These methods will need tenantId parameter and repository updates
   // after multi-tenant migration is applied
 
-  async createPackage(data: CreatePackageInput & { tenantId: string }): Promise<Package> {
+  async createPackage(tenantId: string, data: CreatePackageInput): Promise<Package> {
     // Validate required fields
-    validateRequiredFields(data, ['slug', 'title', 'description', 'tenantId'], 'Package');
+    validateRequiredFields(data, ['slug', 'title', 'description'], 'Package');
     validatePrice(data.priceCents, 'priceCents');
 
     // Check slug uniqueness within tenant
-    const existing = await this.repository.getPackageBySlug(data.slug);
+    const existing = await this.repository.getPackageBySlug(tenantId, data.slug);
     if (existing) {
       throw new ValidationError(`Package with slug "${data.slug}" already exists`);
     }
 
-    const result = await this.repository.createPackage(data);
+    const result = await this.repository.createPackage(tenantId, data);
 
     // Invalidate catalog cache for this tenant
-    this.invalidateCatalogCache(data.tenantId);
+    this.invalidateCatalogCache(tenantId);
 
     return result;
   }
 
-  async updatePackage(id: string, data: UpdatePackageInput): Promise<Package> {
+  async updatePackage(tenantId: string, id: string, data: UpdatePackageInput): Promise<Package> {
     // Check if package exists
-    const existing = await this.repository.getPackageById(id);
+    const existing = await this.repository.getPackageById(tenantId, id);
     if (!existing) {
       throw new NotFoundError(`Package with id "${id}" not found`);
     }
@@ -142,61 +142,61 @@ export class CatalogService {
 
     // Check slug uniqueness if slug is being updated
     if (data.slug && data.slug !== existing.slug) {
-      const slugTaken = await this.repository.getPackageBySlug(data.slug);
+      const slugTaken = await this.repository.getPackageBySlug(tenantId, data.slug);
       if (slugTaken) {
         throw new ValidationError(`Package with slug "${data.slug}" already exists`);
       }
     }
 
-    const result = await this.repository.updatePackage(id, data);
+    const result = await this.repository.updatePackage(tenantId, id, data);
 
     // Invalidate catalog cache (both old and potentially new slug)
-    this.invalidateCatalogCache();
-    this.cache?.del(`catalog:package:${existing.slug}`);
+    this.invalidateCatalogCache(tenantId);
+    this.invalidatePackageCache(tenantId, existing.slug);
     if (data.slug && data.slug !== existing.slug) {
-      this.cache?.del(`catalog:package:${data.slug}`);
+      this.invalidatePackageCache(tenantId, data.slug);
     }
 
     return result;
   }
 
-  async deletePackage(id: string): Promise<void> {
+  async deletePackage(tenantId: string, id: string): Promise<void> {
     // Check if package exists
-    const existing = await this.repository.getPackageById(id);
+    const existing = await this.repository.getPackageById(tenantId, id);
     if (!existing) {
       throw new NotFoundError(`Package with id "${id}" not found`);
     }
 
-    await this.repository.deletePackage(id);
+    await this.repository.deletePackage(tenantId, id);
 
     // Invalidate catalog cache
-    this.invalidateCatalogCache();
-    this.cache?.del(`catalog:package:${existing.slug}`);
+    this.invalidateCatalogCache(tenantId);
+    this.invalidatePackageCache(tenantId, existing.slug);
   }
 
   // AddOn CRUD operations
 
-  async createAddOn(data: CreateAddOnInput): Promise<AddOn> {
+  async createAddOn(tenantId: string, data: CreateAddOnInput): Promise<AddOn> {
     // Validate required fields
     validateRequiredFields(data, ['packageId', 'title'], 'AddOn');
     validatePrice(data.priceCents, 'priceCents');
 
     // Verify package exists
-    const pkg = await this.repository.getPackageById(data.packageId);
+    const pkg = await this.repository.getPackageById(tenantId, data.packageId);
     if (!pkg) {
       throw new NotFoundError(`Package with id "${data.packageId}" not found`);
     }
 
-    const result = await this.repository.createAddOn(data);
+    const result = await this.repository.createAddOn(tenantId, data);
 
     // Invalidate catalog cache (affects package details)
-    this.invalidateCatalogCache();
-    this.cache?.del(`catalog:package:${pkg.slug}`);
+    this.invalidateCatalogCache(tenantId);
+    this.invalidatePackageCache(tenantId, pkg.slug);
 
     return result;
   }
 
-  async updateAddOn(id: string, data: UpdateAddOnInput): Promise<AddOn> {
+  async updateAddOn(tenantId: string, id: string, data: UpdateAddOnInput): Promise<AddOn> {
     // Check if add-on exists
     // Note: We need a way to get add-on by ID, but since the port doesn't have it,
     // we'll let the repository handle the NotFound case
@@ -208,26 +208,26 @@ export class CatalogService {
 
     // Verify package exists if packageId is being updated
     if (data.packageId) {
-      const pkg = await this.repository.getPackageById(data.packageId);
+      const pkg = await this.repository.getPackageById(tenantId, data.packageId);
       if (!pkg) {
         throw new NotFoundError(`Package with id "${data.packageId}" not found`);
       }
     }
 
-    const result = await this.repository.updateAddOn(id, data);
+    const result = await this.repository.updateAddOn(tenantId, id, data);
 
     // Invalidate catalog cache
-    this.invalidateCatalogCache();
+    this.invalidateCatalogCache(tenantId);
 
     return result;
   }
 
-  async deleteAddOn(id: string): Promise<void> {
+  async deleteAddOn(tenantId: string, id: string): Promise<void> {
     // Repository will throw NotFoundError if add-on doesn't exist
-    await this.repository.deleteAddOn(id);
+    await this.repository.deleteAddOn(tenantId, id);
 
     // Invalidate catalog cache
-    this.invalidateCatalogCache();
+    this.invalidateCatalogCache(tenantId);
   }
 
   /**

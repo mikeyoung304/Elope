@@ -19,6 +19,9 @@ import { BookingConflictError } from '../lib/errors';
 import bcrypt from 'bcryptjs';
 import type Stripe from 'stripe';
 
+// Default tenant ID for mock mode (single-tenant simulation)
+const DEFAULT_TENANT = 'tenant_default_legacy';
+
 // In-memory storage
 const packages = new Map<string, Package>();
 const addOns = new Map<string, AddOn>();
@@ -159,11 +162,13 @@ seedData();
 
 // Mock Catalog Repository
 export class MockCatalogRepository implements CatalogRepository {
-  async getAllPackages(): Promise<Package[]> {
+  async getAllPackages(tenantId: string): Promise<Package[]> {
+    // Mock mode: Ignore tenantId, return all packages
     return Array.from(packages.values());
   }
 
-  async getAllPackagesWithAddOns(): Promise<Array<Package & { addOns: AddOn[] }>> {
+  async getAllPackagesWithAddOns(tenantId: string): Promise<Array<Package & { addOns: AddOn[] }>> {
+    // Mock mode: Ignore tenantId, return all packages
     const allPackages = Array.from(packages.values());
     return allPackages.map((pkg) => ({
       ...pkg,
@@ -171,20 +176,23 @@ export class MockCatalogRepository implements CatalogRepository {
     }));
   }
 
-  async getPackageBySlug(slug: string): Promise<Package | null> {
+  async getPackageBySlug(tenantId: string, slug: string): Promise<Package | null> {
+    // Mock mode: Ignore tenantId
     const pkg = Array.from(packages.values()).find((p) => p.slug === slug);
     return pkg || null;
   }
 
-  async getPackageById(id: string): Promise<Package | null> {
+  async getPackageById(tenantId: string, id: string): Promise<Package | null> {
+    // Mock mode: Ignore tenantId
     return packages.get(id) || null;
   }
 
-  async getAddOnsByPackageId(packageId: string): Promise<AddOn[]> {
+  async getAddOnsByPackageId(tenantId: string, packageId: string): Promise<AddOn[]> {
+    // Mock mode: Ignore tenantId
     return Array.from(addOns.values()).filter((a) => a.packageId === packageId);
   }
 
-  async createPackage(data: {
+  async createPackage(tenantId: string, data: {
     slug: string;
     title: string;
     description: string;
@@ -192,7 +200,7 @@ export class MockCatalogRepository implements CatalogRepository {
     photoUrl?: string;
   }): Promise<Package> {
     // Check slug uniqueness
-    const existing = await this.getPackageBySlug(data.slug);
+    const existing = await this.getPackageBySlug(tenantId, data.slug);
     if (existing) {
       throw new Error(`Package with slug "${data.slug}" already exists`);
     }
@@ -206,6 +214,7 @@ export class MockCatalogRepository implements CatalogRepository {
   }
 
   async updatePackage(
+    tenantId: string,
     id: string,
     data: {
       slug?: string;
@@ -222,7 +231,7 @@ export class MockCatalogRepository implements CatalogRepository {
 
     // Check slug uniqueness if updating slug
     if (data.slug && data.slug !== pkg.slug) {
-      const existing = await this.getPackageBySlug(data.slug);
+      const existing = await this.getPackageBySlug(tenantId, data.slug);
       if (existing) {
         throw new Error(`Package with slug "${data.slug}" already exists`);
       }
@@ -236,7 +245,8 @@ export class MockCatalogRepository implements CatalogRepository {
     return updated;
   }
 
-  async deletePackage(id: string): Promise<void> {
+  async deletePackage(tenantId: string, id: string): Promise<void> {
+    // Mock mode: Ignore tenantId
     const pkg = packages.get(id);
     if (!pkg) {
       throw new Error(`Package with id "${id}" not found`);
@@ -251,7 +261,7 @@ export class MockCatalogRepository implements CatalogRepository {
     packages.delete(id);
   }
 
-  async createAddOn(data: {
+  async createAddOn(tenantId: string, data: {
     packageId: string;
     title: string;
     priceCents: number;
@@ -272,6 +282,7 @@ export class MockCatalogRepository implements CatalogRepository {
   }
 
   async updateAddOn(
+    tenantId: string,
     id: string,
     data: {
       packageId?: string;
@@ -301,7 +312,8 @@ export class MockCatalogRepository implements CatalogRepository {
     return updated;
   }
 
-  async deleteAddOn(id: string): Promise<void> {
+  async deleteAddOn(tenantId: string, id: string): Promise<void> {
+    // Mock mode: Ignore tenantId
     const addOn = addOns.get(id);
     if (!addOn) {
       throw new Error(`AddOn with id "${id}" not found`);
@@ -312,7 +324,8 @@ export class MockCatalogRepository implements CatalogRepository {
 
 // Mock Booking Repository
 export class MockBookingRepository implements BookingRepository {
-  async create(booking: Booking): Promise<Booking> {
+  async create(tenantId: string, booking: Booking): Promise<Booking> {
+    // Mock mode: Ignore tenantId
     const dateKey = toUtcMidnight(booking.eventDate);
 
     // Enforce unique by date
@@ -325,20 +338,24 @@ export class MockBookingRepository implements BookingRepository {
     return booking;
   }
 
-  async findById(id: string): Promise<Booking | null> {
+  async findById(tenantId: string, id: string): Promise<Booking | null> {
+    // Mock mode: Ignore tenantId
     return bookings.get(id) || null;
   }
 
-  async findAll(): Promise<Booking[]> {
+  async findAll(tenantId: string): Promise<Booking[]> {
+    // Mock mode: Ignore tenantId
     return Array.from(bookings.values());
   }
 
-  async isDateBooked(date: string): Promise<boolean> {
+  async isDateBooked(tenantId: string, date: string): Promise<boolean> {
+    // Mock mode: Ignore tenantId
     const dateKey = toUtcMidnight(date);
     return bookingsByDate.has(dateKey);
   }
 
-  async getUnavailableDates(startDate: Date, endDate: Date): Promise<Date[]> {
+  async getUnavailableDates(tenantId: string, startDate: Date, endDate: Date): Promise<Date[]> {
+    // Mock mode: Ignore tenantId
     const unavailable: Date[] = [];
     const start = new Date(startDate);
     const end = new Date(endDate);
@@ -362,16 +379,19 @@ export class MockBookingRepository implements BookingRepository {
 
 // Mock Blackout Repository
 export class MockBlackoutRepository implements BlackoutRepository {
-  async isBlackoutDate(date: string): Promise<boolean> {
+  async isBlackoutDate(tenantId: string, date: string): Promise<boolean> {
+    // Mock mode: Ignore tenantId
     const dateKey = toUtcMidnight(date);
     return blackouts.has(dateKey);
   }
 
-  async getAllBlackouts(): Promise<Array<{ date: string; reason?: string }>> {
+  async getAllBlackouts(tenantId: string): Promise<Array<{ date: string; reason?: string }>> {
+    // Mock mode: Ignore tenantId
     return Array.from(blackouts.values());
   }
 
-  async addBlackout(date: string, reason?: string): Promise<void> {
+  async addBlackout(tenantId: string, date: string, reason?: string): Promise<void> {
+    // Mock mode: Ignore tenantId
     const dateKey = toUtcMidnight(date);
     blackouts.set(dateKey, { date: dateKey, reason });
   }
@@ -454,7 +474,8 @@ export class MockUserRepository implements UserRepository {
 
 // Mock Webhook Repository
 export class MockWebhookRepository implements WebhookRepository {
-  async isDuplicate(eventId: string): Promise<boolean> {
+  async isDuplicate(tenantId: string, eventId: string): Promise<boolean> {
+    // Mock mode: Ignore tenantId
     const existing = webhookEvents.get(eventId);
     if (existing) {
       existing.status = 'DUPLICATE';
@@ -464,10 +485,12 @@ export class MockWebhookRepository implements WebhookRepository {
   }
 
   async recordWebhook(input: {
+    tenantId: string;
     eventId: string;
     eventType: string;
     rawPayload: string;
   }): Promise<void> {
+    // Mock mode: Ignore tenantId
     webhookEvents.set(input.eventId, {
       eventId: input.eventId,
       eventType: input.eventType,
@@ -475,14 +498,16 @@ export class MockWebhookRepository implements WebhookRepository {
     });
   }
 
-  async markProcessed(eventId: string): Promise<void> {
+  async markProcessed(tenantId: string, eventId: string): Promise<void> {
+    // Mock mode: Ignore tenantId
     const event = webhookEvents.get(eventId);
     if (event) {
       event.status = 'PROCESSED';
     }
   }
 
-  async markFailed(eventId: string, errorMessage: string): Promise<void> {
+  async markFailed(tenantId: string, eventId: string, errorMessage: string): Promise<void> {
+    // Mock mode: Ignore tenantId
     const event = webhookEvents.get(eventId);
     if (event) {
       event.status = 'FAILED';

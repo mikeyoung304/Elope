@@ -16,16 +16,18 @@ import { DomainError } from '../lib/core/errors';
 export class PrismaCatalogRepository implements CatalogRepository {
   constructor(private readonly prisma: PrismaClient) {}
 
-  async getAllPackages(): Promise<Package[]> {
+  async getAllPackages(tenantId: string): Promise<Package[]> {
     const packages = await this.prisma.package.findMany({
+      where: { tenantId },
       orderBy: { createdAt: 'asc' },
     });
 
     return packages.map(this.toDomainPackage);
   }
 
-  async getAllPackagesWithAddOns(): Promise<Array<Package & { addOns: AddOn[] }>> {
+  async getAllPackagesWithAddOns(tenantId: string): Promise<Array<Package & { addOns: AddOn[] }>> {
     const packages = await this.prisma.package.findMany({
+      where: { tenantId },
       include: {
         addOns: {
           include: {
@@ -47,25 +49,26 @@ export class PrismaCatalogRepository implements CatalogRepository {
     }));
   }
 
-  async getPackageBySlug(slug: string): Promise<Package | null> {
+  async getPackageBySlug(tenantId: string, slug: string): Promise<Package | null> {
     const pkg = await this.prisma.package.findUnique({
-      where: { slug },
+      where: { tenantId_slug: { tenantId, slug } },
     });
 
     return pkg ? this.toDomainPackage(pkg) : null;
   }
 
-  async getPackageById(id: string): Promise<Package | null> {
-    const pkg = await this.prisma.package.findUnique({
-      where: { id },
+  async getPackageById(tenantId: string, id: string): Promise<Package | null> {
+    const pkg = await this.prisma.package.findFirst({
+      where: { tenantId, id },
     });
 
     return pkg ? this.toDomainPackage(pkg) : null;
   }
 
-  async getAddOnsByPackageId(packageId: string): Promise<AddOn[]> {
+  async getAddOnsByPackageId(tenantId: string, packageId: string): Promise<AddOn[]> {
     const addOns = await this.prisma.addOn.findMany({
       where: {
+        tenantId,
         packages: {
           some: {
             packageId: packageId,
@@ -85,10 +88,10 @@ export class PrismaCatalogRepository implements CatalogRepository {
     return addOns.map(this.toDomainAddOn);
   }
 
-  async createPackage(data: CreatePackageInput): Promise<Package> {
-    // Check for slug uniqueness
+  async createPackage(tenantId: string, data: CreatePackageInput): Promise<Package> {
+    // Check for slug uniqueness within tenant
     const existing = await this.prisma.package.findUnique({
-      where: { slug: data.slug },
+      where: { tenantId_slug: { tenantId, slug: data.slug } },
     });
 
     if (existing) {
@@ -97,6 +100,7 @@ export class PrismaCatalogRepository implements CatalogRepository {
 
     const pkg = await this.prisma.package.create({
       data: {
+        tenantId,
         slug: data.slug,
         name: data.title,
         description: data.description,
@@ -107,20 +111,20 @@ export class PrismaCatalogRepository implements CatalogRepository {
     return this.toDomainPackage(pkg);
   }
 
-  async updatePackage(id: string, data: UpdatePackageInput): Promise<Package> {
-    // Check if package exists
-    const existing = await this.prisma.package.findUnique({
-      where: { id },
+  async updatePackage(tenantId: string, id: string, data: UpdatePackageInput): Promise<Package> {
+    // Check if package exists for this tenant
+    const existing = await this.prisma.package.findFirst({
+      where: { tenantId, id },
     });
 
     if (!existing) {
       throw new DomainError('NOT_FOUND', `Package with id '${id}' not found`);
     }
 
-    // If updating slug, check for uniqueness
+    // If updating slug, check for uniqueness within tenant
     if (data.slug && data.slug !== existing.slug) {
       const duplicateSlug = await this.prisma.package.findUnique({
-        where: { slug: data.slug },
+        where: { tenantId_slug: { tenantId, slug: data.slug } },
       });
 
       if (duplicateSlug) {
@@ -141,10 +145,10 @@ export class PrismaCatalogRepository implements CatalogRepository {
     return this.toDomainPackage(pkg);
   }
 
-  async deletePackage(id: string): Promise<void> {
-    // Check if package exists
-    const existing = await this.prisma.package.findUnique({
-      where: { id },
+  async deletePackage(tenantId: string, id: string): Promise<void> {
+    // Check if package exists for this tenant
+    const existing = await this.prisma.package.findFirst({
+      where: { tenantId, id },
     });
 
     if (!existing) {
@@ -157,10 +161,10 @@ export class PrismaCatalogRepository implements CatalogRepository {
     });
   }
 
-  async createAddOn(data: CreateAddOnInput): Promise<AddOn> {
-    // Verify package exists
-    const pkg = await this.prisma.package.findUnique({
-      where: { id: data.packageId },
+  async createAddOn(tenantId: string, data: CreateAddOnInput): Promise<AddOn> {
+    // Verify package exists for this tenant
+    const pkg = await this.prisma.package.findFirst({
+      where: { tenantId, id: data.packageId },
     });
 
     if (!pkg) {
@@ -169,6 +173,7 @@ export class PrismaCatalogRepository implements CatalogRepository {
 
     const addOn = await this.prisma.addOn.create({
       data: {
+        tenantId,
         slug: `${data.title.toLowerCase().replace(/\s+/g, '-')}-${Date.now()}`,
         name: data.title,
         price: data.priceCents,
@@ -190,10 +195,10 @@ export class PrismaCatalogRepository implements CatalogRepository {
     return this.toDomainAddOn(addOn);
   }
 
-  async updateAddOn(id: string, data: UpdateAddOnInput): Promise<AddOn> {
-    // Check if add-on exists
-    const existing = await this.prisma.addOn.findUnique({
-      where: { id },
+  async updateAddOn(tenantId: string, id: string, data: UpdateAddOnInput): Promise<AddOn> {
+    // Check if add-on exists for this tenant
+    const existing = await this.prisma.addOn.findFirst({
+      where: { tenantId, id },
       include: {
         packages: {
           select: {
@@ -207,10 +212,10 @@ export class PrismaCatalogRepository implements CatalogRepository {
       throw new DomainError('NOT_FOUND', `AddOn with id '${id}' not found`);
     }
 
-    // If updating packageId, verify new package exists
+    // If updating packageId, verify new package exists for this tenant
     if (data.packageId && data.packageId !== existing.packages[0]?.packageId) {
-      const pkg = await this.prisma.package.findUnique({
-        where: { id: data.packageId },
+      const pkg = await this.prisma.package.findFirst({
+        where: { tenantId, id: data.packageId },
       });
 
       if (!pkg) {
@@ -244,10 +249,10 @@ export class PrismaCatalogRepository implements CatalogRepository {
     return this.toDomainAddOn(addOn);
   }
 
-  async deleteAddOn(id: string): Promise<void> {
-    // Check if add-on exists
-    const existing = await this.prisma.addOn.findUnique({
-      where: { id },
+  async deleteAddOn(tenantId: string, id: string): Promise<void> {
+    // Check if add-on exists for this tenant
+    const existing = await this.prisma.addOn.findFirst({
+      where: { tenantId, id },
     });
 
     if (!existing) {

@@ -15,7 +15,6 @@ import { errorHandler, notFoundHandler } from './middleware/error-handler';
 import { requestLogger } from './middleware/request-logger';
 import { skipIfHealth, adminLimiter } from './middleware/rateLimiter';
 import { openApiSpec } from './api-docs';
-import { cacheMiddleware } from './middleware/cache';
 
 export function createApp(config: Config): express.Application {
   const app = express();
@@ -23,11 +22,36 @@ export function createApp(config: Config): express.Application {
   // Security middleware
   app.use(helmet());
 
-  // CORS
+  // CORS - Multi-origin support for widget embedding
   app.use(
     cors({
-      origin: config.CORS_ORIGIN,
+      origin: (origin, callback) => {
+        // Allow requests with no origin (mobile apps, Postman, curl)
+        if (!origin) return callback(null, true);
+
+        // Whitelist of allowed origins (development + production)
+        const allowed = [
+          'http://localhost:5173',
+          'http://localhost:3000',
+          'https://mais.com',
+          'https://widget.mais.com',
+        ];
+
+        // Allow whitelisted origins or any HTTPS origin in production (for widget embedding)
+        if (allowed.includes(origin)) {
+          callback(null, true);
+        } else if (process.env.NODE_ENV === 'production' && origin.startsWith('https://')) {
+          // Allow all HTTPS origins in production (widget embedding on customer sites)
+          callback(null, true);
+        } else if (process.env.NODE_ENV === 'development') {
+          // Allow all origins in development
+          callback(null, true);
+        } else {
+          callback(new Error('Not allowed by CORS'));
+        }
+      },
       credentials: true,
+      exposedHeaders: ['X-Tenant-Key'], // Allow clients to read this header
     })
   );
 
@@ -52,13 +76,6 @@ export function createApp(config: Config): express.Application {
 
   // Request ID + logging middleware (for non-webhook routes)
   app.use(requestLogger);
-
-  // Apply caching middleware to public catalog endpoints
-  // Cache packages for 5 minutes (they rarely change)
-  app.use('/v1/packages', cacheMiddleware({ ttl: 300 }));
-
-  // Cache availability queries for 2 minutes (more dynamic)
-  app.use('/v1/availability', cacheMiddleware({ ttl: 120 }));
 
   // Health check endpoint
   app.get('/health', (_req, res) => {

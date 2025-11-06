@@ -12,11 +12,14 @@ import type {
   AddOnDto,
 } from '@elope/contracts';
 
+// Default tenant for admin operations (legacy single-tenant mode)
+const DEFAULT_TENANT = 'tenant_default_legacy';
+
 export class AdminPackagesController {
   constructor(private readonly catalogService: CatalogService) {}
 
   async createPackage(data: CreatePackageDto): Promise<PackageResponseDto> {
-    const pkg = await this.catalogService.createPackage(data);
+    const pkg = await this.catalogService.createPackage(DEFAULT_TENANT, data);
     return {
       id: pkg.id,
       slug: pkg.slug,
@@ -28,7 +31,7 @@ export class AdminPackagesController {
   }
 
   async updatePackage(id: string, data: UpdatePackageDto): Promise<PackageResponseDto> {
-    const pkg = await this.catalogService.updatePackage(id, data);
+    const pkg = await this.catalogService.updatePackage(DEFAULT_TENANT, id, data);
     return {
       id: pkg.id,
       slug: pkg.slug,
@@ -40,11 +43,11 @@ export class AdminPackagesController {
   }
 
   async deletePackage(id: string): Promise<void> {
-    await this.catalogService.deletePackage(id);
+    await this.catalogService.deletePackage(DEFAULT_TENANT, id);
   }
 
   async createAddOn(packageId: string, data: CreateAddOnDto): Promise<AddOnDto> {
-    const addOn = await this.catalogService.createAddOn({
+    const addOn = await this.catalogService.createAddOn(DEFAULT_TENANT, {
       ...data,
       packageId,
     });
@@ -58,7 +61,7 @@ export class AdminPackagesController {
   }
 
   async updateAddOn(id: string, data: UpdateAddOnDto): Promise<AddOnDto> {
-    const addOn = await this.catalogService.updateAddOn(id, data);
+    const addOn = await this.catalogService.updateAddOn(DEFAULT_TENANT, id, data);
     return {
       id: addOn.id,
       packageId: addOn.packageId,
@@ -69,6 +72,6 @@ export class AdminPackagesController {
   }
 
   async deleteAddOn(id: string): Promise<void> {
-    await this.catalogService.deleteAddOn(id);
+    await this.catalogService.deleteAddOn(DEFAULT_TENANT, id);
   }
 }

@@ -8,8 +8,8 @@ import type { PackageDto, AddOnDto } from '@elope/contracts';
 export class PackagesController {
   constructor(private readonly catalogService: CatalogService) {}
 
-  async getPackages(): Promise<PackageDto[]> {
-    const packages = await this.catalogService.getAllPackages();
+  async getPackages(tenantId: string): Promise<PackageDto[]> {
+    const packages = await this.catalogService.getAllPackages(tenantId);
     return packages.map((pkg) => ({
       id: pkg.id,
       slug: pkg.slug,
@@ -27,8 +27,8 @@ export class PackagesController {
     }));
   }
 
-  async getPackageBySlug(slug: string): Promise<PackageDto> {
-    const pkg = await this.catalogService.getPackageBySlug(slug);
+  async getPackageBySlug(tenantId: string, slug: string): Promise<PackageDto> {
+    const pkg = await this.catalogService.getPackageBySlug(tenantId, slug);
     return {
       id: pkg.id,
       slug: pkg.slug,

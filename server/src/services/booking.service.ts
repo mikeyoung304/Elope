@@ -7,21 +7,26 @@ import type { Booking, CreateBookingInput } from '../lib/entities';
 import type { CatalogRepository } from '../lib/ports';
 import type { EventEmitter } from '../lib/core/events';
 import { NotFoundError } from '../lib/core/errors';
+import { CommissionService } from './commission.service';
 
 export class BookingService {
   constructor(
     private readonly bookingRepo: BookingRepository,
     private readonly catalogRepo: CatalogRepository,
     private readonly _eventEmitter: EventEmitter,
-    private readonly paymentProvider: PaymentProvider
+    private readonly paymentProvider: PaymentProvider,
+    private readonly commissionService: CommissionService
   ) {}
 
   /**
    * Creates a Stripe checkout session for a wedding package booking
    *
+   * MULTI-TENANT: Accepts tenantId for data isolation and commission calculation
    * Validates package existence, calculates total cost including add-ons,
-   * and creates a Stripe checkout session with metadata for later processing.
+   * calculates platform commission, and creates a Stripe checkout session
+   * with metadata and application fee.
    *
+   * @param tenantId - Tenant ID for data isolation
    * @param input - Booking creation data
    * @param input.packageId - Package slug identifier
    * @param input.eventDate - Wedding date in YYYY-MM-DD format
@@ -35,7 +40,7 @@ export class BookingService {
    *
    * @example
    * ```typescript
-   * const checkout = await bookingService.createCheckout({
+   * const checkout = await bookingService.createCheckout('tenant_123', {
    *   packageId: 'intimate-ceremony',
    *   eventDate: '2025-06-15',
    *   email: 'couple@example.com',
@@ -45,57 +50,65 @@ export class BookingService {
    * // Returns: { checkoutUrl: 'https://checkout.stripe.com/...' }
    * ```
    */
-  async createCheckout(input: CreateBookingInput): Promise<{ checkoutUrl: string }> {
-    // Validate package exists
-    const pkg = await this.catalogRepo.getPackageBySlug(input.packageId);
+  async createCheckout(tenantId: string, input: CreateBookingInput): Promise<{ checkoutUrl: string }> {
+    // Validate package exists for this tenant
+    const pkg = await this.catalogRepo.getPackageBySlug(tenantId, input.packageId);
     if (!pkg) {
       throw new NotFoundError(`Package ${input.packageId} not found`);
     }
 
-    // Calculate total
-    let totalCents = pkg.priceCents;
-    if (input.addOnIds && input.addOnIds.length > 0) {
-      const addOns = await this.catalogRepo.getAddOnsByPackageId(pkg.id);
-      const selectedAddOns = addOns.filter((a) => input.addOnIds?.includes(a.id));
-      totalCents += selectedAddOns.reduce((sum, a) => sum + a.priceCents, 0);
-    }
+    // Calculate total with commission
+    const calculation = await this.commissionService.calculateBookingTotal(
+      tenantId,
+      pkg.priceCents,
+      input.addOnIds || []
+    );
 
-    // Create Stripe checkout session
+    // Create Stripe checkout session with commission
     const session = await this.paymentProvider.createCheckoutSession({
-      amountCents: totalCents,
+      amountCents: calculation.subtotal,
       email: input.email,
       metadata: {
+        tenantId, // CRITICAL: Include tenantId in metadata
         packageId: pkg.id,
         eventDate: input.eventDate,
         email: input.email,
         coupleName: input.coupleName,
         addOnIds: JSON.stringify(input.addOnIds || []),
+        commissionAmount: String(calculation.commissionAmount),
+        commissionPercent: String(calculation.commissionPercent),
       },
+      applicationFeeAmount: calculation.commissionAmount, // Platform fee
     });
 
     return { checkoutUrl: session.url };
   }
 
   /**
-   * Retrieves all bookings from the database
+   * Retrieves all bookings from the database for a tenant
    *
+   * MULTI-TENANT: Filters bookings by tenantId for data isolation
    * Returns bookings ordered by creation date (most recent first).
    *
-   * @returns Array of all bookings
+   * @param tenantId - Tenant ID for data isolation
+   * @returns Array of all bookings for the tenant
    *
    * @example
    * ```typescript
-   * const bookings = await bookingService.getAllBookings();
+   * const bookings = await bookingService.getAllBookings('tenant_123');
    * // Returns: [{ id: 'booking_123', status: 'PAID', ... }, ...]
    * ```
    */
-  async getAllBookings(): Promise<Booking[]> {
-    return this.bookingRepo.findAll();
+  async getAllBookings(tenantId: string): Promise<Booking[]> {
+    return this.bookingRepo.findAll(tenantId);
   }
 
   /**
    * Retrieves a specific booking by ID
    *
+   * MULTI-TENANT: Validates booking belongs to specified tenant
+   *
+   * @param tenantId - Tenant ID for data isolation
    * @param id - Booking identifier
    *
    * @returns The requested booking
@@ -104,12 +117,12 @@ export class BookingService {
    *
    * @example
    * ```typescript
-   * const booking = await bookingService.getBookingById('booking_123');
+   * const booking = await bookingService.getBookingById('tenant_123', 'booking_123');
    * // Returns: { id: 'booking_123', status: 'PAID', ... }
    * ```
    */
-  async getBookingById(id: string): Promise<Booking> {
-    const booking = await this.bookingRepo.findById(id);
+  async getBookingById(tenantId: string, id: string): Promise<Booking> {
+    const booking = await this.bookingRepo.findById(tenantId, id);
     if (!booking) {
       throw new NotFoundError(`Booking ${id} not found`);
     }
@@ -117,12 +130,14 @@ export class BookingService {
   }
 
   /**
-   * Retrieves all unavailable booking dates within a date range
+   * Retrieves all unavailable booking dates within a date range for a tenant
    *
+   * MULTI-TENANT: Filters bookings by tenantId for data isolation
    * This method performs a batch query to fetch all booked dates in a given range,
    * which is much more efficient than checking each date individually.
    * Only returns dates with CONFIRMED or PENDING bookings (excludes CANCELED).
    *
+   * @param tenantId - Tenant ID for data isolation
    * @param startDate - Start of date range
    * @param endDate - End of date range
    *
@@ -131,27 +146,30 @@ export class BookingService {
    * @example
    * ```typescript
    * const unavailable = await bookingService.getUnavailableDates(
+   *   'tenant_123',
    *   new Date('2025-06-01'),
    *   new Date('2025-06-30')
    * );
    * // Returns: ['2025-06-15', '2025-06-22', '2025-06-29']
    * ```
    */
-  async getUnavailableDates(startDate: Date, endDate: Date): Promise<string[]> {
-    const dates = await this.bookingRepo.getUnavailableDates(startDate, endDate);
+  async getUnavailableDates(tenantId: string, startDate: Date, endDate: Date): Promise<string[]> {
+    const dates = await this.bookingRepo.getUnavailableDates(tenantId, startDate, endDate);
     return dates.map(d => d.toISOString().split('T')[0]); // Return as YYYY-MM-DD strings
   }
 
   /**
    * Handles payment completion and creates a confirmed booking
    *
+   * MULTI-TENANT: Accepts tenantId for data isolation and commission tracking
    * Called by Stripe webhook handler or development simulator after successful payment.
-   * Creates a PAID booking, enriches event data with package/add-on details, and emits
-   * BookingPaid event for downstream processing (email notifications, calendar sync, etc.).
+   * Creates a PAID booking with commission data, enriches event data with package/add-on
+   * details, and emits BookingPaid event for downstream processing.
    *
    * Uses race condition protection via the booking repository's SERIALIZABLE transaction
    * and pessimistic locking to prevent double-booking scenarios.
    *
+   * @param tenantId - Tenant ID for data isolation
    * @param input - Payment completion data from Stripe
    * @param input.sessionId - Stripe checkout session ID
    * @param input.packageId - Package slug identifier
@@ -160,6 +178,8 @@ export class BookingService {
    * @param input.coupleName - Names of the couple
    * @param input.addOnIds - Optional array of selected add-on IDs
    * @param input.totalCents - Total payment amount in cents
+   * @param input.commissionAmount - Platform commission in cents
+   * @param input.commissionPercent - Commission percentage
    *
    * @returns Created booking with PAID status
    *
@@ -169,19 +189,21 @@ export class BookingService {
    *
    * @example
    * ```typescript
-   * const booking = await bookingService.onPaymentCompleted({
+   * const booking = await bookingService.onPaymentCompleted('tenant_123', {
    *   sessionId: 'cs_test_123',
    *   packageId: 'intimate-ceremony',
    *   eventDate: '2025-06-15',
    *   email: 'couple@example.com',
    *   coupleName: 'Jane & John',
    *   addOnIds: ['addon_photography'],
-   *   totalCents: 150000
+   *   totalCents: 150000,
+   *   commissionAmount: 18000,
+   *   commissionPercent: 12.0
    * });
-   * // Returns: { id: 'booking_123', status: 'PAID', ... }
+   * // Returns: { id: 'booking_123', status: 'PAID', commissionAmount: 18000, ... }
    * ```
    */
-  async onPaymentCompleted(input: {
+  async onPaymentCompleted(tenantId: string, input: {
     sessionId: string;
     packageId: string;
     eventDate: string;
@@ -189,9 +211,11 @@ export class BookingService {
     coupleName: string;
     addOnIds?: string[];
     totalCents: number;
+    commissionAmount?: number;
+    commissionPercent?: number;
   }): Promise<Booking> {
     // Fetch package details for event payload
-    const pkg = await this.catalogRepo.getPackageBySlug(input.packageId);
+    const pkg = await this.catalogRepo.getPackageBySlug(tenantId, input.packageId);
     if (!pkg) {
       throw new NotFoundError(`Package ${input.packageId} not found`);
     }
@@ -199,12 +223,12 @@ export class BookingService {
     // Fetch add-on details
     const addOnTitles: string[] = [];
     if (input.addOnIds && input.addOnIds.length > 0) {
-      const addOns = await this.catalogRepo.getAddOnsByPackageId(pkg.id);
+      const addOns = await this.catalogRepo.getAddOnsByPackageId(tenantId, pkg.id);
       const selectedAddOns = addOns.filter((a) => input.addOnIds?.includes(a.id));
       addOnTitles.push(...selectedAddOns.map((a) => a.title));
     }
 
-    // Create PAID booking
+    // Create PAID booking with commission data
     const booking: Booking = {
       id: `booking_${Date.now()}`,
       packageId: input.packageId,
@@ -213,12 +237,14 @@ export class BookingService {
       eventDate: input.eventDate,
       addOnIds: input.addOnIds || [],
       totalCents: input.totalCents,
+      commissionAmount: input.commissionAmount,
+      commissionPercent: input.commissionPercent,
       status: 'PAID',
       createdAt: new Date().toISOString(),
     };
 
-    // Persist booking (enforces unique-by-date)
-    const created = await this.bookingRepo.create(booking);
+    // Persist booking (enforces unique-by-date per tenant)
+    const created = await this.bookingRepo.create(tenantId, booking);
 
     // Emit BookingPaid event for notifications with enriched data
     await this._eventEmitter.emit('BookingPaid', {

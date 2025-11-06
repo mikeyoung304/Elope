@@ -9,16 +9,17 @@ import { toISODate } from '../lib/date-utils';
 export class PrismaBlackoutRepository implements BlackoutRepository {
   constructor(private readonly prisma: PrismaClient) {}
 
-  async isBlackoutDate(date: string): Promise<boolean> {
+  async isBlackoutDate(tenantId: string, date: string): Promise<boolean> {
     const blackout = await this.prisma.blackoutDate.findUnique({
-      where: { date: new Date(date) },
+      where: { tenantId_date: { tenantId, date: new Date(date) } },
     });
 
     return blackout !== null;
   }
 
-  async getAllBlackouts(): Promise<Array<{ date: string; reason?: string }>> {
+  async getAllBlackouts(tenantId: string): Promise<Array<{ date: string; reason?: string }>> {
     const blackouts = await this.prisma.blackoutDate.findMany({
+      where: { tenantId },
       orderBy: { date: 'asc' },
     });
 
@@ -28,9 +29,10 @@ export class PrismaBlackoutRepository implements BlackoutRepository {
     }));
   }
 
-  async addBlackout(date: string, reason?: string): Promise<void> {
+  async addBlackout(tenantId: string, date: string, reason?: string): Promise<void> {
     await this.prisma.blackoutDate.create({
       data: {
+        tenantId,
         date: new Date(date),
         ...(reason && { reason }),
       },

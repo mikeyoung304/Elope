@@ -21,7 +21,8 @@
     "coverage": "vitest run --coverage",
     "prisma:generate": "prisma generate",
     "db:migrate": "prisma migrate dev --name initial_schema",
-    "db:seed": "tsx prisma/seed.ts"
+    "db:seed": "tsx prisma/seed.ts",
+    "create-tenant": "tsx scripts/create-tenant.ts"
   },
   "dependencies": {
     "@elope/contracts": "*",

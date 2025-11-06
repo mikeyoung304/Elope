@@ -6,6 +6,9 @@ import type { IdentityService } from '../services/identity.service';
 import type { BookingService } from '../services/booking.service';
 import type { AdminLoginDto, BookingDto } from '@elope/contracts';
 
+// Default tenant for admin operations (legacy single-tenant mode)
+const DEFAULT_TENANT = 'tenant_default_legacy';
+
 export class AdminController {
   constructor(
     private readonly identityService: IdentityService,
@@ -17,7 +20,7 @@ export class AdminController {
   }
 
   async getBookings(): Promise<BookingDto[]> {
-    const bookings = await this.bookingService.getAllBookings();
+    const bookings = await this.bookingService.getAllBookings(DEFAULT_TENANT);
     return bookings.map((booking) => ({
       id: booking.id,
       packageId: booking.packageId,

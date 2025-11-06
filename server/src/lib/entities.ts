@@ -36,6 +36,8 @@ export interface Booking {
   eventDate: string; // YYYY-MM-DD format
   addOnIds: string[];
   totalCents: number;
+  commissionAmount?: number; // Platform commission in cents
+  commissionPercent?: number; // Commission percentage (e.g., 12.5)
   status: 'PAID' | 'REFUNDED' | 'CANCELED';
   createdAt: string; // ISO 8601 format
 }

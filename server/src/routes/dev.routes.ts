@@ -8,6 +8,9 @@ import type { CatalogRepository } from '../lib/ports';
 import { getMockState, resetMockState } from '../adapters/mock';
 import { logger } from '../lib/core/logger';
 
+// Default tenant for dev simulator (mock mode)
+const DEFAULT_TENANT = 'tenant_default_legacy';
+
 export class DevController {
   constructor(
     private readonly bookingService: BookingService,
@@ -35,7 +38,7 @@ export class DevController {
     const normalizedDate = toUtcMidnight(input.eventDate);
 
     // Get package to calculate total
-    const pkg = await this.catalogRepo.getPackageById(input.packageId);
+    const pkg = await this.catalogRepo.getPackageById(DEFAULT_TENANT, input.packageId);
     if (!pkg) {
       throw new Error(`Package ${input.packageId} not found`);
     }
@@ -43,13 +46,13 @@ export class DevController {
     // Calculate total
     let totalCents = pkg.priceCents;
     if (input.addOnIds && input.addOnIds.length > 0) {
-      const addOns = await this.catalogRepo.getAddOnsByPackageId(pkg.id);
+      const addOns = await this.catalogRepo.getAddOnsByPackageId(DEFAULT_TENANT, pkg.id);
       const selectedAddOns = addOns.filter((a) => input.addOnIds?.includes(a.id));
       totalCents += selectedAddOns.reduce((sum, a) => sum + a.priceCents, 0);
     }
 
     // Call the same domain path used by webhook handler
-    const booking = await this.bookingService.onPaymentCompleted({
+    const booking = await this.bookingService.onPaymentCompleted(DEFAULT_TENANT, {
       sessionId: input.sessionId,
       packageId: pkg.id,
       eventDate: normalizedDate,

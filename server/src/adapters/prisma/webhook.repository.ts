@@ -31,12 +31,18 @@ export class PrismaWebhookRepository implements WebhookRepository {
    * }
    * ```
    */
-  async isDuplicate(eventId: string): Promise<boolean> {
+  async isDuplicate(tenantId: string, eventId: string): Promise<boolean> {
     const existing = await this.prisma.webhookEvent.findUnique({
       where: { eventId },
     });
 
     if (existing) {
+      // Verify the webhook belongs to the correct tenant
+      if (existing.tenantId !== tenantId) {
+        logger.warn({ eventId, expectedTenant: tenantId, actualTenant: existing.tenantId }, 'Webhook tenant mismatch');
+        return false;  // Not a duplicate for this tenant
+      }
+
       // If webhook already exists, mark as duplicate (unless it's already processed)
       if (existing.status !== 'DUPLICATE' && existing.status !== 'PROCESSED') {
         await this.prisma.webhookEvent.update({
@@ -76,6 +82,7 @@ export class PrismaWebhookRepository implements WebhookRepository {
    * ```
    */
   async recordWebhook(input: {
+    tenantId: string;
     eventId: string;
     eventType: string;
     rawPayload: string;
@@ -83,6 +90,7 @@ export class PrismaWebhookRepository implements WebhookRepository {
     try {
       await this.prisma.webhookEvent.create({
         data: {
+          tenantId: input.tenantId,
           eventId: input.eventId,
           eventType: input.eventType,
           rawPayload: input.rawPayload,
@@ -91,17 +99,18 @@ export class PrismaWebhookRepository implements WebhookRepository {
         },
       });
 
-      logger.info({ eventId: input.eventId, eventType: input.eventType }, 'Webhook event recorded');
+      logger.info({ tenantId: input.tenantId, eventId: input.eventId, eventType: input.eventType }, 'Webhook event recorded');
     } catch (error) {
       // Only ignore unique constraint violations (duplicate eventId)
       if (error instanceof PrismaClientKnownRequestError && error.code === 'P2002') {
-        logger.info({ eventId: input.eventId }, 'Webhook already recorded (duplicate eventId)');
+        logger.info({ tenantId: input.tenantId, eventId: input.eventId }, 'Webhook already recorded (duplicate eventId)');
         return;  // Graceful handling of duplicates
       }
 
       // Log and re-throw other errors
       logger.error({
         error,
+        tenantId: input.tenantId,
         eventId: input.eventId,
         eventType: input.eventType
       }, 'Failed to record webhook event');
@@ -127,7 +136,7 @@ export class PrismaWebhookRepository implements WebhookRepository {
    * // Event now marked as PROCESSED with timestamp
    * ```
    */
-  async markProcessed(eventId: string): Promise<void> {
+  async markProcessed(tenantId: string, eventId: string): Promise<void> {
     await this.prisma.webhookEvent.update({
       where: { eventId },
       data: {
@@ -136,7 +145,7 @@ export class PrismaWebhookRepository implements WebhookRepository {
       },
     });
 
-    logger.info({ eventId }, 'Webhook marked as processed');
+    logger.info({ tenantId, eventId }, 'Webhook marked as processed');
   }
 
   /**
@@ -160,7 +169,7 @@ export class PrismaWebhookRepository implements WebhookRepository {
    * }
    * ```
    */
-  async markFailed(eventId: string, errorMessage: string): Promise<void> {
+  async markFailed(tenantId: string, eventId: string, errorMessage: string): Promise<void> {
     await this.prisma.webhookEvent.update({
       where: { eventId },
       data: {
@@ -170,6 +179,6 @@ export class PrismaWebhookRepository implements WebhookRepository {
       },
     });
 
-    logger.error({ eventId, error: errorMessage }, 'Webhook marked as failed');
+    logger.error({ tenantId, eventId, error: errorMessage }, 'Webhook marked as failed');
   }
 }

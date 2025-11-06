@@ -9,8 +9,8 @@ import { NotFoundError } from '../lib/core/errors';
 export class BookingsController {
   constructor(private readonly bookingService: BookingService) {}
 
-  async createCheckout(input: CreateCheckoutDto): Promise<{ checkoutUrl: string }> {
-    return this.bookingService.createCheckout({
+  async createCheckout(tenantId: string, input: CreateCheckoutDto): Promise<{ checkoutUrl: string }> {
+    return this.bookingService.createCheckout(tenantId, {
       packageId: input.packageId,
       coupleName: input.coupleName,
       email: input.email,
@@ -19,8 +19,8 @@ export class BookingsController {
     });
   }
 
-  async getBookingById(id: string): Promise<BookingDto> {
-    const booking = await this.bookingService.getBookingById(id);
+  async getBookingById(tenantId: string, id: string): Promise<BookingDto> {
+    const booking = await this.bookingService.getBookingById(tenantId, id);
     if (!booking) {
       throw new NotFoundError(`Booking ${id} not found`);
     }

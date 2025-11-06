@@ -135,8 +135,8 @@ export function resolveTenant(prisma: PrismaClient) {
       };
       req.tenantId = tenant.id;
 
-      logger.debug(
-        { tenantId: tenant.id, slug: tenant.slug, path: req.path },
+      logger.info(
+        { tenantId: tenant.id, slug: tenant.slug, apiKey: apiKey.substring(0, 20) + '...', path: req.path },
         'Tenant resolved successfully'
       );
 
