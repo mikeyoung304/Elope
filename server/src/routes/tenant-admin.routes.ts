@@ -20,6 +20,11 @@ import {
   createBlackoutSchema,
   bookingQuerySchema,
 } from '../validation/tenant-admin.schemas';
+import {
+  NotFoundError,
+  ValidationError,
+  ForbiddenError,
+} from '../lib/core/errors';
 
 // Configure multer for memory storage
 const upload = multer({
@@ -36,6 +41,29 @@ const uploadPackagePhoto = multer({
     fileSize: 5 * 1024 * 1024, // 5MB for package photos
   },
 });
+
+/**
+ * Multer error handler middleware
+ * Converts multer-specific errors (file size, field count, etc.) to proper HTTP status codes
+ */
+function handleMulterError(
+  error: any,
+  req: Request,
+  res: Response,
+  next: NextFunction
+): void {
+  if (error instanceof multer.MulterError) {
+    if (error.code === 'LIMIT_FILE_SIZE') {
+      res.status(413).json({ error: 'File too large (max 5MB)' });
+      return;
+    }
+    // Other multer errors (LIMIT_FILE_COUNT, LIMIT_FIELD_KEY, etc.)
+    res.status(400).json({ error: error.message });
+    return;
+  }
+  // Not a multer error, pass to next handler
+  next(error);
+}
 
 export class TenantAdminController {
   constructor(private readonly tenantRepository: PrismaTenantRepository) {}
@@ -350,10 +378,19 @@ export function createTenantAdminRoutes(
   /**
    * POST /v1/tenant-admin/packages/:id/photos
    * Upload photo for package (max 5 photos per package)
+   *
+   * @returns 201 - Photo successfully uploaded
+   * @returns 400 - No file uploaded, invalid file type, or max photos reached (5)
+   * @returns 401 - No tenant authentication
+   * @returns 403 - Package belongs to different tenant
+   * @returns 404 - Package not found
+   * @returns 413 - File too large (>5MB, handled by multer middleware)
+   * @returns 500 - Internal server error (passed to global error handler)
    */
   router.post(
     '/packages/:id/photos',
     uploadPackagePhoto.single('photo'),
+    handleMulterError,
     async (req: Request, res: Response, next: NextFunction) => {
       try {
         const tenantAuth = res.locals.tenantAuth;
@@ -414,11 +451,30 @@ export function createTenantAdminRoutes(
         res.status(201).json(newPhoto);
       } catch (error) {
         logger.error({ error }, 'Error uploading package photo');
-        if (error instanceof Error) {
-          res.status(400).json({ error: error.message });
-        } else {
-          next(error);
+
+        // Discriminate error types for proper HTTP status codes
+        if (error instanceof NotFoundError) {
+          res.status(404).json({ error: error.message });
+          return;
         }
+        if (error instanceof ValidationError) {
+          res.status(400).json({ error: error.message });
+          return;
+        }
+        if (error instanceof ForbiddenError) {
+          res.status(403).json({ error: error.message });
+          return;
+        }
+
+        // Handle generic errors from upload service (file validation)
+        if (error instanceof Error) {
+          // Upload service throws generic Error for invalid file types
+          res.status(400).json({ error: error.message });
+          return;
+        }
+
+        // Pass unknown errors to global error handler
+        next(error);
       }
     }
   );
@@ -426,6 +482,12 @@ export function createTenantAdminRoutes(
   /**
    * DELETE /v1/tenant-admin/packages/:id/photos/:filename
    * Delete photo from package
+   *
+   * @returns 204 - Photo successfully deleted
+   * @returns 401 - No tenant authentication
+   * @returns 403 - Package belongs to different tenant
+   * @returns 404 - Package not found or photo not found in package
+   * @returns 500 - Internal server error (file system errors, database errors)
    */
   router.delete(
     '/packages/:id/photos/:filename',
@@ -450,7 +512,7 @@ export function createTenantAdminRoutes(
           return;
         }
 
-        // Remove photo from array
+        // Verify photo exists in package photos array
         const currentPhotos = (pkg.photos as any[]) || [];
         const updatedPhotos = currentPhotos.filter((p: any) => p.filename !== filename);
 
@@ -459,7 +521,7 @@ export function createTenantAdminRoutes(
           return;
         }
 
-        // Delete file from storage
+        // Delete file from storage (may throw filesystem errors)
         await uploadService.deletePackagePhoto(filename);
 
         // Update package in database
@@ -472,6 +534,7 @@ export function createTenantAdminRoutes(
         res.status(204).send();
       } catch (error) {
         logger.error({ error }, 'Error deleting package photo');
+        // Pass to global error handler which will return 500 for unhandled errors
         next(error);
       }
     }
