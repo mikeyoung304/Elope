@@ -5,6 +5,7 @@
 import express from 'express';
 import helmet from 'helmet';
 import cors from 'cors';
+import path from 'path';
 import { randomUUID } from 'crypto';
 import swaggerUi from 'swagger-ui-express';
 import type { Config } from './lib/core/config';
@@ -15,6 +16,7 @@ import { errorHandler, notFoundHandler } from './middleware/error-handler';
 import { requestLogger } from './middleware/request-logger';
 import { skipIfHealth, adminLimiter } from './middleware/rateLimiter';
 import { openApiSpec } from './api-docs';
+import { uploadService } from './services/upload.service';
 
 export function createApp(config: Config): express.Application {
   const app = express();
@@ -76,6 +78,11 @@ export function createApp(config: Config): express.Application {
 
   // Request ID + logging middleware (for non-webhook routes)
   app.use(requestLogger);
+
+  // Serve uploaded files (static)
+  const uploadDir = uploadService.getUploadDir();
+  app.use('/uploads/logos', express.static(uploadDir));
+  logger.info({ uploadDir }, 'Serving uploaded logos from static directory');
 
   // Health check endpoint
   app.get('/health', (_req, res) => {
@@ -143,7 +150,11 @@ export function createApp(config: Config): express.Application {
 
   // Mount v1 router
   const container = buildContainer(config);
-  createV1Router(container.controllers, container.services.identity, app);
+  createV1Router(container.controllers, container.services.identity, app, {
+    catalog: container.services.catalog,
+    booking: container.services.booking,
+    tenantAuth: container.services.tenantAuth,
+  });
 
   // Mount dev routes (mock mode only)
   if (config.ADAPTERS_PRESET === 'mock' && container.controllers.dev) {

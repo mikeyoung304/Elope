@@ -11,6 +11,7 @@ import { BookingService } from './services/booking.service';
 import { CommissionService } from './services/commission.service';
 import { IdentityService } from './services/identity.service';
 import { StripeConnectService } from './services/stripe-connect.service';
+import { TenantAuthService } from './services/tenant-auth.service';
 import { PackagesController } from './routes/packages.routes';
 import { AvailabilityController } from './routes/availability.routes';
 import { BookingsController } from './routes/bookings.routes';
@@ -19,6 +20,7 @@ import { AdminController } from './routes/admin.routes';
 import { BlackoutsController } from './routes/blackouts.routes';
 import { AdminPackagesController } from './routes/admin-packages.routes';
 import { TenantController } from './routes/tenant.routes';
+import { TenantAuthController } from './routes/tenant-auth.routes';
 import { DevController } from './routes/dev.routes';
 import { buildMockAdapters } from './adapters/mock';
 import { PrismaClient } from './generated/prisma';
@@ -45,11 +47,15 @@ export interface Container {
     blackouts: BlackoutsController;
     adminPackages: AdminPackagesController;
     tenant: TenantController;
+    tenantAuth: TenantAuthController;
     dev?: DevController;
   };
   services: {
     identity: IdentityService;
     stripeConnect: StripeConnectService;
+    tenantAuth: TenantAuthService;
+    catalog: CatalogService;
+    booking: BookingService;
   };
 }
 
@@ -96,6 +102,9 @@ export function buildContainer(config: Config): Container {
     // Create StripeConnectService with mock Prisma
     const stripeConnectService = new StripeConnectService(mockPrisma);
 
+    // Create TenantAuthService with mock Prisma tenant repo
+    const tenantAuthService = new TenantAuthService(mockTenantRepo, config.JWT_SECRET);
+
     // Build controllers
     const controllers = {
       packages: new PackagesController(catalogService),
@@ -106,12 +115,16 @@ export function buildContainer(config: Config): Container {
       blackouts: new BlackoutsController(adapters.blackoutRepo),
       adminPackages: new AdminPackagesController(catalogService),
       tenant: new TenantController(mockTenantRepo),
+      tenantAuth: new TenantAuthController(tenantAuthService),
       dev: new DevController(bookingService, adapters.catalogRepo),
     };
 
     const services = {
       identity: identityService,
       stripeConnect: stripeConnectService,
+      tenantAuth: tenantAuthService,
+      catalog: catalogService,
+      booking: bookingService,
     };
 
     return { controllers, services };
@@ -211,6 +224,9 @@ export function buildContainer(config: Config): Container {
   );
   const identityService = new IdentityService(userRepo, config.JWT_SECRET);
 
+  // Create TenantAuthService with real Prisma tenant repo
+  const tenantAuthService = new TenantAuthService(tenantRepo, config.JWT_SECRET);
+
   // Subscribe to BookingPaid events to send confirmation emails
   eventEmitter.subscribe<{
     bookingId: string;
@@ -243,12 +259,16 @@ export function buildContainer(config: Config): Container {
     blackouts: new BlackoutsController(blackoutRepo),
     adminPackages: new AdminPackagesController(catalogService),
     tenant: new TenantController(tenantRepo),
+    tenantAuth: new TenantAuthController(tenantAuthService),
     // No dev controller in real mode
   };
 
   const services = {
     identity: identityService,
     stripeConnect: stripeConnectService,
+    tenantAuth: tenantAuthService,
+    catalog: catalogService,
+    booking: bookingService,
   };
 
   return { controllers, services };

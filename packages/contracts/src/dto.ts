@@ -140,6 +140,25 @@ export const TenantBrandingDtoSchema = z.object({
 
 export type TenantBrandingDto = z.infer<typeof TenantBrandingDtoSchema>;
 
+// Update Tenant Branding DTO (for tenant admin)
+export const UpdateBrandingDtoSchema = z.object({
+  primaryColor: z.string().regex(/^#[0-9A-Fa-f]{6}$/).optional(),
+  secondaryColor: z.string().regex(/^#[0-9A-Fa-f]{6}$/).optional(),
+  fontFamily: z.string().optional(),
+});
+
+export type UpdateBrandingDto = z.infer<typeof UpdateBrandingDtoSchema>;
+
+// Logo Upload Response DTO
+export const LogoUploadResponseDtoSchema = z.object({
+  url: z.string().url(),
+  filename: z.string(),
+  size: z.number(),
+  mimetype: z.string(),
+});
+
+export type LogoUploadResponseDto = z.infer<typeof LogoUploadResponseDtoSchema>;
+
 // Stripe Connect DTOs
 export const StripeConnectDtoSchema = z.object({
   accountId: z.string(),

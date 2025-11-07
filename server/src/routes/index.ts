@@ -14,11 +14,18 @@ import type { BlackoutsController } from './blackouts.routes';
 import type { AdminPackagesController } from './admin-packages.routes';
 import type { TenantController } from './tenant.routes';
 import { createAuthMiddleware } from '../middleware/auth';
+import { createTenantAuthMiddleware } from '../middleware/tenant-auth';
 import type { IdentityService } from '../services/identity.service';
+import type { TenantAuthService } from '../services/tenant-auth.service';
+import type { CatalogService } from '../services/catalog.service';
+import type { BookingService } from '../services/booking.service';
 import { resolveTenant, requireTenant, getTenantId, type TenantRequest } from '../middleware/tenant';
 import { PrismaClient } from '../generated/prisma';
+import { PrismaTenantRepository, PrismaBlackoutRepository } from '../adapters/prisma';
 import adminTenantsRoutes from './admin/tenants.routes';
 import adminStripeRoutes from './admin/stripe.routes';
+import { createTenantAdminRoutes } from './tenant-admin.routes';
+import { createTenantAuthRoutes } from './tenant-auth.routes';
 
 interface Controllers {
   packages: PackagesController;
@@ -31,10 +38,17 @@ interface Controllers {
   tenant: TenantController;
 }
 
+interface Services {
+  catalog: CatalogService;
+  booking: BookingService;
+  tenantAuth: TenantAuthService;
+}
+
 export function createV1Router(
   controllers: Controllers,
   identityService: IdentityService,
-  app: Application
+  app: Application,
+  services?: Services
 ): void {
   // Create Prisma instance for tenant middleware
   const prisma = new PrismaClient();
@@ -191,4 +205,27 @@ export function createV1Router(
 
   // Register admin Stripe Connect routes (Express router, not ts-rest)
   app.use('/v1/admin/tenants', authMiddleware, adminStripeRoutes);
+
+  // Register tenant authentication routes (login, /me)
+  if (services) {
+    const tenantAuthRoutes = createTenantAuthRoutes(services.tenantAuth);
+    const tenantAuthMiddleware = createTenantAuthMiddleware(services.tenantAuth);
+
+    // Mount tenant auth routes under /v1/tenant-auth
+    // /v1/tenant-auth/login - public
+    // /v1/tenant-auth/me - requires authentication (protected by middleware in route handler)
+    app.use('/v1/tenant-auth', tenantAuthRoutes);
+
+    // Register tenant admin routes (for tenant self-service)
+    // These routes use tenant auth middleware for authentication and authorization
+    const tenantRepo = new PrismaTenantRepository(prisma);
+    const blackoutRepo = new PrismaBlackoutRepository(prisma);
+    const tenantAdminRoutes = createTenantAdminRoutes(
+      tenantRepo,
+      services.catalog,
+      services.booking,
+      blackoutRepo
+    );
+    app.use('/v1/tenant/admin', tenantAuthMiddleware, tenantAdminRoutes);
+  }
 }

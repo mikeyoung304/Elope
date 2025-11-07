@@ -44,6 +44,8 @@ export interface BlackoutRepository {
   isBlackoutDate(tenantId: string, date: string): Promise<boolean>;
   getAllBlackouts(tenantId: string): Promise<Array<{ date: string; reason?: string }>>;
   addBlackout(tenantId: string, date: string, reason?: string): Promise<void>;
+  deleteBlackout(tenantId: string, id: string): Promise<void>;
+  findBlackoutById(tenantId: string, id: string): Promise<{ id: string; date: string; reason?: string } | null>;
 }
 
 /**
@@ -124,12 +126,23 @@ export interface User {
 }
 
 /**
- * JWT token payload for authentication
+ * JWT token payload for platform admin authentication
  */
 export interface TokenPayload {
   userId: string;
   email: string;
   role: 'admin';
+}
+
+/**
+ * JWT token payload for tenant authentication
+ * Includes tenant context instead of user context
+ */
+export interface TenantTokenPayload {
+  tenantId: string;
+  slug: string;
+  email: string;
+  type: 'tenant'; // Distinguishes from platform admin tokens
 }
 
 /**

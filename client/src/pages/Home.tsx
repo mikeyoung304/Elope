@@ -4,8 +4,12 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import { Sparkles, Zap, Gift, Target, Star } from "lucide-react";
+import { useBranding } from "@/hooks/useBranding";
 
 export function Home() {
+  // Load and apply tenant branding
+  useBranding();
+
   const scrollToPackages = () => {
     document.getElementById('packages')?.scrollIntoView({ behavior: 'smooth' });
   };

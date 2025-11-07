@@ -38,4 +38,26 @@ export class PrismaBlackoutRepository implements BlackoutRepository {
       },
     });
   }
+
+  async findBlackoutById(tenantId: string, id: string): Promise<{ id: string; date: string; reason?: string } | null> {
+    const blackout = await this.prisma.blackoutDate.findFirst({
+      where: { id, tenantId },
+    });
+
+    if (!blackout) {
+      return null;
+    }
+
+    return {
+      id: blackout.id,
+      date: toISODate(blackout.date),
+      ...(blackout.reason && { reason: blackout.reason }),
+    };
+  }
+
+  async deleteBlackout(tenantId: string, id: string): Promise<void> {
+    await this.prisma.blackoutDate.deleteMany({
+      where: { id, tenantId }, // Use deleteMany to ensure tenant isolation
+    });
+  }
 }

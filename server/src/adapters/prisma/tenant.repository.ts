@@ -69,6 +69,19 @@ export class PrismaTenantRepository {
   }
 
   /**
+   * Find tenant by email
+   * Used for tenant admin authentication
+   *
+   * @param email - Tenant admin email
+   * @returns Tenant or null if not found
+   */
+  async findByEmail(email: string): Promise<Tenant | null> {
+    return await this.prisma.tenant.findUnique({
+      where: { email },
+    });
+  }
+
+  /**
    * Create new tenant
    *
    * @param data - Tenant creation data

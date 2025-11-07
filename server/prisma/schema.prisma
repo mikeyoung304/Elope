@@ -33,6 +33,10 @@ model Tenant {
   slug String @unique // URL-safe identifier (e.g., "bellaweddings")
   name String // Display name (e.g., "Bella Weddings")
 
+  // Tenant Admin Authentication
+  email        String? @unique // Login email for tenant admin dashboard
+  passwordHash String? // Bcrypt hashed password
+
   // API Authentication
   apiKeyPublic String @unique // pk_live_tenant_xyz (safe for client-side)
   apiKeySecret String // Hashed secret key (admin operations only)

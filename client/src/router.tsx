@@ -14,6 +14,8 @@ const Package = lazy(() => import("./pages/Package").then(m => ({ default: m.Pac
 const Success = lazy(() => import("./pages/Success").then(m => ({ default: m.Success })));
 const AdminLogin = lazy(() => import("./pages/AdminLogin").then(m => ({ default: m.AdminLogin })));
 const Admin = lazy(() => import("./pages/Admin").then(m => ({ default: m.Admin })));
+const TenantLogin = lazy(() => import("./pages/TenantLogin").then(m => ({ default: m.TenantLogin })));
+const TenantDashboard = lazy(() => import("./pages/TenantDashboard").then(m => ({ default: m.TenantDashboard })));
 
 // Wrapper with Suspense
 const SuspenseWrapper = ({ children }: { children: React.ReactNode }) => (
@@ -44,6 +46,14 @@ export const router = createBrowserRouter([
       {
         path: "admin",
         element: <SuspenseWrapper><Admin /></SuspenseWrapper>,
+      },
+      {
+        path: "tenant/login",
+        element: <SuspenseWrapper><TenantLogin /></SuspenseWrapper>,
+      },
+      {
+        path: "tenant/dashboard",
+        element: <SuspenseWrapper><TenantDashboard /></SuspenseWrapper>,
       },
     ],
   },

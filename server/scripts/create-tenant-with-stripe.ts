@@ -51,6 +51,10 @@ function parseArgs(args: string[]): {
   commission?: number;
   country?: string;
   email?: string;
+  password?: string;
+  primaryColor?: string;
+  secondaryColor?: string;
+  fontFamily?: string;
 } {
   const result: {
     slug?: string;
@@ -58,6 +62,10 @@ function parseArgs(args: string[]): {
     commission?: number;
     country?: string;
     email?: string;
+    password?: string;
+    primaryColor?: string;
+    secondaryColor?: string;
+    fontFamily?: string;
   } = {};
 
   for (const arg of args) {
@@ -71,6 +79,14 @@ function parseArgs(args: string[]): {
       result.country = arg.split('=')[1];
     } else if (arg.startsWith('--email=')) {
       result.email = arg.split('=')[1];
+    } else if (arg.startsWith('--password=')) {
+      result.password = arg.split('=')[1];
+    } else if (arg.startsWith('--primaryColor=')) {
+      result.primaryColor = arg.split('=')[1];
+    } else if (arg.startsWith('--secondaryColor=')) {
+      result.secondaryColor = arg.split('=')[1];
+    } else if (arg.startsWith('--fontFamily=')) {
+      result.fontFamily = arg.split('=')[1];
     }
   }
 
@@ -82,30 +98,53 @@ function parseArgs(args: string[]): {
  */
 function printUsage() {
   console.log(`
-Usage: pnpm create-tenant-with-stripe --slug=<slug> --name=<name> [--commission=10.0] [--country=US] [--email=owner@example.com]
+Usage: pnpm create-tenant-with-stripe --slug=<slug> --name=<name> [OPTIONS]
 
-Options:
-  --slug        URL-safe tenant identifier (required)
+Required:
+  --slug        URL-safe tenant identifier
                 Examples: "bellaweddings", "acme-events", "luxury-co"
                 Rules: 3-50 chars, lowercase, letters/numbers/hyphens only
 
-  --name        Display name for tenant (required)
+  --name        Display name for tenant
                 Examples: "Bella Weddings", "ACME Events", "Luxury Co."
 
-  --commission  Platform commission percentage (optional, default: 10.0)
+Optional:
+  --commission  Platform commission percentage (default: 10.0)
                 Range: 0-100
 
-  --country     Country code for Stripe Connect account (optional, default: US)
+  --country     Country code for Stripe Connect account (default: US)
                 Examples: "US", "CA", "GB", "AU"
 
-  --email       Email for Stripe Connect account (optional)
+  --email       Email for Stripe Connect account
                 Used for Stripe account notifications
 
-Examples:
-  pnpm create-tenant-with-stripe --slug=bellaweddings --name="Bella Weddings"
-  pnpm create-tenant-with-stripe --slug=acme --name="ACME Events" --commission=12.5 --email=owner@acme.com
+  --password    Initial admin password for tenant dashboard
+                If not provided, tenant admin features won't be accessible yet
 
-Secret API key and Stripe onboarding URL will be shown ONCE - save immediately!
+Branding Options:
+  --primaryColor    Primary brand color (hex format)
+                    Example: "#7C3AED"
+
+  --secondaryColor  Secondary brand color (hex format)
+                    Example: "#DDD6FE"
+
+  --fontFamily      Font family name
+                    Examples: "Inter", "Playfair Display", "Lora"
+
+Examples:
+  Basic tenant creation:
+    pnpm create-tenant-with-stripe --slug=bellaweddings --name="Bella Weddings"
+
+  With commission and email:
+    pnpm create-tenant-with-stripe --slug=acme --name="ACME Events" --commission=12.5 --email=owner@acme.com
+
+  With branding:
+    pnpm create-tenant-with-stripe --slug=luxury --name="Luxury Weddings" --primaryColor="#7C3AED" --fontFamily="Playfair Display"
+
+  Complete setup:
+    pnpm create-tenant-with-stripe --slug=bella --name="Bella Weddings" --password=secure123 --email=owner@bella.com --primaryColor="#7C3AED"
+
+Note: Secret API key and Stripe onboarding URL will be shown ONCE - save immediately!
 `);
 }
 
@@ -123,7 +162,17 @@ async function main() {
     process.exit(0);
   }
 
-  const { slug, name, commission = 10.0, country = 'US', email } = parseArgs(args);
+  const {
+    slug,
+    name,
+    commission = 10.0,
+    country = 'US',
+    email,
+    password,
+    primaryColor,
+    secondaryColor,
+    fontFamily,
+  } = parseArgs(args);
 
   // Validate required arguments
   if (!slug || !name) {
@@ -158,13 +207,20 @@ async function main() {
 
     // Step 2: Create tenant
     console.log('💾 Step 2/4: Creating tenant in database...');
+
+    // Build branding object
+    const branding: any = {};
+    if (primaryColor) branding.primaryColor = primaryColor;
+    if (secondaryColor) branding.secondaryColor = secondaryColor;
+    if (fontFamily) branding.fontFamily = fontFamily;
+
     const tenant = await tenantRepo.create({
       slug,
       name,
       apiKeyPublic: keys.publicKey,
       apiKeySecret: keys.secretKeyHash,
       commissionPercent: commission,
-      branding: {},
+      branding,
     });
     console.log('✅ Tenant created successfully!\n');
 
@@ -236,12 +292,32 @@ async function main() {
 
     console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n');
 
+    // Print branding info if configured
+    if (Object.keys(branding).length > 0) {
+      console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+      console.log('🎨 BRANDING');
+      console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n');
+
+      if (primaryColor) console.log('Primary Color:   ', primaryColor);
+      if (secondaryColor) console.log('Secondary Color: ', secondaryColor);
+      if (fontFamily) console.log('Font Family:     ', fontFamily);
+      console.log('\n');
+    }
+
     console.log('✅ Next Steps:');
     console.log('   1. Save the secret key in a secure password manager');
     console.log('   2. Complete Stripe onboarding using the URL above');
     console.log('   3. Verify Stripe account status after onboarding');
     console.log('   4. Provide API keys to the tenant');
-    console.log('   5. Set up branding via admin API\n');
+    if (password) {
+      console.log('   5. Tenant admin can log in with provided password');
+    } else {
+      console.log('   5. Set up tenant admin password (not provided)');
+    }
+    if (Object.keys(branding).length === 0) {
+      console.log('   6. Configure branding via tenant admin dashboard');
+    }
+    console.log('');
 
     // Check account status
     console.log('💡 To check Stripe account status later, run:');
