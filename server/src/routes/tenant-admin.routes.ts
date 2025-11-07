@@ -25,7 +25,15 @@ import {
 const upload = multer({
   storage: multer.memoryStorage(),
   limits: {
-    fileSize: 2 * 1024 * 1024, // 2MB
+    fileSize: 2 * 1024 * 1024, // 2MB for logos
+  },
+});
+
+// Separate upload config for package photos (5MB)
+const uploadPackagePhoto = multer({
+  storage: multer.memoryStorage(),
+  limits: {
+    fileSize: 5 * 1024 * 1024, // 5MB for package photos
   },
 });
 
@@ -338,6 +346,136 @@ export function createTenantAdminRoutes(
       next(error);
     }
   });
+
+  /**
+   * POST /v1/tenant-admin/packages/:id/photos
+   * Upload photo for package (max 5 photos per package)
+   */
+  router.post(
+    '/packages/:id/photos',
+    uploadPackagePhoto.single('photo'),
+    async (req: Request, res: Response, next: NextFunction) => {
+      try {
+        const tenantAuth = res.locals.tenantAuth;
+        if (!tenantAuth) {
+          res.status(401).json({ error: 'Unauthorized: No tenant authentication' });
+          return;
+        }
+        const tenantId = tenantAuth.tenantId;
+        const { id: packageId } = req.params;
+
+        // Check if file was uploaded
+        if (!req.file) {
+          res.status(400).json({ error: 'No photo uploaded' });
+          return;
+        }
+
+        // Verify package exists and belongs to tenant
+        const pkg = await catalogService.getPackageById(packageId);
+        if (!pkg) {
+          res.status(404).json({ error: 'Package not found' });
+          return;
+        }
+        if (pkg.tenantId !== tenantId) {
+          res.status(403).json({ error: 'Forbidden: Package belongs to different tenant' });
+          return;
+        }
+
+        // Check photo count (max 5)
+        const currentPhotos = (pkg.photos as any[]) || [];
+        if (currentPhotos.length >= 5) {
+          res.status(400).json({ error: 'Maximum 5 photos per package' });
+          return;
+        }
+
+        // Upload photo
+        const uploadResult = await uploadService.uploadPackagePhoto(req.file as any, packageId);
+
+        // Add photo to package photos array
+        const newPhoto = {
+          url: uploadResult.url,
+          filename: uploadResult.filename,
+          size: uploadResult.size,
+          order: currentPhotos.length, // Append to end
+        };
+
+        const updatedPhotos = [...currentPhotos, newPhoto];
+
+        // Update package in database
+        await catalogService.updatePackage(tenantId, packageId, {
+          photos: updatedPhotos,
+        });
+
+        logger.info(
+          { tenantId, packageId, filename: uploadResult.filename },
+          'Package photo uploaded'
+        );
+
+        res.status(201).json(newPhoto);
+      } catch (error) {
+        logger.error({ error }, 'Error uploading package photo');
+        if (error instanceof Error) {
+          res.status(400).json({ error: error.message });
+        } else {
+          next(error);
+        }
+      }
+    }
+  );
+
+  /**
+   * DELETE /v1/tenant-admin/packages/:id/photos/:filename
+   * Delete photo from package
+   */
+  router.delete(
+    '/packages/:id/photos/:filename',
+    async (req: Request, res: Response, next: NextFunction) => {
+      try {
+        const tenantAuth = res.locals.tenantAuth;
+        if (!tenantAuth) {
+          res.status(401).json({ error: 'Unauthorized: No tenant authentication' });
+          return;
+        }
+        const tenantId = tenantAuth.tenantId;
+        const { id: packageId, filename } = req.params;
+
+        // Verify package exists and belongs to tenant
+        const pkg = await catalogService.getPackageById(packageId);
+        if (!pkg) {
+          res.status(404).json({ error: 'Package not found' });
+          return;
+        }
+        if (pkg.tenantId !== tenantId) {
+          res.status(403).json({ error: 'Forbidden: Package belongs to different tenant' });
+          return;
+        }
+
+        // Remove photo from array
+        const currentPhotos = (pkg.photos as any[]) || [];
+        const updatedPhotos = currentPhotos.filter((p: any) => p.filename !== filename);
+
+        if (updatedPhotos.length === currentPhotos.length) {
+          res.status(404).json({ error: 'Photo not found in package' });
+          return;
+        }
+
+        // Delete file from storage
+        await uploadService.deletePackagePhoto(filename);
+
+        // Update package in database
+        await catalogService.updatePackage(tenantId, packageId, {
+          photos: updatedPhotos,
+        });
+
+        logger.info({ tenantId, packageId, filename }, 'Package photo deleted');
+
+        res.status(204).send();
+      } catch (error) {
+        logger.error({ error }, 'Error deleting package photo');
+        next(error);
+      }
+    }
+  );
 
   // ============================================================================
   // Blackout Management Endpoints

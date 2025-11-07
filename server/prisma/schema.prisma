@@ -104,6 +104,12 @@ model Package {
   description String?
   basePrice   Int
   active      Boolean        @default(true)
+
+  // Photo Gallery - Array of photo objects
+  // Structure: [{url: string, filename: string, size: number, order: number}]
+  // Max 5 photos per package, order determines display sequence
+  photos      Json           @default("[]")
+
   createdAt   DateTime       @default(now())
   updatedAt   DateTime       @updatedAt
   tenant      Tenant         @relation(fields: [tenantId], references: [id], onDelete: Cascade)

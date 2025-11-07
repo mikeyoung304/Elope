@@ -80,9 +80,13 @@ export function createApp(config: Config): express.Application {
   app.use(requestLogger);
 
   // Serve uploaded files (static)
-  const uploadDir = uploadService.getUploadDir();
-  app.use('/uploads/logos', express.static(uploadDir));
-  logger.info({ uploadDir }, 'Serving uploaded logos from static directory');
+  const logoUploadDir = uploadService.getLogoUploadDir();
+  app.use('/uploads/logos', express.static(logoUploadDir));
+  logger.info({ uploadDir: logoUploadDir }, 'Serving uploaded logos from static directory');
+
+  const packagePhotoUploadDir = uploadService.getPackagePhotoUploadDir();
+  app.use('/uploads/packages', express.static(packagePhotoUploadDir));
+  logger.info({ uploadDir: packagePhotoUploadDir }, 'Serving package photos from static directory');
 
   // Health check endpoint
   app.get('/health', (_req, res) => {

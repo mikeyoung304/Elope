@@ -28,15 +28,19 @@ export interface UploadResult {
 }
 
 export class UploadService {
-  private uploadDir: string;
+  private logoUploadDir: string;
+  private packagePhotoUploadDir: string;
   private maxFileSizeMB: number;
+  private maxPackagePhotoSizeMB: number;
   private allowedMimeTypes: string[];
   private baseUrl: string;
 
   constructor() {
     // Configuration from environment or defaults
-    this.uploadDir = process.env.UPLOAD_DIR || path.join(process.cwd(), 'uploads', 'logos');
+    this.logoUploadDir = process.env.UPLOAD_DIR || path.join(process.cwd(), 'uploads', 'logos');
+    this.packagePhotoUploadDir = path.join(process.cwd(), 'uploads', 'packages');
     this.maxFileSizeMB = parseInt(process.env.MAX_UPLOAD_SIZE_MB || '2', 10);
+    this.maxPackagePhotoSizeMB = 5; // 5MB for package photos
     this.allowedMimeTypes = [
       'image/jpeg',
       'image/jpg',
@@ -46,28 +50,30 @@ export class UploadService {
     ];
     this.baseUrl = process.env.API_BASE_URL || 'http://localhost:5000';
 
-    // Ensure upload directory exists
-    this.ensureUploadDir();
+    // Ensure upload directories exist
+    this.ensureUploadDir(this.logoUploadDir);
+    this.ensureUploadDir(this.packagePhotoUploadDir);
   }
 
   /**
    * Ensure upload directory exists
    */
-  private ensureUploadDir(): void {
-    if (!fs.existsSync(this.uploadDir)) {
-      fs.mkdirSync(this.uploadDir, { recursive: true });
-      logger.info({ uploadDir: this.uploadDir }, 'Created upload directory');
+  private ensureUploadDir(dir: string): void {
+    if (!fs.existsSync(dir)) {
+      fs.mkdirSync(dir, { recursive: true });
+      logger.info({ uploadDir: dir }, 'Created upload directory');
     }
   }
 
   /**
    * Validate file before upload
    */
-  private validateFile(file: UploadedFile): void {
+  private validateFile(file: UploadedFile, maxSizeMB?: number): void {
     // Check file size
-    const maxSizeBytes = this.maxFileSizeMB * 1024 * 1024;
+    const maxSize = maxSizeMB || this.maxFileSizeMB;
+    const maxSizeBytes = maxSize * 1024 * 1024;
     if (file.size > maxSizeBytes) {
-      throw new Error(`File size exceeds maximum of ${this.maxFileSizeMB}MB`);
+      throw new Error(`File size exceeds maximum of ${maxSize}MB`);
     }
 
     // Check mime type
@@ -86,11 +92,11 @@ export class UploadService {
   /**
    * Generate unique filename
    */
-  private generateFilename(originalName: string): string {
+  private generateFilename(originalName: string, prefix: string = 'logo'): string {
     const ext = path.extname(originalName);
     const timestamp = Date.now();
     const randomStr = crypto.randomBytes(8).toString('hex');
-    return `logo-${timestamp}-${randomStr}${ext}`;
+    return `${prefix}-${timestamp}-${randomStr}${ext}`;
   }
 
   /**
@@ -105,8 +111,8 @@ export class UploadService {
       this.validateFile(file);
 
       // Generate unique filename
-      const filename = this.generateFilename(file.originalname);
-      const filepath = path.join(this.uploadDir, filename);
+      const filename = this.generateFilename(file.originalname, 'logo');
+      const filepath = path.join(this.logoUploadDir, filename);
 
       // Write file to disk
       await fs.promises.writeFile(filepath, file.buffer);
@@ -135,12 +141,53 @@ export class UploadService {
   }
 
   /**
+   * Upload package photo
+   * @param file - File object from multer
+   * @param packageId - Package ID for organization
+   * @returns Upload result with public URL
+   */
+  async uploadPackagePhoto(file: UploadedFile, packageId: string): Promise<UploadResult> {
+    try {
+      // Validate file with higher size limit
+      this.validateFile(file, this.maxPackagePhotoSizeMB);
+
+      // Generate unique filename
+      const filename = this.generateFilename(file.originalname, 'package');
+      const filepath = path.join(this.packagePhotoUploadDir, filename);
+
+      // Write file to disk
+      await fs.promises.writeFile(filepath, file.buffer);
+
+      logger.info(
+        {
+          packageId,
+          filename,
+          size: file.size,
+          mimetype: file.mimetype,
+        },
+        'Package photo uploaded successfully'
+      );
+
+      // Return result with public URL
+      return {
+        url: `${this.baseUrl}/uploads/packages/${filename}`,
+        filename,
+        size: file.size,
+        mimetype: file.mimetype,
+      };
+    } catch (error) {
+      logger.error({ error, packageId }, 'Error uploading package photo');
+      throw error;
+    }
+  }
+
+  /**
    * Delete logo file
    * @param filename - Filename to delete
    */
   async deleteLogo(filename: string): Promise<void> {
     try {
-      const filepath = path.join(this.uploadDir, filename);
+      const filepath = path.join(this.logoUploadDir, filename);
 
       if (fs.existsSync(filepath)) {
         await fs.promises.unlink(filepath);
@@ -153,10 +200,35 @@ export class UploadService {
   }
 
   /**
-   * Get upload directory path (for serving static files)
+   * Delete package photo file
+   * @param filename - Filename to delete
    */
-  getUploadDir(): string {
-    return this.uploadDir;
+  async deletePackagePhoto(filename: string): Promise<void> {
+    try {
+      const filepath = path.join(this.packagePhotoUploadDir, filename);
+
+      if (fs.existsSync(filepath)) {
+        await fs.promises.unlink(filepath);
+        logger.info({ filename }, 'Package photo deleted successfully');
+      }
+    } catch (error) {
+      logger.error({ error, filename }, 'Error deleting package photo');
+      throw error;
+    }
+  }
+
+  /**
+   * Get logo upload directory path (for serving static files)
+   */
+  getLogoUploadDir(): string {
+    return this.logoUploadDir;
+  }
+
+  /**
+   * Get package photo upload directory path (for serving static files)
+   */
+  getPackagePhotoUploadDir(): string {
+    return this.packagePhotoUploadDir;
   }
 }
 
