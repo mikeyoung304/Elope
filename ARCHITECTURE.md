@@ -13,12 +13,12 @@ React 18 + Vite, feature‑based (catalog, booking, admin). Uses a generated ts�
 ### Backend (server/)
 
 - **routes/** — HTTP routes using @ts-rest/express, bound to contracts
-- **services/** — Business logic: catalog, booking, availability, identity
+- **services/** — Business logic: catalog, booking, availability, identity, commission
 - **adapters/** — Prisma repos, Stripe, Postmark, Google Calendar. Also `adapters/mock/` for in‑memory.
-- **middleware/** — Auth, error handling, request logging, rate limiting
+- **middleware/** — Auth, error handling, request logging, rate limiting, **tenant resolution**
 - **lib/core/** — config (zod‑parsed env), logger, error mapping, event bus
 - **lib/ports.ts** — Repository and provider interfaces
-- **lib/entities.ts** — Domain entities (Package, AddOn, Booking, Blackout)
+- **lib/entities.ts** — Domain entities (Package, AddOn, Booking, Blackout, Tenant)
 - **lib/errors.ts** — Domain-specific errors
 - **di.ts** — composition root: choose mock vs real adapters via env and wire services
 
@@ -32,10 +32,11 @@ DTOs, money/date helpers, small types.
 
 ## Service map
 
-- **Catalog** — packages & add‑ons. Uses: `CatalogRepository`.
-- **Availability** — `isDateAvailable`: bookings + blackout + Google busy. Uses: `BookingRepository`, `BlackoutRepository`, `CalendarProvider`.
-- **Booking** — create checkout, handle payment completion, unique‑per‑date guarantee. Uses: `PaymentProvider`, `BookingRepository`, `EmailProvider`; emits `BookingPaid`, `BookingFailed`.
-- **Payments** — abstract payment operations (Stripe adapter in real mode).
+- **Catalog** — packages & add‑ons. Uses: `CatalogRepository`. **All queries scoped by tenantId**.
+- **Availability** — `isDateAvailable`: bookings + blackout + Google busy. Uses: `BookingRepository`, `BlackoutRepository`, `CalendarProvider`. **All queries scoped by tenantId**.
+- **Booking** — create checkout, handle payment completion, unique‑per‑date guarantee. Uses: `PaymentProvider`, `BookingRepository`, `EmailProvider`, `CommissionService`; emits `BookingPaid`, `BookingFailed`. **Commission calculated server-side per tenant**.
+- **Commission** — calculate platform commission based on tenant's commission rate (10-15%). Uses: `TenantRepository`. **Always rounds UP to protect platform revenue**.
+- **Payments** — abstract payment operations (Stripe adapter in real mode, supports Stripe Connect).
 - **Notifications** — email templates + sending (Postmark adapter in real mode).
 - **Identity** — admin login (bcrypt) + JWT.
 
@@ -49,11 +50,14 @@ The platform uses a **three-layer defense** against double-booking (mission-crit
 
 ```prisma
 model Booking {
-  date DateTime @unique  // Enforces one booking per date
+  tenantId String
+  date     DateTime
+
+  @@unique([tenantId, date])  // Enforces one booking per date PER TENANT
 }
 ```
 
-Primary defense: PostgreSQL ensures only one booking per date at database level.
+Primary defense: PostgreSQL ensures only one booking per date per tenant at database level.
 
 **Layer 2: Pessimistic Locking**
 
@@ -179,32 +183,141 @@ await prisma.$transaction(async (tx) => {
 
 **See Also:** DECISIONS.md ADR-001 (Pessimistic Locking)
 
+## Multi-Tenant Data Isolation
+
+The platform supports up to 50 independent wedding businesses with complete data isolation:
+
+### Tenant Resolution Middleware
+
+**File:** `server/src/middleware/tenant.ts`
+
+All public API routes (`/v1/packages`, `/v1/bookings`, `/v1/availability`) require the `X-Tenant-Key` header:
+
+```typescript
+// Example request
+GET /v1/packages
+X-Tenant-Key: pk_live_bella-weddings_abc123xyz
+```
+
+**Middleware Flow:**
+1. Extract `X-Tenant-Key` from request headers
+2. Validate API key format: `pk_live_{slug}_{random}` or `sk_live_{slug}_{random}`
+3. Look up tenant in database (indexed query on `apiKeyPublic`)
+4. Verify tenant exists and `isActive === true`
+5. Inject `tenantId` into request context (`req.tenantId`)
+6. Continue to route handler
+
+**Error Responses:**
+- `401 TENANT_KEY_REQUIRED`: Missing X-Tenant-Key header
+- `401 INVALID_TENANT_KEY`: Invalid format or tenant not found
+- `403 TENANT_INACTIVE`: Tenant exists but account disabled
+
+**Performance:** ~6ms overhead per request (acceptable for multi-tenant isolation)
+
+### Row-Level Data Isolation
+
+All database queries are automatically scoped by `tenantId`:
+
+```typescript
+// CORRECT - Tenant-scoped query
+const packages = await prisma.package.findMany({
+  where: { tenantId, active: true }
+});
+
+// WRONG - Would return data from all tenants (security vulnerability)
+const packages = await prisma.package.findMany({
+  where: { active: true }
+});
+```
+
+**Repository Pattern:**
+- All repository methods require `tenantId` as first parameter
+- Example: `catalogRepo.getPackageBySlug(tenantId, slug)`
+- Impossible to query cross-tenant data without explicit tenantId
+
+### API Key Format
+
+**Public Keys** (safe to embed in client-side code):
+- Format: `pk_live_{slug}_{random32chars}`
+- Example: `pk_live_bella-weddings_7a9f3c2e1b4d8f6a`
+- Used in X-Tenant-Key header for API authentication
+
+**Secret Keys** (server-side only, encrypted in database):
+- Format: `sk_live_{slug}_{random32chars}`
+- Example: `sk_live_bella-weddings_9x2k4m8p3n7q1w5z`
+- Used for admin operations and Stripe Connect configuration
+- Stored encrypted with AES-256-GCM using `TENANT_SECRETS_ENCRYPTION_KEY`
+
+### Cache Isolation Patterns
+
+Application cache keys MUST include tenantId to prevent cross-tenant data leakage:
+
+```typescript
+// CORRECT - Tenant-scoped cache key
+const cacheKey = `catalog:${tenantId}:packages`;
+
+// WRONG - Would leak data between tenants
+const cacheKey = 'catalog:packages';
+```
+
+**Critical Security Note:** HTTP-level cache middleware was removed in Phase 1 (commit `efda74b`) due to P0 security vulnerability. HTTP cache generated keys without tenantId, causing Tenant A's data to be served to Tenant B. Application-level cache (CacheService) provides performance benefits while maintaining tenant isolation.
+
+### Commission Calculation
+
+Each tenant has a configurable commission rate (10-15%):
+
+```typescript
+// CommissionService calculates platform revenue server-side
+const commission = await commissionService.calculateCommission(tenantId, bookingTotal);
+
+// Stripe Connect PaymentIntent includes commission as application fee
+const paymentIntent = await stripe.paymentIntents.create({
+  amount: bookingTotal,
+  application_fee_amount: commission.amount, // Platform commission
+  currency: 'usd'
+}, {
+  stripeAccount: tenant.stripeAccountId // Tenant's Connected Account
+});
+```
+
+**Rounding:** Commission always rounds UP to protect platform revenue (e.g., 12.5% of $100.01 = $13, not $12).
+
+**See Also:** [MULTI_TENANT_IMPLEMENTATION_GUIDE.md](./MULTI_TENANT_IMPLEMENTATION_GUIDE.md), [PHASE_1_COMPLETION_REPORT.md](./PHASE_1_COMPLETION_REPORT.md)
+
 ## Contracts (v1)
 
-- `GET /v1/packages`
-- `GET /v1/packages/:slug`
-- `GET /v1/availability?date=YYYY‑MM‑DD`
-- `POST /v1/bookings/checkout` → `{ checkoutUrl }`
+**Public Endpoints (Require X-Tenant-Key header):**
+- `GET /v1/packages` — List packages for tenant
+- `GET /v1/packages/:slug` — Get package details for tenant
+- `GET /v1/availability?date=YYYY‑MM‑DD` — Check availability for tenant
+- `POST /v1/bookings/checkout` → `{ checkoutUrl }` — Create checkout for tenant
+
+**Webhook Endpoints (Require Stripe signature):**
 - `POST /v1/webhooks/stripe` (raw body) — payment completed
-- `POST /v1/admin/login` → `{ token }`
-- `GET /v1/admin/bookings`
-- `GET|POST /v1/admin/blackouts`
-- `GET|POST|PATCH|DELETE /v1/admin/packages`
-- `POST|PATCH|DELETE /v1/admin/packages/:id/addons`
+
+**Admin Endpoints (Require JWT token):**
+- `POST /v1/admin/login` → `{ token }` — Admin authentication
+- `GET /v1/admin/bookings` — List all bookings
+- `GET|POST /v1/admin/blackouts` — Manage blackout dates
+- `GET|POST|PATCH|DELETE /v1/admin/packages` — Manage packages
+- `POST|PATCH|DELETE /v1/admin/packages/:id/addons` — Manage add-ons
+- `GET|POST|PATCH /v1/admin/tenants` — Manage tenants (platform admin)
 
 ## Events (in‑proc)
 
 - `BookingPaid { bookingId, eventDate, email, lineItems }`
 - `BookingFailed { reason, eventDate, sessionId }`
 
-## Data model (MVP)
+## Data model (Multi-Tenant)
 
-- **Package**(id, slug\*, name, description, basePrice, active, photoUrl)
-- **AddOn**(id, slug\*, name, description, price, active, photoUrl?)
-- **BlackoutDate**(id, date\* [UTC midnight])
-- **Booking**(id, customerId, packageId, venueId?, date\* [UTC midnight unique], status, totalPrice, notes?)
-- **Customer**(id, email\*, name, phone?)
+- **Tenant**(id, name, slug\*, apiKeyPublic\*, apiKeySecret [encrypted], commissionPercent, stripeAccountId?, isActive, createdAt)
+- **Package**(id, tenantId, slug, name, description, basePrice, active, photoUrl) — **Unique constraint: [tenantId, slug]**
+- **AddOn**(id, tenantId, slug, name, description, price, active, photoUrl?)
+- **BlackoutDate**(id, tenantId, date [UTC midnight]) — **Unique constraint: [tenantId, date]**
+- **Booking**(id, tenantId, customerId, packageId, venueId?, date [UTC midnight], status, totalPrice, commissionAmount, commissionPercent, notes?) — **Unique constraint: [tenantId, date]**
+- **Customer**(id, tenantId, email, name, phone?)
 - **User**(id, email\*, passwordHash, role)
+- **WebhookEvent**(id, tenantId, eventId\*, eventType, payload, status, attempts, lastError?, processedAt?)
 
 ## Backing services
 

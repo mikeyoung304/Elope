@@ -13,10 +13,13 @@
 
 ## What is Elope?
 
-**Elope** is a modern wedding booking platform designed specifically for small, intimate weddings and elopements. Built with simplicity and reliability at its core, Elope helps wedding service providers manage their bookings, accept payments, and coordinate with customers seamlessly.
+**Elope** is a modern **multi-tenant SaaS wedding booking platform** designed specifically for small, intimate weddings and elopements. Built with simplicity and reliability at its core, Elope empowers up to 50 independent wedding businesses to manage their bookings, accept payments, and coordinate with customers seamlessly - all with complete data isolation and variable commission rates.
 
 ### Key Features
 
+- **Multi-Tenant Architecture** - Support up to 50 independent wedding businesses with complete data isolation
+- **Tenant API Keys** - Secure authentication via X-Tenant-Key header (pk_live_slug_xxx format)
+- **Variable Commission Rates** - Per-tenant commission rates (10-15%) via Stripe Connect
 - **Online Booking System** - Customers browse packages and book their wedding date in minutes
 - **Stripe Payment Integration** - Secure checkout with automatic booking confirmation
 - **Availability Management** - Real-time date availability with Google Calendar integration
@@ -27,10 +30,11 @@
 
 ### Target Users
 
-- Small wedding venues and elopement services
-- Wedding photographers and officiants
-- Boutique wedding planners
-- Destination wedding coordinators
+- **Platform Administrators** - Manage multiple tenant businesses on one platform
+- **Tenant Businesses** - Small wedding venues and elopement services
+- **Wedding Professionals** - Photographers, officiants, and coordinators
+- **Boutique Planners** - Independent wedding planners with unique packages
+- **Destination Coordinators** - Location-specific wedding services
 
 ### Business Value
 
@@ -43,15 +47,17 @@
 
 ## Architecture Philosophy
 
-Elope is built as a **modular monolith** with clear boundaries and production-ready patterns:
+Elope is built as a **multi-tenant modular monolith** with clear boundaries and production-ready patterns:
 
 - **Simplicity over novelty**: One backend + one frontend; shared types
+- **Multi-tenant by design**: Complete data isolation via row-level tenantId scoping
 - **Contract-first API**: Type-safe communication via Zod + ts-rest
 - **Layered architecture**: Services own business logic; adapters isolate vendors
+- **Tenant middleware**: Automatic tenant resolution from X-Tenant-Key header on all public routes
 - **Mock-first development**: Build end-to-end with in-memory adapters, then swap to real providers
 - **Bulletproof by default**: Strict TypeScript, Zod validation, comprehensive error handling
 
-Learn more: [ARCHITECTURE.md](./ARCHITECTURE.md)
+Learn more: [ARCHITECTURE.md](./ARCHITECTURE.md) | [MULTI_TENANT_IMPLEMENTATION_GUIDE.md](./MULTI_TENANT_IMPLEMENTATION_GUIDE.md)
 
 ---
 
@@ -137,9 +143,15 @@ elope/
 │  └──────────────┘  └──────────────┘  └──────────────┘         │
 └────────────────────────┬────────────────────────────────────────┘
                          │ ts-rest client (type-safe)
+                         │ X-Tenant-Key: pk_live_slug_xxx
                          ▼
 ┌─────────────────────────────────────────────────────────────────┐
 │                      API SERVER (Express)                        │
+│  ┌──────────────────────────────────────────────────────────┐  │
+│  │                   Tenant Middleware                       │  │
+│  │  Validates X-Tenant-Key → Resolves Tenant → Injects ctx  │  │
+│  └────────────────────────┬─────────────────────────────────┘  │
+│                           ▼                                      │
 │  ┌──────────────────────────────────────────────────────────┐  │
 │  │                      Routes Layer                         │  │
 │  │  /packages  /bookings  /webhooks  /admin  /availability  │  │
@@ -148,30 +160,34 @@ elope/
 │  ┌──────────────────────────────────────────────────────────┐  │
 │  │                   Services Layer                          │  │
 │  │  CatalogService  BookingService  AvailabilityService      │  │
-│  │  IdentityService  NotificationService                     │  │
+│  │  IdentityService  NotificationService  CommissionService  │  │
 │  └────────────────────────┬─────────────────────────────────┘  │
 │                           ▼                                      │
 │  ┌──────────────────────────────────────────────────────────┐  │
 │  │                   Adapters Layer                          │  │
 │  │  PrismaRepos  StripeProvider  PostmarkProvider            │  │
-│  │  GoogleCalendar  (with mock alternatives)                 │  │
+│  │  GoogleCalendar  TenantRepository  (with mock alts)       │  │
 │  └────────────────────────┬─────────────────────────────────┘  │
 └───────────────────────────┼─────────────────────────────────────┘
                             ▼
         ┌───────────────────────────────────────┐
         │    External Services                  │
         │  • PostgreSQL (Supabase)              │
-        │  • Stripe (payments + webhooks)       │
+        │    - Row-level tenant isolation       │
+        │  • Stripe (payments + Connect)        │
         │  • Postmark (email delivery)          │
         │  • Google Calendar (availability)     │
         └───────────────────────────────────────┘
 ```
 
 **Key Design Patterns:**
+- **Multi-Tenant Data Isolation**: All database queries scoped by tenantId
+- **Tenant Middleware**: Automatic tenant resolution from API keys on all public routes
+- **Variable Commission Rates**: Per-tenant commission calculated server-side (10-15%)
 - **Dependency Injection**: Services receive adapters via constructor
 - **Repository Pattern**: Database access abstracted behind interfaces
 - **Event-Driven**: In-process event emitter for cross-service communication
-- **Double-Booking Prevention**: Database constraints + pessimistic locking + transactions
+- **Double-Booking Prevention**: Database constraints (tenantId + date) + pessimistic locking + transactions
 - **Idempotent Webhooks**: Database-tracked event processing with retry support
 
 ---
@@ -273,12 +289,36 @@ stripe listen --forward-to localhost:3001/v1/webhooks/stripe  # Terminal 3: Webh
 - Email: [RUNBOOK.md § Email (Postmark)](./RUNBOOK.md#email-postmark)
 - Calendar: [RUNBOOK.md § Google Calendar](./RUNBOOK.md#google-calendar-integration)
 
+### Create Your First Tenant
+
+Before you can use the booking system, you need to create a tenant:
+
+```bash
+# Create a test tenant (this generates API keys)
+cd server
+npm run create-tenant -- \
+  --name "Bella Weddings" \
+  --slug "bella-weddings" \
+  --email "hello@bellaweddings.com" \
+  --commission 12.5
+
+# Output will show your API keys:
+# Public Key: pk_live_bella-weddings_abc123...
+# Secret Key: sk_live_bella-weddings_xyz789...
+# Save these keys - the secret key is shown only once!
+```
+
 ### Verify Installation
 
 ```bash
 # Check API health
 curl http://localhost:3001/health
 # Expected: {"ok":true}
+
+# Test tenant API (replace with your public key)
+curl -H "X-Tenant-Key: pk_live_bella-weddings_abc123..." \
+  http://localhost:3001/v1/packages
+# Expected: [] (empty array - no packages yet)
 
 # Check configuration
 npm run doctor
@@ -384,9 +424,11 @@ This allows you to run "real mode" with just database + Stripe, and add email/ca
 - **[Quick Start](#quick-start)** - Get up and running in 5 minutes
 - **[DEVELOPING.md](./DEVELOPING.md)** - Development workflow and conventions
 - **[TESTING.md](./TESTING.md)** - Testing strategy and guidelines
+- **[API_DOCS_QUICKSTART.md](./API_DOCS_QUICKSTART.md)** - Interactive API documentation
 
 ### Architecture & Design
 - **[ARCHITECTURE.md](./ARCHITECTURE.md)** - System architecture, patterns, and data flow
+- **[MULTI_TENANT_IMPLEMENTATION_GUIDE.md](./MULTI_TENANT_IMPLEMENTATION_GUIDE.md)** - Multi-tenant architecture guide
 - **[DECISIONS.md](./DECISIONS.md)** - Architectural Decision Records (ADRs)
 - **[SUPABASE.md](./SUPABASE.md)** - Database setup and integration guide
 
@@ -398,6 +440,7 @@ This allows you to run "real mode" with just database + Stripe, and add email/ca
 - **[SECURITY.md](./SECURITY.md)** - Security best practices and guardrails
 
 ### Migration & Project History
+- **[PHASE_1_COMPLETION_REPORT.md](./PHASE_1_COMPLETION_REPORT.md)** - Phase 1: Multi-tenant foundation
 - **[PHASE_2B_COMPLETION_REPORT.md](./PHASE_2B_COMPLETION_REPORT.md)** - Phase 2B completion summary
 
 ---
