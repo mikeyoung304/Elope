@@ -557,3 +557,89 @@ REDIS_URL=redis://localhost:6379
 - [server/LOGIN_RATE_LIMITING.md](./server/LOGIN_RATE_LIMITING.md) - Rate limiting implementation
 
 ---
+
+## Multi-Tenant Operations
+
+### Current Feature Availability
+
+**Phase 4 (Current Production):**
+- Tenant branding customization (logo, colors, fonts)
+- Package CRUD operations
+- Blackout date management
+- Read-only booking views
+- CSV export for bookings
+
+**Phase 5 (Coming Soon):**
+- Add-on management
+- Package photo uploads
+- Email template customization
+
+### Tenant Support Common Issues
+
+**Issue: "Tenant can't see their packages"**
+```bash
+# Check if tenant exists and has packages
+psql $DATABASE_URL -c "SELECT id, name, slug FROM tenants WHERE slug = 'tenant-slug';"
+psql $DATABASE_URL -c "SELECT id, title, \"isActive\" FROM packages WHERE \"tenantId\" = 'tenant-id';"
+```
+
+**Issue: "Tenant login not working"**
+```bash
+# Check tenant admin exists
+psql $DATABASE_URL -c "SELECT id, email FROM users WHERE email = 'admin@example.com' AND \"isTenantAdmin\" = true;"
+
+# Check rate limiting (may be blocked after 5 failed attempts)
+# Rate limits reset after 15 minutes
+```
+
+**Issue: "Branding not applying"**
+```bash
+# Check branding configuration
+psql $DATABASE_URL -c "SELECT branding FROM tenants WHERE id = 'tenant-id';"
+
+# Should return JSON: {"primaryColor": "#...", "secondaryColor": "#...", "fontFamily": "...", "logo": "..."}
+```
+
+**Issue: "Uploaded logo not displaying"**
+```bash
+# Verify file exists
+ls -lh server/uploads/logos/
+
+# Check file is served correctly
+curl http://localhost:3001/uploads/logos/logo-filename.png
+```
+
+### Operational Limits (Phase 4)
+
+- **Packages per tenant**: Unlimited (recommended max 20 for UX)
+- **Blackout dates per tenant**: Unlimited
+- **Logo file size**: 2MB max
+- **Bookings per tenant**: Unlimited
+- **Admin users per tenant**: 1 (currently, will expand in Phase 6)
+
+### Phase 5 Operational Notes
+
+**When Phase 5 deploys:**
+- Add-ons will become tenant-scoped (existing global add-ons need migration)
+- Package photo upload will increase storage requirements (monitor disk usage)
+- Email templates stored in database (backup strategy critical)
+
+**Pre-Phase 5 Checklist:**
+- [ ] Backup database before migration
+- [ ] Ensure adequate disk space for package photos (estimate 5MB × packages × 5 photos)
+- [ ] Configure email service (SendGrid/SES) for template rendering
+- [ ] Set up cloud storage if migrating from local filesystem
+
+**Monitoring Phase 5 Features:**
+```bash
+# Check add-on counts per tenant
+psql $DATABASE_URL -c "SELECT \"tenantId\", COUNT(*) FROM add_ons GROUP BY \"tenantId\";"
+
+# Check package photo storage usage
+du -sh server/uploads/packages/
+
+# Check email template customization rate
+psql $DATABASE_URL -c "SELECT type, COUNT(*) FROM email_templates GROUP BY type;"
+```
+
+---

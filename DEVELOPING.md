@@ -8,6 +8,32 @@
 - **Prefer mocks while shaping flows**; flip to real when stable.
 - **Keep TypeScript errors at zero**; don't suppress diagnostics.
 
+## Multi-Tenant Development Roadmap
+
+This project is implementing multi-tenant self-service capabilities in phases:
+
+- **Phase 1-3**: Core multi-tenant architecture (COMPLETE)
+- **Phase 4**: Tenant admin dashboard with branding (COMPLETE - Nov 2024)
+- **Phase 5**: Add-on management, photo uploads, email templates (IN PROGRESS)
+- **Phase 6**: Content/copy management system (PLANNED)
+- **Phase 7**: Cloud storage and media infrastructure (PLANNED)
+- **Phase 8+**: Advanced features and marketplace (PLANNED)
+
+**Current Status:** Phase 4 complete. Starting Phase 5 implementation.
+
+**Key Documents:**
+- [MULTI_TENANT_ROADMAP.md](../MULTI_TENANT_ROADMAP.md) - Comprehensive phased roadmap
+- [PHASE_5_IMPLEMENTATION_SPEC.md](../PHASE_5_IMPLEMENTATION_SPEC.md) - Technical specs for next phase
+- [PHASE_4_TENANT_ADMIN_COMPLETION_REPORT.md](../PHASE_4_TENANT_ADMIN_COMPLETION_REPORT.md) - What was built in Phase 4
+
+**Development Workflow:**
+When implementing new tenant-facing features, follow these principles:
+1. **Tenant Scoping**: All queries must filter by `tenantId`
+2. **Ownership Verification**: Always verify tenant owns the resource before mutations
+3. **Multi-Tenant Isolation**: Never leak data between tenants
+4. **JWT Authentication**: Use `res.locals.tenantAuth.tenantId` from JWT middleware
+5. **Consistent Patterns**: Follow existing tenant-admin route patterns
+
 ## Commands
 
 ```bash

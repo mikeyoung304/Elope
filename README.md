@@ -45,6 +45,29 @@
 - **Scale Confidently**: Built with production-grade architecture from day one
 - **Easy Integration**: Embeddable widget installs on any website with 3 lines of code
 
+### Multi-Tenant Self-Service Status
+
+**Current Maturity: Phase 4 Complete (6/10)**
+
+Tenant admins currently have self-service access to:
+- ✅ **Visual Branding** - Logo, colors, fonts (95% complete)
+- ✅ **Package Management** - Full CRUD for service packages (100% complete)
+- ✅ **Availability Control** - Blackout date management (95% complete)
+- ✅ **Admin Dashboard** - Secure 4-tab interface (100% complete)
+- ⚠️ **Service Photos** - Logo upload only, packages need photo upload (40% complete)
+- ❌ **Add-On Management** - Not yet available to tenants (0% complete)
+- ❌ **Content Customization** - No copy/messaging control (0% complete)
+- ❌ **Email Templates** - Generic platform emails only (0% complete)
+
+**Roadmap:** See [MULTI_TENANT_ROADMAP.md](./MULTI_TENANT_ROADMAP.md) for the phased plan to achieve full self-service.
+
+**Phase 5 Priorities (Next 4-6 weeks):**
+1. Add-On Management - Enable tenants to create optional services
+2. Package Photo Upload - Visual catalog builder
+3. Email Template Customization - Branded customer communications
+
+**Goal:** By end of Phase 5, tenants can manage complete service catalogs independently with zero platform admin support for routine operations.
+
 ---
 
 ## Architecture Philosophy
@@ -470,6 +493,8 @@ Elope offers an embeddable booking widget that tenants can add to their existing
 ### Architecture & Design
 - **[ARCHITECTURE.md](./ARCHITECTURE.md)** - System architecture, patterns, and data flow
 - **[MULTI_TENANT_IMPLEMENTATION_GUIDE.md](./MULTI_TENANT_IMPLEMENTATION_GUIDE.md)** - Multi-tenant architecture guide
+- **[MULTI_TENANT_ROADMAP.md](./MULTI_TENANT_ROADMAP.md)** - Phased plan for tenant self-service features
+- **[PHASE_5_IMPLEMENTATION_SPEC.md](./PHASE_5_IMPLEMENTATION_SPEC.md)** - Technical specs for Priority 1 features
 - **[DECISIONS.md](./DECISIONS.md)** - Architectural Decision Records (ADRs)
 - **[SUPABASE.md](./SUPABASE.md)** - Database setup and integration guide
 
