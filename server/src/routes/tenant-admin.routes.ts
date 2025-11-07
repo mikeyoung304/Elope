@@ -371,7 +371,7 @@ export function createTenantAdminRoutes(
         }
 
         // Verify package exists and belongs to tenant
-        const pkg = await catalogService.getPackageById(packageId);
+        const pkg = await catalogService.getPackageById(tenantId, packageId);
         if (!pkg) {
           res.status(404).json({ error: 'Package not found' });
           return;
@@ -440,7 +440,7 @@ export function createTenantAdminRoutes(
         const { id: packageId, filename } = req.params;
 
         // Verify package exists and belongs to tenant
-        const pkg = await catalogService.getPackageById(packageId);
+        const pkg = await catalogService.getPackageById(tenantId, packageId);
         if (!pkg) {
           res.status(404).json({ error: 'Package not found' });
           return;

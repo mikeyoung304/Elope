@@ -33,7 +33,7 @@ export class StripeConnectService {
 
     // Use the same API version as StripePaymentAdapter
     this.stripe = new Stripe(apiKey, {
-      apiVersion: '2025-09-30.clover',
+      apiVersion: '2025-10-29.clover',
       typescript: true,
     });
 

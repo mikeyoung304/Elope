@@ -105,6 +105,29 @@ export class CatalogService {
     return result;
   }
 
+  /**
+   * Retrieves a single package by ID for a tenant
+   *
+   * MULTI-TENANT: Scoped to tenantId to prevent cross-tenant access
+   * Used for tenant admin operations (photo upload, editing).
+   * Returns package without add-ons for performance.
+   *
+   * @param tenantId - Tenant ID for data isolation
+   * @param id - Package ID
+   *
+   * @returns Package or null if not found for this tenant
+   *
+   * @example
+   * ```typescript
+   * const pkg = await catalogService.getPackageById('tenant_123', 'pkg_abc');
+   * if (!pkg) throw new Error('Not found');
+   * console.log(`Found: ${pkg.title}`);
+   * ```
+   */
+  async getPackageById(tenantId: string, id: string): Promise<Package | null> {
+    return this.repository.getPackageById(tenantId, id);
+  }
+
   // Package CRUD operations
   // NOTE: These methods will need tenantId parameter and repository updates
   // after multi-tenant migration is applied

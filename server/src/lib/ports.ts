@@ -186,6 +186,7 @@ export interface UpdatePackageInput {
   description?: string;
   priceCents?: number;
   photoUrl?: string;
+  photos?: any; // Photo gallery JSON array
 }
 
 /**

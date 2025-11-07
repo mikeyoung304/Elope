@@ -8,11 +8,13 @@
 
 export interface Package {
   id: string;
+  tenantId: string; // Multi-tenant isolation
   slug: string;
   title: string;
   description: string;
   priceCents: number;
   photoUrl?: string;
+  photos?: any; // Photo gallery: Array<{url, filename, size, order}>
 }
 
 export interface AddOn {

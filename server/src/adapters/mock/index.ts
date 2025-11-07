@@ -43,56 +43,68 @@ function seedData(): void {
   // Packages
   packages.set('pkg_basic', {
     id: 'pkg_basic',
+    tenantId: DEFAULT_TENANT,
     slug: 'basic-elopement',
     title: 'Basic Elopement',
     description: 'Simple, intimate ceremony with professional photography and officiant',
     priceCents: 99900, // $999
     photoUrl: 'https://images.unsplash.com/photo-1519741497674-611481863552?w=800&h=600&fit=crop',
+    photos: [],
   });
 
   packages.set('pkg_micro', {
     id: 'pkg_micro',
+    tenantId: DEFAULT_TENANT,
     slug: 'micro-ceremony',
     title: 'Micro Ceremony',
     description: 'Intimate micro-wedding with up to 10 guests, photography, and champagne toast',
     priceCents: 249900, // $2,499
     photoUrl: 'https://images.unsplash.com/photo-1583939003579-730e3918a45a?w=800&h=600&fit=crop',
+    photos: [],
   });
 
   packages.set('pkg_garden', {
     id: 'pkg_garden',
+    tenantId: DEFAULT_TENANT,
     slug: 'garden-romance',
     title: 'Garden Romance',
     description: 'Outdoor garden ceremony with floral arch, photography, and reception for up to 20 guests',
     priceCents: 449900, // $4,499
     photoUrl: 'https://images.unsplash.com/photo-1464366400600-7168b8af9bc3?w=800&h=600&fit=crop',
+    photos: [],
   });
 
   packages.set('pkg_luxury', {
     id: 'pkg_luxury',
+    tenantId: DEFAULT_TENANT,
     slug: 'luxury-escape',
     title: 'Luxury Escape',
     description: 'Premium all-inclusive experience with venue, catering, photography, videography, and coordinator',
     priceCents: 899900, // $8,999
     photoUrl: 'https://images.unsplash.com/photo-1511285560929-80b456fea0bc?w=800&h=600&fit=crop',
+    photos: [],
   });
 
   packages.set('pkg_destination', {
     id: 'pkg_destination',
+    tenantId: DEFAULT_TENANT,
     slug: 'destination-bliss',
     title: 'Destination Bliss',
     description: 'Beachfront or mountain ceremony with travel coordination, photography, and celebration dinner',
     priceCents: 599900, // $5,999
     photoUrl: 'https://images.unsplash.com/photo-1537633552985-df8429e8048b?w=800&h=600&fit=crop',
+    photos: [],
   });
 
   packages.set('pkg_courthouse', {
     id: 'pkg_courthouse',
+    tenantId: DEFAULT_TENANT,
     slug: 'courthouse-chic',
     title: 'Courthouse Chic',
     description: 'Stylish courthouse wedding with photography, marriage license assistance, and celebration lunch',
     priceCents: 79900, // $799
     photoUrl: 'https://images.unsplash.com/photo-1606800052052-a08af7148866?w=800&h=600&fit=crop',
+    photos: [],
   });
 
   // Add-ons
@@ -207,7 +219,9 @@ export class MockCatalogRepository implements CatalogRepository {
 
     const pkg: Package = {
       id: `pkg_${Date.now()}`,
+      tenantId,
       ...data,
+      photos: [],
     };
     packages.set(pkg.id, pkg);
     return pkg;
@@ -395,6 +409,23 @@ export class MockBlackoutRepository implements BlackoutRepository {
     const dateKey = toUtcMidnight(date);
     blackouts.set(dateKey, { date: dateKey, reason });
   }
+
+  async deleteBlackout(tenantId: string, id: string): Promise<void> {
+    // Mock mode: Ignore tenantId, use date as ID
+    const dateKey = toUtcMidnight(id);
+    blackouts.delete(dateKey);
+  }
+
+  async findBlackoutById(tenantId: string, id: string): Promise<{ id: string; date: string; reason?: string } | null> {
+    // Mock mode: Ignore tenantId, use date as ID
+    const dateKey = toUtcMidnight(id);
+    const blackout = blackouts.get(dateKey);
+    if (!blackout) return null;
+    return {
+      id: dateKey,
+      ...blackout,
+    };
+  }
 }
 
 // Mock Calendar Provider
@@ -453,7 +484,7 @@ export class MockPaymentProvider implements PaymentProvider {
     return {
       id: 'evt_mock_123',
       object: 'event',
-      api_version: '2025-09-30.clover',
+      api_version: '2025-10-29.clover',
       created: Math.floor(Date.now() / 1000),
       type: 'checkout.session.completed',
       data: {

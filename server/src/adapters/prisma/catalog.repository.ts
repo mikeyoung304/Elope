@@ -139,6 +139,7 @@ export class PrismaCatalogRepository implements CatalogRepository {
         ...(data.title !== undefined && { name: data.title }),
         ...(data.description !== undefined && { description: data.description }),
         ...(data.priceCents !== undefined && { basePrice: data.priceCents }),
+        ...(data.photos !== undefined && { photos: data.photos }),
       },
     });
 
@@ -267,19 +268,23 @@ export class PrismaCatalogRepository implements CatalogRepository {
   // Mappers
   private toDomainPackage(pkg: {
     id: string;
+    tenantId: string;
     slug: string;
     name: string;
     description: string | null;
     basePrice: number;
     active: boolean;
+    photos?: any;
   }): Package {
     return {
       id: pkg.id,
+      tenantId: pkg.tenantId,
       slug: pkg.slug,
       title: pkg.name,
       description: pkg.description || '',
       priceCents: pkg.basePrice,
       photoUrl: undefined,
+      photos: pkg.photos || [],
     };
   }
 
