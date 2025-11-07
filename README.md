@@ -47,24 +47,33 @@
 
 ### Multi-Tenant Self-Service Status
 
-**Current Maturity: Phase 4 Complete (6/10)**
+**Current Maturity: Phase 5.1 In Progress (6.5/10)**
 
 Tenant admins currently have self-service access to:
 - ✅ **Visual Branding** - Logo, colors, fonts (95% complete)
 - ✅ **Package Management** - Full CRUD for service packages (100% complete)
+- ✅ **Package Photos Backend** - Photo upload API complete, UI pending (50% complete) **NEW**
 - ✅ **Availability Control** - Blackout date management (95% complete)
 - ✅ **Admin Dashboard** - Secure 4-tab interface (100% complete)
-- ⚠️ **Service Photos** - Logo upload only, packages need photo upload (40% complete)
+- ⚠️ **Package Photos Frontend** - Drag-and-drop UI in development (0% complete)
 - ❌ **Add-On Management** - Not yet available to tenants (0% complete)
 - ❌ **Content Customization** - No copy/messaging control (0% complete)
 - ❌ **Email Templates** - Generic platform emails only (0% complete)
 
+**Latest Update (Nov 7, 2024):**
+Phase 5.1 backend complete - Package photo upload API implemented with:
+- Database: photos JSON column on Package model
+- API: POST/DELETE endpoints for photo management (max 5 per package)
+- Upload: 5MB limit, separate /uploads/packages/ directory
+- Security: Tenant ownership verification enforced
+
 **Roadmap:** See [MULTI_TENANT_ROADMAP.md](./MULTI_TENANT_ROADMAP.md) for the phased plan to achieve full self-service.
 
-**Phase 5 Priorities (Next 4-6 weeks):**
-1. Add-On Management - Enable tenants to create optional services
-2. Package Photo Upload - Visual catalog builder
-3. Email Template Customization - Branded customer communications
+**Phase 5 Current Sprint (Next 1-2 weeks):**
+1. ✅ Package Photo Upload Backend (COMPLETE - Nov 7)
+2. 🔄 Package Photo Upload Frontend (IN PROGRESS)
+3. ⏳ Add-On Management (NEXT)
+4. ⏳ Email Template Customization (UPCOMING)
 
 **Goal:** By end of Phase 5, tenants can manage complete service catalogs independently with zero platform admin support for routine operations.
 

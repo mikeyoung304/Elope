@@ -152,6 +152,30 @@ GET    /v1/tenant-admin/bookings   # View bookings
 
 ## Phase 5: Priority 1 - Self-Service Foundation (4-6 weeks)
 
+**Status:** In Progress (Week 1 of 6)
+**Progress:** 1 of 3 features complete (33%)
+
+### Completed ✅
+- **5.1 Package Photo Upload - Backend** (Completed Nov 7, 2024)
+  - Database schema updated (photos JSON column)
+  - Upload service extended (uploadPackagePhoto, deletePackagePhoto)
+  - API endpoints implemented (POST/DELETE /v1/tenant-admin/packages/:id/photos)
+  - Static serving configured (/uploads/packages/)
+  - Tenant ownership verification
+  - Max 5 photos enforced, 5MB limit per photo
+  - Commit: 5688741
+
+### In Progress 🔄
+- **5.1 Package Photo Upload - Frontend** (Started Nov 7, 2024)
+  - PackagePhotoUploader component
+  - Drag-and-drop UI (react-dropzone)
+  - Photo reordering (react-beautiful-dnd)
+  - Integration with TenantPackagesManager
+
+### Pending ⏳
+- **5.2 Add-On Management System** (2 weeks, 40 hours)
+- **5.3 Email Template Customization** (2-3 weeks, 50 hours)
+
 ### Goal
 Enable tenants to fully manage their service offerings independently without platform support.
 

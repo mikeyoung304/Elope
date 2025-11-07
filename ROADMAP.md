@@ -1,5 +1,40 @@
 # Roadmap
 
+## Recent Progress
+
+### Phase 5.1: Package Photo Upload Backend (Nov 7, 2024) ✅
+
+**Completed in 35 minutes** using momentum-driven development:
+
+**Database:**
+- Added `photos` JSON column to Package model
+- Schema: `[{url, filename, size, order}]` - max 5 photos
+
+**Backend:**
+- Extended UploadService with package photo methods
+- POST /v1/tenant-admin/packages/:id/photos - Upload with 5MB limit
+- DELETE /v1/tenant-admin/packages/:id/photos/:filename - Delete photo
+- Static serving at /uploads/packages/
+
+**Architecture Decisions:**
+- JSON column approach (simpler than separate table for MVP)
+- 5MB limit per photo (vs 2MB for logos)
+- Tenant ownership verification on all operations
+- Order field for future drag-and-drop reordering
+
+**Files Modified:**
+- server/prisma/schema.prisma - Added photos column
+- server/src/services/upload.service.ts - Extended upload methods
+- server/src/app.ts - Added static serving route
+- server/src/routes/tenant-admin.routes.ts - Added photo endpoints
+
+**Next Steps:**
+- Build PackagePhotoUploader React component
+- Add drag-and-drop interface
+- Wire up to tenant dashboard
+
+---
+
 ## MVP ✅ COMPLETE (v0.1.0)
 
 - ✅ Packages + add‑ons (catalog domain with CRUD)
