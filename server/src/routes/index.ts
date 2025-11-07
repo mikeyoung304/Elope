@@ -26,6 +26,8 @@ import adminTenantsRoutes from './admin/tenants.routes';
 import adminStripeRoutes from './admin/stripe.routes';
 import { createTenantAdminRoutes } from './tenant-admin.routes';
 import { createTenantAuthRoutes } from './tenant-auth.routes';
+import { loginLimiter } from '../middleware/rateLimiter';
+import { logger } from '../lib/core/logger';
 
 interface Controllers {
   packages: PackagesController;
@@ -114,9 +116,23 @@ export function createV1Router(
       return { status: 204 as const, body: undefined };
     },
 
-    adminLogin: async ({ body }: { body: { email: string; password: string } }) => {
-      const data = await controllers.admin.login(body);
-      return { status: 200 as const, body: data };
+    adminLogin: async ({ req, body }: { req: any; body: { email: string; password: string } }) => {
+      const ipAddress = req.ip || req.socket.remoteAddress || 'unknown';
+      try {
+        const data = await controllers.admin.login(body);
+        return { status: 200 as const, body: data };
+      } catch (error) {
+        // Log failed admin login attempts
+        logger.warn({
+          event: 'admin_login_failed',
+          endpoint: '/v1/admin/login',
+          email: body.email,
+          ipAddress,
+          timestamp: new Date().toISOString(),
+          error: error instanceof Error ? error.message : 'Unknown error',
+        }, 'Failed admin login attempt');
+        throw error;
+      }
     },
 
     adminGetBookings: async () => {
@@ -176,6 +192,10 @@ export function createV1Router(
     // Apply middleware based on route path
     globalMiddleware: [
       (req, res, next) => {
+        // Apply strict rate limiting to login endpoints
+        if (req.path === '/v1/admin/login' && req.method === 'POST') {
+          return loginLimiter(req, res, next);
+        }
         // Public API routes (packages, bookings, availability, tenant) require tenant
         if (req.path.startsWith('/v1/packages') ||
             req.path.startsWith('/v1/bookings') ||

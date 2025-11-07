@@ -38,12 +38,12 @@ export class TenantAdminController {
    */
   async uploadLogo(req: Request, res: Response): Promise<void> {
     try {
-      const tenantId = (req as any).tenantId;
-
-      if (!tenantId) {
-        res.status(401).json({ error: 'Unauthorized: No tenant context' });
+      const tenantAuth = res.locals.tenantAuth;
+      if (!tenantAuth) {
+        res.status(401).json({ error: 'Unauthorized: No tenant authentication' });
         return;
       }
+      const tenantId = tenantAuth.tenantId;
 
       // Check if file was uploaded
       if (!req.file) {
@@ -94,12 +94,12 @@ export class TenantAdminController {
    */
   async updateBranding(req: Request, res: Response): Promise<void> {
     try {
-      const tenantId = (req as any).tenantId;
-
-      if (!tenantId) {
-        res.status(401).json({ error: 'Unauthorized: No tenant context' });
+      const tenantAuth = res.locals.tenantAuth;
+      if (!tenantAuth) {
+        res.status(401).json({ error: 'Unauthorized: No tenant authentication' });
         return;
       }
+      const tenantId = tenantAuth.tenantId;
 
       // Validate request body
       const UpdateBrandingSchema = z.object({
@@ -161,12 +161,12 @@ export class TenantAdminController {
    */
   async getBranding(req: Request, res: Response): Promise<void> {
     try {
-      const tenantId = (req as any).tenantId;
-
-      if (!tenantId) {
-        res.status(401).json({ error: 'Unauthorized: No tenant context' });
+      const tenantAuth = res.locals.tenantAuth;
+      if (!tenantAuth) {
+        res.status(401).json({ error: 'Unauthorized: No tenant authentication' });
         return;
       }
+      const tenantId = tenantAuth.tenantId;
 
       const tenant = await this.tenantRepository.findById(tenantId);
       if (!tenant) {
@@ -222,11 +222,12 @@ export function createTenantAdminRoutes(
    */
   router.get('/packages', async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const tenantId = (req as any).tenantId;
-      if (!tenantId) {
-        res.status(401).json({ error: 'Unauthorized: No tenant context' });
+      const tenantAuth = res.locals.tenantAuth;
+      if (!tenantAuth) {
+        res.status(401).json({ error: 'Unauthorized: No tenant authentication' });
         return;
       }
+      const tenantId = tenantAuth.tenantId;
 
       const packages = await catalogService.getAllPackages(tenantId);
       const packagesDto = packages.map((pkg) => ({
@@ -250,11 +251,12 @@ export function createTenantAdminRoutes(
    */
   router.post('/packages', async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const tenantId = (req as any).tenantId;
-      if (!tenantId) {
-        res.status(401).json({ error: 'Unauthorized: No tenant context' });
+      const tenantAuth = res.locals.tenantAuth;
+      if (!tenantAuth) {
+        res.status(401).json({ error: 'Unauthorized: No tenant authentication' });
         return;
       }
+      const tenantId = tenantAuth.tenantId;
 
       const data = createPackageSchema.parse(req.body);
       const pkg = await catalogService.createPackage(tenantId, data);
@@ -271,7 +273,7 @@ export function createTenantAdminRoutes(
       if (error instanceof ZodError) {
         res.status(400).json({
           error: 'Validation error',
-          details: error.errors,
+          details: error.issues,
         });
         return;
       }
@@ -285,11 +287,12 @@ export function createTenantAdminRoutes(
    */
   router.put('/packages/:id', async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const tenantId = (req as any).tenantId;
-      if (!tenantId) {
-        res.status(401).json({ error: 'Unauthorized: No tenant context' });
+      const tenantAuth = res.locals.tenantAuth;
+      if (!tenantAuth) {
+        res.status(401).json({ error: 'Unauthorized: No tenant authentication' });
         return;
       }
+      const tenantId = tenantAuth.tenantId;
 
       const { id } = req.params;
       const data = updatePackageSchema.parse(req.body);
@@ -307,7 +310,7 @@ export function createTenantAdminRoutes(
       if (error instanceof ZodError) {
         res.status(400).json({
           error: 'Validation error',
-          details: error.errors,
+          details: error.issues,
         });
         return;
       }
@@ -321,11 +324,12 @@ export function createTenantAdminRoutes(
    */
   router.delete('/packages/:id', async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const tenantId = (req as any).tenantId;
-      if (!tenantId) {
-        res.status(401).json({ error: 'Unauthorized: No tenant context' });
+      const tenantAuth = res.locals.tenantAuth;
+      if (!tenantAuth) {
+        res.status(401).json({ error: 'Unauthorized: No tenant authentication' });
         return;
       }
+      const tenantId = tenantAuth.tenantId;
 
       const { id } = req.params;
       await catalogService.deletePackage(tenantId, id);
@@ -345,11 +349,12 @@ export function createTenantAdminRoutes(
    */
   router.get('/blackouts', async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const tenantId = (req as any).tenantId;
-      if (!tenantId) {
-        res.status(401).json({ error: 'Unauthorized: No tenant context' });
+      const tenantAuth = res.locals.tenantAuth;
+      if (!tenantAuth) {
+        res.status(401).json({ error: 'Unauthorized: No tenant authentication' });
         return;
       }
+      const tenantId = tenantAuth.tenantId;
 
       // Need to fetch full records with IDs
       const prisma = (blackoutRepo as any).prisma;
@@ -381,11 +386,12 @@ export function createTenantAdminRoutes(
    */
   router.post('/blackouts', async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const tenantId = (req as any).tenantId;
-      if (!tenantId) {
-        res.status(401).json({ error: 'Unauthorized: No tenant context' });
+      const tenantAuth = res.locals.tenantAuth;
+      if (!tenantAuth) {
+        res.status(401).json({ error: 'Unauthorized: No tenant authentication' });
         return;
       }
+      const tenantId = tenantAuth.tenantId;
 
       const data = createBlackoutSchema.parse(req.body);
       await blackoutRepo.addBlackout(tenantId, data.date, data.reason);
@@ -394,7 +400,7 @@ export function createTenantAdminRoutes(
       if (error instanceof ZodError) {
         res.status(400).json({
           error: 'Validation error',
-          details: error.errors,
+          details: error.issues,
         });
         return;
       }
@@ -408,11 +414,12 @@ export function createTenantAdminRoutes(
    */
   router.delete('/blackouts/:id', async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const tenantId = (req as any).tenantId;
-      if (!tenantId) {
-        res.status(401).json({ error: 'Unauthorized: No tenant context' });
+      const tenantAuth = res.locals.tenantAuth;
+      if (!tenantAuth) {
+        res.status(401).json({ error: 'Unauthorized: No tenant authentication' });
         return;
       }
+      const tenantId = tenantAuth.tenantId;
 
       const { id } = req.params;
 
@@ -441,11 +448,12 @@ export function createTenantAdminRoutes(
    */
   router.get('/bookings', async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const tenantId = (req as any).tenantId;
-      if (!tenantId) {
-        res.status(401).json({ error: 'Unauthorized: No tenant context' });
+      const tenantAuth = res.locals.tenantAuth;
+      if (!tenantAuth) {
+        res.status(401).json({ error: 'Unauthorized: No tenant authentication' });
         return;
       }
+      const tenantId = tenantAuth.tenantId;
 
       const query = bookingQuerySchema.parse(req.query);
       let bookings = await bookingService.getAllBookings(tenantId);
@@ -482,7 +490,7 @@ export function createTenantAdminRoutes(
       if (error instanceof ZodError) {
         res.status(400).json({
           error: 'Validation error',
-          details: error.errors,
+          details: error.issues,
         });
         return;
       }

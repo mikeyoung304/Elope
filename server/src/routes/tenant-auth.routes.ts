@@ -5,6 +5,8 @@
 
 import { Router, type Request, type Response, type NextFunction } from 'express';
 import type { TenantAuthService } from '../services/tenant-auth.service';
+import { loginLimiter } from '../middleware/rateLimiter';
+import { logger } from '../lib/core/logger';
 
 /**
  * Tenant login DTO
@@ -60,8 +62,10 @@ export function createTenantAuthRoutes(tenantAuthService: TenantAuthService): Ro
   /**
    * POST /login
    * Authenticate tenant and receive JWT token (public endpoint)
+   * Protected by strict rate limiting (5 attempts per 15 minutes)
    */
-  router.post('/login', async (req: Request, res: Response, next: NextFunction) => {
+  router.post('/login', loginLimiter, async (req: Request, res: Response, next: NextFunction) => {
+    const ipAddress = req.ip || req.socket.remoteAddress || 'unknown';
     try {
       const { email, password } = req.body;
 
@@ -73,6 +77,15 @@ export function createTenantAuthRoutes(tenantAuthService: TenantAuthService): Ro
       const result = await controller.login({ email, password });
       res.status(200).json(result);
     } catch (error) {
+      // Log failed login attempts
+      logger.warn({
+        event: 'tenant_login_failed',
+        endpoint: '/v1/tenant-auth/login',
+        email: req.body.email,
+        ipAddress,
+        timestamp: new Date().toISOString(),
+        error: error instanceof Error ? error.message : 'Unknown error',
+      }, 'Failed tenant login attempt');
       next(error);
     }
   });
