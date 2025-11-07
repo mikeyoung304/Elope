@@ -1,5 +1,5 @@
 import { useState, useCallback } from "react";
-import { Plus, Pencil, Trash2, CheckCircle, AlertCircle, Loader2 } from "lucide-react";
+import { Plus, Pencil, Trash2, CheckCircle, AlertCircle, Loader2, Image } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -349,9 +349,33 @@ export function TenantPackagesManager({ packages, onPackagesChange }: TenantPack
             {packages.map((pkg) => (
               <div
                 key={pkg.id}
-                className="flex items-center justify-between p-4 bg-navy-700 border border-navy-600 rounded-lg"
+                className="flex items-center gap-4 p-4 bg-navy-700 border border-navy-600 rounded-lg"
               >
-                <div className="flex-1">
+                {/* Photo Thumbnail */}
+                <div className="relative flex-shrink-0">
+                  {(pkg as any).photos && (pkg as any).photos.length > 0 ? (
+                    <div className="relative">
+                      <img
+                        src={(pkg as any).photos[0].url}
+                        alt={`${pkg.title} preview`}
+                        className="w-24 h-24 object-cover rounded-lg border-2 border-navy-500"
+                      />
+                      {(pkg as any).photos.length > 1 && (
+                        <Badge
+                          className="absolute -top-2 -right-2 bg-lavender-600 text-white border-navy-700"
+                        >
+                          {(pkg as any).photos.length}
+                        </Badge>
+                      )}
+                    </div>
+                  ) : (
+                    <div className="w-24 h-24 flex items-center justify-center bg-navy-600 border-2 border-navy-500 rounded-lg">
+                      <Image className="w-8 h-8 text-navy-400" />
+                    </div>
+                  )}
+                </div>
+
+                <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-3">
                     <h3 className="text-xl font-semibold text-lavender-50">{pkg.title}</h3>
                     <Badge
