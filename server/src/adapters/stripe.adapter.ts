@@ -66,6 +66,78 @@ export class StripePaymentAdapter implements PaymentProvider {
     };
   }
 
+  /**
+   * Create Stripe Connect checkout session with application fee
+   *
+   * Uses Stripe Connect's destination charges pattern:
+   * - Payment goes directly to the connected account (tenant)
+   * - Platform takes an application fee
+   * - Connected account is responsible for refunds
+   *
+   * @see https://stripe.com/docs/connect/destination-charges
+   */
+  async createConnectCheckoutSession(input: {
+    amountCents: number;
+    email: string;
+    metadata: Record<string, string>;
+    stripeAccountId: string;
+    applicationFeeAmount: number;
+  }): Promise<CheckoutSession> {
+    // Validate application fee (Stripe requires 0.5% - 50%)
+    const minFee = Math.ceil(input.amountCents * 0.005); // 0.5%
+    const maxFee = Math.floor(input.amountCents * 0.50); // 50%
+
+    if (input.applicationFeeAmount < minFee) {
+      throw new Error(
+        `Application fee ${input.applicationFeeAmount} cents is below Stripe minimum (${minFee} cents, 0.5%)`
+      );
+    }
+
+    if (input.applicationFeeAmount > maxFee) {
+      throw new Error(
+        `Application fee ${input.applicationFeeAmount} cents exceeds Stripe maximum (${maxFee} cents, 50%)`
+      );
+    }
+
+    // Create Stripe Connect checkout session
+    const session = await this.stripe.checkout.sessions.create({
+      mode: 'payment',
+      payment_method_types: ['card'],
+      customer_email: input.email,
+      line_items: [
+        {
+          price_data: {
+            currency: 'usd',
+            unit_amount: input.amountCents,
+            product_data: {
+              name: 'Wedding Package',
+              description: 'Elopement/Micro-Wedding Package',
+            },
+          },
+          quantity: 1,
+        },
+      ],
+      payment_intent_data: {
+        application_fee_amount: input.applicationFeeAmount,
+        transfer_data: {
+          destination: input.stripeAccountId,
+        },
+      },
+      success_url: `${this.successUrl}?session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: this.cancelUrl,
+      metadata: input.metadata,
+    });
+
+    if (!session.url) {
+      throw new Error('Stripe Connect session created but no URL returned');
+    }
+
+    return {
+      url: session.url,
+      sessionId: session.id,
+    };
+  }
+
   async verifyWebhook(payload: string, signature: string): Promise<Stripe.Event> {
     try {
       const event = this.stripe.webhooks.constructEvent(

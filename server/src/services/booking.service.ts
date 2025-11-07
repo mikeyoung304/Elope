@@ -8,6 +8,7 @@ import type { CatalogRepository } from '../lib/ports';
 import type { EventEmitter } from '../lib/core/events';
 import { NotFoundError } from '../lib/core/errors';
 import { CommissionService } from './commission.service';
+import type { PrismaTenantRepository } from '../adapters/prisma/tenant.repository';
 
 export class BookingService {
   constructor(
@@ -15,7 +16,8 @@ export class BookingService {
     private readonly catalogRepo: CatalogRepository,
     private readonly _eventEmitter: EventEmitter,
     private readonly paymentProvider: PaymentProvider,
-    private readonly commissionService: CommissionService
+    private readonly commissionService: CommissionService,
+    private readonly tenantRepo: PrismaTenantRepository
   ) {}
 
   /**
@@ -57,6 +59,12 @@ export class BookingService {
       throw new NotFoundError(`Package ${input.packageId} not found`);
     }
 
+    // Fetch tenant to get Stripe account ID
+    const tenant = await this.tenantRepo.findById(tenantId);
+    if (!tenant) {
+      throw new NotFoundError(`Tenant ${tenantId} not found`);
+    }
+
     // Calculate total with commission
     const calculation = await this.commissionService.calculateBookingTotal(
       tenantId,
@@ -64,22 +72,41 @@ export class BookingService {
       input.addOnIds || []
     );
 
-    // Create Stripe checkout session with commission
-    const session = await this.paymentProvider.createCheckoutSession({
-      amountCents: calculation.subtotal,
+    // Prepare session metadata
+    const metadata = {
+      tenantId, // CRITICAL: Include tenantId in metadata
+      packageId: pkg.id,
+      eventDate: input.eventDate,
       email: input.email,
-      metadata: {
-        tenantId, // CRITICAL: Include tenantId in metadata
-        packageId: pkg.id,
-        eventDate: input.eventDate,
+      coupleName: input.coupleName,
+      addOnIds: JSON.stringify(input.addOnIds || []),
+      commissionAmount: String(calculation.commissionAmount),
+      commissionPercent: String(calculation.commissionPercent),
+    };
+
+    // Create Stripe checkout session
+    // Use Stripe Connect if tenant has connected account, otherwise use standard checkout
+    let session;
+
+    if (tenant.stripeAccountId && tenant.stripeOnboarded) {
+      // Stripe Connect checkout - payment goes to tenant's account
+      session = await this.paymentProvider.createConnectCheckoutSession({
+        amountCents: calculation.subtotal,
         email: input.email,
-        coupleName: input.coupleName,
-        addOnIds: JSON.stringify(input.addOnIds || []),
-        commissionAmount: String(calculation.commissionAmount),
-        commissionPercent: String(calculation.commissionPercent),
-      },
-      applicationFeeAmount: calculation.commissionAmount, // Platform fee
-    });
+        metadata,
+        stripeAccountId: tenant.stripeAccountId,
+        applicationFeeAmount: calculation.commissionAmount,
+      });
+    } else {
+      // Standard Stripe checkout - payment goes to platform account
+      // This is backwards compatible for tenants without Stripe Connect
+      session = await this.paymentProvider.createCheckoutSession({
+        amountCents: calculation.subtotal,
+        email: input.email,
+        metadata,
+        applicationFeeAmount: calculation.commissionAmount,
+      });
+    }
 
     return { checkoutUrl: session.url };
   }

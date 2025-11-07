@@ -428,6 +428,23 @@ export class MockPaymentProvider implements PaymentProvider {
     };
   }
 
+  async createConnectCheckoutSession(input: {
+    amountCents: number;
+    email: string;
+    metadata: Record<string, string>;
+    stripeAccountId: string;
+    applicationFeeAmount: number;
+  }): Promise<CheckoutSession> {
+    const sessionId = `mock_connect_session_${Date.now()}`;
+    const successUrl = input.metadata.successUrl || 'http://localhost:5173/success';
+    const checkoutUrl = `${successUrl}?session_id=${sessionId}&mock=1&connect=1`;
+
+    return {
+      url: checkoutUrl,
+      sessionId,
+    };
+  }
+
   async verifyWebhook(
     _payload: string,
     _signature: string

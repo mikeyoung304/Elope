@@ -68,8 +68,8 @@ grep -r "it('.*'" server/test/ | wc -l
 ```bash
 git log --all -p | grep -E "sk_test|whsec_" | head -5
 # Output:
-# +sk_test_51SLPlvBPdt7IPpHp4VgimjlRIpzYvwa7Mvu2Gmbow0lrsxQsNpQzm1Vfv52vdF9qqEpFtw7ntaVmQyGU199zbRlf00RrztV7fZ
-# +whsec_0ad225e1a56469eb6959f399ac7c9536e17cd1fb07ba5513001f46853b8078b2
+# +sk_test_YOUR_STRIPE_SECRET_KEY_HERE
+# +whsec_YOUR_WEBHOOK_SECRET_HERE
 ```
 
 **Files with Secrets in Git History:**
@@ -98,7 +98,7 @@ git log --all -p | grep -E "sk_test|whsec_" | head -5
 **Verification:**
 
 ```bash
-git log --all -p | grep -E "68fa0f2690e33a51659ce4a431826afaf3aa9848765bb4092d518dca0f4a7005" | wc -l
+git log --all -p | grep -E "YOUR_ENCRYPTION_KEY_HERE" | wc -l
 # Output: 7
 ```
 
@@ -518,10 +518,10 @@ export interface PaymentProvider {
 **Git History Evidence:**
 
 ```bash
-git log --all -p | grep -E "sk_test_51SLPlv" | wc -l
+git log --all -p | grep -E "sk_test_EXAMPLE" | wc -l
 # Result: 5 occurrences in git history
 
-git log --all -p | grep -E "whsec_0ad225e1" | wc -l
+git log --all -p | grep -E "whsec_EXAMPLE" | wc -l
 # Result: 5 occurrences in git history
 
 git log --all -p | grep -E "@Orangegoat11" | wc -l

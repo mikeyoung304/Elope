@@ -22,7 +22,10 @@
     "prisma:generate": "prisma generate",
     "db:migrate": "prisma migrate dev --name initial_schema",
     "db:seed": "tsx prisma/seed.ts",
-    "create-tenant": "tsx scripts/create-tenant.ts"
+    "create-tenant": "tsx scripts/create-tenant.ts",
+    "create-tenant-with-stripe": "tsx scripts/create-tenant-with-stripe.ts",
+    "test:commission": "tsx scripts/test-commission.ts",
+    "test:stripe-connect": "tsx scripts/test-stripe-connect.ts"
   },
   "dependencies": {
     "@elope/contracts": "*",

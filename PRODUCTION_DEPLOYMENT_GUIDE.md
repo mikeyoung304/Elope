@@ -63,8 +63,8 @@ DIRECT_URL=postgresql://postgres:%40Orangegoat11@db.gpyvdknhmevcfdbgtqir.supabas
 JWT_SECRET=3d3fa3a52c3ffd50eab162e1222e4f953aede6a9e8732bf4a03a0b836f0bff24
 
 # Stripe (use your real keys)
-STRIPE_SECRET_KEY=sk_test_51SLPlvBPdt7IPpHp4VgimjlRIpzYvwa7Mvu2Gmbow0lrsxQsNpQzm1Vfv52vdF9qqEpFtw7ntaVmQyGU199zbRlf00RrztV7fZ
-STRIPE_WEBHOOK_SECRET=whsec_0ad225e1a56469eb6959f399ac7c9536e17cd1fb07ba5513001f46853b8078b2
+STRIPE_SECRET_KEY=sk_test_YOUR_STRIPE_SECRET_KEY_HERE
+STRIPE_WEBHOOK_SECRET=whsec_YOUR_WEBHOOK_SECRET_HERE
 STRIPE_SUCCESS_URL=https://your-vercel-app.vercel.app/success
 STRIPE_CANCEL_URL=https://your-vercel-app.vercel.app
 

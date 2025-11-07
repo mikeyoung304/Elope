@@ -22,14 +22,22 @@ const raw = import.meta.env.VITE_API_URL ?? "http://localhost:3001";
 export const baseUrl = raw.replace(/\/+$/, "");
 
 /**
+ * Global tenant API key for multi-tenant widget mode
+ * Set via api.setTenantKey() when widget loads
+ */
+let tenantApiKey: string | null = null;
+
+/**
  * Type-safe API client for Elope wedding booking platform
  *
  * Provides end-to-end type safety between client and server via ts-rest contracts.
  * Automatically injects admin JWT tokens for protected routes.
+ * Supports multi-tenant mode via X-Tenant-Key header.
  *
  * Features:
  * - Auto-generated TypeScript types from server contracts
  * - Admin authentication via localStorage token
+ * - Multi-tenant support via tenant API key
  * - JSON content-type headers
  * - Error-safe JSON parsing with fallback to null
  *
@@ -44,19 +52,30 @@ export const baseUrl = raw.replace(/\/+$/, "");
  * // Protected route - JWT from localStorage
  * const { status, body } = await api.admin.getBookings();
  * // Automatically includes "Authorization: Bearer <token>" header
+ *
+ * // Multi-tenant mode - set tenant key once
+ * api.setTenantKey('pk_live_xxx');
+ * // All subsequent requests include "X-Tenant-Key" header
  * ```
  */
 export const api = initClient(Contracts, {
   baseUrl,
   baseHeaders: {},
   api: async ({ path, method, headers, body }) => {
-    // Inject auth token for admin routes
+    // Build headers dynamically
     const authHeaders: Record<string, string> = { ...headers };
+
+    // Inject auth token for admin routes
     if (path.startsWith("/v1/admin")) {
       const token = localStorage.getItem("adminToken");
       if (token) {
         authHeaders["Authorization"] = `Bearer ${token}`;
       }
+    }
+
+    // Inject tenant key for multi-tenant mode (widget)
+    if (tenantApiKey) {
+      authHeaders["X-Tenant-Key"] = tenantApiKey;
     }
 
     // ts-rest provides the full URL in 'path', so use it directly
@@ -76,3 +95,11 @@ export const api = initClient(Contracts, {
     };
   },
 });
+
+/**
+ * Set tenant API key for multi-tenant widget mode
+ * Call this once when the widget loads with tenant-specific key
+ */
+(api as any).setTenantKey = (key: string | null) => {
+  tenantApiKey = key;
+};

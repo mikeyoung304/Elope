@@ -89,6 +89,13 @@ export interface PaymentProvider {
     metadata: Record<string, string>;
     applicationFeeAmount?: number; // Platform commission in cents
   }): Promise<CheckoutSession>;
+  createConnectCheckoutSession(input: {
+    amountCents: number;
+    email: string;
+    metadata: Record<string, string>;
+    stripeAccountId: string; // Connected account ID
+    applicationFeeAmount: number; // Platform commission in cents (required for Connect)
+  }): Promise<CheckoutSession>;
   verifyWebhook(
     payload: string,
     signature: string

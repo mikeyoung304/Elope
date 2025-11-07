@@ -42,6 +42,7 @@
 - **Increase Conversions**: Streamlined checkout process reduces booking abandonment
 - **Prevent Errors**: Bulletproof double-booking prevention protects your reputation
 - **Scale Confidently**: Built with production-grade architecture from day one
+- **Easy Integration**: Embeddable widget installs on any website with 3 lines of code
 
 ---
 
@@ -418,10 +419,49 @@ This allows you to run "real mode" with just database + Stripe, and add email/ca
 
 ---
 
+## Embeddable Widget
+
+Elope offers an embeddable booking widget that tenants can add to their existing websites with just a few lines of code.
+
+### Quick Integration Example
+
+```html
+<!-- Add this to your website -->
+<div id="mais-booking-widget"></div>
+
+<script>
+  (function(){
+    window.MaisConfig = {
+      apiKey: 'pk_live_yourcompany_abc123xyz789',
+      container: '#mais-booking-widget'
+    };
+    var s = document.createElement('script');
+    s.src = 'https://widget.mais.com/sdk/mais-sdk.js';
+    s.async = true;
+    document.head.appendChild(s);
+  })();
+</script>
+```
+
+**Features:**
+- Auto-resizing iframe with seamless integration
+- Automatic branding from admin dashboard (colors, logo, fonts)
+- Both embedded and modal/popup modes
+- Event callbacks for analytics integration
+- Mobile-responsive design
+- Dark mode support
+
+**Learn More:**
+- **[WIDGET_INTEGRATION_GUIDE.md](./WIDGET_INTEGRATION_GUIDE.md)** - Complete integration documentation
+- **[examples/widget-demo.html](./examples/widget-demo.html)** - Live example with both modes
+
+---
+
 ## Documentation
 
 ### Getting Started
 - **[Quick Start](#quick-start)** - Get up and running in 5 minutes
+- **[WIDGET_INTEGRATION_GUIDE.md](./WIDGET_INTEGRATION_GUIDE.md)** - Embed the booking widget on your website
 - **[DEVELOPING.md](./DEVELOPING.md)** - Development workflow and conventions
 - **[TESTING.md](./TESTING.md)** - Testing strategy and guidelines
 - **[API_DOCS_QUICKSTART.md](./API_DOCS_QUICKSTART.md)** - Interactive API documentation

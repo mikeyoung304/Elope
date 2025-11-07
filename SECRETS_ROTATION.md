@@ -31,7 +31,7 @@ See REMEDIATION_PLAN.md Phase 1 for detailed instructions.
 ### 1. JWT_SECRET (Application Authentication)
 - **Location**: `server/.env`
 - **Current Status**: ROTATED on 2025-10-29
-- **Old Value**: `68fa0f2690e33a51659ce4a431826afaf3aa9848765bb4092d518dca0f4a7005` (DEPRECATED)
+- **Old Value**: `YOUR_ENCRYPTION_KEY_HERE` (DEPRECATED)
 - **New Value**: `3d3fa3a52c3ffd50eab162e1222e4f953aede6a9e8732bf4a03a0b836f0bff24`
 - **Algorithm**: SHA-256 (64 hex characters = 256 bits)
 - **Next Rotation**: 2026-01-29 (90 days)
@@ -39,9 +39,9 @@ See REMEDIATION_PLAN.md Phase 1 for detailed instructions.
 ### 2. Stripe Keys (Payment Processing)
 - **Location**: `server/.env`
 - **Current Status**: REQUIRES USER ACTION
-- **Test Secret Key**: `sk_test_51SLPlvBPdt7IPpHp4VgimjlRIpzYvwa7Mvu2Gmbow0lrsxQsNpQzm1Vfv52vdF9qqEpFtw7ntaVmQyGU199zbRlf00RrztV7fZ` (ACTIVE - needs rotation)
+- **Test Secret Key**: `sk_test_YOUR_STRIPE_SECRET_KEY_HERE` (ACTIVE - needs rotation)
 - **Test Publishable Key**: Available in Stripe Dashboard
-- **Webhook Secret**: `whsec_0ad225e1a56469eb6959f399ac7c9536e17cd1fb07ba5513001f46853b8078b2` (ACTIVE - needs rotation)
+- **Webhook Secret**: `whsec_YOUR_WEBHOOK_SECRET_HERE` (ACTIVE - needs rotation)
 - **Next Rotation**: IMMEDIATE (user action required)
 
 ### 3. Supabase Credentials (Database)
@@ -75,13 +75,13 @@ See REMEDIATION_PLAN.md Phase 1 for detailed instructions.
 **Search Patterns Used**:
 ```bash
 # Full secret values
-sk_test_51SLPlvBPdt7IPpHp4VgimjlRIpzYvwa7Mvu2Gmbow0lrsxQsNpQzm1Vfv52vdF9qqEpFtw7ntaVmQyGU199zbRlf00RrztV7fZ
-whsec_0ad225e1a56469eb6959f399ac7c9536e17cd1fb07ba5513001f46853b8078b2
-68fa0f2690e33a51659ce4a431826afaf3aa9848765bb4092d518dca0f4a7005
+sk_test_YOUR_STRIPE_SECRET_KEY_HERE
+whsec_YOUR_WEBHOOK_SECRET_HERE
+YOUR_ENCRYPTION_KEY_HERE
 
 # Partial patterns
-sk_test_51SLPlv
-whsec_0ad225e1
+sk_test_EXAMPLE
+whsec_EXAMPLE
 @Orangegoat11
 gpyvdknhmevcfdbgtqir.supabase.co
 ```
@@ -233,7 +233,7 @@ npm run test  # Verify authentication still works
 - [ ] **Git History Clean**:
   ```bash
   # Search for any exposed secrets
-  git log --all -p | grep -E "sk_test_51SLPlv|whsec_0ad225e1|68fa0f2690e33a51659ce4a431826afaf3aa9848765bb4092d518dca0f4a7005"
+  git log --all -p | grep -E "sk_test_EXAMPLE|whsec_EXAMPLE|YOUR_ENCRYPTION_KEY_HERE"
   # Should return: no results
   ```
 

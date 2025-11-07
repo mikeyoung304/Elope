@@ -129,3 +129,44 @@ export const UpdateAddOnDtoSchema = z.object({
 });
 
 export type UpdateAddOnDto = z.infer<typeof UpdateAddOnDtoSchema>;
+
+// Tenant Branding DTO
+export const TenantBrandingDtoSchema = z.object({
+  primaryColor: z.string().optional(),
+  secondaryColor: z.string().optional(),
+  fontFamily: z.string().optional(),
+  logo: z.string().url().optional(),
+});
+
+export type TenantBrandingDto = z.infer<typeof TenantBrandingDtoSchema>;
+
+// Stripe Connect DTOs
+export const StripeConnectDtoSchema = z.object({
+  accountId: z.string(),
+  chargesEnabled: z.boolean(),
+  payoutsEnabled: z.boolean(),
+  detailsSubmitted: z.boolean(),
+});
+
+export type StripeConnectDto = z.infer<typeof StripeConnectDtoSchema>;
+
+export const StripeOnboardingLinkDtoSchema = z.object({
+  url: z.string().url(),
+  expiresAt: z.number(),
+});
+
+export type StripeOnboardingLinkDto = z.infer<typeof StripeOnboardingLinkDtoSchema>;
+
+export const StripeAccountStatusDtoSchema = z.object({
+  accountId: z.string(),
+  chargesEnabled: z.boolean(),
+  payoutsEnabled: z.boolean(),
+  detailsSubmitted: z.boolean(),
+  requirements: z.object({
+    currentlyDue: z.array(z.string()),
+    eventuallyDue: z.array(z.string()),
+    pastDue: z.array(z.string()),
+  }),
+});
+
+export type StripeAccountStatusDto = z.infer<typeof StripeAccountStatusDtoSchema>;

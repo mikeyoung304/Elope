@@ -40,8 +40,10 @@ model Tenant {
   // Commission Settings
   commissionPercent Decimal @default(10.0) @db.Decimal(5, 2) // Platform commission %
 
-  // Branding Configuration
-  branding Json @default("{}") // {primaryColor, logo, fontFamily, etc.}
+  // Branding Configuration for embeddable widget
+  // Structure: {primaryColor, secondaryColor, fontFamily, logo}
+  // Example: {"primaryColor": "#8B7355", "secondaryColor": "#D4A574", "fontFamily": "Inter", "logo": "https://..."}
+  branding Json @default("{}") // Widget branding settings
 
   // Stripe Connect
   stripeAccountId String? @unique // Stripe Connected Account ID

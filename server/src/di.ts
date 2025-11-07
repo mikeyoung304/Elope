@@ -10,6 +10,7 @@ import { AvailabilityService } from './services/availability.service';
 import { BookingService } from './services/booking.service';
 import { CommissionService } from './services/commission.service';
 import { IdentityService } from './services/identity.service';
+import { StripeConnectService } from './services/stripe-connect.service';
 import { PackagesController } from './routes/packages.routes';
 import { AvailabilityController } from './routes/availability.routes';
 import { BookingsController } from './routes/bookings.routes';
@@ -17,6 +18,7 @@ import { WebhooksController } from './routes/webhooks.routes';
 import { AdminController } from './routes/admin.routes';
 import { BlackoutsController } from './routes/blackouts.routes';
 import { AdminPackagesController } from './routes/admin-packages.routes';
+import { TenantController } from './routes/tenant.routes';
 import { DevController } from './routes/dev.routes';
 import { buildMockAdapters } from './adapters/mock';
 import { PrismaClient } from './generated/prisma';
@@ -42,10 +44,12 @@ export interface Container {
     admin: AdminController;
     blackouts: BlackoutsController;
     adminPackages: AdminPackagesController;
+    tenant: TenantController;
     dev?: DevController;
   };
   services: {
     identity: IdentityService;
+    stripeConnect: StripeConnectService;
   };
 }
 
@@ -75,14 +79,22 @@ export function buildContainer(config: Config): Container {
       adapters.blackoutRepo,
       adapters.bookingRepo
     );
+
+    // Mock TenantRepository
+    const mockTenantRepo = new PrismaTenantRepository(mockPrisma);
+
     const bookingService = new BookingService(
       adapters.bookingRepo,
       adapters.catalogRepo,
       eventEmitter,
       adapters.paymentProvider,
-      commissionService
+      commissionService,
+      mockTenantRepo
     );
     const identityService = new IdentityService(adapters.userRepo, config.JWT_SECRET);
+
+    // Create StripeConnectService with mock Prisma
+    const stripeConnectService = new StripeConnectService(mockPrisma);
 
     // Build controllers
     const controllers = {
@@ -93,11 +105,13 @@ export function buildContainer(config: Config): Container {
       admin: new AdminController(identityService, bookingService),
       blackouts: new BlackoutsController(adapters.blackoutRepo),
       adminPackages: new AdminPackagesController(catalogService),
+      tenant: new TenantController(mockTenantRepo),
       dev: new DevController(bookingService, adapters.catalogRepo),
     };
 
     const services = {
       identity: identityService,
+      stripeConnect: stripeConnectService,
     };
 
     return { controllers, services };
@@ -145,6 +159,9 @@ export function buildContainer(config: Config): Container {
   // Create CommissionService with real Prisma
   const commissionService = new CommissionService(prisma);
 
+  // Create StripeConnectService with real Prisma
+  const stripeConnectService = new StripeConnectService(prisma);
+
   // Build Stripe payment adapter
   if (!config.STRIPE_SECRET_KEY || !config.STRIPE_WEBHOOK_SECRET) {
     throw new Error('STRIPE_SECRET_KEY and STRIPE_WEBHOOK_SECRET required for real adapters mode');
@@ -189,7 +206,8 @@ export function buildContainer(config: Config): Container {
     catalogRepo,
     eventEmitter,
     paymentProvider,
-    commissionService
+    commissionService,
+    tenantRepo
   );
   const identityService = new IdentityService(userRepo, config.JWT_SECRET);
 
@@ -224,11 +242,13 @@ export function buildContainer(config: Config): Container {
     admin: new AdminController(identityService, bookingService),
     blackouts: new BlackoutsController(blackoutRepo),
     adminPackages: new AdminPackagesController(catalogService),
+    tenant: new TenantController(tenantRepo),
     // No dev controller in real mode
   };
 
   const services = {
     identity: identityService,
+    stripeConnect: stripeConnectService,
   };
 
   return { controllers, services };

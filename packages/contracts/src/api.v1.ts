@@ -16,6 +16,7 @@ import {
   CreateAddOnDtoSchema,
   UpdateAddOnDtoSchema,
   AddOnDtoSchema,
+  TenantBrandingDtoSchema,
 } from './dto';
 
 const c = initContract();
@@ -92,6 +93,15 @@ export const Contracts = c.router({
       200: BookingDtoSchema,
     },
     summary: 'Get booking by ID (public endpoint for confirmation)',
+  },
+
+  getTenantBranding: {
+    method: 'GET',
+    path: '/v1/tenant/branding',
+    responses: {
+      200: TenantBrandingDtoSchema,
+    },
+    summary: 'Get tenant branding configuration for widget customization',
   },
 
   // Webhook endpoint (raw body)

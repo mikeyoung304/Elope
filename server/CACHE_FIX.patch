@@ -1,0 +1,141 @@
+# Patch to Fix Cache Isolation Vulnerability
+
+## Summary
+Remove HTTP-level caching that doesn't respect tenant isolation.
+Keep application-level caching which correctly includes tenantId in keys.
+
+## Changes
+
+### File: src/app.ts
+
+```diff
+--- a/src/app.ts
++++ b/src/app.ts
+@@ -15,7 +15,6 @@ import { createV1Router } from './routes/index';
+ import { errorHandler, notFoundHandler } from './middleware/error-handler';
+ import { requestLogger } from './middleware/request-logger';
+ import { skipIfHealth, adminLimiter } from './middleware/rateLimiter';
+-import { cacheMiddleware } from './middleware/cache';
+ import { openApiSpec } from './api-docs';
+
+ export function createApp(config: Config): express.Application {
+@@ -78,12 +77,6 @@ export function createApp(config: Config): express.Application {
+   // Request ID + logging middleware (for non-webhook routes)
+   app.use(requestLogger);
+
+-  // Apply caching middleware to public catalog endpoints
+-  // Cache packages for 5 minutes (they rarely change)
+-  app.use('/v1/packages', cacheMiddleware({ ttl: 300 }));
+-
+-  // Cache availability queries for 2 minutes (more dynamic)
+-  app.use('/v1/availability', cacheMiddleware({ ttl: 120 }));
+-
+   // Health check endpoint
+   app.get('/health', (_req, res) => {
+     res.json({ ok: true });
+```
+
+## Explanation
+
+**What Changed:**
+1. Removed import of `cacheMiddleware` from `./middleware/cache`
+2. Removed application of HTTP cache middleware to `/v1/packages` and `/v1/availability`
+
+**Why:**
+- HTTP cache middleware generated keys without tenantId: `GET:/v1/packages:{}`
+- Multiple tenants would share the same cache key
+- Tenant B would receive Tenant A's cached data
+- This is a critical security vulnerability
+
+**What Still Works:**
+- Application-level cache in `catalog.service.ts` and `availability.service.ts`
+- These use tenant-scoped keys: `catalog:${tenantId}:all-packages`
+- Caching still provides performance benefits
+- Tenant isolation is maintained
+
+**Performance Impact:**
+- Minimal: Application cache still prevents redundant database queries
+- HTTP cache was redundant (duplicate layer)
+- Application cache has same TTL (900s for catalog, configurable for availability)
+
+## Testing
+
+After applying this patch:
+
+1. **Run isolation test:**
+   ```bash
+   npx ts-node test-cache-isolation.ts
+   ```
+   Expected: ✅ Cache isolation working correctly
+
+2. **Verify no X-Cache headers:**
+   ```bash
+   curl -I -H "X-Tenant-Key: pk_live_test" http://localhost:3000/v1/packages
+   ```
+   Should NOT see `X-Cache: HIT` or `X-Cache: MISS` headers
+
+3. **Verify application cache still works:**
+   - Check server logs for "Cache HIT" and "Cache MISS" from CacheService
+   - Should see cache statistics logged every 60 seconds in development
+
+4. **Performance testing:**
+   ```bash
+   # First request (cache miss)
+   time curl -H "X-Tenant-Key: pk_live_test" http://localhost:3000/v1/packages
+
+   # Second request (should be faster - app cache hit)
+   time curl -H "X-Tenant-Key: pk_live_test" http://localhost:3000/v1/packages
+   ```
+
+## Manual Application
+
+To apply this fix manually:
+
+```bash
+# 1. Edit src/app.ts
+# 2. Remove line 18:
+#    import { cacheMiddleware } from './middleware/cache';
+
+# 3. Remove lines 81-86:
+#    app.use('/v1/packages', cacheMiddleware({ ttl: 300 }));
+#    app.use('/v1/availability', cacheMiddleware({ ttl: 120 }));
+
+# 4. Save the file
+
+# 5. Restart the server
+npm run dev
+
+# 6. Run the test
+npx ts-node test-cache-isolation.ts
+```
+
+## Alternative: Keep HTTP Cache with Tenant Isolation
+
+If you prefer to keep HTTP-level caching, use this alternative fix:
+
+```typescript
+// src/app.ts
+
+// Create tenant-aware cache middleware
+app.use('/v1/packages', cacheMiddleware({
+  ttl: 300,
+  keyGenerator: (req: Request) => {
+    const tenantKey = req.headers['x-tenant-key'] || 'no-tenant';
+    return `${req.method}:${req.path}:${JSON.stringify(req.query)}:tenant:${tenantKey}`;
+  }
+}));
+
+app.use('/v1/availability', cacheMiddleware({
+  ttl: 120,
+  keyGenerator: (req: Request) => {
+    const tenantKey = req.headers['x-tenant-key'] || 'no-tenant';
+    return `${req.method}:${req.path}:${JSON.stringify(req.query)}:tenant:${tenantKey}`;
+  }
+}));
+```
+
+**Note:** This is NOT recommended because:
+- Creates duplicate caching layers
+- More complex cache invalidation
+- HTTP cache doesn't save much (tenant middleware still runs)
+- Risk of future bugs from dual-layer architecture
