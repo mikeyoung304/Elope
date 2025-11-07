@@ -273,6 +273,7 @@ export function createTenantAdminRoutes(
         description: pkg.description,
         priceCents: pkg.priceCents,
         photoUrl: pkg.photoUrl,
+        photos: pkg.photos,
       }));
 
       res.json(packagesDto);

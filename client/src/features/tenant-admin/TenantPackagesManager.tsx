@@ -9,6 +9,8 @@ import { Badge } from "@/components/ui/badge";
 import { api } from "../../lib/api";
 import { formatCurrency } from "@/lib/utils";
 import type { PackageDto } from "@elope/contracts";
+import { PackagePhotoUploader, type PackagePhoto } from "@/components/PackagePhotoUploader";
+import { packagePhotoApi } from "@/lib/package-photo-api";
 
 interface PackageFormData {
   title: string;
@@ -29,6 +31,7 @@ export function TenantPackagesManager({ packages, onPackagesChange }: TenantPack
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
+  const [packagePhotos, setPackagePhotos] = useState<PackagePhoto[]>([]);
 
   const [form, setForm] = useState<PackageFormData>({
     title: "",
@@ -47,6 +50,7 @@ export function TenantPackagesManager({ packages, onPackagesChange }: TenantPack
       isActive: true,
     });
     setError(null);
+    setPackagePhotos([]);
   }, []);
 
   const showSuccess = useCallback((message: string) => {
@@ -60,7 +64,7 @@ export function TenantPackagesManager({ packages, onPackagesChange }: TenantPack
     setEditingPackageId(null);
   }, [resetForm]);
 
-  const handleEdit = useCallback((pkg: PackageDto) => {
+  const handleEdit = useCallback(async (pkg: PackageDto) => {
     setForm({
       title: pkg.title,
       description: pkg.description,
@@ -70,6 +74,15 @@ export function TenantPackagesManager({ packages, onPackagesChange }: TenantPack
     });
     setEditingPackageId(pkg.id);
     setIsCreating(true);
+
+    // Load photos for this package
+    try {
+      const packageWithPhotos = await packagePhotoApi.getPackageWithPhotos(pkg.id);
+      setPackagePhotos(packageWithPhotos.photos || []);
+    } catch (err) {
+      console.error("Failed to load package photos:", err);
+      setPackagePhotos([]);
+    }
   }, []);
 
   const handleSubmit = useCallback(async (e: React.FormEvent) => {
@@ -315,6 +328,15 @@ export function TenantPackagesManager({ packages, onPackagesChange }: TenantPack
             </div>
           </form>
         </Card>
+      )}
+
+      {/* Package Photo Uploader - Only show when editing existing package */}
+      {isCreating && editingPackageId && (
+        <PackagePhotoUploader
+          packageId={editingPackageId}
+          initialPhotos={packagePhotos}
+          onPhotosChange={(photos) => setPackagePhotos(photos)}
+        />
       )}
 
       {/* Packages List */}
