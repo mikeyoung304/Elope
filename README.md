@@ -27,6 +27,7 @@
 - **Email Notifications** - Automatic booking confirmations via Postmark
 - **Double-Booking Prevention** - Database-level constraints and pessimistic locking
 - **Webhook Reliability** - Idempotent webhook processing with automatic retries
+- **Security-First** - Login rate limiting, encrypted secrets, structured security logging
 
 ### Target Users
 
@@ -478,6 +479,8 @@ Elope offers an embeddable booking widget that tenants can add to their existing
 - **[ENVIRONMENT.md](./ENVIRONMENT.md)** - Environment variables reference
 - **[SECRETS.md](./SECRETS.md)** - Secret management and rotation procedures
 - **[SECURITY.md](./SECURITY.md)** - Security best practices and guardrails
+- **[SECRET_ROTATION_GUIDE.md](./SECRET_ROTATION_GUIDE.md)** - Complete guide for rotating secrets
+- **[IMMEDIATE_SECURITY_ACTIONS.md](./IMMEDIATE_SECURITY_ACTIONS.md)** - Urgent security action items
 
 ### Migration & Project History
 - **[PHASE_1_COMPLETION_REPORT.md](./PHASE_1_COMPLETION_REPORT.md)** - Phase 1: Multi-tenant foundation

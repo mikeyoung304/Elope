@@ -399,3 +399,161 @@ If `/ready` returns `ok: false`, check your `.env` file and ensure all required 
 
 - **Logging:** pino JSON with `requestId` on every request
 - **Monitoring:** attach Sentry or log drain
+
+---
+
+## Security Monitoring ✅ COMPLETE
+
+### Login Rate Limiting
+
+**Status:** ✅ Implemented (2025-11-07)
+
+All login endpoints are protected with automatic rate limiting:
+
+**Configuration:**
+- **Limit:** 5 failed attempts per 15-minute window
+- **Scope:** Per IP address
+- **Endpoints:**
+  - `POST /v1/admin/login`
+  - `POST /v1/tenant-auth/login`
+
+**Testing Rate Limiting:**
+```bash
+cd server
+./test-login-rate-limit.sh
+
+# Or test manually
+curl -X POST http://localhost:3000/v1/tenant-auth/login \
+  -H "Content-Type: application/json" \
+  -d '{"email":"test@example.com","password":"wrong"}'
+```
+
+**Expected Results:**
+- Attempts 1-5: HTTP 401 (Invalid credentials)
+- Attempt 6+: HTTP 429 (Too many requests)
+
+### Security Logging
+
+All security events are logged with structured data for monitoring and alerting.
+
+**Failed Login Attempts:**
+```bash
+# View failed login attempts
+grep "login_failed" server/logs/*.log
+
+# Example log entry:
+{
+  "level": "warn",
+  "event": "tenant_login_failed",
+  "endpoint": "/v1/tenant-auth/login",
+  "email": "test@example.com",
+  "ipAddress": "192.168.1.1",
+  "timestamp": "2025-11-07T10:30:00.000Z",
+  "error": "Invalid credentials"
+}
+```
+
+**Rate Limit Hits:**
+```bash
+# Monitor for potential attacks
+grep "429" server/logs/*.log
+grep "too_many_login_attempts" server/logs/*.log
+```
+
+### Security Monitoring Checklist
+
+**Daily Monitoring:**
+- [ ] Check for unusual spike in failed login attempts
+- [ ] Review rate limit hits (429 responses)
+- [ ] Monitor for distributed attacks (multiple IPs targeting same email)
+- [ ] Check for geographic anomalies in failed attempts
+
+**Weekly Reviews:**
+- [ ] Analyze failed login patterns
+- [ ] Review security logs for suspicious activity
+- [ ] Verify rate limiting effectiveness
+- [ ] Check for credential stuffing attempts
+
+**Monthly Tasks:**
+- [ ] Review and rotate JWT_SECRET if needed
+- [ ] Audit tenant API keys
+- [ ] Review Stripe webhook logs
+- [ ] Update security documentation
+
+### Setting Up Alerts
+
+**Recommended Alerting Rules:**
+
+1. **High Volume of Failed Logins:**
+   - Alert: More than 20 failed logins in 5 minutes
+   - Action: Investigate for coordinated attack
+
+2. **Rate Limit Threshold:**
+   - Alert: More than 10 rate limit hits (429) in 10 minutes
+   - Action: Review source IPs and patterns
+
+3. **Targeted Email Attacks:**
+   - Alert: Same email attempted from 5+ different IPs
+   - Action: Possible credential stuffing attack
+
+4. **Webhook Failures:**
+   - Alert: Stripe webhook signature verification failures
+   - Action: Verify webhook secret is current
+
+**Example Alert Configuration (Datadog/Sentry/CloudWatch):**
+```
+Alert: security-failed-logins-spike
+Metric: count(log.event:login_failed)
+Threshold: > 20 in 5 minutes
+Notification: security-team-channel
+```
+
+### Responding to Security Events
+
+**Brute Force Attack Detected:**
+1. Verify rate limiting is active (check logs)
+2. Identify attacking IP addresses
+3. Consider temporary IP blocking if severe
+4. Review logs for successful compromises
+5. Document incident and response
+
+**Credential Stuffing Detected:**
+1. Identify targeted email accounts
+2. Force password reset for affected accounts
+3. Notify affected users if any successful logins
+4. Enhance monitoring on affected accounts
+5. Consider implementing CAPTCHA
+
+**Rate Limit Bypass Attempt:**
+1. Verify distributed attack pattern
+2. Check for proxy/VPN usage
+3. Consider implementing additional protections
+4. Review rate limiting effectiveness
+5. Update security policies if needed
+
+### Production Security Considerations
+
+**Multi-Server Deployments:**
+
+For production with multiple servers, rate limiting requires shared storage:
+
+**Option 1: Redis (Recommended)**
+```bash
+# Install Redis
+brew install redis  # or use cloud provider
+
+# Configure rate limiter
+REDIS_URL=redis://localhost:6379
+```
+
+**Option 2: Sticky Sessions**
+- Configure load balancer for IP-based session affinity
+- Ensures same IP always routes to same server
+
+**Security Documentation:**
+- [SECURITY.md](./SECURITY.md) - Complete security documentation
+- [SECRET_ROTATION_GUIDE.md](./SECRET_ROTATION_GUIDE.md) - Secret rotation procedures
+- [IMMEDIATE_SECURITY_ACTIONS.md](./IMMEDIATE_SECURITY_ACTIONS.md) - Urgent action items
+- [server/LOGIN_RATE_LIMITING.md](./server/LOGIN_RATE_LIMITING.md) - Rate limiting implementation
+
+---

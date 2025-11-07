@@ -86,7 +86,10 @@ cd server && npm exec prisma migrate status
 ADAPTERS_PRESET=mock # or real
 API_PORT=3001
 CORS_ORIGIN=http://localhost:5173
-JWT_SECRET=change-me
+
+# Security (REQUIRED for real mode)
+JWT_SECRET=change-me  # Generate: openssl rand -hex 32
+TENANT_SECRETS_ENCRYPTION_KEY=...  # Generate: openssl rand -hex 32
 
 # Real mode - Database (✅ IMPLEMENTED)
 DATABASE_URL=postgresql://username:password@localhost:5432/elope_dev?schema=public
@@ -105,6 +108,60 @@ POSTMARK_FROM_EMAIL=bookings@yourdomain.com
 GOOGLE_CALENDAR_ID=...            # Optional: falls back to mock calendar
 GOOGLE_SERVICE_ACCOUNT_JSON_BASE64=...
 ```
+
+## Security Setup ✅ COMPLETE
+
+### Generating Secure Secrets
+
+```bash
+# Generate JWT secret (32 bytes)
+openssl rand -hex 32
+
+# Generate tenant encryption key (32 bytes)
+openssl rand -hex 32
+
+# Add to server/.env
+JWT_SECRET=<generated-jwt-secret>
+TENANT_SECRETS_ENCRYPTION_KEY=<generated-encryption-key>
+```
+
+### Login Rate Limiting
+
+Login endpoints are automatically protected with rate limiting:
+- **5 attempts** per 15-minute window per IP address
+- Only **failed attempts** count toward the limit
+- Returns **429 Too Many Requests** after limit exceeded
+
+**Test the rate limiting:**
+```bash
+cd server
+./test-login-rate-limit.sh
+```
+
+### Security Monitoring
+
+Failed login attempts are logged with structured data:
+```bash
+# View failed login attempts in logs
+grep "login_failed" server/logs/*.log
+
+# Monitor for potential attacks
+grep "429" server/logs/*.log  # Rate limit hits
+```
+
+### Secret Rotation
+
+For production deployments, rotate secrets quarterly:
+
+1. **JWT_SECRET** - Invalidates all active sessions
+2. **Stripe Keys** - Rotate via Stripe dashboard
+3. **Database Password** - Update via Supabase/provider dashboard
+4. **TENANT_SECRETS_ENCRYPTION_KEY** - Requires migration script
+
+**See comprehensive guides:**
+- [SECRET_ROTATION_GUIDE.md](./SECRET_ROTATION_GUIDE.md) - Complete rotation procedures
+- [IMMEDIATE_SECURITY_ACTIONS.md](./IMMEDIATE_SECURITY_ACTIONS.md) - Urgent actions checklist
+- [SECURITY.md](./SECURITY.md) - Security best practices
 
 ## Repo structure (current)
 

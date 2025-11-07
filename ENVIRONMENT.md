@@ -8,12 +8,23 @@ Configure via `server/.env`:
 ADAPTERS_PRESET=mock|real
 API_PORT=3001
 CORS_ORIGIN=http://localhost:5173  # Vite dev server
+
+# ============================================================================
+# SECURITY CONFIGURATION (CRITICAL)
+# ============================================================================
+
+# JWT Authentication
 JWT_SECRET=change-me  # Generate with: openssl rand -hex 32
+# Used to sign authentication tokens for admin and tenant logins
+# MUST be changed in production and kept secret
+# Rotating this key will invalidate all active sessions
 
 # Multi-Tenant Security (REQUIRED)
 TENANT_SECRETS_ENCRYPTION_KEY=...  # Generate with: openssl rand -hex 32
-# This key encrypts tenant secret API keys in the database
+# This key encrypts tenant secret API keys (sk_live_*) in the database
 # CRITICAL: Back up this key securely - losing it makes tenant secrets unrecoverable
+# Rotation requires a migration script to re-encrypt all tenant secrets
+# See SECRET_ROTATION_GUIDE.md for rotation procedures
 
 # Real mode - Required
 # Supabase Database (see SUPABASE.md for setup)
@@ -38,13 +49,22 @@ SUPABASE_ANON_KEY=eyJhbGc...
 SUPABASE_SERVICE_ROLE_KEY=eyJhbGc...  # Keep secret!
 ```
 
-**Important Notes:**
+**Important Security Notes:**
 - `DATABASE_URL` uses port 5432 (transaction mode pooler)
 - `DIRECT_URL` required for Prisma migrations with Supabase
 - `TENANT_SECRETS_ENCRYPTION_KEY` must be 32 bytes (64 hex characters)
+- `JWT_SECRET` must be cryptographically secure (32 bytes recommended)
 - Password special characters must be URL-encoded (e.g., @ = %40)
 - Never commit `.env` files to git
-- See `SUPABASE.md` for complete setup guide
+- Store production secrets in a secure vault (AWS Secrets Manager, HashiCorp Vault, etc.)
+- Rotate all secrets quarterly (see `SECRET_ROTATION_GUIDE.md`)
+- See `SUPABASE.md` for complete database setup guide
+- See `IMMEDIATE_SECURITY_ACTIONS.md` for secret rotation checklist
+
+**Login Security:**
+- Login endpoints are rate-limited to 5 attempts per 15 minutes per IP
+- Failed login attempts are logged with IP addresses for security monitoring
+- See `SECURITY.md` for comprehensive security documentation
 
 ## Multi-Tenant Usage
 
