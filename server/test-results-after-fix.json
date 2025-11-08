@@ -1,0 +1,100 @@
+{
+  "timestamp": "PENDING",
+  "testPhase": "AFTER_FIX",
+  "note": "This file will be populated after running: ./test-error-handling-comprehensive.sh",
+  "environment": {
+    "apiBase": "http://localhost:3001",
+    "tenantId": "TBD",
+    "testPackageId": "TBD"
+  },
+  "expectedResults": {
+    "totalTests": 13,
+    "passed": "12-13",
+    "failed": "0-1",
+    "passRate": "92-100%"
+  },
+  "expectedImprovements": {
+    "authentication": {
+      "before": "2/2 passed (100%)",
+      "after": "2/2 passed (100%)",
+      "improvement": "No change - already perfect"
+    },
+    "validation": {
+      "before": "0/5 passed (0%)",
+      "after": "4-5/5 passed (80-100%)",
+      "improvement": "Significant improvement expected",
+      "keyFixes": [
+        "Explicit file presence check returns 400",
+        "Multer error handler catches LIMIT_FILE_SIZE and returns 413",
+        "uploadService validation errors properly return 400",
+        "Max photo limit validation becomes testable",
+        "Special characters in filenames handled gracefully"
+      ]
+    },
+    "authorization": {
+      "before": "1/2 passed (50%)",
+      "after": "2/2 passed (100%)",
+      "improvement": "Cross-tenant upload test becomes verifiable",
+      "keyFixes": [
+        "With validation fixes, can properly test cross-tenant isolation"
+      ]
+    },
+    "notFound": {
+      "before": "1/2 passed (50%)",
+      "after": "2/2 passed (100%)",
+      "improvement": "Non-existent package properly returns 404",
+      "keyFixes": [
+        "catalogService errors properly categorized and returned as 404"
+      ]
+    },
+    "fileSize": {
+      "before": "0/2 passed (0%)",
+      "after": "2/2 passed (100%)",
+      "improvement": "Complete fix expected",
+      "keyFixes": [
+        "Files under 5MB accepted (201)",
+        "Files over 5MB rejected with 413 or 400",
+        "Multer errors no longer cause 500 responses"
+      ]
+    }
+  },
+  "fixesRequired": [
+    {
+      "priority": "P0",
+      "fix": "Add multer error handler middleware",
+      "location": "src/routes/tenant-admin.routes.ts:354-357",
+      "code": "Add error handling after uploadPackagePhoto.single('photo')",
+      "expectedImpact": "Fixes 2 file size tests, improves validation tests"
+    },
+    {
+      "priority": "P0",
+      "fix": "Add explicit file presence check",
+      "location": "src/routes/tenant-admin.routes.ts:368-370",
+      "code": "if (!req.file) { return res.status(400).json({ error: 'No photo uploaded' }); }",
+      "expectedImpact": "Fixes 1 validation test"
+    },
+    {
+      "priority": "P0",
+      "fix": "Improve catch block error handling",
+      "location": "src/routes/tenant-admin.routes.ts:415-422",
+      "code": "Categorize errors properly: ValidationError -> 400, NotFoundError -> 404, MulterError -> 413/400",
+      "expectedImpact": "Fixes 6 tests across all categories"
+    },
+    {
+      "priority": "P1",
+      "fix": "Add minimum file size validation",
+      "location": "src/services/upload.service.ts:86-89",
+      "code": "if (file.size < 100) throw new ValidationError('File too small (min 100 bytes)');",
+      "expectedImpact": "Improves 1 validation test (currently passes with note)"
+    }
+  ],
+  "testExecutionInstructions": {
+    "step1": "Wait for Error Handling Fix Agent to complete all fixes",
+    "step2": "Restart the API server to load changes",
+    "step3": "Run: ./test-error-handling-comprehensive.sh",
+    "step4": "Results will be saved to test-results-comprehensive.json",
+    "step5": "Copy test-results-comprehensive.json to test-results-after-fix.json",
+    "step6": "Run: node generate-comparison-report.js"
+  },
+  "message": "This template shows expected results after fixes. Run the comprehensive test script after fixes are applied to generate actual results."
+}

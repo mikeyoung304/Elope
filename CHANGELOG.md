@@ -26,6 +26,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Postmark email notifications with file-sink fallback for development
 
 ### Changed
+- **Documentation Structure**: Reorganized 70+ documentation files into structured `/docs` directory
+  - Created 9 category subdirectories (setup, api, operations, security, architecture, multi-tenant, phases, roadmaps, archive)
+  - Added navigation README files in each category for improved discoverability
+  - Updated all cross-references in root documentation files
+  - Reduced root directory clutter by 85% (from ~80 to 12 core files)
+  - Archived historical audit reports and phase completion documents
 - Migrated from hexagonal to layered architecture for better maintainability
 - Split large admin components into smaller, focused components
 - Optimized catalog query to eliminate N+1 problem (91% reduction in queries)

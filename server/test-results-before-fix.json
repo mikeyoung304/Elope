@@ -1,0 +1,202 @@
+{
+  "timestamp": "2025-11-07T19:30:00Z",
+  "testPhase": "BEFORE_FIX",
+  "environment": {
+    "apiBase": "http://localhost:3001",
+    "tenantId": "cmhp91lct0000p0i3hi347g0v",
+    "testPackageId": "cmhp92bir0003p0pihuvlcq8h"
+  },
+  "summary": {
+    "totalTests": 13,
+    "passed": 4,
+    "failed": 9,
+    "passRate": "31%"
+  },
+  "categories": {
+    "authentication": {
+      "total": 2,
+      "passed": 2,
+      "failed": 0,
+      "assessment": "STRONG - All authentication tests passed"
+    },
+    "validation": {
+      "total": 5,
+      "passed": 0,
+      "failed": 5,
+      "assessment": "WEAK - All validation errors return 500 instead of proper codes"
+    },
+    "authorization": {
+      "total": 2,
+      "passed": 1,
+      "failed": 1,
+      "assessment": "PARTIAL - One test inconclusive due to upstream errors"
+    },
+    "notFound": {
+      "total": 2,
+      "passed": 1,
+      "failed": 1,
+      "assessment": "PARTIAL - Delete works, upload verification blocked by 500s"
+    },
+    "fileSize": {
+      "total": 2,
+      "passed": 0,
+      "failed": 2,
+      "assessment": "WEAK - Multer errors not properly handled"
+    }
+  },
+  "results": [
+    {
+      "category": "authentication",
+      "test": "Upload without auth token",
+      "expected": 401,
+      "actual": 401,
+      "status": "PASS",
+      "details": "Correctly rejected unauthorized request with message 'Missing Authorization header'"
+    },
+    {
+      "category": "authentication",
+      "test": "Upload with invalid token",
+      "expected": 401,
+      "actual": 401,
+      "status": "PASS",
+      "details": "Correctly rejected invalid token"
+    },
+    {
+      "category": "validation",
+      "test": "Upload without file",
+      "expected": 400,
+      "actual": 500,
+      "status": "FAIL",
+      "details": "Returns 500 Internal Server Error instead of 400 Bad Request. Missing explicit check after multer middleware."
+    },
+    {
+      "category": "validation",
+      "test": "Upload non-image file",
+      "expected": 400,
+      "actual": 500,
+      "status": "FAIL",
+      "details": "uploadService validates MIME type but error caught by generic handler, returns 500 instead of 400"
+    },
+    {
+      "category": "validation",
+      "test": "Upload 1-byte file",
+      "expected": 400,
+      "actual": 500,
+      "status": "FAIL",
+      "details": "No minimum file size validation. uploadService checks empty buffer but malformed images cause 500"
+    },
+    {
+      "category": "validation",
+      "test": "Upload 6th photo (exceeds max 5)",
+      "expected": 400,
+      "actual": 500,
+      "status": "FAIL",
+      "details": "Could not test due to prerequisite upload failures. Code exists at lines 384-389 but untestable"
+    },
+    {
+      "category": "validation",
+      "test": "Upload with special characters in filename",
+      "expected": 201,
+      "actual": 500,
+      "status": "FAIL",
+      "details": "Filename 'test file (1) [copy].png' causes 500 error. generateFilename() should handle this"
+    },
+    {
+      "category": "authorization",
+      "test": "Upload to another tenant's package",
+      "expected": 403,
+      "actual": 500,
+      "status": "FAIL",
+      "details": "Cannot verify cross-tenant isolation due to upstream 500 errors. Code exists at lines 379-382"
+    },
+    {
+      "category": "authorization",
+      "test": "Delete another tenant's photo",
+      "expected": 403,
+      "actual": 403,
+      "status": "PASS",
+      "details": "Correctly prevented cross-tenant deletion with 403 Forbidden"
+    },
+    {
+      "category": "notFound",
+      "test": "Upload to non-existent package",
+      "expected": 404,
+      "actual": 500,
+      "status": "FAIL",
+      "details": "catalogService.getPackageById() error not handled gracefully. Returns 500 instead of 404"
+    },
+    {
+      "category": "notFound",
+      "test": "Delete non-existent photo",
+      "expected": 404,
+      "actual": 404,
+      "status": "PASS",
+      "details": "Correctly returns 404 with message 'Photo not found in package'"
+    },
+    {
+      "category": "fileSize",
+      "test": "Upload 4MB file (within limit)",
+      "expected": 201,
+      "actual": 500,
+      "status": "FAIL",
+      "details": "Even valid files fail due to upstream error handling issues"
+    },
+    {
+      "category": "fileSize",
+      "test": "Upload 6MB file (over limit)",
+      "expected": 413,
+      "actual": 500,
+      "status": "FAIL",
+      "details": "Multer configured with 5MB limit but MulterError not properly handled, returns 500 instead of 413"
+    }
+  ],
+  "criticalIssues": [
+    {
+      "severity": "HIGH",
+      "issue": "Generic error handling returns 500 for all validation failures",
+      "location": "src/routes/tenant-admin.routes.ts:415-422",
+      "impact": "Poor user experience - users cannot distinguish between server errors and validation failures",
+      "affectedTests": 9
+    },
+    {
+      "severity": "HIGH",
+      "issue": "Multer errors not handled",
+      "location": "src/routes/tenant-admin.routes.ts:354-357",
+      "impact": "File size limit violations return 500 instead of 413",
+      "affectedTests": 2
+    },
+    {
+      "severity": "MEDIUM",
+      "issue": "No explicit file presence check",
+      "location": "src/routes/tenant-admin.routes.ts:368-370",
+      "impact": "Missing file returns 500 instead of clear 400 validation error",
+      "affectedTests": 1
+    },
+    {
+      "severity": "MEDIUM",
+      "issue": "uploadService errors not properly categorized",
+      "location": "src/services/upload.service.ts:71-89",
+      "impact": "Validation errors from service layer return 500",
+      "affectedTests": 3
+    }
+  ],
+  "strengths": [
+    "Authentication middleware properly enforces token requirement",
+    "Invalid tokens are rejected with 401 responses",
+    "Cross-tenant deletion is prevented with 403 Forbidden",
+    "Non-existent resource deletion returns proper 404 responses",
+    "Authorization checks exist in code (verified by review)",
+    "Max photo limit logic is implemented (lines 384-389)",
+    "Tenant isolation checks are in place (lines 379-382, 448-451)"
+  ],
+  "weaknesses": [
+    "All validation errors return 500 instead of 4xx status codes",
+    "Multer errors not handled specifically",
+    "Cannot complete end-to-end happy path testing",
+    "Cross-tenant upload isolation unverified (but code exists)",
+    "No minimum file size validation",
+    "Edge cases with malformed data cause 500 errors",
+    "Special characters in filenames cause crashes"
+  ],
+  "source": "Based on FINAL_ERROR_CASE_REPORT.json and test-error-cases.sh results"
+}

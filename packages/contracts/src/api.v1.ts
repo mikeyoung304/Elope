@@ -115,7 +115,20 @@ export const Contracts = c.router({
     summary: 'Handle Stripe webhook (raw body)',
   },
 
-  // Admin endpoints (authentication required - documented)
+  // Tenant admin authentication endpoints
+  tenantLogin: {
+    method: 'POST',
+    path: '/v1/tenant-auth/login',
+    body: AdminLoginDtoSchema, // Same schema: email + password
+    responses: {
+      200: z.object({
+        token: z.string(),
+      }),
+    },
+    summary: 'Tenant admin login',
+  },
+
+  // Platform admin endpoints (authentication required - documented)
   adminLogin: {
     method: 'POST',
     path: '/v1/admin/login',
@@ -125,7 +138,7 @@ export const Contracts = c.router({
         token: z.string(),
       }),
     },
-    summary: 'Admin login',
+    summary: 'Platform admin login',
   },
 
   adminGetBookings: {

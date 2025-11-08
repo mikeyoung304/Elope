@@ -26,6 +26,7 @@ import adminTenantsRoutes from './admin/tenants.routes';
 import adminStripeRoutes from './admin/stripe.routes';
 import { createTenantAdminRoutes } from './tenant-admin.routes';
 import { createTenantAuthRoutes } from './tenant-auth.routes';
+import { createUnifiedAuthRoutes } from './auth.routes';
 import { loginLimiter } from '../middleware/rateLimiter';
 import { logger } from '../lib/core/logger';
 
@@ -247,5 +248,15 @@ export function createV1Router(
       blackoutRepo
     );
     app.use('/v1/tenant/admin', tenantAuthMiddleware, tenantAdminRoutes);
+
+    // Register unified authentication routes (RECOMMENDED)
+    // /v1/auth/login - public - unified login for both platform admins and tenant admins
+    // /v1/auth/verify - requires token - verify token and get user info
+    const unifiedAuthRoutes = createUnifiedAuthRoutes(
+      identityService,
+      services.tenantAuth,
+      tenantRepo
+    );
+    app.use('/v1/auth', unifiedAuthRoutes);
   }
 }

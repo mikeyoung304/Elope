@@ -1,0 +1,65 @@
+{
+  "timestamp": "2025-11-07T19:50:44Z",
+  "environment": {
+    "apiBase": "http://localhost:3001",
+    "tenantId": "cmhp91lct0000p0i3hi347g0v",
+    "testPackageId": "cmhp92bir0003p0pihuvlcq8h"
+  },
+  "summary": {
+    "totalTests": 11,
+    "passed": 6,
+    "failed": 5,
+    "passRate": "54%"
+  },
+  "categories": {
+    "authentication": {
+      "total": 2,
+      "passed": 2,
+      "failed": 0
+    },
+    "validation": {
+      "total": 5,
+      "passed": 1,
+      "failed": 4
+    },
+    "authorization": {
+      "total": 0,
+      "passed": 0,
+      "failed": 0
+    },
+    "notFound": {
+      "total": 2,
+      "passed": 2,
+      "failed": 0
+    },
+    "fileSize": {
+      "total": 2,
+      "passed": 1,
+      "failed": 1
+    }
+  },
+  "results": [
+    {"category":"authentication","test":"Upload without auth token","expected":401,"actual":401,"status":"PASS","details":"Should reject unauthorized requests"}
+,
+    {"category":"authentication","test":"Upload with invalid token","expected":401,"actual":401,"status":"PASS","details":"Should reject malformed/invalid tokens"}
+,
+    {"category":"validation","test":"Upload without file","expected":400,"actual":400,"status":"PASS","details":"Should return 400 with 'No photo uploaded' message"}
+,
+    {"category":"validation","test":"Upload non-image file","expected":400,"actual":404,"status":"FAIL","details":"Should reject text files with validation error"}
+,
+    {"category":"validation","test":"Upload 1-byte file","expected":400,"actual":404,"status":"FAIL","details":"Unexpected error response"}
+,
+    {"category":"validation","test":"Upload 6th photo (exceeds max 5)","expected":400,"actual":404,"status":"FAIL","details":"Should enforce 5 photo per package limit"}
+,
+    {"category":"validation","test":"Upload with special characters in filename","expected":201,"actual":404,"status":"FAIL","details":"Failed to handle special characters"}
+,
+    {"category":"notFound","test":"Upload to non-existent package","expected":404,"actual":404,"status":"PASS","details":"Should return 404 for missing package"}
+,
+    {"category":"notFound","test":"Delete non-existent photo","expected":404,"actual":404,"status":"PASS","details":"Should return 404 for missing photo"}
+,
+    {"category":"fileSize","test":"Upload 4MB file (within limit)","expected":201,"actual":404,"status":"FAIL","details":"Should accept files under 5MB limit"}
+,
+    {"category":"fileSize","test":"Upload 6MB file (over limit)","expected":413,"actual":413,"status":"PASS","details":"File over 5MB limit correctly rejected (413 or 400)"}
+
+  ]
+}

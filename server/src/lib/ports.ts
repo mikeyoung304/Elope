@@ -126,6 +126,11 @@ export interface User {
 }
 
 /**
+ * Standardized role types for unified authentication
+ */
+export type UserRole = 'PLATFORM_ADMIN' | 'TENANT_ADMIN';
+
+/**
  * JWT token payload for platform admin authentication
  */
 export interface TokenPayload {
@@ -143,6 +148,23 @@ export interface TenantTokenPayload {
   slug: string;
   email: string;
   type: 'tenant'; // Distinguishes from platform admin tokens
+}
+
+/**
+ * Unified JWT token payload (supports both admin and tenant)
+ * Use this for new implementations
+ */
+export interface UnifiedTokenPayload {
+  // Common fields
+  email: string;
+  role: UserRole;
+
+  // Platform admin fields (present when role = PLATFORM_ADMIN)
+  userId?: string;
+
+  // Tenant admin fields (present when role = TENANT_ADMIN)
+  tenantId?: string;
+  slug?: string;
 }
 
 /**

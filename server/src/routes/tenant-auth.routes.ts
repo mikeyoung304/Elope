@@ -7,6 +7,7 @@ import { Router, type Request, type Response, type NextFunction } from 'express'
 import type { TenantAuthService } from '../services/tenant-auth.service';
 import { loginLimiter } from '../middleware/rateLimiter';
 import { logger } from '../lib/core/logger';
+import { createTenantAuthMiddleware } from '../middleware/tenant-auth';
 
 /**
  * Tenant login DTO
@@ -58,6 +59,7 @@ export class TenantAuthController {
 export function createTenantAuthRoutes(tenantAuthService: TenantAuthService): Router {
   const router = Router();
   const controller = new TenantAuthController(tenantAuthService);
+  const tenantAuthMiddleware = createTenantAuthMiddleware(tenantAuthService);
 
   /**
    * POST /login
@@ -93,13 +95,13 @@ export function createTenantAuthRoutes(tenantAuthService: TenantAuthService): Ro
   /**
    * GET /me
    * Get current tenant info (requires authentication)
-   * Note: Authentication is handled by checking res.locals.tenantAuth
-   * The parent router should apply tenantAuthMiddleware to protect this route
+   * Protected by tenantAuthMiddleware which validates JWT and sets res.locals.tenantAuth
    */
-  router.get('/me', async (req: Request, res: Response, next: NextFunction) => {
+  router.get('/me', tenantAuthMiddleware, async (req: Request, res: Response, next: NextFunction) => {
     try {
       const tenantAuth = (res.locals as any).tenantAuth;
 
+      // Middleware guarantees tenantAuth exists, but check for safety
       if (!tenantAuth) {
         res.status(401).json({ error: 'Unauthorized: No tenant authentication' });
         return;

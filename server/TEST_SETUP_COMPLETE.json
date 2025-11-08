@@ -1,0 +1,65 @@
+{
+  "setupSuccess": true,
+  "setupDate": "2025-11-07T19:30:00Z",
+  "testImagePath": "/tmp/test-package-photo.jpg",
+  "testImageSize": 651,
+  "authToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0ZW5hbnRJZCI6ImNtaHA5MWxjdDAwMDBwMGkzaGkzNDdnMHYiLCJzbHVnIjoidGVzdC10ZW5hbnQiLCJlbWFpbCI6InRlc3QtdGVuYW50QGV4YW1wbGUuY29tIiwidHlwZSI6InRlbmFudCIsImlhdCI6MTc2MjU0Mzc2NiwiZXhwIjoxNzYzMTQ4NTY2fQ.DlsXYNAyK0wuaJqkD9k8q0JWZm4DDFJzWFVo_elyWus",
+  "tenantId": "cmhp91lct0000p0i3hi347g0v",
+  "tenantSlug": "test-tenant",
+  "tenantEmail": "test-tenant@example.com",
+  "tenantPassword": "Test123456",
+  "availablePackages": [
+    "cmhp92bir0003p0pihuvlcq8h",
+    "cmhp92b8u0001p0pir2oxczqa"
+  ],
+  "uploadDirExists": true,
+  "uploadDirWritable": true,
+  "errors": [],
+  "testEndpoints": {
+    "login": {
+      "method": "POST",
+      "url": "http://localhost:3001/v1/tenant-auth/login",
+      "body": {
+        "email": "test-tenant@example.com",
+        "password": "Test123456"
+      }
+    },
+    "uploadPackagePhoto": {
+      "method": "POST",
+      "url": "http://localhost:3001/v1/tenant-admin/packages/{packageId}/photos",
+      "headers": {
+        "Authorization": "Bearer {authToken}"
+      },
+      "formDataField": "photo",
+      "maxFileSize": "5MB",
+      "maxPhotosPerPackage": 5,
+      "supportedFormats": ["JPEG", "JPG", "PNG", "SVG", "WebP"]
+    },
+    "listPackages": {
+      "method": "GET",
+      "url": "http://localhost:3001/v1/tenant-admin/packages",
+      "headers": {
+        "Authorization": "Bearer {authToken}"
+      }
+    }
+  },
+  "quickStartExample": {
+    "description": "Example curl command to upload the test photo",
+    "command": "curl -X POST http://localhost:3001/v1/tenant-admin/packages/cmhp92bir0003p0pihuvlcq8h/photos -H 'Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...' -F 'photo=@/tmp/test-package-photo.jpg'"
+  },
+  "environment": {
+    "apiBaseUrl": "http://localhost:3001",
+    "apiPort": 3001,
+    "mode": "database",
+    "uploadDirectory": "/Users/mikeyoung/CODING/Elope/server/uploads/packages",
+    "workingDirectory": "/Users/mikeyoung/CODING/Elope/server"
+  },
+  "verificationResults": {
+    "testImageExists": true,
+    "testImageFormat": "JPEG",
+    "apiResponding": true,
+    "authenticationWorking": true,
+    "packagesCreated": true,
+    "uploadDirWritable": true
+  }
+}

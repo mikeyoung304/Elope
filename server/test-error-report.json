@@ -1,0 +1,108 @@
+{
+  "testsRun": 13,
+  "testsPassed": 4,
+  "testsFailed": 9,
+  "results": [
+    {
+      "test": "Upload without auth token",
+      "expectedStatus": 401,
+      "actualStatus": 401,
+      "status": "PASS",
+      "details": "Correctly rejected unauthorized request"
+    },
+    {
+      "test": "Upload with invalid token",
+      "expectedStatus": 401,
+      "actualStatus": 401,
+      "status": "PASS",
+      "details": "Correctly rejected invalid token"
+    },
+    {
+      "test": "Upload without file",
+      "expectedStatus": 400,
+      "actualStatus": 500,
+      "status": "FAIL",
+      "details": "Wrong error response"
+    },
+    {
+      "test": "Upload file >5MB",
+      "expectedStatus": 413,
+      "actualStatus": 500,
+      "status": "FAIL",
+      "details": "Wrong error response"
+    },
+    {
+      "test": "Upload non-image file",
+      "expectedStatus": 400,
+      "actualStatus": 500,
+      "status": "FAIL",
+      "details": "Wrong error response"
+    },
+    {
+      "test": "Upload to non-existent package",
+      "expectedStatus": 404,
+      "actualStatus": 500,
+      "status": "FAIL",
+      "details": "Wrong error response"
+    },
+    {
+      "test": "Upload 6th photo (exceeds max)",
+      "expectedStatus": 400,
+      "actualStatus": 500,
+      "status": "FAIL",
+      "details": "Wrong error: InternalServerError"
+    },
+    {
+      "test": "Delete non-existent photo",
+      "expectedStatus": 404,
+      "actualStatus": 404,
+      "status": "PASS",
+      "details": "Correctly rejected non-existent photo"
+    },
+    {
+      "test": "Upload to another tenant's package",
+      "expectedStatus": 403,
+      "actualStatus": 500,
+      "status": "FAIL",
+      "details": "SECURITY ISSUE: Cross-tenant upload may be possible"
+    },
+    {
+      "test": "Delete another tenant's photo",
+      "expectedStatus": 403,
+      "actualStatus": 403,
+      "status": "PASS",
+      "details": "Correctly prevented cross-tenant deletion (403 or 404)"
+    },
+    {
+      "test": "Upload with special chars in filename",
+      "expectedStatus": 201,
+      "actualStatus": 500,
+      "status": "FAIL",
+      "details": "May have validation for special characters (acceptable)"
+    },
+    {
+      "test": "Upload 1-byte file",
+      "expectedStatus": 400,
+      "actualStatus": 500,
+      "status": "FAIL",
+      "details": "Edge case: Tiny file accepted (may want min size validation)"
+    },
+    {
+      "test": "Delete same photo twice",
+      "expectedStatus": 404,
+      "actualStatus": 0,
+      "status": "FAIL",
+      "details": "Skipped: Could not upload photos for cleanup test"
+    }
+  ],
+  "securityIssues": [
+    "Cross-tenant photo upload may not be prevented"
+  ],
+  "validationGaps": [
+    "Missing file validation not enforced",
+    "File size limit (5MB) not enforced",
+    "File type validation not enforced",
+    "Maximum 5 photos limit not enforced"
+  ],
+  "summary": "4/13 error cases handled correctly"
+}

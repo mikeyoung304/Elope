@@ -18,13 +18,19 @@ model User {
   name         String?
   passwordHash String
   role         UserRole @default(USER)
+  tenantId     String? // For TENANT_ADMIN users
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
+  tenant       Tenant?  @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId])
 }
 
 enum UserRole {
   USER
   ADMIN
+  PLATFORM_ADMIN
+  TENANT_ADMIN
 }
 
 // Multi-tenant model - each tenant is an independent wedding business
@@ -62,6 +68,7 @@ model Tenant {
   updatedAt DateTime @updatedAt
 
   // Relations
+  users         User[] // Tenant admin users
   packages      Package[]
   addOns        AddOn[]
   bookings      Booking[]
@@ -97,24 +104,24 @@ model Venue {
 }
 
 model Package {
-  id          String         @id @default(cuid())
+  id          String  @id @default(cuid())
   tenantId    String // Tenant isolation
   slug        String
   name        String
   description String?
   basePrice   Int
-  active      Boolean        @default(true)
+  active      Boolean @default(true)
 
   // Photo Gallery - Array of photo objects
   // Structure: [{url: string, filename: string, size: number, order: number}]
   // Max 5 photos per package, order determines display sequence
-  photos      Json           @default("[]")
+  photos Json @default("[]")
 
-  createdAt   DateTime       @default(now())
-  updatedAt   DateTime       @updatedAt
-  tenant      Tenant         @relation(fields: [tenantId], references: [id], onDelete: Cascade)
-  addOns      PackageAddOn[]
-  bookings    Booking[]
+  createdAt DateTime       @default(now())
+  updatedAt DateTime       @updatedAt
+  tenant    Tenant         @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  addOns    PackageAddOn[]
+  bookings  Booking[]
 
   @@unique([tenantId, slug]) // Each tenant has unique package slugs
   @@index([tenantId, active])

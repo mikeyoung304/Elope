@@ -37,6 +37,22 @@ export function createTenantAuthMiddleware(tenantAuthService: TenantAuthService)
       // Verify token and extract payload
       const payload: TenantTokenPayload = tenantAuthService.verifyToken(token);
 
+      // SECURITY: Validate token type - reject admin tokens on tenant routes
+      // Tenant tokens MUST have 'type' field set to 'tenant'
+      // Admin tokens have 'role' field instead of 'type'
+      if (!payload.type || payload.type !== 'tenant') {
+        throw new UnauthorizedError(
+          'Invalid token type: only tenant tokens are allowed for tenant routes'
+        );
+      }
+
+      // SECURITY: Validate required tenant fields are present
+      if (!payload.tenantId || !payload.slug) {
+        throw new UnauthorizedError(
+          'Invalid token: missing required tenant context (tenantId, slug)'
+        );
+      }
+
       // Attach tenant context to res.locals for use in controllers
       res.locals.tenantAuth = payload;
 

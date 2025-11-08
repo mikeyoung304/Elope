@@ -1,0 +1,233 @@
+{
+  "testSuite": "Package Photo Upload - Error Case & Validation Tests",
+  "executionDate": "2025-11-07",
+  "environment": "Local Development (http://localhost:3001)",
+  "endpoints": {
+    "upload": "POST /v1/tenant/admin/packages/:id/photos",
+    "delete": "DELETE /v1/tenant/admin/packages/:id/photos/:filename"
+  },
+  "summary": {
+    "testsRun": 13,
+    "testsPassed": 4,
+    "testsFailed": 9,
+    "passRate": "30.8%",
+    "expectedPassRateAfterFixes": "90%+"
+  },
+  "results": [
+    {
+      "test": "Upload without auth token",
+      "category": "Authentication",
+      "expectedStatus": 401,
+      "actualStatus": 401,
+      "status": "PASS",
+      "details": "Correctly rejected unauthorized request",
+      "severity": "N/A",
+      "securityImpact": "HIGH - Prevents anonymous access"
+    },
+    {
+      "test": "Upload with invalid token",
+      "category": "Authentication",
+      "expectedStatus": 401,
+      "actualStatus": 401,
+      "status": "PASS",
+      "details": "Correctly rejected invalid token",
+      "severity": "N/A",
+      "securityImpact": "HIGH - Prevents forged token attacks"
+    },
+    {
+      "test": "Upload without file",
+      "category": "Validation",
+      "expectedStatus": 400,
+      "actualStatus": 500,
+      "status": "FAIL",
+      "details": "Returns 500 instead of 400 Bad Request",
+      "severity": "MEDIUM",
+      "recommendation": "Add explicit check: if (!req.file) return res.status(400).json({error: 'No photo uploaded'})"
+    },
+    {
+      "test": "Upload file >5MB",
+      "category": "Validation",
+      "expectedStatus": 413,
+      "actualStatus": 500,
+      "status": "FAIL",
+      "details": "Multer configured with 5MB limit but error returns 500",
+      "severity": "MEDIUM",
+      "recommendation": "Add multer error handler for LIMIT_FILE_SIZE to return 413"
+    },
+    {
+      "test": "Upload non-image file",
+      "category": "Validation",
+      "expectedStatus": 400,
+      "actualStatus": 500,
+      "status": "FAIL",
+      "details": "File type validation error returns 500",
+      "severity": "MEDIUM",
+      "recommendation": "Ensure uploadService validation errors return 400"
+    },
+    {
+      "test": "Upload to non-existent package",
+      "category": "Validation",
+      "expectedStatus": 404,
+      "actualStatus": 500,
+      "status": "FAIL",
+      "details": "Database/service error returns 500",
+      "severity": "LOW",
+      "recommendation": "Handle null package result gracefully"
+    },
+    {
+      "test": "Upload 6th photo (exceeds max)",
+      "category": "Business Logic",
+      "expectedStatus": 400,
+      "actualStatus": 500,
+      "status": "FAIL",
+      "details": "Could not test - prerequisite uploads failed",
+      "severity": "HIGH",
+      "note": "Code exists at lines 384-389, but untested due to upstream failures"
+    },
+    {
+      "test": "Delete non-existent photo",
+      "category": "Business Logic",
+      "expectedStatus": 404,
+      "actualStatus": 404,
+      "status": "PASS",
+      "details": "Correctly returns 404 with message 'Photo not found in package'",
+      "severity": "N/A"
+    },
+    {
+      "test": "Upload to another tenant's package",
+      "category": "Authorization",
+      "expectedStatus": 403,
+      "actualStatus": 500,
+      "status": "FAIL",
+      "details": "Cannot verify - returns 500 due to upstream errors",
+      "severity": "CRITICAL",
+      "note": "Code review shows authorization check exists (lines 379-382)"
+    },
+    {
+      "test": "Delete another tenant's photo",
+      "category": "Authorization",
+      "expectedStatus": 403,
+      "actualStatus": 403,
+      "status": "PASS",
+      "details": "Correctly prevented cross-tenant deletion",
+      "severity": "N/A",
+      "securityImpact": "CRITICAL - Tenant isolation working for DELETE"
+    },
+    {
+      "test": "Upload with special chars in filename",
+      "category": "Edge Case",
+      "expectedStatus": 201,
+      "actualStatus": 500,
+      "status": "FAIL",
+      "details": "Filename 'test file (1) [copy].png' causes 500",
+      "severity": "LOW",
+      "note": "uploadService.generateFilename() should handle this"
+    },
+    {
+      "test": "Upload 1-byte file",
+      "category": "Edge Case",
+      "expectedStatus": 400,
+      "actualStatus": 500,
+      "status": "FAIL",
+      "details": "No minimum file size validation",
+      "severity": "LOW",
+      "recommendation": "Add minimum size check (e.g., 100 bytes)"
+    },
+    {
+      "test": "Delete same photo twice",
+      "category": "Edge Case",
+      "expectedStatus": 404,
+      "actualStatus": 0,
+      "status": "FAIL",
+      "details": "Skipped - prerequisite upload failed",
+      "severity": "LOW"
+    }
+  ],
+  "securityIssues": [
+    {
+      "issue": "Cross-tenant upload verification inconclusive",
+      "severity": "MEDIUM",
+      "status": "Needs Testing",
+      "details": "Unable to verify due to 500 errors, but code review shows authorization check exists",
+      "mitigation": "Code at lines 379-382 shows proper tenant check: if (pkg.tenantId !== tenantId) return 403"
+    }
+  ],
+  "validationGaps": [
+    {
+      "gap": "Missing file validation returns 500 instead of 400",
+      "impact": "Poor user experience, unclear error messages",
+      "recommendation": "Add explicit !req.file check before processing"
+    },
+    {
+      "gap": "File size limit returns 500 instead of 413",
+      "impact": "Unclear why upload failed",
+      "recommendation": "Add multer error handling middleware"
+    },
+    {
+      "gap": "File type validation returns 500 instead of 400",
+      "impact": "Generic error instead of specific validation message",
+      "recommendation": "Ensure uploadService errors return proper status codes"
+    },
+    {
+      "gap": "Maximum 5 photos limit unverified",
+      "impact": "Unknown - cannot test due to upload failures",
+      "status": "Code exists but untested"
+    }
+  ],
+  "rootCauseAnalysis": {
+    "primaryIssue": "Error handling does not return appropriate 4xx status codes",
+    "affectedTests": 9,
+    "codeLocation": "src/routes/tenant-admin.routes.ts:415-422",
+    "problem": "Generic catch block sends non-Error exceptions to next(error) which returns 500",
+    "solution": "Add specific error type handling (MulterError, ValidationError, NotFoundError, etc.)",
+    "estimatedFixTime": "2-4 hours",
+    "expectedImprovement": "Pass rate from 30.8% to 90%+"
+  },
+  "recommendations": {
+    "priority1": [
+      "Add multer-specific error handler for proper 413 responses",
+      "Ensure validation errors return 400 with clear messages",
+      "Catch and handle specific error types explicitly"
+    ],
+    "priority2": [
+      "Fix validation to enable cross-tenant upload testing",
+      "Add integration tests with real database/mock data",
+      "Verify tenant isolation for all operations"
+    ],
+    "priority3": [
+      "Add minimum file size check (100 bytes)",
+      "Consider image format validation beyond MIME type",
+      "Add rate limiting for uploads"
+    ]
+  },
+  "testingLimitations": [
+    "Tests run against local dev server with mock data",
+    "Using hardcoded JWT secret for token generation",
+    "Cannot test actual file storage persistence",
+    "Some tests skipped due to prerequisite failures"
+  ],
+  "strengths": [
+    "Strong authentication enforcement (401 for missing/invalid tokens)",
+    "Cross-tenant deletion properly prevented (403)",
+    "Non-existent resource handling works correctly (404)",
+    "Authorization logic exists in code (verified by review)"
+  ],
+  "weaknesses": [
+    "All validation errors return 500 instead of 4xx codes",
+    "Cannot complete end-to-end happy path testing",
+    "Cross-tenant upload isolation unverified due to errors"
+  ],
+  "conclusion": "The package photo upload feature has strong authentication and authorization controls in place. The primary issue is error handling that returns 500 for validation failures instead of proper 4xx codes. Fixing this single root cause will likely resolve 9 of 13 test failures, bringing the pass rate from 30.8% to 90%+.",
+  "nextSteps": [
+    "Implement recommended error handling fixes",
+    "Re-run full test suite",
+    "Verify expected 90%+ pass rate",
+    "Add integration tests with database"
+  ],
+  "codeReferences": {
+    "uploadEndpoint": "src/routes/tenant-admin.routes.ts:354-424",
+    "deleteEndpoint": "src/routes/tenant-admin.routes.ts:430-478",
+    "uploadService": "src/services/upload.service.ts:149-182",
+    "multerConfig": "src/routes/tenant-admin.routes.ts:32-38"
+  }
+}

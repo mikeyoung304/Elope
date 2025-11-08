@@ -36,6 +36,22 @@ export function createAuthMiddleware(identityService: IdentityService) {
       // Verify token and extract payload
       const payload: TokenPayload = identityService.verifyToken(token);
 
+      // SECURITY: Validate token type - reject tenant tokens on admin routes
+      // Tenant tokens have a 'type' field set to 'tenant'
+      // Admin tokens have a 'role' field set to 'admin'
+      if ('type' in payload && (payload as any).type === 'tenant') {
+        throw new UnauthorizedError(
+          'Invalid token type: tenant tokens are not allowed for admin routes'
+        );
+      }
+
+      // SECURITY: Validate admin role is present
+      if (!payload.role || payload.role !== 'admin') {
+        throw new UnauthorizedError(
+          'Invalid token: admin role required for admin routes'
+        );
+      }
+
       // Attach admin user to res.locals for use in controllers
       res.locals.admin = payload;
 
