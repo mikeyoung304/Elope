@@ -136,6 +136,25 @@ export function createV1Router(
       }
     },
 
+    tenantLogin: async ({ req, body }: { req: any; body: { email: string; password: string } }) => {
+      const ipAddress = req.ip || req.socket.remoteAddress || 'unknown';
+      try {
+        if (!services) {
+          throw new Error('Tenant auth service not available');
+        }
+        const data = await services.tenantAuth.login(body.email, body.password);
+        return { status: 200 as const, body: data };
+      } catch (error) {
+        logger.warn({
+          event: 'tenant_login_failed',
+          endpoint: '/v1/tenant-auth/login',
+          email: body.email,
+          ipAddress,
+        }, 'Failed tenant login attempt');
+        throw error;
+      }
+    },
+
     adminGetBookings: async () => {
       // Auth middleware applied via app.use('/v1/admin/bookings', authMiddleware)
       const data = await controllers.admin.getBookings();
@@ -194,7 +213,7 @@ export function createV1Router(
     globalMiddleware: [
       (req, res, next) => {
         // Apply strict rate limiting to login endpoints
-        if (req.path === '/v1/admin/login' && req.method === 'POST') {
+        if ((req.path === '/v1/admin/login' || req.path === '/v1/tenant-auth/login') && req.method === 'POST') {
           return loginLimiter(req, res, next);
         }
         // Public API routes (packages, bookings, availability, tenant) require tenant
