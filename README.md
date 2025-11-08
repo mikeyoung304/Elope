@@ -20,14 +20,16 @@
 - **Multi-Tenant Architecture** - Support up to 50 independent wedding businesses with complete data isolation
 - **Tenant API Keys** - Secure authentication via X-Tenant-Key header (pk_live_slug_xxx format)
 - **Variable Commission Rates** - Per-tenant commission rates (10-15%) via Stripe Connect
+- **Unified Authentication** - Role-based access control with Platform Admin and Tenant Admin roles
+- **Package Photo Upload** - Upload up to 5 photos per package with drag-and-drop UI
 - **Online Booking System** - Customers browse packages and book their wedding date in minutes
 - **Stripe Payment Integration** - Secure checkout with automatic booking confirmation
 - **Availability Management** - Real-time date availability with Google Calendar integration
-- **Admin Dashboard** - Manage bookings, packages, add-ons, and blackout dates
+- **Admin Dashboards** - Separate Platform Admin and Tenant Admin dashboards with full CRUD operations
 - **Email Notifications** - Automatic booking confirmations via Postmark
 - **Double-Booking Prevention** - Database-level constraints and pessimistic locking
 - **Webhook Reliability** - Idempotent webhook processing with automatic retries
-- **Security-First** - Login rate limiting, encrypted secrets, structured security logging
+- **Security-First** - Login rate limiting, JWT validation, bcrypt hashing, encrypted secrets, structured security logging
 
 ### Target Users
 
@@ -60,20 +62,22 @@ Tenant admins currently have self-service access to:
 - ❌ **Content Customization** - No copy/messaging control (0% complete)
 - ❌ **Email Templates** - Generic platform emails only (0% complete)
 
-**Latest Update (Nov 7, 2024):**
-Phase 5.1 backend complete - Package photo upload API implemented with:
-- Database: photos JSON column on Package model
-- API: POST/DELETE endpoints for photo management (max 5 per package)
-- Upload: 5MB limit, separate /uploads/packages/ directory
-- Security: Tenant ownership verification enforced
+**Latest Update (Nov 7, 2025):**
+Major release v1.1.0 - Unified authentication, package photo upload, and security enhancements:
+- **Unified Auth System**: Single login with role-based routing (Platform/Tenant Admins)
+- **Photo Upload**: Complete frontend + backend implementation with drag-and-drop UI
+- **Security Fixes**: Login rate limiting, cross-authentication vulnerability patched
+- **Dashboards**: New Platform Admin and Tenant Admin dashboards with full CRUD
+- **Database**: photos JSON column, user roles, tenant relationships
 
-**Roadmap:** See [MULTI_TENANT_ROADMAP.md](./docs/multi-tenant/MULTI_TENANT_ROADMAP.md) for the phased plan to achieve full self-service.
+**Roadmap:** See [MULTI_TENANT_ROADMAP.md](./docs/multi-tenant/MULTI_TENANT_ROADMAP.md) and [CHANGELOG.md](./CHANGELOG.md) for detailed changes.
 
 **Phase 5 Current Sprint (Next 1-2 weeks):**
-1. ✅ Package Photo Upload Backend (COMPLETE - Nov 7)
-2. 🔄 Package Photo Upload Frontend (IN PROGRESS)
-3. ⏳ Add-On Management (NEXT)
-4. ⏳ Email Template Customization (UPCOMING)
+1. ✅ Package Photo Upload Backend (COMPLETE - Nov 7, 2025)
+2. ✅ Package Photo Upload Frontend (COMPLETE - Nov 7, 2025)
+3. ✅ Unified Authentication System (COMPLETE - Nov 7, 2025)
+4. ⏳ Add-On Management (NEXT)
+5. ⏳ Email Template Customization (UPCOMING)
 
 **Goal:** By end of Phase 5, tenants can manage complete service catalogs independently with zero platform admin support for routine operations.
 
