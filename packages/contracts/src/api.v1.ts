@@ -17,6 +17,7 @@ import {
   UpdateAddOnDtoSchema,
   AddOnDtoSchema,
   TenantBrandingDtoSchema,
+  TenantDtoSchema,
 } from './dto';
 
 const c = initContract();
@@ -139,6 +140,15 @@ export const Contracts = c.router({
       }),
     },
     summary: 'Platform admin login',
+  },
+
+  platformGetAllTenants: {
+    method: 'GET',
+    path: '/v1/admin/tenants',
+    responses: {
+      200: z.array(TenantDtoSchema),
+    },
+    summary: 'Get all tenants (requires platform admin authentication)',
   },
 
   adminGetBookings: {

@@ -22,6 +22,7 @@ import { AdminPackagesController } from './routes/admin-packages.routes';
 import { TenantController } from './routes/tenant.routes';
 import { TenantAuthController } from './routes/tenant-auth.routes';
 import { DevController } from './routes/dev.routes';
+import { PlatformAdminController } from './controllers/platform-admin.controller';
 import { buildMockAdapters } from './adapters/mock';
 import { PrismaClient } from './generated/prisma';
 import {
@@ -46,6 +47,7 @@ export interface Container {
     admin: AdminController;
     blackouts: BlackoutsController;
     adminPackages: AdminPackagesController;
+    platformAdmin: PlatformAdminController;
     tenant: TenantController;
     tenantAuth: TenantAuthController;
     dev?: DevController;
@@ -114,6 +116,7 @@ export function buildContainer(config: Config): Container {
       admin: new AdminController(identityService, bookingService),
       blackouts: new BlackoutsController(adapters.blackoutRepo),
       adminPackages: new AdminPackagesController(catalogService),
+      platformAdmin: new PlatformAdminController(mockPrisma),
       tenant: new TenantController(mockTenantRepo),
       tenantAuth: new TenantAuthController(tenantAuthService),
       dev: new DevController(bookingService, adapters.catalogRepo),
@@ -258,6 +261,7 @@ export function buildContainer(config: Config): Container {
     admin: new AdminController(identityService, bookingService),
     blackouts: new BlackoutsController(blackoutRepo),
     adminPackages: new AdminPackagesController(catalogService),
+    platformAdmin: new PlatformAdminController(prisma),
     tenant: new TenantController(tenantRepo),
     tenantAuth: new TenantAuthController(tenantAuthService),
     // No dev controller in real mode

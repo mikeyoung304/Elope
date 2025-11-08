@@ -114,7 +114,8 @@ export function isTokenExpired(token: string): boolean {
 export function isPlatformAdminPayload(
   payload: TokenPayload
 ): payload is PlatformAdminTokenPayload {
-  return 'role' in payload && payload.role === 'admin';
+  // Handle both 'admin' (mock) and 'ADMIN' (database enum) values
+  return 'role' in payload && (payload.role === 'admin' || payload.role === 'ADMIN');
 }
 
 /**

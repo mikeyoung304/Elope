@@ -68,14 +68,14 @@ export const api = initClient(Contracts, {
   baseUrl,
   baseHeaders: {},
   api: async ({ path, method, headers, body }) => {
-    // Build headers dynamically
-    const authHeaders: Record<string, string> = { ...headers };
+    // Build headers dynamically - start with ts-rest's headers (includes Content-Type)
+    const requestHeaders: Record<string, string> = { ...headers };
 
     // Inject auth token for admin routes
     if (path.startsWith("/v1/admin")) {
       const token = localStorage.getItem("adminToken");
       if (token) {
-        authHeaders["Authorization"] = `Bearer ${token}`;
+        requestHeaders["Authorization"] = `Bearer ${token}`;
       }
     }
 
@@ -83,23 +83,21 @@ export const api = initClient(Contracts, {
     if (path.startsWith("/v1/tenant")) {
       const token = tenantToken || localStorage.getItem("tenantToken");
       if (token) {
-        authHeaders["Authorization"] = `Bearer ${token}`;
+        requestHeaders["Authorization"] = `Bearer ${token}`;
       }
     }
 
     // Inject tenant key for multi-tenant mode (widget)
     if (tenantApiKey) {
-      authHeaders["X-Tenant-Key"] = tenantApiKey;
+      requestHeaders["X-Tenant-Key"] = tenantApiKey;
     }
 
-    // ts-rest provides the full URL in 'path', so use it directly
+    // ts-rest v3.x already serializes the body and sets Content-Type
+    // Don't add duplicate headers or double-stringify
     const response = await fetch(path, {
       method,
-      headers: {
-        ...authHeaders,
-        "Content-Type": "application/json",
-      },
-      body: body ? JSON.stringify(body) : undefined,
+      headers: requestHeaders,
+      body: body,
     });
 
     return {

@@ -155,6 +155,12 @@ export function createV1Router(
       }
     },
 
+    platformGetAllTenants: async () => {
+      // Auth middleware applied via app.use('/v1/admin/tenants', authMiddleware)
+      const data = await controllers.platformAdmin.getAllTenants();
+      return { status: 200 as const, body: data };
+    },
+
     adminGetBookings: async () => {
       // Auth middleware applied via app.use('/v1/admin/bookings', authMiddleware)
       const data = await controllers.admin.getBookings();
