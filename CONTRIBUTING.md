@@ -80,7 +80,7 @@ Before you begin, ensure you have the following installed:
    DATABASE_URL="postgresql://username:password@localhost:5432/elope_dev?schema=public"
    ```
 
-   See [SUPABASE.md](./SUPABASE.md) for cloud database setup or [DEVELOPING.md](./DEVELOPING.md) for more details.
+   See [SUPABASE.md](./docs/setup/SUPABASE.md) for cloud database setup or [DEVELOPING.md](./DEVELOPING.md) for more details.
 
 5. **Run Prisma migrations**
 
@@ -641,7 +641,7 @@ When requesting a feature, include:
 - [TESTING.md](./TESTING.md) - Detailed testing guide
 - [ARCHITECTURE.md](./ARCHITECTURE.md) - System architecture overview
 - [CODING_GUIDELINES.md](./CODING_GUIDELINES.md) - Coding standards and patterns
-- [SUPABASE.md](./SUPABASE.md) - Database setup and management
+- [SUPABASE.md](./docs/setup/SUPABASE.md) - Database setup and management
 - [DECISIONS.md](./DECISIONS.md) - Architectural decision records (ADRs)
 
 ## Thank You!

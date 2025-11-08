@@ -551,10 +551,10 @@ REDIS_URL=redis://localhost:6379
 - Ensures same IP always routes to same server
 
 **Security Documentation:**
-- [SECURITY.md](./SECURITY.md) - Complete security documentation
-- [SECRET_ROTATION_GUIDE.md](./SECRET_ROTATION_GUIDE.md) - Secret rotation procedures
-- [IMMEDIATE_SECURITY_ACTIONS.md](./IMMEDIATE_SECURITY_ACTIONS.md) - Urgent action items
-- [server/LOGIN_RATE_LIMITING.md](./server/LOGIN_RATE_LIMITING.md) - Rate limiting implementation
+- [SECURITY.md](../security/SECURITY.md) - Complete security documentation
+- [SECRET_ROTATION_GUIDE.md](../security/SECRET_ROTATION_GUIDE.md) - Secret rotation procedures
+- [IMMEDIATE_SECURITY_ACTIONS.md](../security/IMMEDIATE_SECURITY_ACTIONS.md) - Urgent action items
+- [server/LOGIN_RATE_LIMITING.md](../../server/LOGIN_RATE_LIMITING.md) - Rate limiting implementation
 
 ---
 

@@ -67,7 +67,7 @@ Phase 5.1 backend complete - Package photo upload API implemented with:
 - Upload: 5MB limit, separate /uploads/packages/ directory
 - Security: Tenant ownership verification enforced
 
-**Roadmap:** See [MULTI_TENANT_ROADMAP.md](./MULTI_TENANT_ROADMAP.md) for the phased plan to achieve full self-service.
+**Roadmap:** See [MULTI_TENANT_ROADMAP.md](./docs/multi-tenant/MULTI_TENANT_ROADMAP.md) for the phased plan to achieve full self-service.
 
 **Phase 5 Current Sprint (Next 1-2 weeks):**
 1. ✅ Package Photo Upload Backend (COMPLETE - Nov 7)
@@ -91,7 +91,7 @@ Elope is built as a **multi-tenant modular monolith** with clear boundaries and 
 - **Mock-first development**: Build end-to-end with in-memory adapters, then swap to real providers
 - **Bulletproof by default**: Strict TypeScript, Zod validation, comprehensive error handling
 
-Learn more: [ARCHITECTURE.md](./ARCHITECTURE.md) | [MULTI_TENANT_IMPLEMENTATION_GUIDE.md](./MULTI_TENANT_IMPLEMENTATION_GUIDE.md)
+Learn more: [ARCHITECTURE.md](./ARCHITECTURE.md) | [MULTI_TENANT_IMPLEMENTATION_GUIDE.md](./docs/multi-tenant/MULTI_TENANT_IMPLEMENTATION_GUIDE.md)
 
 ---
 
@@ -318,10 +318,10 @@ stripe listen --forward-to localhost:3001/v1/webhooks/stripe  # Terminal 3: Webh
 ```
 
 **Setup guides:**
-- Database: [SUPABASE.md](./SUPABASE.md)
-- Stripe: [RUNBOOK.md § Stripe Local Testing](./RUNBOOK.md#stripe-local-testing)
-- Email: [RUNBOOK.md § Email (Postmark)](./RUNBOOK.md#email-postmark)
-- Calendar: [RUNBOOK.md § Google Calendar](./RUNBOOK.md#google-calendar-integration)
+- Database: [SUPABASE.md](./docs/setup/SUPABASE.md)
+- Stripe: [RUNBOOK.md § Stripe Local Testing](./docs/operations/RUNBOOK.md#stripe-local-testing)
+- Email: [RUNBOOK.md § Email (Postmark)](./docs/operations/RUNBOOK.md#email-postmark)
+- Calendar: [RUNBOOK.md § Google Calendar](./docs/operations/RUNBOOK.md#google-calendar-integration)
 
 ### Create Your First Tenant
 
@@ -381,7 +381,7 @@ npm test
    - [ARCHITECTURE.md](./ARCHITECTURE.md) - System design and patterns
    - [DEVELOPING.md](./DEVELOPING.md) - Development workflow
    - [TESTING.md](./TESTING.md) - Testing strategy
-   - [INCIDENT_RESPONSE.md](./INCIDENT_RESPONSE.md) - Production runbook
+   - [INCIDENT_RESPONSE.md](./docs/operations/INCIDENT_RESPONSE.md) - Production runbook
 
 ### Troubleshooting
 
@@ -429,7 +429,7 @@ curl http://localhost:3001/health
 # Clear browser cache and hard reload
 ```
 
-Still stuck? See [RUNBOOK.md](./RUNBOOK.md) for detailed troubleshooting.
+Still stuck? See [RUNBOOK.md](./docs/operations/RUNBOOK.md) for detailed troubleshooting.
 
 ---
 
@@ -485,7 +485,7 @@ Elope offers an embeddable booking widget that tenants can add to their existing
 - Dark mode support
 
 **Learn More:**
-- **[WIDGET_INTEGRATION_GUIDE.md](./WIDGET_INTEGRATION_GUIDE.md)** - Complete integration documentation
+- **[WIDGET_INTEGRATION_GUIDE.md](./docs/roadmaps/WIDGET_INTEGRATION_GUIDE.md)** - Complete integration documentation
 - **[examples/widget-demo.html](./examples/widget-demo.html)** - Live example with both modes
 
 ---
@@ -494,31 +494,31 @@ Elope offers an embeddable booking widget that tenants can add to their existing
 
 ### Getting Started
 - **[Quick Start](#quick-start)** - Get up and running in 5 minutes
-- **[WIDGET_INTEGRATION_GUIDE.md](./WIDGET_INTEGRATION_GUIDE.md)** - Embed the booking widget on your website
+- **[WIDGET_INTEGRATION_GUIDE.md](./docs/roadmaps/WIDGET_INTEGRATION_GUIDE.md)** - Embed the booking widget on your website
 - **[DEVELOPING.md](./DEVELOPING.md)** - Development workflow and conventions
 - **[TESTING.md](./TESTING.md)** - Testing strategy and guidelines
-- **[API_DOCS_QUICKSTART.md](./API_DOCS_QUICKSTART.md)** - Interactive API documentation
+- **[API_DOCS_QUICKSTART.md](./docs/api/API_DOCS_QUICKSTART.md)** - Interactive API documentation
 
 ### Architecture & Design
 - **[ARCHITECTURE.md](./ARCHITECTURE.md)** - System architecture, patterns, and data flow
-- **[MULTI_TENANT_IMPLEMENTATION_GUIDE.md](./MULTI_TENANT_IMPLEMENTATION_GUIDE.md)** - Multi-tenant architecture guide
-- **[MULTI_TENANT_ROADMAP.md](./MULTI_TENANT_ROADMAP.md)** - Phased plan for tenant self-service features
-- **[PHASE_5_IMPLEMENTATION_SPEC.md](./PHASE_5_IMPLEMENTATION_SPEC.md)** - Technical specs for Priority 1 features
+- **[MULTI_TENANT_IMPLEMENTATION_GUIDE.md](./docs/multi-tenant/MULTI_TENANT_IMPLEMENTATION_GUIDE.md)** - Multi-tenant architecture guide
+- **[MULTI_TENANT_ROADMAP.md](./docs/multi-tenant/MULTI_TENANT_ROADMAP.md)** - Phased plan for tenant self-service features
+- **[PHASE_5_IMPLEMENTATION_SPEC.md](./docs/phases/PHASE_5_IMPLEMENTATION_SPEC.md)** - Technical specs for Priority 1 features
 - **[DECISIONS.md](./DECISIONS.md)** - Architectural Decision Records (ADRs)
-- **[SUPABASE.md](./SUPABASE.md)** - Database setup and integration guide
+- **[SUPABASE.md](./docs/setup/SUPABASE.md)** - Database setup and integration guide
 
 ### Operations & Production
-- **[RUNBOOK.md](./RUNBOOK.md)** - Operational procedures and local testing
-- **[INCIDENT_RESPONSE.md](./INCIDENT_RESPONSE.md)** - Production incident response playbook
-- **[ENVIRONMENT.md](./ENVIRONMENT.md)** - Environment variables reference
-- **[SECRETS.md](./SECRETS.md)** - Secret management and rotation procedures
-- **[SECURITY.md](./SECURITY.md)** - Security best practices and guardrails
-- **[SECRET_ROTATION_GUIDE.md](./SECRET_ROTATION_GUIDE.md)** - Complete guide for rotating secrets
-- **[IMMEDIATE_SECURITY_ACTIONS.md](./IMMEDIATE_SECURITY_ACTIONS.md)** - Urgent security action items
+- **[RUNBOOK.md](./docs/operations/RUNBOOK.md)** - Operational procedures and local testing
+- **[INCIDENT_RESPONSE.md](./docs/operations/INCIDENT_RESPONSE.md)** - Production incident response playbook
+- **[ENVIRONMENT.md](./docs/setup/ENVIRONMENT.md)** - Environment variables reference
+- **[SECRETS.md](./docs/security/SECRETS.md)** - Secret management and rotation procedures
+- **[SECURITY.md](./docs/security/SECURITY.md)** - Security best practices and guardrails
+- **[SECRET_ROTATION_GUIDE.md](./docs/security/SECRET_ROTATION_GUIDE.md)** - Complete guide for rotating secrets
+- **[IMMEDIATE_SECURITY_ACTIONS.md](./docs/security/IMMEDIATE_SECURITY_ACTIONS.md)** - Urgent security action items
 
 ### Migration & Project History
-- **[PHASE_1_COMPLETION_REPORT.md](./PHASE_1_COMPLETION_REPORT.md)** - Phase 1: Multi-tenant foundation
-- **[PHASE_2B_COMPLETION_REPORT.md](./PHASE_2B_COMPLETION_REPORT.md)** - Phase 2B completion summary
+- **[PHASE_1_COMPLETION_REPORT.md](./docs/phases/PHASE_1_COMPLETION_REPORT.md)** - Phase 1: Multi-tenant foundation
+- **[PHASE_2B_COMPLETION_REPORT.md](./docs/phases/PHASE_2B_COMPLETION_REPORT.md)** - Phase 2B completion summary
 
 ---
 
@@ -573,7 +573,7 @@ Before deploying to production:
 - [ ] Monitoring and alerting set up
 - [ ] Backup strategy in place (Supabase auto-backups enabled)
 - [ ] SSL/TLS certificates configured
-- [ ] Review [INCIDENT_RESPONSE.md](./INCIDENT_RESPONSE.md)
+- [ ] Review [INCIDENT_RESPONSE.md](./docs/operations/INCIDENT_RESPONSE.md)
 
 ### Docker Deployment
 
@@ -613,7 +613,7 @@ LOG_LEVEL=warn
 DATABASE_URL=<production-db>
 ```
 
-See [RUNBOOK.md](./RUNBOOK.md) for detailed production operations.
+See [RUNBOOK.md](./docs/operations/RUNBOOK.md) for detailed production operations.
 
 ---
 

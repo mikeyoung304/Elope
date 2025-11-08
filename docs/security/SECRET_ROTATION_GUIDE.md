@@ -433,6 +433,39 @@ echo "5. Verify all integrations"
 
 ---
 
+## Rotation History
+
+Track all secret rotations in this table:
+
+| Secret | Last Rotation | Next Rotation | Rotated By | Notes |
+|--------|---------------|---------------|------------|-------|
+| JWT_SECRET | 2025-10-29 | 2026-01-29 (90 days) | Agent 2 | Security audit baseline |
+| Stripe Test Keys | Pending | ASAP | - | User action required |
+| Stripe Prod Keys | N/A | Before prod | - | Not yet in use |
+| Database Password | N/A | Optional | - | Protected by .env |
+| Supabase Keys | N/A | On compromise | - | Anon key safe client-side |
+
+**Note:** NEVER record actual secret values in this document. Track only metadata.
+
+---
+
+## Git History Verification
+
+### Last Audit: 2025-10-29
+
+**Status:** `.env` never committed to git ✅
+
+**Files Checked:**
+- `server/.env` - Never in git history
+- `apps/api/.env` - Never in git history
+- `.env.example` - Only placeholders
+
+**Commits Audited:** All major commits checked for exposed secrets
+
+**Important:** While `.env` is protected, be aware that secrets may appear in other documentation files. Always audit git history before public release.
+
+---
+
 ## Questions?
 
 If you have questions about secret rotation or security practices, consult:
@@ -440,4 +473,7 @@ If you have questions about secret rotation or security practices, consult:
 - DevOps engineer
 - Refer to company security policy documentation
 
-**Last Updated:** 2025-11-06
+---
+
+**Document Consolidated:** Phase 1.2 - Merged unique content from SECRETS_ROTATION.md
+**Last Updated:** 2025-11-07

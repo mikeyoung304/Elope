@@ -1,9 +1,30 @@
 # Production Deployment Guide - Vercel + Render
 
+**CONSOLIDATED DEPLOYMENT DOCUMENTATION** - This guide combines deployment instructions for all phases. See git history for previous versions: DEPLOYMENT_INSTRUCTIONS.md, README_DEPLOYMENT.md
+
 **Target:** Deploy Elope application for investor demo
 **Frontend:** Vercel (client)
 **Backend:** Render (API server)
 **Database:** Supabase (already configured)
+
+---
+
+## Phase-Specific Deployment Notes
+
+### Phase 2B Deployment (WebhookEvent Table)
+
+If deploying Phase 2B, you must run the webhook event migration **before** deploying application code.
+
+**Migration File:** `server/prisma/migrations/01_add_webhook_events.sql`
+
+Due to Supabase CLI connection limitations, run this migration manually via Supabase SQL Editor:
+
+1. Navigate to [Supabase SQL Editor](https://supabase.com/dashboard/project/gpyvdknhmevcfdbgtqir/sql)
+2. Copy and paste the migration SQL (see file in migrations directory)
+3. Click "Run" to execute
+4. Verify table creation: `SELECT * FROM "WebhookEvent" LIMIT 1;`
+
+**Expected Result:** Empty table with correct schema (WebhookEvent table with WebhookStatus enum)
 
 ---
 

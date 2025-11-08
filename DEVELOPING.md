@@ -24,9 +24,9 @@ This project is implementing multi-tenant self-service capabilities in phases:
 **Latest Commit:** feat(phase-5.1): Implement package photo upload backend (5688741)
 
 **Key Documents:**
-- [MULTI_TENANT_ROADMAP.md](../MULTI_TENANT_ROADMAP.md) - Comprehensive phased roadmap
-- [PHASE_5_IMPLEMENTATION_SPEC.md](../PHASE_5_IMPLEMENTATION_SPEC.md) - Technical specs for next phase
-- [PHASE_4_TENANT_ADMIN_COMPLETION_REPORT.md](../PHASE_4_TENANT_ADMIN_COMPLETION_REPORT.md) - What was built in Phase 4
+- [MULTI_TENANT_ROADMAP.md](./docs/multi-tenant/MULTI_TENANT_ROADMAP.md) - Comprehensive phased roadmap
+- [PHASE_5_IMPLEMENTATION_SPEC.md](./docs/phases/PHASE_5_IMPLEMENTATION_SPEC.md) - Technical specs for next phase
+- [PHASE_4_TENANT_ADMIN_COMPLETION_REPORT.md](./docs/phases/PHASE_4_TENANT_ADMIN_COMPLETION_REPORT.md) - What was built in Phase 4
 
 **Development Workflow:**
 When implementing new tenant-facing features, follow these principles:
@@ -187,9 +187,9 @@ For production deployments, rotate secrets quarterly:
 4. **TENANT_SECRETS_ENCRYPTION_KEY** - Requires migration script
 
 **See comprehensive guides:**
-- [SECRET_ROTATION_GUIDE.md](./SECRET_ROTATION_GUIDE.md) - Complete rotation procedures
-- [IMMEDIATE_SECURITY_ACTIONS.md](./IMMEDIATE_SECURITY_ACTIONS.md) - Urgent actions checklist
-- [SECURITY.md](./SECURITY.md) - Security best practices
+- [SECRET_ROTATION_GUIDE.md](./docs/security/SECRET_ROTATION_GUIDE.md) - Complete rotation procedures
+- [IMMEDIATE_SECURITY_ACTIONS.md](./docs/security/IMMEDIATE_SECURITY_ACTIONS.md) - Urgent actions checklist
+- [SECURITY.md](./docs/security/SECURITY.md) - Security best practices
 
 ## Repo structure (current)
 
