@@ -52,6 +52,7 @@
 **Current Maturity: Phase 5.1 In Progress (6.5/10)**
 
 Tenant admins currently have self-service access to:
+
 - ✅ **Visual Branding** - Logo, colors, fonts (95% complete)
 - ✅ **Package Management** - Full CRUD for service packages (100% complete)
 - ✅ **Package Photos Backend** - Photo upload API complete, UI pending (50% complete) **NEW**
@@ -64,6 +65,7 @@ Tenant admins currently have self-service access to:
 
 **Latest Update (Nov 7, 2025):**
 Major release v1.1.0 - Unified authentication, package photo upload, and security enhancements:
+
 - **Unified Auth System**: Single login with role-based routing (Platform/Tenant Admins)
 - **Photo Upload**: Complete frontend + backend implementation with drag-and-drop UI
 - **Security Fixes**: Login rate limiting, cross-authentication vulnerability patched
@@ -73,6 +75,7 @@ Major release v1.1.0 - Unified authentication, package photo upload, and securit
 **Roadmap:** See [MULTI_TENANT_ROADMAP.md](./docs/multi-tenant/MULTI_TENANT_ROADMAP.md) and [CHANGELOG.md](./CHANGELOG.md) for detailed changes.
 
 **Phase 5 Current Sprint (Next 1-2 weeks):**
+
 1. ✅ Package Photo Upload Backend (COMPLETE - Nov 7, 2025)
 2. ✅ Package Photo Upload Frontend (COMPLETE - Nov 7, 2025)
 3. ✅ Unified Authentication System (COMPLETE - Nov 7, 2025)
@@ -80,6 +83,112 @@ Major release v1.1.0 - Unified authentication, package photo upload, and securit
 5. ⏳ Email Template Customization (UPCOMING)
 
 **Goal:** By end of Phase 5, tenants can manage complete service catalogs independently with zero platform admin support for routine operations.
+
+---
+
+## Agent-Powered Platform (2025 Transformation)
+
+Starting Sprint 2 (January 2025), Elope is evolving into an **agent-powered, config-driven platform** that enables AI agents to collaborate with human admins in managing tenant configurations.
+
+### What's Changing
+
+**From:** Manual admin updates with hardcoded UI logic
+**To:** AI agents propose config changes, admins approve with one click
+
+### Core Capabilities
+
+**🤖 AI Agent Collaboration**
+
+AI agents can analyze tenant context and propose configuration updates:
+
+- **Seasonal Promotions**: "It's January - should we feature winter elopement packages?"
+- **Display Optimization**: "Package X has low conversion - try reordering it?"
+- **Branding Adjustments**: "Your logo colors could improve accessibility"
+- **Content Refinement**: "Package description could highlight your unique value better"
+
+All agent proposals require **human admin approval** via dashboard UI with diff view.
+
+**⚙️ Configuration as Source of Truth**
+
+Every visual and business logic element controlled by versioned config:
+
+- **Branding**: Colors, fonts, logos (migrating from Tenant table to ConfigVersion)
+- **Package Display**: Visibility, ordering, featured status, seasonal promotions
+- **Display Rules**: Conditional visibility based on date, location, or user context
+- **Widget Layout**: Component ordering, feature toggles, customization
+
+**📝 Audit Trail & Rollback**
+
+Every configuration change is tracked with full audit logging:
+
+- **Before/After Snapshots**: See exactly what changed in each update
+- **User/Agent Attribution**: Know who or what made each change
+- **Timestamps**: Complete change history with millisecond precision
+- **One-Click Rollback**: Restore any previous configuration version instantly
+
+**🎨 Preview/Publish Workflow**
+
+Test configuration changes before going live:
+
+```typescript
+// Draft mode: Preview changes before publishing
+GET /v1/config?versionId=draft_abc123
+
+// Published mode: Live configuration served to production widgets
+GET /v1/config (returns latest published version)
+```
+
+**🔄 Live Widget Updates**
+
+Embedded widgets automatically fetch configuration at runtime:
+
+- **Zero Redeployment**: Config changes reflect instantly in all embedded widgets
+- **PostMessage Hydration**: Parent window can trigger widget refresh
+- **Graceful Fallback**: Default theme/layout if config unavailable
+- **Tenant Branding**: Each widget automatically styled with tenant's config
+
+### Implementation Roadmap
+
+**Sprint 2: Foundation (Security & Type Safety)**
+
+- ✅ **Sprint 1 COMPLETE**: Cache leak fix, branding endpoint, Stripe refund, cache audit
+- ⏳ **Sprint 2.1**: Build ConfigChangeLog table and audit service (full snapshots)
+- ⏳ **Sprint 2.2**: Remove all `as any` casts, add Zod schemas for config types
+- ⏳ **Sprint 2.3**: Build core test suite (unit + integration + E2E, 70% coverage)
+
+**Sprint 3: Versioning Infrastructure**
+
+- Create ConfigVersion database schema (draft/published states)
+- Build config versioning API endpoints (create, publish, rollback)
+- Implement backward compatibility layer with feature flags
+- Add widget config hydration via PostMessage
+
+**Sprint 4: Agent Interface**
+
+- Create AgentProposal table (pending/approved/rejected states)
+- Build agent API endpoints with rate limiting and authentication
+- Create admin proposal review UI with diff view and inline approval
+- Implement display rules configuration (visibility, ordering, grouping)
+- Build end-to-end agent workflow tests
+
+### Security & Safety
+
+**Human-in-the-Loop**: All agent proposals require admin approval before publishing
+
+**Rate Limiting**: Agent API endpoints protected against abuse
+
+**Authentication**: Agent API requires secure credentials separate from tenant keys
+
+**Type Safety**: All config validated with Zod schemas before persistence
+
+**Rollback Protection**: Admins can instantly revert bad changes
+
+### Learn More
+
+- **[ARCHITECTURE.md](./ARCHITECTURE.md)** - Config-driven architecture details
+- **[docs/archive/planning/2025-01-analysis/](./docs/archive/planning/2025-01-analysis/)** - Complete planning documentation
+
+**Status**: Sprint 1 complete (4/4 tasks). Documentation cleanup in progress. Sprint 2 starting soon.
 
 ---
 
@@ -102,6 +211,7 @@ Learn more: [ARCHITECTURE.md](./ARCHITECTURE.md) | [MULTI_TENANT_IMPLEMENTATION_
 ## Tech Stack
 
 ### Backend
+
 - **Runtime**: Node.js 20+
 - **Framework**: Express 4 (HTTP server)
 - **Language**: TypeScript 5.3 (strict mode)
@@ -115,6 +225,7 @@ Learn more: [ARCHITECTURE.md](./ARCHITECTURE.md) | [MULTI_TENANT_IMPLEMENTATION_
 - **Testing**: Vitest (unit + integration tests)
 
 ### Frontend
+
 - **Framework**: React 18
 - **Build Tool**: Vite 6
 - **Language**: TypeScript 5.3
@@ -125,6 +236,7 @@ Learn more: [ARCHITECTURE.md](./ARCHITECTURE.md) | [MULTI_TENANT_IMPLEMENTATION_
 - **API Client**: ts-rest/core (generated from contracts)
 
 ### Infrastructure
+
 - **Database Hosting**: Supabase (PostgreSQL + connection pooling)
 - **Monorepo**: npm workspaces (not pnpm)
 - **Process Manager**: systemd / PM2 / Docker
@@ -219,6 +331,7 @@ elope/
 ```
 
 **Key Design Patterns:**
+
 - **Multi-Tenant Data Isolation**: All database queries scoped by tenantId
 - **Tenant Middleware**: Automatic tenant resolution from API keys on all public routes
 - **Variable Commission Rates**: Per-tenant commission calculated server-side (10-15%)
@@ -279,12 +392,14 @@ npm run dev:client
 ```
 
 **What's mocked:**
+
 - In-memory database (no PostgreSQL needed)
 - Fake Stripe checkout (no payment processing)
 - Console logging instead of email (no Postmark needed)
 - Mock calendar (no Google Calendar needed)
 
 **Test credentials:**
+
 - Admin login: `admin@example.com` / `admin`
 
 ### Option B: Real Mode (Production-Like)
@@ -322,6 +437,7 @@ stripe listen --forward-to localhost:3001/v1/webhooks/stripe  # Terminal 3: Webh
 ```
 
 **Setup guides:**
+
 - Database: [SUPABASE.md](./docs/setup/SUPABASE.md)
 - Stripe: [RUNBOOK.md § Stripe Local Testing](./docs/operations/RUNBOOK.md#stripe-local-testing)
 - Email: [RUNBOOK.md § Email (Postmark)](./docs/operations/RUNBOOK.md#email-postmark)
@@ -390,6 +506,7 @@ npm test
 ### Troubleshooting
 
 **API won't start:**
+
 ```bash
 # Check if port 3001 is already in use
 lsof -i :3001
@@ -400,6 +517,7 @@ npm run doctor
 ```
 
 **Database connection errors:**
+
 ```bash
 # Verify DATABASE_URL is set correctly
 echo $DATABASE_URL
@@ -412,6 +530,7 @@ psql $DATABASE_URL -c "SELECT 1;"
 ```
 
 **Stripe webhooks not working:**
+
 ```bash
 # Verify Stripe CLI is installed and logged in
 stripe --version
@@ -423,6 +542,7 @@ stripe listen --print-secret
 ```
 
 **Client shows API errors:**
+
 ```bash
 # Verify API is running
 curl http://localhost:3001/health
@@ -449,6 +569,7 @@ ADAPTERS_PRESET=real  # PostgreSQL, Stripe, Postmark, Google Calendar
 ```
 
 **Graceful Fallbacks** (in real mode):
+
 - **Postmark** not configured → Emails written to `server/tmp/emails/`
 - **Google Calendar** not configured → All dates show as available (mock)
 
@@ -467,10 +588,10 @@ Elope offers an embeddable booking widget that tenants can add to their existing
 <div id="mais-booking-widget"></div>
 
 <script>
-  (function(){
+  (function () {
     window.MaisConfig = {
       apiKey: 'pk_live_yourcompany_abc123xyz789',
-      container: '#mais-booking-widget'
+      container: '#mais-booking-widget',
     };
     var s = document.createElement('script');
     s.src = 'https://widget.mais.com/sdk/mais-sdk.js';
@@ -481,6 +602,7 @@ Elope offers an embeddable booking widget that tenants can add to their existing
 ```
 
 **Features:**
+
 - Auto-resizing iframe with seamless integration
 - Automatic branding from admin dashboard (colors, logo, fonts)
 - Both embedded and modal/popup modes
@@ -489,6 +611,7 @@ Elope offers an embeddable booking widget that tenants can add to their existing
 - Dark mode support
 
 **Learn More:**
+
 - **[WIDGET_INTEGRATION_GUIDE.md](./docs/roadmaps/WIDGET_INTEGRATION_GUIDE.md)** - Complete integration documentation
 - **[examples/widget-demo.html](./examples/widget-demo.html)** - Live example with both modes
 
@@ -497,6 +620,7 @@ Elope offers an embeddable booking widget that tenants can add to their existing
 ## Documentation
 
 ### Getting Started
+
 - **[Quick Start](#quick-start)** - Get up and running in 5 minutes
 - **[WIDGET_INTEGRATION_GUIDE.md](./docs/roadmaps/WIDGET_INTEGRATION_GUIDE.md)** - Embed the booking widget on your website
 - **[DEVELOPING.md](./DEVELOPING.md)** - Development workflow and conventions
@@ -504,6 +628,7 @@ Elope offers an embeddable booking widget that tenants can add to their existing
 - **[API_DOCS_QUICKSTART.md](./docs/api/API_DOCS_QUICKSTART.md)** - Interactive API documentation
 
 ### Architecture & Design
+
 - **[ARCHITECTURE.md](./ARCHITECTURE.md)** - System architecture, patterns, and data flow
 - **[MULTI_TENANT_IMPLEMENTATION_GUIDE.md](./docs/multi-tenant/MULTI_TENANT_IMPLEMENTATION_GUIDE.md)** - Multi-tenant architecture guide
 - **[MULTI_TENANT_ROADMAP.md](./docs/multi-tenant/MULTI_TENANT_ROADMAP.md)** - Phased plan for tenant self-service features
@@ -512,6 +637,7 @@ Elope offers an embeddable booking widget that tenants can add to their existing
 - **[SUPABASE.md](./docs/setup/SUPABASE.md)** - Database setup and integration guide
 
 ### Operations & Production
+
 - **[RUNBOOK.md](./docs/operations/RUNBOOK.md)** - Operational procedures and local testing
 - **[INCIDENT_RESPONSE.md](./docs/operations/INCIDENT_RESPONSE.md)** - Production incident response playbook
 - **[ENVIRONMENT.md](./docs/setup/ENVIRONMENT.md)** - Environment variables reference
@@ -521,6 +647,7 @@ Elope offers an embeddable booking widget that tenants can add to their existing
 - **[IMMEDIATE_SECURITY_ACTIONS.md](./docs/security/IMMEDIATE_SECURITY_ACTIONS.md)** - Urgent security action items
 
 ### Migration & Project History
+
 - **[PHASE_1_COMPLETION_REPORT.md](./docs/phases/PHASE_1_COMPLETION_REPORT.md)** - Phase 1: Multi-tenant foundation
 - **[PHASE_2B_COMPLETION_REPORT.md](./docs/phases/PHASE_2B_COMPLETION_REPORT.md)** - Phase 2B completion summary
 
@@ -638,6 +765,7 @@ MIT License - see [LICENSE](./LICENSE) file for details.
 ## Acknowledgments
 
 Built with modern, production-ready tools:
+
 - [TypeScript](https://www.typescriptlang.org/) - Type-safe JavaScript
 - [React](https://react.dev/) - UI framework
 - [Prisma](https://www.prisma.io/) - Type-safe database ORM

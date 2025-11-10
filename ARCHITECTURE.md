@@ -4,6 +4,76 @@
 
 Elope is a **modular monolith**: one API process with clear service boundaries, a thin HTTP layer, and vendor integrations behind adapters. The front‑end consumes a generated client from the contracts package. Internal events decouple modules without microservices.
 
+## Config-Driven Architecture (2025 Platform Transformation)
+
+Starting Sprint 2 (January 2025), Elope is transitioning to a **config-driven, agent-powered platform** that enables both human admins and AI agents to manage tenant configurations through versioned, auditable changes.
+
+### Core Principles
+
+**Configuration as Source of Truth**
+
+Every visual element, workflow, and business logic setting is controlled by central, versioned configuration:
+
+- **Branding**: Colors, fonts, logos (existing, to be moved to ConfigVersion)
+- **Package Display**: Visibility, ordering, featured status, custom descriptions
+- **Display Rules**: Conditional visibility, tier grouping, seasonal promotions
+- **Widget Layout**: Component ordering, feature toggles, customization
+
+**Agent-Admin Collaboration**
+
+Both human admins and AI agents can propose configuration changes:
+
+- **Agent Proposals**: AI analyzes context and proposes config updates (e.g., seasonal pricing, promotional visibility)
+- **Admin Review**: All agent proposals require human approval via dashboard UI with diff view
+- **Audit Trail**: Every change logged with before/after snapshots, user/agent attribution, timestamps
+- **Rollback**: One-click rollback to any previous configuration version
+
+**Versioned Configuration System**
+
+Configuration changes use preview/publish workflow:
+
+```typescript
+// Draft mode: Test changes without affecting production
+GET /v1/config?versionId=draft_abc123
+
+// Published mode: Live configuration served to widgets
+GET /v1/config (returns latest published version)
+```
+
+**Widget Dynamic Hydration**
+
+Embedded widgets fetch configuration at runtime:
+
+- **Initial Load**: Widget fetches tenant config via authenticated API
+- **Live Updates**: Parent window triggers refresh via PostMessage
+- **Graceful Fallback**: Default theme/layout if config unavailable
+- **Zero Code Changes**: Tenant config updates instantly reflect in all embedded widgets
+
+### Migration Strategy
+
+**Sprint 2: Foundation (Security & Type Safety)**
+
+- Build ConfigChangeLog table and audit service (full before/after snapshots)
+- Remove all `as any` casts, add Zod schemas for config types
+- Build core test suite (unit + integration + E2E, 70% coverage target)
+
+**Sprint 3: Versioning Infrastructure**
+
+- Create ConfigVersion database schema (draft/published states)
+- Build config versioning API endpoints (create, publish, rollback)
+- Implement backward compatibility layer with feature flags
+- Add widget config hydration via PostMessage
+
+**Sprint 4: Agent Interface**
+
+- Create AgentProposal table (pending/approved/rejected states)
+- Build agent API endpoints with rate limiting and authentication
+- Create admin proposal review UI with diff view and inline approval
+- Implement display rules configuration (visibility, ordering, grouping)
+- Build end-to-end agent workflow tests
+
+**See Also:** `docs/archive/planning/2025-01-analysis/CONFIG_DRIVEN_PIVOT_MASTER_ANALYSIS.md` for complete technical specification.
+
 ## Components
 
 ### Frontend
@@ -200,6 +270,7 @@ X-Tenant-Key: pk_live_bella-weddings_abc123xyz
 ```
 
 **Middleware Flow:**
+
 1. Extract `X-Tenant-Key` from request headers
 2. Validate API key format: `pk_live_{slug}_{random}` or `sk_live_{slug}_{random}`
 3. Look up tenant in database (indexed query on `apiKeyPublic`)
@@ -208,6 +279,7 @@ X-Tenant-Key: pk_live_bella-weddings_abc123xyz
 6. Continue to route handler
 
 **Error Responses:**
+
 - `401 TENANT_KEY_REQUIRED`: Missing X-Tenant-Key header
 - `401 INVALID_TENANT_KEY`: Invalid format or tenant not found
 - `403 TENANT_INACTIVE`: Tenant exists but account disabled
@@ -221,16 +293,17 @@ All database queries are automatically scoped by `tenantId`:
 ```typescript
 // CORRECT - Tenant-scoped query
 const packages = await prisma.package.findMany({
-  where: { tenantId, active: true }
+  where: { tenantId, active: true },
 });
 
 // WRONG - Would return data from all tenants (security vulnerability)
 const packages = await prisma.package.findMany({
-  where: { active: true }
+  where: { active: true },
 });
 ```
 
 **Repository Pattern:**
+
 - All repository methods require `tenantId` as first parameter
 - Example: `catalogRepo.getPackageBySlug(tenantId, slug)`
 - Impossible to query cross-tenant data without explicit tenantId
@@ -238,11 +311,13 @@ const packages = await prisma.package.findMany({
 ### API Key Format
 
 **Public Keys** (safe to embed in client-side code):
+
 - Format: `pk_live_{slug}_{random32chars}`
 - Example: `pk_live_bella-weddings_7a9f3c2e1b4d8f6a`
 - Used in X-Tenant-Key header for API authentication
 
 **Secret Keys** (server-side only, encrypted in database):
+
 - Format: `sk_live_{slug}_{random32chars}`
 - Example: `sk_live_bella-weddings_9x2k4m8p3n7q1w5z`
 - Used for admin operations and Stripe Connect configuration
@@ -271,13 +346,16 @@ Each tenant has a configurable commission rate (10-15%):
 const commission = await commissionService.calculateCommission(tenantId, bookingTotal);
 
 // Stripe Connect PaymentIntent includes commission as application fee
-const paymentIntent = await stripe.paymentIntents.create({
-  amount: bookingTotal,
-  application_fee_amount: commission.amount, // Platform commission
-  currency: 'usd'
-}, {
-  stripeAccount: tenant.stripeAccountId // Tenant's Connected Account
-});
+const paymentIntent = await stripe.paymentIntents.create(
+  {
+    amount: bookingTotal,
+    application_fee_amount: commission.amount, // Platform commission
+    currency: 'usd',
+  },
+  {
+    stripeAccount: tenant.stripeAccountId, // Tenant's Connected Account
+  }
+);
 ```
 
 **Rounding:** Commission always rounds UP to protect platform revenue (e.g., 12.5% of $100.01 = $13, not $12).
@@ -287,15 +365,18 @@ const paymentIntent = await stripe.paymentIntents.create({
 ## Contracts (v1)
 
 **Public Endpoints (Require X-Tenant-Key header):**
+
 - `GET /v1/packages` — List packages for tenant
 - `GET /v1/packages/:slug` — Get package details for tenant
 - `GET /v1/availability?date=YYYY‑MM‑DD` — Check availability for tenant
 - `POST /v1/bookings/checkout` → `{ checkoutUrl }` — Create checkout for tenant
 
 **Webhook Endpoints (Require Stripe signature):**
+
 - `POST /v1/webhooks/stripe` (raw body) — payment completed
 
 **Admin Endpoints (Require JWT token):**
+
 - `POST /v1/admin/login` → `{ token }` — Admin authentication
 - `GET /v1/admin/bookings` — List all bookings
 - `GET|POST /v1/admin/blackouts` — Manage blackout dates
