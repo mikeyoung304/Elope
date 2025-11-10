@@ -82,8 +82,11 @@ export function buildContainer(config: Config): Container {
     // Create CommissionService with mock Prisma
     const commissionService = new CommissionService(mockPrisma);
 
-    // Build domain services with caching
-    const catalogService = new CatalogService(adapters.catalogRepo, cacheService);
+    // Create AuditService with mock Prisma (Sprint 2.1)
+    const auditService = new AuditService({ prisma: mockPrisma });
+
+    // Build domain services with caching and audit logging
+    const catalogService = new CatalogService(adapters.catalogRepo, cacheService, auditService);
     const availabilityService = new AvailabilityService(
       adapters.calendarProvider,
       adapters.blackoutRepo,
@@ -108,11 +111,6 @@ export function buildContainer(config: Config): Container {
 
     // Create TenantAuthService with mock Prisma tenant repo
     const tenantAuthService = new TenantAuthService(mockTenantRepo, config.JWT_SECRET);
-
-    // Create AuditService with mock Prisma (Sprint 2.1)
-    const auditService = new AuditService({ prisma: mockPrisma });
-
-    // Build controllers
     const controllers = {
       packages: new PackagesController(catalogService),
       availability: new AvailabilityController(availabilityService),
@@ -216,8 +214,11 @@ export function buildContainer(config: Config): Container {
     calendarProvider = mockAdapters.calendarProvider;
   }
 
-  // Build domain services with caching
-  const catalogService = new CatalogService(catalogRepo, cacheService);
+  // Create AuditService with real Prisma (Sprint 2.1)
+  const auditService = new AuditService({ prisma });
+
+  // Build domain services with caching and audit logging
+  const catalogService = new CatalogService(catalogRepo, cacheService, auditService);
   const availabilityService = new AvailabilityService(
     calendarProvider,
     blackoutRepo,
@@ -235,9 +236,6 @@ export function buildContainer(config: Config): Container {
 
   // Create TenantAuthService with real Prisma tenant repo
   const tenantAuthService = new TenantAuthService(tenantRepo, config.JWT_SECRET);
-
-  // Create AuditService with real Prisma (Sprint 2.1)
-  const auditService = new AuditService({ prisma });
 
   // Subscribe to BookingPaid events to send confirmation emails
   eventEmitter.subscribe<{

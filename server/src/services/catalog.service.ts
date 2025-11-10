@@ -13,15 +13,27 @@ import type { Package, AddOn } from '../lib/entities';
 import { NotFoundError, ValidationError } from '../lib/core/errors';
 import type { CacheService } from '../lib/cache';
 import { validatePrice, validateRequiredFields } from '../lib/validation';
+import type { AuditService } from './audit.service';
 
 export interface PackageWithAddOns extends Package {
   addOns: AddOn[];
 }
 
+/**
+ * Optional audit context for tracking who made changes
+ * TODO: Replace with proper auth context from middleware in Sprint 3
+ */
+export interface AuditContext {
+  userId?: string;
+  email: string;
+  role: 'PLATFORM_ADMIN' | 'TENANT_ADMIN';
+}
+
 export class CatalogService {
   constructor(
     private readonly repository: CatalogRepository,
-    private readonly cache?: CacheService
+    private readonly cache?: CacheService,
+    private readonly auditService?: AuditService
   ) {}
 
   /**
@@ -132,7 +144,11 @@ export class CatalogService {
   // NOTE: These methods will need tenantId parameter and repository updates
   // after multi-tenant migration is applied
 
-  async createPackage(tenantId: string, data: CreatePackageInput): Promise<Package> {
+  async createPackage(
+    tenantId: string,
+    data: CreatePackageInput,
+    auditCtx?: AuditContext
+  ): Promise<Package> {
     // Validate required fields
     validateRequiredFields(data, ['slug', 'title', 'description'], 'Package');
     validatePrice(data.priceCents, 'priceCents');
@@ -145,13 +161,34 @@ export class CatalogService {
 
     const result = await this.repository.createPackage(tenantId, data);
 
+    // Audit log (Sprint 2.1 - legacy CRUD tracking during migration)
+    if (this.auditService && auditCtx) {
+      await this.auditService.trackLegacyChange({
+        tenantId,
+        changeType: 'package_crud',
+        operation: 'create',
+        entityType: 'Package',
+        entityId: result.id,
+        userId: auditCtx.userId,
+        email: auditCtx.email,
+        role: auditCtx.role,
+        beforeSnapshot: null, // No previous state for creates
+        afterSnapshot: result,
+      });
+    }
+
     // Invalidate catalog cache for this tenant
     this.invalidateCatalogCache(tenantId);
 
     return result;
   }
 
-  async updatePackage(tenantId: string, id: string, data: UpdatePackageInput): Promise<Package> {
+  async updatePackage(
+    tenantId: string,
+    id: string,
+    data: UpdatePackageInput,
+    auditCtx?: AuditContext
+  ): Promise<Package> {
     // Check if package exists
     const existing = await this.repository.getPackageById(tenantId, id);
     if (!existing) {
@@ -173,6 +210,22 @@ export class CatalogService {
 
     const result = await this.repository.updatePackage(tenantId, id, data);
 
+    // Audit log (Sprint 2.1 - legacy CRUD tracking during migration)
+    if (this.auditService && auditCtx) {
+      await this.auditService.trackLegacyChange({
+        tenantId,
+        changeType: 'package_crud',
+        operation: 'update',
+        entityType: 'Package',
+        entityId: result.id,
+        userId: auditCtx.userId,
+        email: auditCtx.email,
+        role: auditCtx.role,
+        beforeSnapshot: existing,
+        afterSnapshot: result,
+      });
+    }
+
     // Invalidate catalog cache (both old and potentially new slug)
     this.invalidateCatalogCache(tenantId);
     this.invalidatePackageCache(tenantId, existing.slug);
@@ -183,7 +236,11 @@ export class CatalogService {
     return result;
   }
 
-  async deletePackage(tenantId: string, id: string): Promise<void> {
+  async deletePackage(
+    tenantId: string,
+    id: string,
+    auditCtx?: AuditContext
+  ): Promise<void> {
     // Check if package exists
     const existing = await this.repository.getPackageById(tenantId, id);
     if (!existing) {
@@ -191,6 +248,22 @@ export class CatalogService {
     }
 
     await this.repository.deletePackage(tenantId, id);
+
+    // Audit log (Sprint 2.1 - legacy CRUD tracking during migration)
+    if (this.auditService && auditCtx) {
+      await this.auditService.trackLegacyChange({
+        tenantId,
+        changeType: 'package_crud',
+        operation: 'delete',
+        entityType: 'Package',
+        entityId: id,
+        userId: auditCtx.userId,
+        email: auditCtx.email,
+        role: auditCtx.role,
+        beforeSnapshot: existing,
+        afterSnapshot: null, // Entity no longer exists
+      });
+    }
 
     // Invalidate catalog cache
     this.invalidateCatalogCache(tenantId);
