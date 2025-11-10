@@ -152,7 +152,14 @@ Embedded widgets automatically fetch configuration at runtime:
 **Sprint 2: Foundation (Security & Type Safety)**
 
 - ✅ **Sprint 1 COMPLETE**: Cache leak fix, branding endpoint, Stripe refund, cache audit
-- ⏳ **Sprint 2.1**: Build ConfigChangeLog table and audit service (full snapshots)
+- ⏳ **Sprint 2.1 (60% complete)**: Build ConfigChangeLog table and audit service (full snapshots)
+  - ✅ ConfigChangeLog database schema
+  - ✅ AuditService with trackChange/trackLegacyChange methods
+  - ✅ Package CRUD audit hooks
+  - ⏳ Tenant branding audit hooks (next)
+  - ⏳ Blackout changes audit hooks (next)
+  - ⏳ Unit tests (70% branch coverage)
+  - ⏳ Integration tests
 - ⏳ **Sprint 2.2**: Remove all `as any` casts, add Zod schemas for config types
 - ⏳ **Sprint 2.3**: Build core test suite (unit + integration + E2E, 70% coverage)
 
