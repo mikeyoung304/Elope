@@ -12,6 +12,7 @@ import { CommissionService } from './services/commission.service';
 import { IdentityService } from './services/identity.service';
 import { StripeConnectService } from './services/stripe-connect.service';
 import { TenantAuthService } from './services/tenant-auth.service';
+import { AuditService } from './services/audit.service';
 import { PackagesController } from './routes/packages.routes';
 import { AvailabilityController } from './routes/availability.routes';
 import { BookingsController } from './routes/bookings.routes';
@@ -58,6 +59,7 @@ export interface Container {
     tenantAuth: TenantAuthService;
     catalog: CatalogService;
     booking: BookingService;
+    audit: AuditService;
   };
 }
 
@@ -107,6 +109,9 @@ export function buildContainer(config: Config): Container {
     // Create TenantAuthService with mock Prisma tenant repo
     const tenantAuthService = new TenantAuthService(mockTenantRepo, config.JWT_SECRET);
 
+    // Create AuditService with mock Prisma (Sprint 2.1)
+    const auditService = new AuditService({ prisma: mockPrisma });
+
     // Build controllers
     const controllers = {
       packages: new PackagesController(catalogService),
@@ -128,6 +133,7 @@ export function buildContainer(config: Config): Container {
       tenantAuth: tenantAuthService,
       catalog: catalogService,
       booking: bookingService,
+      audit: auditService,
     };
 
     return { controllers, services };
@@ -230,6 +236,9 @@ export function buildContainer(config: Config): Container {
   // Create TenantAuthService with real Prisma tenant repo
   const tenantAuthService = new TenantAuthService(tenantRepo, config.JWT_SECRET);
 
+  // Create AuditService with real Prisma (Sprint 2.1)
+  const auditService = new AuditService({ prisma });
+
   // Subscribe to BookingPaid events to send confirmation emails
   eventEmitter.subscribe<{
     bookingId: string;
@@ -273,6 +282,7 @@ export function buildContainer(config: Config): Container {
     tenantAuth: tenantAuthService,
     catalog: catalogService,
     booking: bookingService,
+    audit: auditService,
   };
 
   return { controllers, services };

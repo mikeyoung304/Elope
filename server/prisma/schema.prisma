@@ -68,12 +68,13 @@ model Tenant {
   updatedAt DateTime @updatedAt
 
   // Relations
-  users         User[] // Tenant admin users
-  packages      Package[]
-  addOns        AddOn[]
-  bookings      Booking[]
-  blackoutDates BlackoutDate[]
-  webhookEvents WebhookEvent[]
+  users            User[] // Tenant admin users
+  packages         Package[]
+  addOns           AddOn[]
+  bookings         Booking[]
+  blackoutDates    BlackoutDate[]
+  webhookEvents    WebhookEvent[]
+  configChangeLogs ConfigChangeLog[] // Audit trail for config changes
 
   @@index([slug])
   @@index([apiKeyPublic])
@@ -276,4 +277,43 @@ enum WebhookStatus {
   PROCESSED
   FAILED
   DUPLICATE
+}
+
+// Audit Log for Config-Driven System (Sprint 2.1)
+// Tracks all configuration changes and legacy CRUD during migration
+model ConfigChangeLog {
+  id       String @id @default(cuid())
+  tenantId String // Tenant isolation
+
+  // Change metadata
+  changeType String // 'config_version', 'agent_proposal', 'package_crud', 'branding_update', 'blackout_change'
+  operation  String // 'create', 'update', 'delete', 'publish', 'approve', 'reject'
+  entityType String // 'ConfigVersion', 'AgentProposal', 'Package', 'Tenant', 'BlackoutDate'
+  entityId   String // ID of the entity being changed
+
+  // Attribution (who made the change)
+  userId  String? // For admin actions
+  agentId String? // For agent actions (future)
+  email   String // User or agent email
+  role    String // 'PLATFORM_ADMIN', 'TENANT_ADMIN', 'AGENT'
+
+  // Change data (full snapshots for rollback)
+  beforeSnapshot Json? // State before change (null for creates)
+  afterSnapshot  Json // State after change
+
+  // Metadata
+  reason   String? // Optional reason for change
+  metadata Json? // Additional context (IP address, user agent, session ID, etc.)
+
+  // Timestamps (PostgreSQL DateTime has microsecond precision)
+  createdAt DateTime @default(now())
+
+  // Relations
+  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  // Indexes for fast queries
+  @@index([tenantId, createdAt]) // Audit log timeline for tenant
+  @@index([tenantId, entityType, entityId]) // All changes to specific entity
+  @@index([tenantId, changeType]) // Filter by change type
+  @@index([userId]) // Track changes by user
 }
