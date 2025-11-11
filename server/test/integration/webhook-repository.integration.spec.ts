@@ -77,11 +77,8 @@ describe.sequential('PrismaWebhookRepository - Integration Tests', () => {
       expect(isDupe).toBe(false);
     });
 
-    it.skip('should handle concurrent duplicate checks', async () => {
-      // TODO (Sprint 6 - Phase 2): SKIPPED - New failure after other webhook skips
-      // Failure: Cascading from other webhook test issues
-      // Root Cause: Webhook record persistence or cleanup timing
-      // Fix: Investigate with other webhook test failures as a group
+    it('should handle concurrent duplicate checks', async () => {
+      // RE-ENABLED (Sprint 6 - Phase 3): Was cascading failure, testing with stable infrastructure
       const webhook = {
         eventId: 'evt_concurrent_789',
         eventType: 'checkout.session.completed',
@@ -107,11 +104,8 @@ describe.sequential('PrismaWebhookRepository - Integration Tests', () => {
       expect(event?.status).toBe('DUPLICATE');
     });
 
-    it.skip('should not mark already processed webhook as duplicate', async () => {
-      // TODO (Sprint 6 - Phase 2): SKIPPED - Cascading webhook test failure
-      // Failure: New failure after skipping other webhook tests
-      // Root Cause: Same webhook persistence issues as other skipped tests
-      // Fix: Part of broader webhook test investigation needed in Phase 3
+    it('should not mark already processed webhook as duplicate', async () => {
+      // RE-ENABLED (Sprint 6 - Phase 3): Was cascading failure, testing with stable infrastructure
       const webhook = {
         eventId: 'evt_already_processed',
         eventType: 'checkout.session.completed',
@@ -187,13 +181,8 @@ describe.sequential('PrismaWebhookRepository - Integration Tests', () => {
       expect(event?.processedAt).not.toBeNull();
     });
 
-    it.skip('should mark webhook as FAILED with error message', async () => {
-      // TODO (Sprint 6 - Phase 1): SKIPPED - Flaky test
-      // Reason: Webhook record creation or status update timing issue
-      // Pass Rate: 2/3 runs (Run 1, Run 2 passed; Run 3 failed)
-      // Fail Rate: 1/3 runs
-      // Fix Needed: Verify webhook repository refactoring is complete, check tenantId usage
-      // See: SPRINT_6_STABILIZATION_PLAN.md § Webhook Repository Tests (Flaky #1)
+    it('should mark webhook as FAILED with error message', async () => {
+      // RE-ENABLED (Sprint 6 - Phase 3 Batch 2): Was Phase 1 flaky (2/3 pass rate), testing with stable infrastructure
 
       await repository.recordWebhook({ tenantId: testTenantId,
         eventId: 'evt_fail_999',
@@ -213,13 +202,8 @@ describe.sequential('PrismaWebhookRepository - Integration Tests', () => {
       expect(event?.attempts).toBeGreaterThanOrEqual(1);
     });
 
-    it.skip('should increment attempts on failure', async () => {
-      // TODO (Sprint 6 - Phase 1): SKIPPED - Flaky test
-      // Reason: Attempt counter update has timing or state issue
-      // Pass Rate: 2/3 runs (Run 1, Run 2 passed; Run 3 failed)
-      // Fail Rate: 1/3 runs
-      // Fix Needed: Check atomic increment operation, may have race condition
-      // See: SPRINT_6_STABILIZATION_PLAN.md § Webhook Repository Tests (Flaky #2)
+    it('should increment attempts on failure', async () => {
+      // RE-ENABLED (Sprint 6 - Phase 3 Batch 2): Was Phase 1 flaky (2/3 pass rate), testing with stable infrastructure
 
       await repository.recordWebhook({ tenantId: testTenantId,
         eventId: 'evt_retry_test',
@@ -347,13 +331,8 @@ describe.sequential('PrismaWebhookRepository - Integration Tests', () => {
       expect(parsed.data.object.amount_total).toBe(250000);
     });
 
-    it.skip('should store different event types', async () => {
-      // TODO (Sprint 6 - Phase 1): SKIPPED - Flaky test
-      // Reason: Event type storage or query has data isolation issue
-      // Pass Rate: 2/3 runs (Run 2, Run 3 passed; Run 1 failed)
-      // Fail Rate: 1/3 runs
-      // Fix Needed: Improve test data cleanup, may have leftover events from other tests
-      // See: SPRINT_6_STABILIZATION_PLAN.md § Webhook Repository Tests (Flaky #3)
+    it('should store different event types', async () => {
+      // RE-ENABLED (Sprint 6 - Phase 3 Batch 2): Was Phase 1 flaky (2/3 pass rate), testing with stable infrastructure
 
       const eventTypes = [
         'checkout.session.completed',
@@ -414,13 +393,8 @@ describe.sequential('PrismaWebhookRepository - Integration Tests', () => {
   });
 
   describe('Edge Cases', () => {
-    it.skip('should handle empty payload', async () => {
-      // TODO (Sprint 6 - Phase 1): SKIPPED - Flaky test
-      // Reason: Empty string handling or record creation timing issue
-      // Pass Rate: 2/3 runs (Run 2, Run 3 passed; Run 1 failed)
-      // Fail Rate: 1/3 runs
-      // Fix Needed: Verify empty string storage, may need explicit null handling
-      // See: SPRINT_6_STABILIZATION_PLAN.md § Webhook Repository Tests (Flaky #4)
+    it('should handle empty payload', async () => {
+      // RE-ENABLED (Sprint 6 - Phase 3 Batch 2): Was Phase 1 flaky (2/3 pass rate), testing with stable infrastructure
 
       await repository.recordWebhook({ tenantId: testTenantId,
         eventId: 'evt_empty_payload',

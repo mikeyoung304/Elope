@@ -91,24 +91,14 @@ describe.sequential('PrismaCatalogRepository - Integration Tests', () => {
       expect(pkg?.title).toBe('Get By Slug Test');
     });
 
-    it.skip('should return null for non-existent slug', async () => {
-      // TODO (Sprint 6 - Phase 2): SKIPPED - Data contamination from cleanup issues
-      // Reason: Foreign key constraint errors in test cleanup causing cascading failures
-      // Failure: PrismaClientKnownRequestError - foreign key constraint `Booking_packageId_fkey`
-      // Root Cause: Manual cleanup without integration helpers causes FK violations
-      // Fix Needed: Refactor entire catalog.repository test file to use setupCompleteIntegrationTest()
-      // Priority: P2 - Test logic is correct, cleanup pattern needs refactoring
-      // See: SPRINT_6_STABILIZATION_PLAN.md § Phase 2 - Catalog Repository Tests
-      // Note: 27/33 catalog tests passing - only 3 failing due to cleanup issues
+    it('should return null for non-existent slug', async () => {
+      // RE-ENABLED (Sprint 6 - Phase 3): Was FK cleanup issue, now using integration helpers
       const pkg = await repository.getPackageBySlug(testTenantId, 'non-existent');
       expect(pkg).toBeNull();
     });
 
-    it.skip('should get all packages', async () => {
-      // TODO (Sprint 6 - Phase 2): SKIPPED - Foreign key constraint violation
-      // Failure: Foreign key `Booking_packageId_fkey` violated during cleanup
-      // Root Cause: Manual cleanup order issues (need to delete bookings before packages)
-      // Fix: Refactor to use setupCompleteIntegrationTest() for proper cleanup
+    it('should get all packages', async () => {
+      // RE-ENABLED (Sprint 6 - Phase 3): Was FK cleanup issue, now using integration helpers
       // Create multiple packages
       await repository.createPackage(testTenantId, {
         slug: 'package-1',
@@ -341,11 +331,8 @@ describe.sequential('PrismaCatalogRepository - Integration Tests', () => {
       expect(addOns).toHaveLength(0);
     });
 
-    it.skip('should throw error when deleting non-existent add-on', async () => {
-      // TODO (Sprint 6 - Phase 2): SKIPPED - Cascading FK constraint failure
-      // Failure: Foreign key constraint violations from previous test cleanup issues
-      // Root Cause: Same as other catalog tests - manual cleanup order
-      // Fix: Refactor entire catalog test file to use integration helpers
+    it('should throw error when deleting non-existent add-on', async () => {
+      // RE-ENABLED (Sprint 6 - Phase 3): Was FK cleanup issue, now using integration helpers
       await expect(
         repository.deleteAddOn(testTenantId, 'non-existent-id')
       ).rejects.toThrow(DomainError);
