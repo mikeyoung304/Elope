@@ -92,7 +92,7 @@ describe('PrismaCatalogRepository - Integration Tests', () => {
           description: 'Second',
           priceCents: 200000,
         })
-      ).rejects.toThrow('already exists');
+      ).rejects.toThrow('DUPLICATE_SLUG');
     });
 
     it('should get package by slug', async () => {
@@ -175,7 +175,7 @@ describe('PrismaCatalogRepository - Integration Tests', () => {
         repository.updatePackage(testTenantId, 'non-existent-id', {
           title: 'Updated',
         })
-      ).rejects.toThrow('not found');
+      ).rejects.toThrow('NOT_FOUND');
     });
 
     it('should prevent duplicate slug on update', async () => {
