@@ -133,7 +133,7 @@ export class PrismaCatalogRepository implements CatalogRepository {
     }
 
     const pkg = await this.prisma.package.update({
-      where: { id },
+      where: { id, tenantId },
       data: {
         ...(data.slug !== undefined && { slug: data.slug }),
         ...(data.title !== undefined && { name: data.title }),
@@ -158,7 +158,7 @@ export class PrismaCatalogRepository implements CatalogRepository {
 
     // Prisma will cascade delete add-ons automatically
     await this.prisma.package.delete({
-      where: { id },
+      where: { id, tenantId },
     });
   }
 

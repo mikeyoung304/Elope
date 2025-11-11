@@ -88,7 +88,7 @@ export class CommissionService {
 
     // Validate Stripe Connect limits (0.5% - 50%)
     const minCommission = Math.ceil(bookingTotal * 0.005); // 0.5%
-    const maxCommission = Math.floor(bookingTotal * 0.50); // 50%
+    const maxCommission = Math.ceil(bookingTotal * 0.50); // 50%
 
     let finalCommission = commissionCents;
 

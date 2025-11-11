@@ -1,0 +1,509 @@
+/**
+ * Integration Test Setup Helpers
+ *
+ * Reusable utilities for multi-tenant integration tests
+ * Provides standardized patterns for:
+ * - Database initialization and cleanup
+ * - Multi-tenant test data setup
+ * - Cache testing utilities
+ * - Test data factories
+ *
+ * Usage:
+ * ```typescript
+ * import { setupIntegrationTest, createMultiTenantSetup } from '../helpers/integration-setup';
+ *
+ * describe('My Integration Test', () => {
+ *   const { prisma, cleanup } = setupIntegrationTest();
+ *   const { tenantA, tenantB, cleanupTenants } = createMultiTenantSetup(prisma, 'my-test-file');
+ *
+ *   beforeEach(async () => {
+ *     await cleanupTenants();
+ *     await tenantA.create();
+ *     await tenantB.create();
+ *   });
+ *
+ *   afterEach(async () => {
+ *     await cleanup();
+ *   });
+ * });
+ * ```
+ */
+
+import { PrismaClient, Tenant, Package, AddOn } from '../../src/generated/prisma';
+import { CacheService } from '../../src/lib/cache';
+import type { CreatePackageInput, CreateAddOnInput } from '../../src/lib/ports';
+
+/**
+ * Integration test context with PrismaClient and cleanup
+ */
+export interface IntegrationTestContext {
+  prisma: PrismaClient;
+  cleanup: () => Promise<void>;
+}
+
+/**
+ * Multi-tenant test setup with two tenants (A and B)
+ */
+export interface MultiTenantTestSetup {
+  tenantA: {
+    id: string;
+    data: Tenant;
+    create: () => Promise<Tenant>;
+    cleanup: () => Promise<void>;
+  };
+  tenantB: {
+    id: string;
+    data: Tenant;
+    create: () => Promise<Tenant>;
+    cleanup: () => Promise<void>;
+  };
+  cleanupTenants: () => Promise<void>;
+  getTenantIds: () => string[];
+}
+
+/**
+ * Cache test utilities
+ */
+export interface CacheTestUtils {
+  cache: CacheService;
+  resetStats: () => void;
+  flush: () => void;
+  getStats: () => {
+    hits: number;
+    misses: number;
+    hitRate: number;
+    totalRequests: number;
+  };
+  verifyCacheKey: (key: string, tenantId: string) => boolean;
+}
+
+/**
+ * Initialize PrismaClient for integration tests
+ * Automatically uses DATABASE_URL_TEST if available
+ */
+export function setupIntegrationTest(): IntegrationTestContext {
+  const prisma = new PrismaClient({
+    datasources: {
+      db: {
+        url: process.env.DATABASE_URL_TEST || process.env.DATABASE_URL,
+      },
+    },
+  });
+
+  const cleanup = async () => {
+    await prisma.$disconnect();
+  };
+
+  return { prisma, cleanup };
+}
+
+/**
+ * Create multi-tenant test setup with isolated tenant data
+ *
+ * @param prisma - PrismaClient instance
+ * @param fileSlug - Unique identifier for this test file (e.g., 'cache-isolation', 'booking-race')
+ * @returns Multi-tenant setup with tenant A and B
+ *
+ * @example
+ * ```typescript
+ * const { tenantA, tenantB, cleanupTenants } = createMultiTenantSetup(prisma, 'my-test');
+ *
+ * beforeEach(async () => {
+ *   await cleanupTenants();
+ *   await tenantA.create();
+ *   await tenantB.create();
+ * });
+ * ```
+ */
+export function createMultiTenantSetup(
+  prisma: PrismaClient,
+  fileSlug: string
+): MultiTenantTestSetup {
+  const tenantASlug = `${fileSlug}-tenant-a`;
+  const tenantBSlug = `${fileSlug}-tenant-b`;
+
+  let tenantA_id = '';
+  let tenantB_id = '';
+  let tenantA_data: Tenant | null = null;
+  let tenantB_data: Tenant | null = null;
+
+  const createTenantA = async (): Promise<Tenant> => {
+    const tenant = await prisma.tenant.upsert({
+      where: { slug: tenantASlug },
+      update: {},
+      create: {
+        slug: tenantASlug,
+        name: `Test Tenant A (${fileSlug})`,
+        apiKeyPublic: `pk_test_${fileSlug}_a`,
+        apiKeySecret: `sk_test_${fileSlug}_a_hash`,
+      },
+    });
+    tenantA_id = tenant.id;
+    tenantA_data = tenant;
+    return tenant;
+  };
+
+  const createTenantB = async (): Promise<Tenant> => {
+    const tenant = await prisma.tenant.upsert({
+      where: { slug: tenantBSlug },
+      update: {},
+      create: {
+        slug: tenantBSlug,
+        name: `Test Tenant B (${fileSlug})`,
+        apiKeyPublic: `pk_test_${fileSlug}_b`,
+        apiKeySecret: `sk_test_${fileSlug}_b_hash`,
+      },
+    });
+    tenantB_id = tenant.id;
+    tenantB_data = tenant;
+    return tenant;
+  };
+
+  const cleanupTenantData = async (tenantIds: string[]) => {
+    if (tenantIds.length === 0) return;
+
+    // Delete in correct order to respect foreign keys
+    await prisma.webhookEvent.deleteMany({ where: { tenantId: { in: tenantIds } } });
+    await prisma.bookingAddOn.deleteMany({
+      where: {
+        booking: { tenantId: { in: tenantIds } },
+      },
+    });
+    await prisma.booking.deleteMany({ where: { tenantId: { in: tenantIds } } });
+    await prisma.packageAddOn.deleteMany({
+      where: {
+        package: { tenantId: { in: tenantIds } },
+      },
+    });
+    await prisma.addOn.deleteMany({ where: { tenantId: { in: tenantIds } } });
+    await prisma.package.deleteMany({ where: { tenantId: { in: tenantIds } } });
+  };
+
+  const cleanupTenantA = async () => {
+    if (tenantA_id) {
+      await cleanupTenantData([tenantA_id]);
+    }
+  };
+
+  const cleanupTenantB = async () => {
+    if (tenantB_id) {
+      await cleanupTenantData([tenantB_id]);
+    }
+  };
+
+  const cleanupTenants = async () => {
+    // Find tenants by slug
+    const tenants = await prisma.tenant.findMany({
+      where: {
+        slug: {
+          in: [tenantASlug, tenantBSlug],
+        },
+      },
+      select: { id: true },
+    });
+
+    if (tenants.length > 0) {
+      const tenantIds = tenants.map((t) => t.id);
+      await cleanupTenantData(tenantIds);
+    }
+  };
+
+  const getTenantIds = () => {
+    return [tenantA_id, tenantB_id].filter((id) => id !== '');
+  };
+
+  return {
+    tenantA: {
+      get id() {
+        return tenantA_id;
+      },
+      get data() {
+        if (!tenantA_data) {
+          throw new Error('Tenant A not created yet. Call tenantA.create() first.');
+        }
+        return tenantA_data;
+      },
+      create: createTenantA,
+      cleanup: cleanupTenantA,
+    },
+    tenantB: {
+      get id() {
+        return tenantB_id;
+      },
+      get data() {
+        if (!tenantB_data) {
+          throw new Error('Tenant B not created yet. Call tenantB.create() first.');
+        }
+        return tenantB_data;
+      },
+      create: createTenantB,
+      cleanup: cleanupTenantB,
+    },
+    cleanupTenants,
+    getTenantIds,
+  };
+}
+
+/**
+ * Create cache test utilities for validating cache isolation
+ *
+ * @param ttlSeconds - Cache TTL in seconds (default: 60)
+ * @returns Cache utilities for testing
+ *
+ * @example
+ * ```typescript
+ * const { cache, resetStats, verifyCacheKey } = createCacheTestUtils();
+ *
+ * beforeEach(() => {
+ *   resetStats();
+ * });
+ *
+ * it('should have tenant-scoped cache key', () => {
+ *   const key = cache.buildKey(['packages'], tenantId);
+ *   expect(verifyCacheKey(key, tenantId)).toBe(true);
+ * });
+ * ```
+ */
+export function createCacheTestUtils(ttlSeconds = 60): CacheTestUtils {
+  const cache = new CacheService(ttlSeconds);
+
+  const verifyCacheKey = (key: string, tenantId: string): boolean => {
+    // Cache keys MUST start with tenantId prefix
+    return key.startsWith(`${tenantId}:`);
+  };
+
+  return {
+    cache,
+    resetStats: () => cache.resetStats(),
+    flush: () => cache.flush(),
+    getStats: () => cache.getStats(),
+    verifyCacheKey,
+  };
+}
+
+/**
+ * Package factory for creating test packages
+ * Generates unique slugs to avoid conflicts in concurrent tests
+ */
+export class PackageFactory {
+  private counter = 0;
+
+  /**
+   * Create package input with unique slug
+   *
+   * @param overrides - Optional overrides for package data
+   * @returns Package input ready for repository.createPackage()
+   *
+   * @example
+   * ```typescript
+   * const factory = new PackageFactory();
+   * const pkg = factory.create({ priceCents: 150000 });
+   * await repository.createPackage(tenantId, pkg);
+   * ```
+   */
+  create(overrides: Partial<CreatePackageInput> = {}): CreatePackageInput {
+    this.counter++;
+    const timestamp = Date.now();
+    const uniqueSlug = overrides.slug || `test-package-${this.counter}-${timestamp}`;
+
+    return {
+      slug: uniqueSlug,
+      title: overrides.title || `Test Package ${this.counter}`,
+      description: overrides.description || `Test package description ${this.counter}`,
+      priceCents: overrides.priceCents ?? 100000,
+      durationMinutes: overrides.durationMinutes ?? 60,
+      maxGuests: overrides.maxGuests ?? 50,
+      depositCents: overrides.depositCents,
+      imageUrl: overrides.imageUrl,
+      isActive: overrides.isActive ?? true,
+    };
+  }
+
+  /**
+   * Create multiple packages with incremental naming
+   *
+   * @param count - Number of packages to create
+   * @param baseOverrides - Base overrides applied to all packages
+   * @returns Array of package inputs
+   *
+   * @example
+   * ```typescript
+   * const factory = new PackageFactory();
+   * const packages = factory.createMany(3, { priceCents: 150000 });
+   * for (const pkg of packages) {
+   *   await repository.createPackage(tenantId, pkg);
+   * }
+   * ```
+   */
+  createMany(count: number, baseOverrides: Partial<CreatePackageInput> = {}): CreatePackageInput[] {
+    return Array.from({ length: count }, () => this.create(baseOverrides));
+  }
+}
+
+/**
+ * AddOn factory for creating test add-ons
+ * Generates unique slugs to avoid conflicts in concurrent tests
+ */
+export class AddOnFactory {
+  private counter = 0;
+
+  /**
+   * Create add-on input with unique slug
+   *
+   * @param overrides - Optional overrides for add-on data
+   * @returns AddOn input ready for repository.createAddOn()
+   *
+   * @example
+   * ```typescript
+   * const factory = new AddOnFactory();
+   * const addOn = factory.create({ priceCents: 5000 });
+   * await repository.createAddOn(tenantId, addOn);
+   * ```
+   */
+  create(overrides: Partial<CreateAddOnInput> = {}): CreateAddOnInput {
+    this.counter++;
+    const timestamp = Date.now();
+    const uniqueSlug = overrides.slug || `test-addon-${this.counter}-${timestamp}`;
+
+    return {
+      slug: uniqueSlug,
+      title: overrides.title || `Test Add-On ${this.counter}`,
+      description: overrides.description || `Test add-on description ${this.counter}`,
+      priceCents: overrides.priceCents ?? 5000,
+      category: overrides.category || 'ENHANCEMENT',
+      isActive: overrides.isActive ?? true,
+    };
+  }
+
+  /**
+   * Create multiple add-ons with incremental naming
+   *
+   * @param count - Number of add-ons to create
+   * @param baseOverrides - Base overrides applied to all add-ons
+   * @returns Array of add-on inputs
+   *
+   * @example
+   * ```typescript
+   * const factory = new AddOnFactory();
+   * const addOns = factory.createMany(3, { category: 'ENHANCEMENT' });
+   * for (const addOn of addOns) {
+   *   await repository.createAddOn(tenantId, addOn);
+   * }
+   * ```
+   */
+  createMany(count: number, baseOverrides: Partial<CreateAddOnInput> = {}): CreateAddOnInput[] {
+    return Array.from({ length: count }, () => this.create(baseOverrides));
+  }
+}
+
+/**
+ * Wait for a specified duration (useful for timing-sensitive tests)
+ *
+ * @param ms - Milliseconds to wait
+ * @returns Promise that resolves after the specified duration
+ *
+ * @example
+ * ```typescript
+ * await wait(100); // Wait 100ms for cache TTL
+ * ```
+ */
+export function wait(ms: number): Promise<void> {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+/**
+ * Run concurrent operations and return results
+ * Useful for testing race conditions and concurrent cache access
+ *
+ * @param operations - Array of async functions to run concurrently
+ * @returns Promise with results from all operations
+ *
+ * @example
+ * ```typescript
+ * const results = await runConcurrent([
+ *   () => service.getPackages(tenantA_id),
+ *   () => service.getPackages(tenantB_id),
+ * ]);
+ * ```
+ */
+export async function runConcurrent<T>(operations: Array<() => Promise<T>>): Promise<T[]> {
+  return Promise.all(operations.map((op) => op()));
+}
+
+/**
+ * Assert that cache key follows tenant isolation pattern
+ * Throws if cache key doesn't include tenantId prefix
+ *
+ * @param key - Cache key to validate
+ * @param tenantId - Expected tenant ID
+ * @throws Error if cache key doesn't follow pattern
+ *
+ * @example
+ * ```typescript
+ * assertTenantScopedCacheKey('tenant-123:packages', 'tenant-123'); // ✅ Pass
+ * assertTenantScopedCacheKey('packages', 'tenant-123'); // ❌ Throws error
+ * ```
+ */
+export function assertTenantScopedCacheKey(key: string, tenantId: string): void {
+  if (!key.startsWith(`${tenantId}:`)) {
+    throw new Error(
+      `Cache key "${key}" violates tenant isolation pattern. ` +
+        `Expected format: "${tenantId}:resource:id". ` +
+        `See .claude/CACHE_WARNING.md for security requirements.`
+    );
+  }
+}
+
+/**
+ * Complete integration test setup with all utilities
+ * Combines database, multi-tenant, and cache setup
+ *
+ * @param fileSlug - Unique identifier for this test file
+ * @param options - Configuration options
+ * @returns Complete test context
+ *
+ * @example
+ * ```typescript
+ * describe('My Integration Test', () => {
+ *   const ctx = setupCompleteIntegrationTest('my-test', { cacheTTL: 60 });
+ *
+ *   beforeEach(async () => {
+ *     await ctx.tenants.cleanupTenants();
+ *     await ctx.tenants.tenantA.create();
+ *     await ctx.tenants.tenantB.create();
+ *     ctx.cache.resetStats();
+ *   });
+ *
+ *   afterEach(async () => {
+ *     ctx.cache.flush();
+ *     await ctx.cleanup();
+ *   });
+ * });
+ * ```
+ */
+export function setupCompleteIntegrationTest(
+  fileSlug: string,
+  options: {
+    cacheTTL?: number;
+  } = {}
+) {
+  const { prisma, cleanup: cleanupPrisma } = setupIntegrationTest();
+  const tenants = createMultiTenantSetup(prisma, fileSlug);
+  const cache = createCacheTestUtils(options.cacheTTL);
+
+  const cleanup = async () => {
+    cache.flush();
+    await cleanupPrisma();
+  };
+
+  return {
+    prisma,
+    tenants,
+    cache,
+    cleanup,
+    factories: {
+      package: new PackageFactory(),
+      addOn: new AddOnFactory(),
+    },
+  };
+}
