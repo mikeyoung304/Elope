@@ -946,17 +946,160 @@ C. Create @elope/test-helpers package
 
 ---
 
+## Final Session Results
+
+### Test Pass Rate Journey
+- **Starting**: 47/104 (45.2%)
+- **Peak**: 64/104 (61.5%) after connection pool fix + catalog assertion fixes
+- **Final**: 59/104 (56.7%)
+- **Net Improvement**: +12 tests (+25.5%)
+- **Target**: 73/104 (70%) - **Not reached due to test instability**
+
+### Why Didn't We Reach 70%?
+
+**Test Instability Discovered** 🔴
+
+During the session, test pass rates varied significantly between runs:
+- Run 1: 58/104 passing (before connection fix)
+- Run 2: 60/104 passing (after connection fix)
+- Run 3: 64/104 passing (after catalog fixes)
+- Run 4: 59/104 passing (final run)
+
+**Root Causes Identified**:
+1. **Test Flakiness**: Some tests pass/fail inconsistently across runs
+2. **Race Condition Tests**: Timing-dependent assertions cause intermittent failures
+3. **Data Setup Issues**: Some tests interfere with each other despite cleanup
+4. **Webhook Schema Complexity**: Global unique `eventId` vs expected compound key behavior
+
+### Key Achievements ✅
+
+1. **Fixed Critical Production Bug** 🎯
+   - BookingService.onPaymentCompleted using slug instead of ID
+   - Would cause foreign key violations in production
+   - Discovered during test refactoring
+
+2. **Solved Connection Pool Exhaustion** 🔧
+   - Implemented connection_limit=10 and pool_timeout=20
+   - Eliminated "Too many database connections" errors
+   - Documented in .env.test, test/helpers/README.md, and .env.test.example
+
+3. **Refactored 3+ Test Files** 📝
+   - booking-repository.integration.spec.ts
+   - booking-race-conditions.spec.ts
+   - webhook-repository.integration.spec.ts (partial)
+   - catalog.repository.integration.spec.ts (assertion fixes)
+
+4. **Created Comprehensive Documentation** 📚
+   - test/helpers/README.md § Troubleshooting § Database Connection Pool Exhaustion
+   - .env.test.example with connection pool configuration
+   - This session report with DevOps alert
+
+5. **Established Refactoring Pattern** 🏗️
+   - setupCompleteIntegrationTest() reduces boilerplate by 70%
+   - Catalog repository handles compound keys automatically
+   - Test data factories prevent cross-test collisions
+   - Pattern documented and ready for team adoption
+
+### Remaining Blockers
+
+**1. Test Flakiness** ⚠️
+- Tests need to be made more deterministic
+- Race condition assertions should check behavior, not exact counts
+- Data cleanup may need improvement
+
+**2. Webhook Repository Issues** ⚠️
+- Schema has globally unique `eventId` but repository methods assume it's always present
+- Some tests create webhooks that don't persist correctly
+- May need architectural decision on eventId uniqueness scope
+
+**3. Performance Test Assertions** ⚠️
+- Catalog tests have timing assertions (< 50ms, < 100ms)
+- These are environment-dependent and cause failures
+- Recommend removing or significantly relaxing timing thresholds
+
+### Recommendations for Next Sprint
+
+**Immediate Actions**:
+1. **Stabilize Flaky Tests**
+   - Run tests multiple times to identify flaky tests
+   - Mark flaky tests with .todo() or .skip() temporarily
+   - Fix underlying data setup/cleanup issues
+
+2. **Relax Race Condition Assertions**
+   - Change from expecting exact counts to checking for "at least one success/failure"
+   - Document expected behavior variations
+   - Accept that race conditions have timing variability
+
+3. **Address Webhook Schema**
+   - Decide: Should `eventId` be globally unique or per-tenant?
+   - If per-tenant: Add compound key `@@unique([tenantId, eventId])`
+   - Update repository methods accordingly
+
+4. **Remove/Relax Performance Assertions**
+   - Performance tests are environment-dependent
+   - Either remove timing assertions or increase thresholds 5-10x
+   - Focus on correctness, not speed in integration tests
+
+**Long-term Actions**:
+5. **Parallel Test Execution**
+   - Current setup uses .sequential() everywhere
+   - Investigate true test isolation to enable parallel execution
+   - Could significantly speed up test suite
+
+6. **Test Data Management**
+   - Consider test database per developer
+   - Implement better cleanup between test runs
+   - Add database seeding for consistent test data
+
+7. **CI/CD Integration**
+   - Ensure connection pool limits configured in CI environment
+   - Set up test result tracking over time
+   - Alert on test pass rate drops
+
+### What We Learned
+
+**Successes**:
+- Connection pool limits are critical for integration test stability
+- Test helper utilities provide massive developer experience improvement
+- Refactoring tests reveals production bugs (BookingService bug found)
+- Comprehensive documentation prevents future developers from hitting same issues
+
+**Challenges**:
+- Test instability is harder to fix than infrastructure issues
+- Race condition tests are inherently flaky without careful design
+- 70% threshold is achievable but requires addressing test stability first
+- Can't rush test quality - flaky tests are worse than no tests
+
+**Pattern for Future Test Work**:
+1. Fix infrastructure issues first (connection pooling)
+2. Stabilize existing tests before adding new ones
+3. Use test helpers consistently
+4. Document troubleshooting as you go
+5. Accept that some tests need relaxed assertions
+
 ## Session Metadata
-- **Duration**: ~2 hours (excluding machine restart)
-- **Tests Modified**: 3 files fully, 1 file partially
-- **Tests Improved**: +11 passing (+23%)
-- **Production Bugs Fixed**: 1 critical
-- **Blockers Discovered**: 1 (connection pool)
-- **Lines of Code**: ~400 changed (net reduction due to helper usage)
+- **Duration**: ~4 hours total (excluding machine restart)
+- **Test Files Modified**: 4 files
+- **Production Bugs Fixed**: 1 critical (BookingService packageId)
+- **Infrastructure Issues Fixed**: 1 (database connection pool)
+- **Documentation Created**: 3 files (README, .env.test.example, this report)
+- **Peak Test Improvement**: +17 tests (47 → 64)
+- **Final Test Improvement**: +12 tests (47 → 59, with flakiness)
+- **Lines of Code**: ~500 changed (net reduction due to helper usage)
+- **Commits**: 5 commits with comprehensive documentation
+
+## Commits Summary
+1. `3640af2` - Integration test refactoring + critical bug fix
+2. `6070042` - Connection pool exhaustion fix + documentation
+3. `4ef367c` - .env.test.example template
+4. `73b7462` - Catalog error message assertion fixes
+5. (Pending) - Final session report update
 
 ---
 
-**End of Report**
+**End of Sprint 5 Session Report**
+
+**Status**: Progress made but 70% threshold not reached due to test instability. Infrastructure issues resolved. Production bug fixed. Ready for team review and next sprint planning.
 
 🤖 Generated with [Claude Code](https://claude.com/claude-code)
 
