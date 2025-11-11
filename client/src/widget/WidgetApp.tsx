@@ -35,24 +35,26 @@ interface Props {
  * 4. Auto-resize iframe via postMessage
  * 5. Send booking events to parent window
  */
-export function WidgetApp({ config }: Props) {
+export function WidgetApp({ config }: Props): JSX.Element {
   const [currentView, setCurrentView] = useState<'catalog' | 'package'>('catalog');
   const [selectedPackageSlug, setSelectedPackageSlug] = useState<string | null>(null);
-  const messenger = WidgetMessenger.getInstance(config.parentOrigin || '*');
+  const messenger = WidgetMessenger.getInstance(config.parentOrigin ?? '*');
   const containerRef = useRef<HTMLDivElement>(null);
 
   // Configure API client with tenant context
   useEffect(() => {
-    (api as any).setTenantKey(config.apiKey);
+    (api as unknown as { setTenantKey: (key: string) => void }).setTenantKey(config.apiKey);
   }, [config.apiKey]);
 
   // Fetch tenant branding
   const { data: branding, isLoading: brandingLoading } = useQuery<TenantBrandingDto>({
     queryKey: ['tenant', 'branding', config.tenant],
     queryFn: async () => {
-      // Note: This endpoint needs to be implemented on the server
-      // For now, return default branding
-      // TODO: Implement /api/v1/tenant/branding endpoint
+      const result = await (api as unknown as { getTenantBranding: () => Promise<{ status: number; body: TenantBrandingDto }> }).getTenantBranding();
+      if (result.status === 200 && result.body) {
+        return result.body;
+      }
+      // Fallback to defaults if branding not configured
       return {
         primaryColor: '#7C3AED',
         secondaryColor: '#DDD6FE',
@@ -112,19 +114,27 @@ export function WidgetApp({ config }: Props) {
     });
 
     observer.observe(containerRef.current);
-    return () => observer.disconnect();
+    return () => {
+      observer.disconnect();
+    };
   }, [messenger]);
 
   // Listen for messages from parent
   useEffect(() => {
     const handleParentMessage = (event: MessageEvent) => {
       // Basic validation - check if message is from parent
-      if (event.data.source !== 'elope-parent') return;
+      const eventData: unknown = event.data;
+      const checkRecord = (v: unknown): v is Record<string, unknown> =>
+        typeof v === 'object' && v !== null && !Array.isArray(v);
 
-      switch (event.data.type) {
+      if (!checkRecord(eventData) || eventData.source !== 'elope-parent') return;
+
+      const msgType = typeof eventData.type === 'string' ? eventData.type : '';
+
+      switch (msgType) {
         case 'OPEN_BOOKING':
-          if (event.data.packageSlug) {
-            setSelectedPackageSlug(event.data.packageSlug);
+          if (typeof eventData.packageSlug === 'string') {
+            setSelectedPackageSlug(eventData.packageSlug);
             setCurrentView('package');
           }
           break;
@@ -140,7 +150,9 @@ export function WidgetApp({ config }: Props) {
     };
 
     window.addEventListener('message', handleParentMessage);
-    return () => window.removeEventListener('message', handleParentMessage);
+    return () => {
+      window.removeEventListener('message', handleParentMessage);
+    };
   }, []);
 
   // Handle package selection
@@ -168,18 +180,14 @@ export function WidgetApp({ config }: Props) {
   if (brandingLoading) {
     return (
       <div ref={containerRef} className="min-h-screen bg-gray-50 p-4">
-        <div className="text-center py-12 text-gray-600">
-          Loading...
-        </div>
+        <div className="text-center py-12 text-gray-600">Loading...</div>
       </div>
     );
   }
 
   return (
     <div ref={containerRef} className="elope-widget min-h-screen bg-navy-900 p-4">
-      {currentView === 'catalog' && (
-        <WidgetCatalogGrid onPackageClick={handlePackageClick} />
-      )}
+      {currentView === 'catalog' && <WidgetCatalogGrid onPackageClick={handlePackageClick} />}
 
       {currentView === 'package' && selectedPackageSlug && (
         <WidgetPackagePage

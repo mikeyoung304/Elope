@@ -14,7 +14,7 @@ import type Stripe from 'stripe';
  */
 export interface CatalogRepository {
   getAllPackages(tenantId: string): Promise<Package[]>;
-  getAllPackagesWithAddOns(tenantId: string): Promise<Array<Package & { addOns: AddOn[] }>>;
+  getAllPackagesWithAddOns(tenantId: string): Promise<(Package & { addOns: AddOn[] })[]>;
   getPackageBySlug(tenantId: string, slug: string): Promise<Package | null>;
   getPackageById(tenantId: string, id: string): Promise<Package | null>;
   getAddOnsByPackageId(tenantId: string, packageId: string): Promise<AddOn[]>;
@@ -42,7 +42,7 @@ export interface BookingRepository {
  */
 export interface BlackoutRepository {
   isBlackoutDate(tenantId: string, date: string): Promise<boolean>;
-  getAllBlackouts(tenantId: string): Promise<Array<{ date: string; reason?: string }>>;
+  getAllBlackouts(tenantId: string): Promise<{ date: string; reason?: string }[]>;
   addBlackout(tenantId: string, date: string, reason?: string): Promise<void>;
   deleteBlackout(tenantId: string, id: string): Promise<void>;
   findBlackoutById(tenantId: string, id: string): Promise<{ id: string; date: string; reason?: string } | null>;
@@ -102,6 +102,15 @@ export interface PaymentProvider {
     payload: string,
     signature: string
   ): Promise<Stripe.Event>;
+  refund(input: {
+    paymentIntentId: string;
+    amountCents?: number; // Optional: for partial refunds, omit for full refund
+    reason?: string; // Optional: reason for refund
+  }): Promise<{
+    refundId: string;
+    status: string;
+    amountCents: number;
+  }>;
 }
 
 /**

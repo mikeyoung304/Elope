@@ -12,6 +12,7 @@ import { CommissionService } from './services/commission.service';
 import { IdentityService } from './services/identity.service';
 import { StripeConnectService } from './services/stripe-connect.service';
 import { TenantAuthService } from './services/tenant-auth.service';
+import { AuditService } from './services/audit.service';
 import { PackagesController } from './routes/packages.routes';
 import { AvailabilityController } from './routes/availability.routes';
 import { BookingsController } from './routes/bookings.routes';
@@ -22,6 +23,7 @@ import { AdminPackagesController } from './routes/admin-packages.routes';
 import { TenantController } from './routes/tenant.routes';
 import { TenantAuthController } from './routes/tenant-auth.routes';
 import { DevController } from './routes/dev.routes';
+import { PlatformAdminController } from './controllers/platform-admin.controller';
 import { buildMockAdapters } from './adapters/mock';
 import { PrismaClient } from './generated/prisma';
 import {
@@ -46,6 +48,7 @@ export interface Container {
     admin: AdminController;
     blackouts: BlackoutsController;
     adminPackages: AdminPackagesController;
+    platformAdmin: PlatformAdminController;
     tenant: TenantController;
     tenantAuth: TenantAuthController;
     dev?: DevController;
@@ -56,6 +59,7 @@ export interface Container {
     tenantAuth: TenantAuthService;
     catalog: CatalogService;
     booking: BookingService;
+    audit: AuditService;
   };
 }
 
@@ -78,8 +82,11 @@ export function buildContainer(config: Config): Container {
     // Create CommissionService with mock Prisma
     const commissionService = new CommissionService(mockPrisma);
 
-    // Build domain services with caching
-    const catalogService = new CatalogService(adapters.catalogRepo, cacheService);
+    // Create AuditService with mock Prisma (Sprint 2.1)
+    const auditService = new AuditService({ prisma: mockPrisma });
+
+    // Build domain services with caching and audit logging
+    const catalogService = new CatalogService(adapters.catalogRepo, cacheService, auditService);
     const availabilityService = new AvailabilityService(
       adapters.calendarProvider,
       adapters.blackoutRepo,
@@ -104,8 +111,6 @@ export function buildContainer(config: Config): Container {
 
     // Create TenantAuthService with mock Prisma tenant repo
     const tenantAuthService = new TenantAuthService(mockTenantRepo, config.JWT_SECRET);
-
-    // Build controllers
     const controllers = {
       packages: new PackagesController(catalogService),
       availability: new AvailabilityController(availabilityService),
@@ -114,6 +119,7 @@ export function buildContainer(config: Config): Container {
       admin: new AdminController(identityService, bookingService),
       blackouts: new BlackoutsController(adapters.blackoutRepo),
       adminPackages: new AdminPackagesController(catalogService),
+      platformAdmin: new PlatformAdminController(mockPrisma),
       tenant: new TenantController(mockTenantRepo),
       tenantAuth: new TenantAuthController(tenantAuthService),
       dev: new DevController(bookingService, adapters.catalogRepo),
@@ -125,6 +131,7 @@ export function buildContainer(config: Config): Container {
       tenantAuth: tenantAuthService,
       catalog: catalogService,
       booking: bookingService,
+      audit: auditService,
     };
 
     return { controllers, services };
@@ -207,8 +214,11 @@ export function buildContainer(config: Config): Container {
     calendarProvider = mockAdapters.calendarProvider;
   }
 
-  // Build domain services with caching
-  const catalogService = new CatalogService(catalogRepo, cacheService);
+  // Create AuditService with real Prisma (Sprint 2.1)
+  const auditService = new AuditService({ prisma });
+
+  // Build domain services with caching and audit logging
+  const catalogService = new CatalogService(catalogRepo, cacheService, auditService);
   const availabilityService = new AvailabilityService(
     calendarProvider,
     blackoutRepo,
@@ -258,6 +268,7 @@ export function buildContainer(config: Config): Container {
     admin: new AdminController(identityService, bookingService),
     blackouts: new BlackoutsController(blackoutRepo),
     adminPackages: new AdminPackagesController(catalogService),
+    platformAdmin: new PlatformAdminController(prisma),
     tenant: new TenantController(tenantRepo),
     tenantAuth: new TenantAuthController(tenantAuthService),
     // No dev controller in real mode
@@ -269,6 +280,7 @@ export function buildContainer(config: Config): Container {
     tenantAuth: tenantAuthService,
     catalog: catalogService,
     booking: bookingService,
+    audit: auditService,
   };
 
   return { controllers, services };

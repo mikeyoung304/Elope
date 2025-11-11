@@ -1,6 +1,7 @@
 # Security Documentation
 
 ## Security Guidelines
+- [SECURITY_SUMMARY.md](./SECURITY_SUMMARY.md) - Security architecture overview
 - [SECURITY.md](./SECURITY.md) - Security best practices and guardrails
 - [IMMEDIATE_SECURITY_ACTIONS.md](./IMMEDIATE_SECURITY_ACTIONS.md) - Urgent action items
 

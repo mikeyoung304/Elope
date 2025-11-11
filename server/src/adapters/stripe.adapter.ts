@@ -153,10 +153,47 @@ export class StripePaymentAdapter implements PaymentProvider {
   }
 
   /**
-   * Refund a payment (placeholder for future implementation)
+   * Refund a payment
+   *
+   * Supports both full and partial refunds. Works with both regular and
+   * Stripe Connect payments (destination charges).
+   *
+   * @param input - Refund parameters
+   * @param input.paymentIntentId - Stripe PaymentIntent ID to refund
+   * @param input.amountCents - Optional: amount to refund in cents (omit for full refund)
+   * @param input.reason - Optional: reason for refund ('duplicate', 'fraudulent', 'requested_by_customer')
+   * @returns Refund details (ID, status, amount)
+   *
+   * @see https://stripe.com/docs/api/refunds/create
    */
-  async refund(_sessionOrPaymentId: string): Promise<void> {
-    // TODO: Implement refund logic
-    throw new Error('Refund not yet implemented');
+  async refund(input: {
+    paymentIntentId: string;
+    amountCents?: number;
+    reason?: string;
+  }): Promise<{
+    refundId: string;
+    status: string;
+    amountCents: number;
+  }> {
+    // Validate reason if provided
+    const validReasons = ['duplicate', 'fraudulent', 'requested_by_customer'];
+    if (input.reason && !validReasons.includes(input.reason)) {
+      throw new Error(
+        `Invalid refund reason: ${input.reason}. Must be one of: ${validReasons.join(', ')}`
+      );
+    }
+
+    // Create refund via Stripe API
+    const refund = await this.stripe.refunds.create({
+      payment_intent: input.paymentIntentId,
+      amount: input.amountCents, // Omit for full refund, specify for partial
+      reason: input.reason as 'duplicate' | 'fraudulent' | 'requested_by_customer' | undefined,
+    });
+
+    return {
+      refundId: refund.id,
+      status: refund.status, // 'pending', 'succeeded', 'failed', 'canceled'
+      amountCents: refund.amount,
+    };
   }
 }

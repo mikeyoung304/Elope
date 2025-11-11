@@ -1,0 +1,165 @@
+VERSIONING & DRAFT/PUBLISH WORKFLOWS - FINDINGS SUMMARY
+========================================================
+
+EXPLORATION SCOPE:
+- Prisma schema analysis (database models)
+- Service layer investigation (branding, packages, add-ons)
+- API contracts and DTOs
+- Frontend configuration management
+- Migration and schema evolution
+- Caching strategy
+- Booking and pricing snapshots
+
+KEY FINDINGS:
+
+1. CURRENT STATE - What EXISTS
+   ✅ Soft-delete pattern: Tenant.isActive field
+   ✅ Timestamps: createdAt, updatedAt on all major entities
+   ✅ JSON blob storage: Flexible branding config (Tenant.branding)
+   ✅ Cache invalidation: Basic strategy for configuration updates
+   ✅ Multi-tenant isolation: Proper tenantId scoping
+
+2. WHAT'S MISSING - Critical Gaps
+   ❌ Draft vs Published state separation
+   ❌ Version history tracking tables
+   ❌ Rollback/revert functionality
+   ❌ Preview capabilities before publishing
+   ❌ Audit logging (WHO made changes, WHAT changed)
+   ❌ Configuration snapshots at booking time
+   ❌ Staging/production environment separation
+
+3. DETAILED ANALYSIS BY COMPONENT:
+
+   BRANDING CONFIGURATION:
+   - Location: Tenant.branding (JSON blob)
+   - Current behavior: Direct updates, no versioning
+   - Issues: 
+     * Changes apply immediately to all customers
+     * No way to preview before publishing
+     * No audit trail of changes
+     * No rollback capability
+     * No version history
+
+   PACKAGE MANAGEMENT:
+   - Location: Package model with "active" boolean only
+   - Current behavior: Hard deletes (cascade), direct updates
+   - Issues:
+     * No draft packages
+     * No version history
+     * Changes are permanent
+     * No ability to schedule publishing
+     * Pricing changes affect historical bookings
+
+   DATABASE SCHEMA:
+   - Package: id, tenantId, slug, name, description, basePrice, active, photos, createdAt, updatedAt
+   - Missing: isDraft, publishedAt, versionNumber, draftPhotos
+   - Tenant: Similar structure, branding stored as JSON
+   - Missing: draftBranding, currentBrandingVersion, publishedAt
+
+   API CONTRACTS:
+   - UpdateBrandingDtoSchema: Only has color/font/logo fields
+   - Missing: isDraft, publishedAt, versionNumber, publish action
+   - UpdatePackageDtoSchema: Only CRUD fields
+   - Missing: draft state, version management endpoints
+
+   MIGRATIONS:
+   - Only basic schema migrations exist
+   - No versioning infrastructure migrations
+   - No audit log table creation
+   - No history table creation
+
+4. EXISTING PATTERNS THAT COULD BE EXTENDED:
+   - Soft delete pattern (Tenant.isActive) → extend to Package/AddOn
+   - JSON blob storage → could store versioned configs
+   - Timestamp tracking → could add publishedAt, draftCreatedAt
+   - Cache invalidation → could be tied to version numbers
+
+5. CRITICAL ISSUES REQUIRING ATTENTION:
+   - Branding changes affect all visitors immediately with no rollback
+   - Package pricing changes can affect historical bookings
+   - No way to test changes before publishing
+   - No audit trail for compliance/debugging
+   - Hard deletes mean permanent data loss with no recovery
+
+6. IMPLEMENTATION PRIORITIES:
+
+   HIGH PRIORITY:
+   1. Add draft/published state to Package and Branding models
+   2. Create version history tables (BrandingVersion, PackageVersion)
+   3. Create audit log table (AuditLog)
+   4. Implement publish/rollback service methods
+   5. Add preview endpoints
+
+   MEDIUM PRIORITY:
+   1. Booking configuration snapshots
+   2. Audit log retrieval endpoints
+   3. Frontend UI for version history
+   4. Scheduling capabilities
+   5. Soft deletes for Package/AddOn
+
+   LOW PRIORITY:
+   1. Staging/production environment separation
+   2. Approval workflows
+   3. Scheduled publishing UI
+   4. Advanced audit log analytics
+
+7. AFFECTED FILES FOR CHANGES:
+   
+   New Files to Create:
+   - server/prisma/migrations/XX_add_versioning_support.sql
+   - server/src/services/branding.service.ts
+   - server/src/services/package.service.ts
+   - server/src/services/audit-log.service.ts
+   - server/src/routes/tenant-versioning.routes.ts
+   - client/src/features/tenant-admin/BrandingVersionHistory.tsx
+   - client/src/features/tenant-admin/PackageVersionHistory.tsx
+
+   Files to Modify:
+   - server/prisma/schema.prisma (add version models)
+   - packages/contracts/src/dto.ts (add versioning DTOs)
+   - packages/contracts/src/api.v1.ts (add versioning endpoints)
+   - server/src/controllers/tenant-admin.controller.ts (use new services)
+   - client/src/features/tenant-admin/BrandingEditor.tsx (add draft/publish UI)
+   - client/src/features/tenant-admin/TenantPackagesManager.tsx (versioning)
+
+8. DATA MIGRATION NEEDED:
+   - Existing branding configs → BrandingVersion table
+   - Existing packages → PackageVersion table
+   - Set all current versions to v1
+
+9. TESTING REQUIREMENTS:
+   - Draft/publish state transitions
+   - Version history creation and retrieval
+   - Rollback functionality
+   - Audit log accuracy
+   - Cache invalidation with versioning
+   - Multi-tenant isolation in versioning
+
+10. SECURITY CONSIDERATIONS:
+    - Only tenant admins can publish/rollback
+    - Audit trail must log user and timestamp
+    - Rate limiting on publish operations
+    - Future: approval workflows for changes
+    - IP address logging for audit trail
+
+RECOMMENDED NEXT STEPS:
+1. Review full analysis document: VERSIONING_DRAFT_PUBLISH_ANALYSIS.md
+2. Prioritize features (high/medium/low priority)
+3. Begin Phase 1: Database schema updates
+4. Create migration scripts
+5. Implement service layer
+6. Add API endpoints
+7. Update frontend
+8. Comprehensive testing
+9. Documentation
+
+EFFORT ESTIMATE:
+- Phase 1 (Schema): 2-3 days
+- Phase 2 (Services): 3-4 days  
+- Phase 3 (APIs): 2-3 days
+- Phase 4 (Frontend): 3-4 days
+- Phase 5 (Testing): 2-3 days
+Total: 2-3 weeks for comprehensive implementation
+
+FILE LOCATION:
+Full analysis saved to: /Users/mikeyoung/CODING/Elope/VERSIONING_DRAFT_PUBLISH_ANALYSIS.md

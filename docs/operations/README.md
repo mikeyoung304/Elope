@@ -5,6 +5,7 @@
 - [INCIDENT_RESPONSE.md](./INCIDENT_RESPONSE.md) - Incident response playbook
 
 ## Deployment
+- [DEPLOYMENT_GUIDE.md](./DEPLOYMENT_GUIDE.md) - Comprehensive deployment guide
 - [PRODUCTION_DEPLOYMENT_GUIDE.md](./PRODUCTION_DEPLOYMENT_GUIDE.md) - Production deployment procedures
 - [DEPLOY_NOW.md](./DEPLOY_NOW.md) - Quick deployment reference
 

@@ -260,7 +260,7 @@ export class CommissionService {
 
     // Partial refund: proportional commission refund
     const refundRatio = refundAmount / originalTotal;
-    const commissionRefund = Math.floor(originalCommission * refundRatio);
+    const commissionRefund = Math.ceil(originalCommission * refundRatio);
 
     logger.debug(
       {

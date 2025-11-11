@@ -189,3 +189,22 @@ export const StripeAccountStatusDtoSchema = z.object({
 });
 
 export type StripeAccountStatusDto = z.infer<typeof StripeAccountStatusDtoSchema>;
+
+// Tenant DTO (for platform admin)
+export const TenantDtoSchema = z.object({
+  id: z.string(),
+  slug: z.string(),
+  name: z.string(),
+  email: z.string().email().nullable(),
+  commissionPercent: z.number(),
+  stripeAccountId: z.string().nullable(),
+  stripeOnboarded: z.boolean(),
+  isActive: z.boolean(),
+  createdAt: z.string(), // ISO date string
+  updatedAt: z.string(), // ISO date string
+  // Stats
+  packageCount: z.number().optional(),
+  bookingCount: z.number().optional(),
+});
+
+export type TenantDto = z.infer<typeof TenantDtoSchema>;
