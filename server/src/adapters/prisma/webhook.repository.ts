@@ -32,21 +32,20 @@ export class PrismaWebhookRepository implements WebhookRepository {
    * ```
    */
   async isDuplicate(tenantId: string, eventId: string): Promise<boolean> {
-    const existing = await this.prisma.webhookEvent.findUnique({
-      where: { eventId },
+    const existing = await this.prisma.webhookEvent.findFirst({
+      where: {
+        tenantId,
+        eventId,
+      },
     });
 
     if (existing) {
-      // Verify the webhook belongs to the correct tenant
-      if (existing.tenantId !== tenantId) {
-        logger.warn({ eventId, expectedTenant: tenantId, actualTenant: existing.tenantId }, 'Webhook tenant mismatch');
-        return false;  // Not a duplicate for this tenant
-      }
+      // Webhook exists for this tenant - check if already processed
 
       // If webhook already exists, mark as duplicate (unless it's already processed)
       if (existing.status !== 'DUPLICATE' && existing.status !== 'PROCESSED') {
         await this.prisma.webhookEvent.update({
-          where: { eventId },
+          where: { id: existing.id },
           data: {
             status: 'DUPLICATE',
             attempts: { increment: 1 },

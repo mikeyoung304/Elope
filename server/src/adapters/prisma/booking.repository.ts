@@ -127,6 +127,7 @@ export class PrismaBookingRepository implements BookingRepository {
         if (booking.addOnIds.length > 0) {
           const addOns = await tx.addOn.findMany({
             where: {
+              tenantId,
               id: { in: booking.addOnIds },
             },
             select: { id: true, price: true },
