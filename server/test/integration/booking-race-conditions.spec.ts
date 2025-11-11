@@ -7,37 +7,35 @@
  */
 
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
-import { PrismaClient } from '../../src/generated/prisma';
 import { BookingService } from '../../src/services/booking.service';
 import { PrismaBookingRepository } from '../../src/adapters/prisma/booking.repository';
 import { PrismaCatalogRepository } from '../../src/adapters/prisma/catalog.repository';
 import { BookingConflictError, BookingLockTimeoutError } from '../../src/lib/errors';
 import { FakeEventEmitter, FakePaymentProvider } from '../helpers/fakes';
 import type { Booking } from '../../src/lib/entities';
+import { setupCompleteIntegrationTest } from '../helpers/integration-setup';
 
-describe('Booking Race Conditions - Integration Tests', () => {
-  let prisma: PrismaClient;
+describe.sequential('Booking Race Conditions - Integration Tests', () => {
+  const ctx = setupCompleteIntegrationTest('booking-race');
+  let testTenantId: string;
   let bookingRepo: PrismaBookingRepository;
   let catalogRepo: PrismaCatalogRepository;
   let bookingService: BookingService;
   let eventEmitter: FakeEventEmitter;
   let paymentProvider: FakePaymentProvider;
   let testPackageId: string;
+  let testPackageSlug: string;
   let testAddOnId: string;
 
   beforeEach(async () => {
-    // Connect to test database
-    prisma = new PrismaClient({
-      datasources: {
-        db: {
-          url: process.env.DATABASE_URL_TEST || process.env.DATABASE_URL,
-        },
-      },
-    });
+    // Setup tenant
+    await ctx.tenants.cleanupTenants();
+    await ctx.tenants.tenantA.create();
+    testTenantId = ctx.tenants.tenantA.id;
 
     // Initialize repositories
-    bookingRepo = new PrismaBookingRepository(prisma);
-    catalogRepo = new PrismaCatalogRepository(prisma);
+    bookingRepo = new PrismaBookingRepository(ctx.prisma);
+    catalogRepo = new PrismaCatalogRepository(ctx.prisma);
 
     // Initialize fakes
     eventEmitter = new FakeEventEmitter();
@@ -51,38 +49,20 @@ describe('Booking Race Conditions - Integration Tests', () => {
       paymentProvider
     );
 
-    // Clean database
-    await prisma.bookingAddOn.deleteMany();
-    await prisma.booking.deleteMany();
-    await prisma.customer.deleteMany();
+    // Create test package using catalog repository
+    const pkg = ctx.factories.package.create({ title: 'Test Package Race', priceCents: 250000 });
+    const createdPkg = await catalogRepo.createPackage(testTenantId, pkg);
+    testPackageId = createdPkg.id;
+    testPackageSlug = createdPkg.slug;
 
-    // Get or create test package for foreign key
-    const pkg = await prisma.package.upsert({
-      where: { slug: 'test-package-race' },
-      update: {},
-      create: {
-        slug: 'test-package-race',
-        name: 'Test Package Race',
-        basePrice: 250000,
-      },
-    });
-    testPackageId = pkg.id;
-
-    // Get or create test add-on
-    const addOn = await prisma.addOn.upsert({
-      where: { slug: 'test-addon-race' },
-      update: {},
-      create: {
-        slug: 'test-addon-race',
-        name: 'Test Add-On Race',
-        price: 5000,
-      },
-    });
-    testAddOnId = addOn.id;
+    // Create test add-on
+    const addOn = ctx.factories.addOn.create({ title: 'Test Add-On Race', priceCents: 5000, packageId: testPackageId });
+    const createdAddOn = await catalogRepo.createAddOn(testTenantId, { ...addOn, packageId: testPackageId });
+    testAddOnId = createdAddOn.id;
   });
 
   afterEach(async () => {
-    await prisma.$disconnect();
+    await ctx.cleanup();
   });
 
   describe('Concurrent Booking Prevention', () => {
@@ -114,8 +94,8 @@ describe('Booking Race Conditions - Integration Tests', () => {
 
       // Act: Fire two booking requests concurrently
       const results = await Promise.allSettled([
-        bookingRepo.create(booking1),
-        bookingRepo.create(booking2),
+        bookingRepo.create(testTenantId, booking1),
+        bookingRepo.create(testTenantId, booking2),
       ]);
 
       // Assert: One succeeds, one fails
@@ -133,7 +113,7 @@ describe('Booking Race Conditions - Integration Tests', () => {
       ).toBe(true);
 
       // Verify only one booking exists in database
-      const bookings = await prisma.booking.findMany({
+      const bookings = await ctx.prisma.booking.findMany({
         where: { date: new Date(eventDate) },
       });
       expect(bookings).toHaveLength(1);
@@ -155,7 +135,7 @@ describe('Booking Race Conditions - Integration Tests', () => {
           status: 'PAID',
           createdAt: new Date().toISOString(),
         };
-        return bookingRepo.create(booking);
+        return bookingRepo.create(testTenantId, booking);
       });
 
       // Act: Execute all concurrently
@@ -178,7 +158,7 @@ describe('Booking Race Conditions - Integration Tests', () => {
       });
 
       // Verify only one booking exists in database
-      const bookings = await prisma.booking.findMany({
+      const bookings = await ctx.prisma.booking.findMany({
         where: { date: new Date(eventDate) },
       });
       expect(bookings).toHaveLength(1);
@@ -199,7 +179,7 @@ describe('Booking Race Conditions - Integration Tests', () => {
 
       // Act: Create all concurrently
       const results = await Promise.allSettled(
-        bookings.map(b => bookingRepo.create(b))
+        bookings.map(b => bookingRepo.create(testTenantId, b))
       );
 
       // Assert: All should succeed since they're different dates
@@ -207,7 +187,7 @@ describe('Booking Race Conditions - Integration Tests', () => {
       expect(succeeded).toHaveLength(5);
 
       // Verify all bookings exist
-      const allBookings = await prisma.booking.findMany({
+      const allBookings = await ctx.prisma.booking.findMany({
         where: {
           date: {
             gte: new Date('2025-07-01'),
@@ -236,7 +216,7 @@ describe('Booking Race Conditions - Integration Tests', () => {
         createdAt: new Date().toISOString(),
       };
 
-      await bookingRepo.create(booking1);
+      await bookingRepo.create(testTenantId, booking1);
 
       // Try to create another booking with same date
       const booking2: Booking = {
@@ -252,12 +232,12 @@ describe('Booking Race Conditions - Integration Tests', () => {
       };
 
       // Should fail due to isolation level enforcement
-      await expect(bookingRepo.create(booking2))
+      await expect(bookingRepo.create(testTenantId, booking2))
         .rejects
         .toThrow();
 
       // Verify only one booking exists
-      const bookings = await prisma.booking.findMany({
+      const bookings = await ctx.prisma.booking.findMany({
         where: { date: new Date(eventDate) },
       });
       expect(bookings).toHaveLength(1);
@@ -278,18 +258,18 @@ describe('Booking Race Conditions - Integration Tests', () => {
       };
 
       // Try to create booking with invalid package
-      await expect(bookingRepo.create(invalidBooking))
+      await expect(bookingRepo.create(testTenantId, invalidBooking))
         .rejects
         .toThrow();
 
       // Verify no customer was created (rollback worked)
-      const customer = await prisma.customer.findUnique({
+      const customer = await ctx.prisma.customer.findUnique({
         where: { email: 'rollback@example.com' },
       });
       expect(customer).toBeNull();
 
       // Verify no booking was created
-      const booking = await prisma.booking.findUnique({
+      const booking = await ctx.prisma.booking.findUnique({
         where: { id: 'rollback-test' },
       });
       expect(booking).toBeNull();
@@ -302,7 +282,7 @@ describe('Booking Race Conditions - Integration Tests', () => {
 
       const payment1 = {
         sessionId: 'sess_1',
-        packageId: testPackageId,
+        packageId: testPackageSlug,
         eventDate,
         email: 'payment1@example.com',
         coupleName: 'Payment Test 1',
@@ -312,7 +292,7 @@ describe('Booking Race Conditions - Integration Tests', () => {
 
       const payment2 = {
         sessionId: 'sess_2',
-        packageId: testPackageId,
+        packageId: testPackageSlug,
         eventDate,
         email: 'payment2@example.com',
         coupleName: 'Payment Test 2',
@@ -322,8 +302,8 @@ describe('Booking Race Conditions - Integration Tests', () => {
 
       // Act: Process payments concurrently
       const results = await Promise.allSettled([
-        bookingService.onPaymentCompleted(payment1),
-        bookingService.onPaymentCompleted(payment2),
+        bookingService.onPaymentCompleted(testTenantId, payment1),
+        bookingService.onPaymentCompleted(testTenantId, payment2),
       ]);
 
       // Assert: One succeeds, one fails
@@ -334,7 +314,7 @@ describe('Booking Race Conditions - Integration Tests', () => {
       expect(failed).toHaveLength(1);
 
       // Verify only one booking exists
-      const bookings = await prisma.booking.findMany({
+      const bookings = await ctx.prisma.booking.findMany({
         where: { date: new Date(eventDate) },
       });
       expect(bookings).toHaveLength(1);
@@ -351,9 +331,9 @@ describe('Booking Race Conditions - Integration Tests', () => {
       // Try to create 5 bookings rapidly in sequence
       for (let i = 0; i < 5; i++) {
         try {
-          await bookingService.onPaymentCompleted({
+          await bookingService.onPaymentCompleted(testTenantId, {
             sessionId: `sess_rapid_${i}`,
-            packageId: testPackageId,
+            packageId: testPackageSlug,
             eventDate,
             email: `rapid${i}@example.com`,
             coupleName: `Rapid Test ${i}`,
@@ -375,7 +355,7 @@ describe('Booking Race Conditions - Integration Tests', () => {
       expect(errorCount).toBe(4);
 
       // Verify only one booking exists
-      const bookings = await prisma.booking.findMany({
+      const bookings = await ctx.prisma.booking.findMany({
         where: { date: new Date(eventDate) },
       });
       expect(bookings).toHaveLength(1);
@@ -401,7 +381,7 @@ describe('Booking Race Conditions - Integration Tests', () => {
       };
 
       // Create first booking
-      await bookingRepo.create(booking1);
+      await bookingRepo.create(testTenantId, booking1);
 
       // Try to create second booking (should fail quickly, not wait)
       const booking2: Booking = {
@@ -418,7 +398,7 @@ describe('Booking Race Conditions - Integration Tests', () => {
 
       const startTime = Date.now();
 
-      await expect(bookingRepo.create(booking2))
+      await expect(bookingRepo.create(testTenantId, booking2))
         .rejects
         .toThrow();
 
@@ -445,14 +425,14 @@ describe('Booking Race Conditions - Integration Tests', () => {
       };
 
       // Create booking
-      await bookingRepo.create(booking1);
+      await bookingRepo.create(testTenantId, booking1);
 
       // Lock should be released now, so we should be able to query the date
-      const isBooked = await bookingRepo.isDateBooked(eventDate);
+      const isBooked = await bookingRepo.isDateBooked(testTenantId, eventDate);
       expect(isBooked).toBe(true);
 
       // Should not timeout or hang
-      const booking = await bookingRepo.findById('lock-release-1');
+      const booking = await bookingRepo.findById(testTenantId, 'lock-release-1');
       expect(booking).not.toBeNull();
     });
 
@@ -472,12 +452,12 @@ describe('Booking Race Conditions - Integration Tests', () => {
       };
 
       // Try to create booking (will fail)
-      await expect(bookingRepo.create(invalidBooking))
+      await expect(bookingRepo.create(testTenantId, invalidBooking))
         .rejects
         .toThrow();
 
       // Lock should be released, verify we can query the date
-      const isBooked = await bookingRepo.isDateBooked(eventDate);
+      const isBooked = await bookingRepo.isDateBooked(testTenantId, eventDate);
       expect(isBooked).toBe(false);
 
       // Create valid booking on same date (should succeed)
@@ -493,7 +473,7 @@ describe('Booking Race Conditions - Integration Tests', () => {
         createdAt: new Date().toISOString(),
       };
 
-      await expect(bookingRepo.create(validBooking))
+      await expect(bookingRepo.create(testTenantId, validBooking))
         .resolves
         .toBeDefined();
     });
@@ -529,8 +509,8 @@ describe('Booking Race Conditions - Integration Tests', () => {
 
       // Act: Create concurrently
       const results = await Promise.allSettled([
-        bookingRepo.create(booking1),
-        bookingRepo.create(booking2),
+        bookingRepo.create(testTenantId, booking1),
+        bookingRepo.create(testTenantId, booking2),
       ]);
 
       // Assert: One succeeds with add-ons
@@ -538,7 +518,7 @@ describe('Booking Race Conditions - Integration Tests', () => {
       expect(succeeded).toHaveLength(1);
 
       // Verify the successful booking has add-ons
-      const bookings = await prisma.booking.findMany({
+      const bookings = await ctx.prisma.booking.findMany({
         where: { date: new Date(eventDate) },
         include: { addOns: true },
       });
@@ -551,7 +531,7 @@ describe('Booking Race Conditions - Integration Tests', () => {
       // Dates 2 and 3 should fail, dates 1 and 4 should succeed
 
       // Pre-create bookings for dates 2 and 3
-      await bookingRepo.create({
+      await bookingRepo.create(testTenantId, {
         id: 'mixed-pre-2',
         packageId: testPackageId,
         coupleName: 'Pre Booking 2',
@@ -563,7 +543,7 @@ describe('Booking Race Conditions - Integration Tests', () => {
         createdAt: new Date().toISOString(),
       });
 
-      await bookingRepo.create({
+      await bookingRepo.create(testTenantId, {
         id: 'mixed-pre-3',
         packageId: testPackageId,
         coupleName: 'Pre Booking 3',
@@ -577,7 +557,7 @@ describe('Booking Race Conditions - Integration Tests', () => {
 
       // Try concurrent bookings
       const results = await Promise.allSettled([
-        bookingRepo.create({
+        bookingRepo.create(testTenantId, {
           id: 'mixed-1',
           packageId: testPackageId,
           coupleName: 'Mixed 1',
@@ -588,7 +568,7 @@ describe('Booking Race Conditions - Integration Tests', () => {
           status: 'PAID',
           createdAt: new Date().toISOString(),
         }),
-        bookingRepo.create({
+        bookingRepo.create(testTenantId, {
           id: 'mixed-2',
           packageId: testPackageId,
           coupleName: 'Mixed 2',
@@ -599,7 +579,7 @@ describe('Booking Race Conditions - Integration Tests', () => {
           status: 'PAID',
           createdAt: new Date().toISOString(),
         }),
-        bookingRepo.create({
+        bookingRepo.create(testTenantId, {
           id: 'mixed-3',
           packageId: testPackageId,
           coupleName: 'Mixed 3',
@@ -610,7 +590,7 @@ describe('Booking Race Conditions - Integration Tests', () => {
           status: 'PAID',
           createdAt: new Date().toISOString(),
         }),
-        bookingRepo.create({
+        bookingRepo.create(testTenantId, {
           id: 'mixed-4',
           packageId: testPackageId,
           coupleName: 'Mixed 4',

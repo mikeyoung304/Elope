@@ -7,60 +7,43 @@
  */
 
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
-import { PrismaClient } from '../../src/generated/prisma';
 import { PrismaBookingRepository } from '../../src/adapters/prisma/booking.repository';
 import { BookingConflictError, BookingLockTimeoutError } from '../../src/lib/errors';
 import type { Booking } from '../../src/lib/entities';
+import { setupCompleteIntegrationTest } from '../helpers/integration-setup';
 
-describe('PrismaBookingRepository - Integration Tests', () => {
-  let prisma: PrismaClient;
+describe.sequential('PrismaBookingRepository - Integration Tests', () => {
+  const ctx = setupCompleteIntegrationTest('booking-repository');
   let repository: PrismaBookingRepository;
+  let testTenantId: string;
   let testPackageId: string;
   let testAddOnId: string;
 
   beforeEach(async () => {
-    // Connect to test database
-    prisma = new PrismaClient({
-      datasources: {
-        db: {
-          url: process.env.DATABASE_URL_TEST || process.env.DATABASE_URL,
-        },
-      },
-    });
-    repository = new PrismaBookingRepository(prisma);
+    // Setup tenant
+    await ctx.tenants.cleanupTenants();
+    await ctx.tenants.tenantA.create();
+    testTenantId = ctx.tenants.tenantA.id;
 
-    // Clean database
-    await prisma.bookingAddOn.deleteMany();
-    await prisma.booking.deleteMany();
-    await prisma.customer.deleteMany();
+    // Initialize repository
+    repository = new PrismaBookingRepository(ctx.prisma);
 
-    // Get or create test package for foreign key
-    const pkg = await prisma.package.upsert({
-      where: { slug: 'test-package' },
-      update: {},
-      create: {
-        slug: 'test-package',
-        name: 'Test Package',
-        basePrice: 250000,
-      },
-    });
-    testPackageId = pkg.id;
+    // Create test package using catalog repository
+    const { PrismaCatalogRepository } = await import('../../src/adapters/prisma/catalog.repository');
+    const catalogRepo = new PrismaCatalogRepository(ctx.prisma);
 
-    // Get or create test add-on
-    const addOn = await prisma.addOn.upsert({
-      where: { slug: 'test-addon' },
-      update: {},
-      create: {
-        slug: 'test-addon',
-        name: 'Test Add-On',
-        price: 5000,
-      },
-    });
-    testAddOnId = addOn.id;
+    const pkg = ctx.factories.package.create({ title: 'Test Package', priceCents: 250000 });
+    const createdPkg = await catalogRepo.createPackage(testTenantId, pkg);
+    testPackageId = createdPkg.id;
+
+    // Create test add-on
+    const addOn = ctx.factories.addOn.create({ title: 'Test Add-On', priceCents: 5000, packageId: testPackageId });
+    const createdAddOn = await catalogRepo.createAddOn(testTenantId, { ...addOn, packageId: testPackageId });
+    testAddOnId = createdAddOn.id;
   });
 
   afterEach(async () => {
-    await prisma.$disconnect();
+    await ctx.cleanup();
   });
 
   describe('Pessimistic Locking', () => {
@@ -77,7 +60,7 @@ describe('PrismaBookingRepository - Integration Tests', () => {
         createdAt: new Date().toISOString(),
       };
 
-      const created = await repository.create(booking);
+      const created = await repository.create(testTenantId, booking);
 
       expect(created.id).toBe(booking.id);
       expect(created.eventDate).toBe(booking.eventDate);
@@ -97,7 +80,7 @@ describe('PrismaBookingRepository - Integration Tests', () => {
         createdAt: new Date().toISOString(),
       };
 
-      await repository.create(booking1);
+      await repository.create(testTenantId, booking1);
 
       // Try to create second booking for same date
       const booking2: Booking = {
@@ -107,7 +90,7 @@ describe('PrismaBookingRepository - Integration Tests', () => {
         coupleName: 'Second Couple',
       };
 
-      await expect(repository.create(booking2))
+      await expect(repository.create(testTenantId, booking2))
         .rejects
         .toThrow(BookingConflictError);
     });
@@ -137,8 +120,8 @@ describe('PrismaBookingRepository - Integration Tests', () => {
 
       // Try to create both simultaneously
       const results = await Promise.allSettled([
-        repository.create(booking1),
-        repository.create(booking2),
+        repository.create(testTenantId, booking1),
+        repository.create(testTenantId, booking2),
       ]);
 
       // One should succeed, one should fail
@@ -200,7 +183,7 @@ describe('PrismaBookingRepository - Integration Tests', () => {
 
       for (const booking of bookings) {
         try {
-          await repository.create(booking);
+          await repository.create(testTenantId, booking);
           successCount++;
         } catch (error) {
           if (error instanceof BookingConflictError || error instanceof BookingLockTimeoutError) {
@@ -232,18 +215,18 @@ describe('PrismaBookingRepository - Integration Tests', () => {
       };
 
       try {
-        await repository.create(booking);
+        await repository.create(testTenantId, booking);
       } catch (error) {
         // Expected to fail
       }
 
       // Verify NO partial data committed
-      const customerCount = await prisma.customer.count({
+      const customerCount = await ctx.prisma.customer.count({
         where: { email: booking.email },
       });
       expect(customerCount).toBe(0);
 
-      const bookingCount = await prisma.booking.count({
+      const bookingCount = await ctx.prisma.booking.count({
         where: { id: booking.id },
       });
       expect(bookingCount).toBe(0);
@@ -262,14 +245,14 @@ describe('PrismaBookingRepository - Integration Tests', () => {
         createdAt: new Date().toISOString(),
       };
 
-      const created = await repository.create(booking);
+      const created = await repository.create(testTenantId, booking);
 
       // Verify booking created
       expect(created.id).toBe(booking.id);
       expect(created.addOnIds.length).toBe(1);
 
       // Verify add-ons in database
-      const addOns = await prisma.bookingAddOn.findMany({
+      const addOns = await ctx.prisma.bookingAddOn.findMany({
         where: { bookingId: booking.id },
       });
       expect(addOns.length).toBe(1);
@@ -291,7 +274,7 @@ describe('PrismaBookingRepository - Integration Tests', () => {
         createdAt: new Date().toISOString(),
       };
 
-      await repository.create(booking1);
+      await repository.create(testTenantId, booking1);
 
       // Second booking with same email updates customer
       const booking2: Booking = {
@@ -307,10 +290,10 @@ describe('PrismaBookingRepository - Integration Tests', () => {
         createdAt: new Date().toISOString(),
       };
 
-      await repository.create(booking2);
+      await repository.create(testTenantId, booking2);
 
       // Verify only one customer exists with updated info
-      const customers = await prisma.customer.findMany({
+      const customers = await ctx.prisma.customer.findMany({
         where: { email: 'upsert@test.com' },
       });
 
@@ -319,7 +302,7 @@ describe('PrismaBookingRepository - Integration Tests', () => {
       expect(customers[0].phone).toBe('555-2222');
 
       // Verify both bookings exist
-      const bookings = await prisma.booking.findMany({
+      const bookings = await ctx.prisma.booking.findMany({
         where: {
           customer: { email: 'upsert@test.com' },
         },
@@ -342,9 +325,9 @@ describe('PrismaBookingRepository - Integration Tests', () => {
         createdAt: new Date().toISOString(),
       };
 
-      await repository.create(booking);
+      await repository.create(testTenantId, booking);
 
-      const found = await repository.findById('find-test');
+      const found = await repository.findById(testTenantId, 'find-test');
 
       expect(found).not.toBeNull();
       expect(found?.id).toBe('find-test');
@@ -353,7 +336,7 @@ describe('PrismaBookingRepository - Integration Tests', () => {
     });
 
     it('should return null for non-existent booking', async () => {
-      const found = await repository.findById('non-existent-id');
+      const found = await repository.findById(testTenantId, 'non-existent-id');
       expect(found).toBeNull();
     });
 
@@ -370,12 +353,12 @@ describe('PrismaBookingRepository - Integration Tests', () => {
         createdAt: new Date().toISOString(),
       };
 
-      await repository.create(booking);
+      await repository.create(testTenantId, booking);
 
-      const isBooked = await repository.isDateBooked('2026-07-01');
+      const isBooked = await repository.isDateBooked(testTenantId, '2026-07-01');
       expect(isBooked).toBe(true);
 
-      const isNotBooked = await repository.isDateBooked('2026-07-02');
+      const isNotBooked = await repository.isDateBooked(testTenantId, '2026-07-02');
       expect(isNotBooked).toBe(false);
     });
 
@@ -418,12 +401,12 @@ describe('PrismaBookingRepository - Integration Tests', () => {
       ];
 
       for (const booking of bookings) {
-        await repository.create(booking);
+        await repository.create(testTenantId, booking);
         // Small delay to ensure different creation times
         await new Promise(resolve => setTimeout(resolve, 10));
       }
 
-      const all = await repository.findAll();
+      const all = await repository.findAll(testTenantId);
 
       expect(all.length).toBe(3);
       // Should be in reverse chronological order (newest first)

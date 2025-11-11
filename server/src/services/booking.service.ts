@@ -258,7 +258,7 @@ export class BookingService {
     // Create PAID booking with commission data
     const booking: Booking = {
       id: `booking_${Date.now()}`,
-      packageId: input.packageId,
+      packageId: pkg.id, // Use actual package ID from fetched package (input.packageId is a slug)
       coupleName: input.coupleName,
       email: input.email,
       eventDate: input.eventDate,
