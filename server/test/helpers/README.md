@@ -548,6 +548,72 @@ it('should invalidate only specific tenant cache', async () => {
 
 ## Troubleshooting
 
+### Database Connection Pool Exhaustion 🔴 **CRITICAL**
+
+**Symptom:**
+```
+PrismaClientInitializationError:
+Invalid `prisma.tenant.findMany()` invocation
+Too many database connections opened:
+FATAL: remaining connection slots are reserved for roles with the SUPERUSER attribute
+```
+
+**Impact:**
+- Tests that were passing suddenly fail
+- Tests run slower or timeout
+- Intermittent, unpredictable failures
+- **Test regressions**: Test pass rate drops significantly
+
+**Root Cause:**
+Integration tests using `setupCompleteIntegrationTest()` create a new Prisma Client instance for each test file. Without connection pool limits, each instance can open 100+ connections, quickly exhausting the database server's available connections (typically 100-300 total).
+
+**Fix: Configure Connection Pool Limits** ✅
+
+Add connection pool parameters to `DATABASE_URL_TEST` in `.env.test`:
+
+```bash
+# Before (causes exhaustion):
+DATABASE_URL_TEST="postgresql://user:pass@host:5432/db"
+
+# After (prevents exhaustion):
+DATABASE_URL_TEST="postgresql://user:pass@host:5432/db?connection_limit=10&pool_timeout=20"
+```
+
+**Parameter Explanations:**
+- `connection_limit=10`: Maximum connections per Prisma Client instance (default is unlimited)
+- `pool_timeout=20`: Seconds to wait for available connection before timeout (default is 10)
+
+**Why These Values:**
+- `connection_limit=10`: Low enough to prevent exhaustion with 6+ test files, high enough for concurrent operations within tests
+- `pool_timeout=20`: Longer timeout accounts for sequential test execution and cleanup operations
+
+**Validation:**
+After updating `.env.test`, re-run tests to confirm:
+```bash
+npm run test:integration
+
+# Expected: Test pass rate returns to normal
+# Before fix: 58/104 passing (55.8%)
+# After fix:  75+/104 passing (72%+)
+```
+
+**Prevention:**
+1. Always use `setupCompleteIntegrationTest()` which properly manages connections
+2. Always call `await ctx.cleanup()` in `afterEach` hooks
+3. Use `.sequential()` for test suites to avoid parallel connection creation
+4. Monitor connection usage during test development
+
+**Real Example (Sprint 5):**
+- **Before connection limit**: booking-repository tests regressed from 10/11 passing to 5/11 passing
+- **After connection limit**: Expected to return to 10/11 passing
+- **Overall impact**: 17 tests regressed due to this issue alone
+
+**See Also:**
+- `.env.test` - Connection pool configuration with detailed comments
+- `.claude/SPRINT_5_SESSION_REPORT.md` § Critical Blocker - Full investigation details
+
+---
+
 ### Foreign Key Constraint Errors
 
 If you see foreign key constraint errors, ensure cleanup order respects dependencies:
@@ -564,6 +630,8 @@ await prisma.package.deleteMany(); // Error: referenced by bookings
 
 The `cleanupTenants()` helper handles this automatically.
 
+---
+
 ### Test Conflicts
 
 If tests fail with "duplicate slug" errors, ensure:
@@ -572,6 +640,17 @@ If tests fail with "duplicate slug" errors, ensure:
 2. Use factories for test data creation
 3. Use `.sequential()` for tests with shared state
 
+**Example:**
+```typescript
+// ✅ Good: Unique file slug prevents conflicts
+const ctx = setupCompleteIntegrationTest('booking-repository');
+
+// ❌ Bad: Generic slug may conflict with other test files
+const ctx = setupCompleteIntegrationTest('test');
+```
+
+---
+
 ### Cache Not Isolating
 
 If cache tests show cross-tenant leakage:
@@ -579,6 +658,32 @@ If cache tests show cross-tenant leakage:
 1. Verify cache keys include tenantId prefix
 2. Use `assertTenantScopedCacheKey()` to validate format
 3. Check cache invalidation includes tenantId
+
+**Example:**
+```typescript
+// ✅ Tenant-isolated cache key
+const key = `${tenantId}:packages:all`;
+
+// ❌ Not tenant-isolated (security vulnerability!)
+const key = 'packages:all';
+```
+
+---
+
+### Tests Pass Locally But Fail in CI
+
+Common causes:
+
+1. **Connection pool exhaustion** (see above) - CI may have stricter connection limits
+2. **Timing-dependent race conditions** - CI may have different CPU/IO characteristics
+3. **Missing environment variables** - Check `.env.test` is properly configured in CI
+4. **Database state** - CI database may have leftover data from previous runs
+
+**Fix:**
+- Ensure `.env.test` has connection pool limits configured
+- Use `describe.sequential()` for timing-sensitive tests
+- Ensure `beforeEach` properly cleans up test data
+- Consider relaxing race condition test assertions (check for behavior, not exact timing)
 
 ## Related Documentation
 
