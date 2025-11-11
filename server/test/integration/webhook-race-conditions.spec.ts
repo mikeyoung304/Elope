@@ -14,6 +14,8 @@ import { BookingService } from '../../src/services/booking.service';
 import { PrismaBookingRepository } from '../../src/adapters/prisma/booking.repository';
 import { PrismaCatalogRepository } from '../../src/adapters/prisma/catalog.repository';
 import { FakeEventEmitter, FakePaymentProvider } from '../helpers/fakes';
+import { CommissionService } from '../../src/services/commission.service';
+import { PrismaTenantRepository } from '../../src/adapters/prisma/tenant.repository';
 import type Stripe from 'stripe';
 
 describe('Webhook Race Conditions - Integration Tests', () => {
@@ -25,6 +27,7 @@ describe('Webhook Race Conditions - Integration Tests', () => {
   let webhooksController: WebhooksController;
   let paymentProvider: FakePaymentProvider;
   let eventEmitter: FakeEventEmitter;
+  let testTenantId: string;
   let testPackageId: string;
 
   beforeEach(async () => {
@@ -41,17 +44,34 @@ describe('Webhook Race Conditions - Integration Tests', () => {
     webhookRepo = new PrismaWebhookRepository(prisma);
     bookingRepo = new PrismaBookingRepository(prisma);
     catalogRepo = new PrismaCatalogRepository(prisma);
+    const tenantRepo = new PrismaTenantRepository(prisma);
 
     // Initialize fakes
     eventEmitter = new FakeEventEmitter();
     paymentProvider = new FakePaymentProvider();
 
+    // Create test tenant
+    const tenant = await prisma.tenant.upsert({
+      where: { slug: 'test-tenant-webhook' },
+      update: {},
+      create: {
+        slug: 'test-tenant-webhook',
+        name: 'Test Tenant Webhook',
+        apiKeyPublic: 'pk_test_webhook_123',
+        apiKeySecret: 'sk_test_webhook_hash',
+      },
+    });
+    testTenantId = tenant.id;
+
     // Initialize services
+    const commissionService = new CommissionService(catalogRepo);
     bookingService = new BookingService(
       bookingRepo,
       catalogRepo,
       eventEmitter,
-      paymentProvider
+      paymentProvider,
+      commissionService,
+      tenantRepo
     );
 
     webhooksController = new WebhooksController(
@@ -66,11 +86,17 @@ describe('Webhook Race Conditions - Integration Tests', () => {
     await prisma.booking.deleteMany();
     await prisma.customer.deleteMany();
 
-    // Get or create test package
+    // Get or create test package with composite key
     const pkg = await prisma.package.upsert({
-      where: { slug: 'test-package-webhook' },
+      where: {
+        tenantId_slug: {
+          tenantId: testTenantId,
+          slug: 'test-package-webhook',
+        },
+      },
       update: {},
       create: {
+        tenantId: testTenantId,
         slug: 'test-package-webhook',
         name: 'Test Package Webhook',
         basePrice: 250000,
@@ -99,6 +125,7 @@ describe('Webhook Race Conditions - Integration Tests', () => {
           object: 'checkout.session',
           amount_total: 250000,
           metadata: {
+            tenantId: testTenantId,
             packageId: testPackageId,
             eventDate,
             email: `test-${eventId}@example.com`,
@@ -141,7 +168,7 @@ describe('Webhook Race Conditions - Integration Tests', () => {
 
       // Verify only one booking was created
       const bookings = await prisma.booking.findMany({
-        where: { date: new Date(eventDate) },
+        where: { tenantId: testTenantId, date: new Date(eventDate) },
       });
       expect(bookings).toHaveLength(1);
 
@@ -178,7 +205,7 @@ describe('Webhook Race Conditions - Integration Tests', () => {
 
       // Verify only one booking was created
       const bookings = await prisma.booking.findMany({
-        where: { date: new Date(eventDate) },
+        where: { tenantId: testTenantId, date: new Date(eventDate) },
       });
       expect(bookings).toHaveLength(1);
 
@@ -194,24 +221,26 @@ describe('Webhook Race Conditions - Integration Tests', () => {
 
       // Record webhook first time
       await webhookRepo.recordWebhook({
+        tenantId: testTenantId,
         eventId,
         eventType: 'checkout.session.completed',
         rawPayload: JSON.stringify({ test: 'data' }),
       });
 
       // Check for duplicate
-      const isDupe1 = await webhookRepo.isDuplicate(eventId);
+      const isDupe1 = await webhookRepo.isDuplicate(testTenantId, eventId);
       expect(isDupe1).toBe(true);
 
       // Try to record again (should handle gracefully)
       await webhookRepo.recordWebhook({
+        tenantId: testTenantId,
         eventId,
         eventType: 'checkout.session.completed',
         rawPayload: JSON.stringify({ test: 'data' }),
       });
 
       // Check duplicate again
-      const isDupe2 = await webhookRepo.isDuplicate(eventId);
+      const isDupe2 = await webhookRepo.isDuplicate(testTenantId, eventId);
       expect(isDupe2).toBe(true);
 
       // Verify only one record exists
@@ -226,6 +255,7 @@ describe('Webhook Race Conditions - Integration Tests', () => {
 
       // Record webhook
       await webhookRepo.recordWebhook({
+        tenantId: testTenantId,
         eventId,
         eventType: 'checkout.session.completed',
         rawPayload: JSON.stringify({ test: 'data' }),
@@ -233,11 +263,11 @@ describe('Webhook Race Conditions - Integration Tests', () => {
 
       // Check for duplicates concurrently
       const checks = await Promise.all([
-        webhookRepo.isDuplicate(eventId),
-        webhookRepo.isDuplicate(eventId),
-        webhookRepo.isDuplicate(eventId),
-        webhookRepo.isDuplicate(eventId),
-        webhookRepo.isDuplicate(eventId),
+        webhookRepo.isDuplicate(testTenantId, eventId),
+        webhookRepo.isDuplicate(testTenantId, eventId),
+        webhookRepo.isDuplicate(testTenantId, eventId),
+        webhookRepo.isDuplicate(testTenantId, eventId),
+        webhookRepo.isDuplicate(testTenantId, eventId),
       ]);
 
       // All should return true
@@ -286,7 +316,7 @@ describe('Webhook Race Conditions - Integration Tests', () => {
 
       // Verify only one booking was created
       const bookings = await prisma.booking.findMany({
-        where: { date: new Date(eventDate) },
+        where: { tenantId: testTenantId, date: new Date(eventDate) },
       });
       expect(bookings).toHaveLength(1);
 
@@ -334,7 +364,7 @@ describe('Webhook Race Conditions - Integration Tests', () => {
 
       // Verify only one booking exists
       const bookings = await prisma.booking.findMany({
-        where: { date: new Date(eventDate) },
+        where: { tenantId: testTenantId, date: new Date(eventDate) },
       });
       expect(bookings).toHaveLength(1);
 
@@ -366,7 +396,7 @@ describe('Webhook Race Conditions - Integration Tests', () => {
       await webhooksController.handleStripeWebhook(rawBody, signature);
 
       // Mark as processed
-      await webhookRepo.markProcessed(eventId);
+      await webhookRepo.markProcessed(testTenantId, eventId);
 
       // Process again (should return early without error)
       await expect(
@@ -443,6 +473,7 @@ describe('Webhook Race Conditions - Integration Tests', () => {
       // Verify 3 bookings created
       const bookings = await prisma.booking.findMany({
         where: {
+          tenantId: testTenantId,
           date: {
             in: dates.map(d => new Date(d)),
           },
@@ -491,7 +522,12 @@ describe('Webhook Race Conditions - Integration Tests', () => {
       await prisma.booking.create({
         data: {
           id: 'pre-existing-booking',
-          packageId: testPackageId,
+          tenant: {
+            connect: { id: testTenantId },
+          },
+          package: {
+            connect: { id: testPackageId },
+          },
           date: new Date(eventDate),
           totalPrice: 250000,
           status: 'CONFIRMED',
@@ -529,6 +565,7 @@ describe('Webhook Race Conditions - Integration Tests', () => {
 
       // Record webhook
       await webhookRepo.recordWebhook({
+        tenantId: testTenantId,
         eventId,
         eventType: 'checkout.session.completed',
         rawPayload: JSON.stringify({ test: 'data' }),
@@ -536,8 +573,8 @@ describe('Webhook Race Conditions - Integration Tests', () => {
 
       // Try to mark as processed and failed concurrently
       const results = await Promise.allSettled([
-        webhookRepo.markProcessed(eventId),
-        webhookRepo.markFailed(eventId, 'Test error'),
+        webhookRepo.markProcessed(testTenantId, eventId),
+        webhookRepo.markFailed(testTenantId, eventId, 'Test error'),
       ]);
 
       // Both should complete
@@ -569,6 +606,7 @@ describe('Webhook Race Conditions - Integration Tests', () => {
             object: 'checkout.session',
             amount_total: 250000,
             metadata: {
+              tenantId: testTenantId,
               packageId: 'invalid-package-id',
               eventDate: '2025-11-01',
               email: 'invalid@example.com',

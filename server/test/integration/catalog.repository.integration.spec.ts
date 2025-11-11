@@ -14,6 +14,7 @@ import { DomainError } from '../../src/lib/core/errors';
 describe('PrismaCatalogRepository - Integration Tests', () => {
   let prisma: PrismaClient;
   let repository: PrismaCatalogRepository;
+  let testTenantId: string;
 
   beforeEach(async () => {
     // Connect to test database
@@ -26,10 +27,26 @@ describe('PrismaCatalogRepository - Integration Tests', () => {
     });
     repository = new PrismaCatalogRepository(prisma);
 
-    // Clean database
+    // Clean database (order matters due to foreign keys)
+    await prisma.webhookEvent.deleteMany();
+    await prisma.bookingAddOn.deleteMany();
+    await prisma.booking.deleteMany();
     await prisma.packageAddOn.deleteMany();
     await prisma.addOn.deleteMany();
     await prisma.package.deleteMany();
+
+    // Create test tenant
+    const tenant = await prisma.tenant.upsert({
+      where: { slug: 'test-tenant-catalog' },
+      update: {},
+      create: {
+        slug: 'test-tenant-catalog',
+        name: 'Test Tenant Catalog',
+        apiKeyPublic: 'pk_test_catalog_123',
+        apiKeySecret: 'sk_test_catalog_hash',
+      },
+    });
+    testTenantId = tenant.id;
   });
 
   afterEach(async () => {
@@ -38,7 +55,7 @@ describe('PrismaCatalogRepository - Integration Tests', () => {
 
   describe('Package Operations', () => {
     it('should create package successfully', async () => {
-      const pkg = await repository.createPackage({
+      const pkg = await repository.createPackage(testTenantId, {
         slug: 'test-package',
         title: 'Test Package',
         description: 'A test package',
@@ -51,7 +68,7 @@ describe('PrismaCatalogRepository - Integration Tests', () => {
     });
 
     it('should enforce unique slug constraint', async () => {
-      await repository.createPackage({
+      await repository.createPackage(testTenantId, {
         slug: 'unique-slug',
         title: 'First Package',
         description: 'First',
@@ -60,7 +77,7 @@ describe('PrismaCatalogRepository - Integration Tests', () => {
 
       // Try to create another package with same slug
       await expect(
-        repository.createPackage({
+        repository.createPackage(testTenantId, {
           slug: 'unique-slug',
           title: 'Second Package',
           description: 'Second',
@@ -69,7 +86,7 @@ describe('PrismaCatalogRepository - Integration Tests', () => {
       ).rejects.toThrow(DomainError);
 
       await expect(
-        repository.createPackage({
+        repository.createPackage(testTenantId, {
           slug: 'unique-slug',
           title: 'Second Package',
           description: 'Second',
@@ -79,14 +96,14 @@ describe('PrismaCatalogRepository - Integration Tests', () => {
     });
 
     it('should get package by slug', async () => {
-      await repository.createPackage({
+      await repository.createPackage(testTenantId, {
         slug: 'get-by-slug',
         title: 'Get By Slug Test',
         description: 'Test',
         priceCents: 150000,
       });
 
-      const pkg = await repository.getPackageBySlug('get-by-slug');
+      const pkg = await repository.getPackageBySlug(testTenantId, 'get-by-slug');
 
       expect(pkg).not.toBeNull();
       expect(pkg?.slug).toBe('get-by-slug');
@@ -94,34 +111,34 @@ describe('PrismaCatalogRepository - Integration Tests', () => {
     });
 
     it('should return null for non-existent slug', async () => {
-      const pkg = await repository.getPackageBySlug('non-existent');
+      const pkg = await repository.getPackageBySlug(testTenantId, 'non-existent');
       expect(pkg).toBeNull();
     });
 
     it('should get all packages', async () => {
       // Create multiple packages
-      await repository.createPackage({
+      await repository.createPackage(testTenantId, {
         slug: 'package-1',
         title: 'Package 1',
         description: 'First',
         priceCents: 100000,
       });
 
-      await repository.createPackage({
+      await repository.createPackage(testTenantId, {
         slug: 'package-2',
         title: 'Package 2',
         description: 'Second',
         priceCents: 200000,
       });
 
-      await repository.createPackage({
+      await repository.createPackage(testTenantId, {
         slug: 'package-3',
         title: 'Package 3',
         description: 'Third',
         priceCents: 300000,
       });
 
-      const packages = await repository.getAllPackages();
+      const packages = await repository.getAllPackages(testTenantId);
 
       expect(packages).toHaveLength(3);
       expect(packages.map(p => p.slug)).toContain('package-1');
@@ -130,14 +147,14 @@ describe('PrismaCatalogRepository - Integration Tests', () => {
     });
 
     it('should update package', async () => {
-      const pkg = await repository.createPackage({
+      const pkg = await repository.createPackage(testTenantId, {
         slug: 'update-test',
         title: 'Original Title',
         description: 'Original',
         priceCents: 100000,
       });
 
-      const updated = await repository.updatePackage(pkg.id, {
+      const updated = await repository.updatePackage(testTenantId, pkg.id, {
         title: 'Updated Title',
         priceCents: 150000,
       });
@@ -149,27 +166,27 @@ describe('PrismaCatalogRepository - Integration Tests', () => {
 
     it('should throw error when updating non-existent package', async () => {
       await expect(
-        repository.updatePackage('non-existent-id', {
+        repository.updatePackage(testTenantId, 'non-existent-id', {
           title: 'Updated',
         })
       ).rejects.toThrow(DomainError);
 
       await expect(
-        repository.updatePackage('non-existent-id', {
+        repository.updatePackage(testTenantId, 'non-existent-id', {
           title: 'Updated',
         })
       ).rejects.toThrow('not found');
     });
 
     it('should prevent duplicate slug on update', async () => {
-      const pkg1 = await repository.createPackage({
+      const pkg1 = await repository.createPackage(testTenantId, {
         slug: 'slug-1',
         title: 'Package 1',
         description: 'First',
         priceCents: 100000,
       });
 
-      await repository.createPackage({
+      await repository.createPackage(testTenantId, {
         slug: 'slug-2',
         title: 'Package 2',
         description: 'Second',
@@ -178,29 +195,29 @@ describe('PrismaCatalogRepository - Integration Tests', () => {
 
       // Try to update pkg1 to use slug-2
       await expect(
-        repository.updatePackage(pkg1.id, {
+        repository.updatePackage(testTenantId, pkg1.id, {
           slug: 'slug-2',
         })
       ).rejects.toThrow(DomainError);
     });
 
     it('should delete package', async () => {
-      const pkg = await repository.createPackage({
+      const pkg = await repository.createPackage(testTenantId, {
         slug: 'delete-test',
         title: 'Delete Test',
         description: 'Test',
         priceCents: 100000,
       });
 
-      await repository.deletePackage(pkg.id);
+      await repository.deletePackage(testTenantId, pkg.id);
 
-      const found = await repository.getPackageById(pkg.id);
+      const found = await repository.getPackageById(testTenantId, pkg.id);
       expect(found).toBeNull();
     });
 
     it('should throw error when deleting non-existent package', async () => {
       await expect(
-        repository.deletePackage('non-existent-id')
+        repository.deletePackage(testTenantId, 'non-existent-id')
       ).rejects.toThrow(DomainError);
     });
   });
@@ -209,7 +226,7 @@ describe('PrismaCatalogRepository - Integration Tests', () => {
     let testPackageId: string;
 
     beforeEach(async () => {
-      const pkg = await repository.createPackage({
+      const pkg = await repository.createPackage(testTenantId, {
         slug: 'addon-test-package',
         title: 'Add-On Test Package',
         description: 'For add-on tests',
@@ -219,7 +236,7 @@ describe('PrismaCatalogRepository - Integration Tests', () => {
     });
 
     it('should create add-on successfully', async () => {
-      const addOn = await repository.createAddOn({
+      const addOn = await repository.createAddOn(testTenantId, {
         packageId: testPackageId,
         title: 'Test Add-On',
         priceCents: 5000,
@@ -232,7 +249,7 @@ describe('PrismaCatalogRepository - Integration Tests', () => {
 
     it('should throw error when creating add-on for non-existent package', async () => {
       await expect(
-        repository.createAddOn({
+        repository.createAddOn(testTenantId, {
           packageId: 'non-existent-package',
           title: 'Invalid Add-On',
           priceCents: 5000,
@@ -242,19 +259,19 @@ describe('PrismaCatalogRepository - Integration Tests', () => {
 
     it('should get add-ons by package ID', async () => {
       // Create multiple add-ons
-      await repository.createAddOn({
+      await repository.createAddOn(testTenantId, {
         packageId: testPackageId,
         title: 'Add-On 1',
         priceCents: 5000,
       });
 
-      await repository.createAddOn({
+      await repository.createAddOn(testTenantId, {
         packageId: testPackageId,
         title: 'Add-On 2',
         priceCents: 10000,
       });
 
-      const addOns = await repository.getAddOnsByPackageId(testPackageId);
+      const addOns = await repository.getAddOnsByPackageId(testTenantId, testPackageId);
 
       expect(addOns).toHaveLength(2);
       expect(addOns.map(a => a.title)).toContain('Add-On 1');
@@ -262,18 +279,18 @@ describe('PrismaCatalogRepository - Integration Tests', () => {
     });
 
     it('should return empty array for package with no add-ons', async () => {
-      const addOns = await repository.getAddOnsByPackageId(testPackageId);
+      const addOns = await repository.getAddOnsByPackageId(testTenantId, testPackageId);
       expect(addOns).toHaveLength(0);
     });
 
     it('should update add-on', async () => {
-      const addOn = await repository.createAddOn({
+      const addOn = await repository.createAddOn(testTenantId, {
         packageId: testPackageId,
         title: 'Original Add-On',
         priceCents: 5000,
       });
 
-      const updated = await repository.updateAddOn(addOn.id, {
+      const updated = await repository.updateAddOn(testTenantId, addOn.id, {
         title: 'Updated Add-On',
         priceCents: 7500,
       });
@@ -284,28 +301,28 @@ describe('PrismaCatalogRepository - Integration Tests', () => {
 
     it('should throw error when updating non-existent add-on', async () => {
       await expect(
-        repository.updateAddOn('non-existent-id', {
+        repository.updateAddOn(testTenantId, 'non-existent-id', {
           title: 'Updated',
         })
       ).rejects.toThrow(DomainError);
     });
 
     it('should delete add-on', async () => {
-      const addOn = await repository.createAddOn({
+      const addOn = await repository.createAddOn(testTenantId, {
         packageId: testPackageId,
         title: 'Delete Test Add-On',
         priceCents: 5000,
       });
 
-      await repository.deleteAddOn(addOn.id);
+      await repository.deleteAddOn(testTenantId, addOn.id);
 
-      const addOns = await repository.getAddOnsByPackageId(testPackageId);
+      const addOns = await repository.getAddOnsByPackageId(testTenantId, testPackageId);
       expect(addOns).toHaveLength(0);
     });
 
     it('should throw error when deleting non-existent add-on', async () => {
       await expect(
-        repository.deleteAddOn('non-existent-id')
+        repository.deleteAddOn(testTenantId, 'non-existent-id')
       ).rejects.toThrow(DomainError);
     });
   });
@@ -313,33 +330,33 @@ describe('PrismaCatalogRepository - Integration Tests', () => {
   describe('Query Optimization', () => {
     it('should fetch all packages with add-ons in single query', async () => {
       // Create packages with add-ons
-      const pkg1 = await repository.createPackage({
+      const pkg1 = await repository.createPackage(testTenantId, {
         slug: 'query-opt-1',
         title: 'Package 1',
         description: 'First',
         priceCents: 100000,
       });
 
-      const pkg2 = await repository.createPackage({
+      const pkg2 = await repository.createPackage(testTenantId, {
         slug: 'query-opt-2',
         title: 'Package 2',
         description: 'Second',
         priceCents: 200000,
       });
 
-      await repository.createAddOn({
+      await repository.createAddOn(testTenantId, {
         packageId: pkg1.id,
         title: 'Add-On 1A',
         priceCents: 5000,
       });
 
-      await repository.createAddOn({
+      await repository.createAddOn(testTenantId, {
         packageId: pkg1.id,
         title: 'Add-On 1B',
         priceCents: 7500,
       });
 
-      await repository.createAddOn({
+      await repository.createAddOn(testTenantId, {
         packageId: pkg2.id,
         title: 'Add-On 2A',
         priceCents: 10000,
@@ -365,14 +382,14 @@ describe('PrismaCatalogRepository - Integration Tests', () => {
 
     it('should efficiently query add-ons with package filter', async () => {
       // Create multiple packages with add-ons
-      const pkg1 = await repository.createPackage({
+      const pkg1 = await repository.createPackage(testTenantId, {
         slug: 'filter-test-1',
         title: 'Filter Package 1',
         description: 'First',
         priceCents: 100000,
       });
 
-      const pkg2 = await repository.createPackage({
+      const pkg2 = await repository.createPackage(testTenantId, {
         slug: 'filter-test-2',
         title: 'Filter Package 2',
         description: 'Second',
@@ -380,19 +397,19 @@ describe('PrismaCatalogRepository - Integration Tests', () => {
       });
 
       // Create add-ons for both packages
-      await repository.createAddOn({
+      await repository.createAddOn(testTenantId, {
         packageId: pkg1.id,
         title: 'PKG1 Add-On 1',
         priceCents: 5000,
       });
 
-      await repository.createAddOn({
+      await repository.createAddOn(testTenantId, {
         packageId: pkg1.id,
         title: 'PKG1 Add-On 2',
         priceCents: 7500,
       });
 
-      await repository.createAddOn({
+      await repository.createAddOn(testTenantId, {
         packageId: pkg2.id,
         title: 'PKG2 Add-On 1',
         priceCents: 10000,
@@ -400,7 +417,7 @@ describe('PrismaCatalogRepository - Integration Tests', () => {
 
       // Query should use index on packageId
       const startTime = Date.now();
-      const addOns = await repository.getAddOnsByPackageId(pkg1.id);
+      const addOns = await repository.getAddOnsByPackageId(testTenantId, pkg1.id);
       const duration = Date.now() - startTime;
 
       expect(addOns).toHaveLength(2);
@@ -409,7 +426,7 @@ describe('PrismaCatalogRepository - Integration Tests', () => {
     });
 
     it('should handle large number of add-ons efficiently', async () => {
-      const pkg = await repository.createPackage({
+      const pkg = await repository.createPackage(testTenantId, {
         slug: 'large-addon-test',
         title: 'Large Add-On Test',
         description: 'Test with many add-ons',
@@ -418,7 +435,7 @@ describe('PrismaCatalogRepository - Integration Tests', () => {
 
       // Create 50 add-ons
       const createPromises = Array.from({ length: 50 }, (_, i) =>
-        repository.createAddOn({
+        repository.createAddOn(testTenantId, {
           packageId: pkg.id,
           title: `Add-On ${i}`,
           priceCents: 5000 + i * 100,
@@ -429,7 +446,7 @@ describe('PrismaCatalogRepository - Integration Tests', () => {
 
       // Query should still be fast
       const startTime = Date.now();
-      const addOns = await repository.getAddOnsByPackageId(pkg.id);
+      const addOns = await repository.getAddOnsByPackageId(testTenantId, pkg.id);
       const duration = Date.now() - startTime;
 
       expect(addOns).toHaveLength(50);
@@ -439,21 +456,21 @@ describe('PrismaCatalogRepository - Integration Tests', () => {
 
   describe('Data Integrity', () => {
     it('should maintain referential integrity on package deletion', async () => {
-      const pkg = await repository.createPackage({
+      const pkg = await repository.createPackage(testTenantId, {
         slug: 'cascade-test',
         title: 'Cascade Test',
         description: 'Test cascading delete',
         priceCents: 100000,
       });
 
-      const addOn = await repository.createAddOn({
+      const addOn = await repository.createAddOn(testTenantId, {
         packageId: pkg.id,
         title: 'Cascade Add-On',
         priceCents: 5000,
       });
 
       // Delete package
-      await repository.deletePackage(pkg.id);
+      await repository.deletePackage(testTenantId, pkg.id);
 
       // Add-on should also be deleted (cascade)
       const addOns = await prisma.addOn.findMany({
@@ -463,14 +480,14 @@ describe('PrismaCatalogRepository - Integration Tests', () => {
     });
 
     it('should store complete package data', async () => {
-      const pkg = await repository.createPackage({
+      const pkg = await repository.createPackage(testTenantId, {
         slug: 'complete-data-test',
         title: 'Complete Data Test',
         description: 'A very detailed description with special characters: éçà',
         priceCents: 123456,
       });
 
-      const found = await repository.getPackageById(pkg.id);
+      const found = await repository.getPackageById(testTenantId, pkg.id);
 
       expect(found?.slug).toBe('complete-data-test');
       expect(found?.title).toBe('Complete Data Test');
@@ -479,19 +496,19 @@ describe('PrismaCatalogRepository - Integration Tests', () => {
     });
 
     it('should handle empty descriptions', async () => {
-      const pkg = await repository.createPackage({
+      const pkg = await repository.createPackage(testTenantId, {
         slug: 'empty-desc',
         title: 'Empty Description',
         description: '',
         priceCents: 100000,
       });
 
-      const found = await repository.getPackageById(pkg.id);
+      const found = await repository.getPackageById(testTenantId, pkg.id);
       expect(found?.description).toBe('');
     });
 
     it('should generate unique slugs for add-ons', async () => {
-      const pkg = await repository.createPackage({
+      const pkg = await repository.createPackage(testTenantId, {
         slug: 'addon-slug-test',
         title: 'Add-On Slug Test',
         description: 'Test',
@@ -499,7 +516,7 @@ describe('PrismaCatalogRepository - Integration Tests', () => {
       });
 
       // Create multiple add-ons with same title
-      const addOn1 = await repository.createAddOn({
+      const addOn1 = await repository.createAddOn(testTenantId, {
         packageId: pkg.id,
         title: 'Same Title',
         priceCents: 5000,
@@ -507,14 +524,14 @@ describe('PrismaCatalogRepository - Integration Tests', () => {
 
       await new Promise(resolve => setTimeout(resolve, 10)); // Small delay to ensure different timestamp
 
-      const addOn2 = await repository.createAddOn({
+      const addOn2 = await repository.createAddOn(testTenantId, {
         packageId: pkg.id,
         title: 'Same Title',
         priceCents: 5000,
       });
 
       // Verify both were created (slugs should be unique due to timestamp)
-      const addOns = await repository.getAddOnsByPackageId(pkg.id);
+      const addOns = await repository.getAddOnsByPackageId(testTenantId, pkg.id);
       expect(addOns).toHaveLength(2);
 
       // Verify in database that slugs are actually different
@@ -532,7 +549,7 @@ describe('PrismaCatalogRepository - Integration Tests', () => {
     it('should handle very long titles', async () => {
       const longTitle = 'A'.repeat(200);
 
-      const pkg = await repository.createPackage({
+      const pkg = await repository.createPackage(testTenantId, {
         slug: 'long-title',
         title: longTitle,
         description: 'Test',
@@ -541,24 +558,24 @@ describe('PrismaCatalogRepository - Integration Tests', () => {
 
       expect(pkg.title).toBe(longTitle);
 
-      const found = await repository.getPackageById(pkg.id);
+      const found = await repository.getPackageById(testTenantId, pkg.id);
       expect(found?.title).toBe(longTitle);
     });
 
     it('should handle special characters in slug', async () => {
-      const pkg = await repository.createPackage({
+      const pkg = await repository.createPackage(testTenantId, {
         slug: 'special-chars-123-test',
         title: 'Special Characters',
         description: 'Test',
         priceCents: 100000,
       });
 
-      const found = await repository.getPackageBySlug('special-chars-123-test');
+      const found = await repository.getPackageBySlug(testTenantId, 'special-chars-123-test');
       expect(found).not.toBeNull();
     });
 
     it('should handle zero price', async () => {
-      const pkg = await repository.createPackage({
+      const pkg = await repository.createPackage(testTenantId, {
         slug: 'zero-price',
         title: 'Zero Price',
         description: 'Free package',
@@ -567,7 +584,7 @@ describe('PrismaCatalogRepository - Integration Tests', () => {
 
       expect(pkg.priceCents).toBe(0);
 
-      const addOn = await repository.createAddOn({
+      const addOn = await repository.createAddOn(testTenantId, {
         packageId: pkg.id,
         title: 'Free Add-On',
         priceCents: 0,
@@ -579,7 +596,7 @@ describe('PrismaCatalogRepository - Integration Tests', () => {
     it('should handle very high prices', async () => {
       const highPrice = 999999999; // ~$10M
 
-      const pkg = await repository.createPackage({
+      const pkg = await repository.createPackage(testTenantId, {
         slug: 'high-price',
         title: 'High Price',
         description: 'Expensive package',
@@ -605,12 +622,12 @@ describe('PrismaCatalogRepository - Integration Tests', () => {
       expect(results).toHaveLength(5);
 
       // Verify all were created
-      const allPackages = await repository.getAllPackages();
+      const allPackages = await repository.getAllPackages(testTenantId);
       expect(allPackages.length).toBeGreaterThanOrEqual(5);
     });
 
     it('should handle package update race condition', async () => {
-      const pkg = await repository.createPackage({
+      const pkg = await repository.createPackage(testTenantId, {
         slug: 'update-race',
         title: 'Update Race',
         description: 'Test',
@@ -619,9 +636,9 @@ describe('PrismaCatalogRepository - Integration Tests', () => {
 
       // Try to update concurrently
       const results = await Promise.allSettled([
-        repository.updatePackage(pkg.id, { title: 'Updated 1' }),
-        repository.updatePackage(pkg.id, { title: 'Updated 2' }),
-        repository.updatePackage(pkg.id, { title: 'Updated 3' }),
+        repository.updatePackage(testTenantId, pkg.id, { title: 'Updated 1' }),
+        repository.updatePackage(testTenantId, pkg.id, { title: 'Updated 2' }),
+        repository.updatePackage(testTenantId, pkg.id, { title: 'Updated 3' }),
       ]);
 
       // All should succeed (last write wins)
@@ -629,7 +646,7 @@ describe('PrismaCatalogRepository - Integration Tests', () => {
       expect(succeeded.length).toBeGreaterThan(0);
 
       // Verify package still exists
-      const found = await repository.getPackageById(pkg.id);
+      const found = await repository.getPackageById(testTenantId, pkg.id);
       expect(found).not.toBeNull();
       expect(['Updated 1', 'Updated 2', 'Updated 3']).toContain(found?.title);
     });
@@ -638,7 +655,7 @@ describe('PrismaCatalogRepository - Integration Tests', () => {
   describe('Ordering and Sorting', () => {
     it('should return packages in creation order', async () => {
       // Create packages with delays to ensure different timestamps
-      const pkg1 = await repository.createPackage({
+      const pkg1 = await repository.createPackage(testTenantId, {
         slug: 'first',
         title: 'First Package',
         description: 'First',
@@ -647,7 +664,7 @@ describe('PrismaCatalogRepository - Integration Tests', () => {
 
       await new Promise(resolve => setTimeout(resolve, 10));
 
-      const pkg2 = await repository.createPackage({
+      const pkg2 = await repository.createPackage(testTenantId, {
         slug: 'second',
         title: 'Second Package',
         description: 'Second',
@@ -656,14 +673,14 @@ describe('PrismaCatalogRepository - Integration Tests', () => {
 
       await new Promise(resolve => setTimeout(resolve, 10));
 
-      const pkg3 = await repository.createPackage({
+      const pkg3 = await repository.createPackage(testTenantId, {
         slug: 'third',
         title: 'Third Package',
         description: 'Third',
         priceCents: 300000,
       });
 
-      const packages = await repository.getAllPackages();
+      const packages = await repository.getAllPackages(testTenantId);
 
       // Should be ordered by creation time (oldest first)
       const slugs = packages.map(p => p.slug);
@@ -676,14 +693,14 @@ describe('PrismaCatalogRepository - Integration Tests', () => {
     });
 
     it('should return add-ons in creation order', async () => {
-      const pkg = await repository.createPackage({
+      const pkg = await repository.createPackage(testTenantId, {
         slug: 'addon-order',
         title: 'Add-On Order',
         description: 'Test',
         priceCents: 100000,
       });
 
-      const addOn1 = await repository.createAddOn({
+      const addOn1 = await repository.createAddOn(testTenantId, {
         packageId: pkg.id,
         title: 'First Add-On',
         priceCents: 5000,
@@ -691,13 +708,13 @@ describe('PrismaCatalogRepository - Integration Tests', () => {
 
       await new Promise(resolve => setTimeout(resolve, 10));
 
-      const addOn2 = await repository.createAddOn({
+      const addOn2 = await repository.createAddOn(testTenantId, {
         packageId: pkg.id,
         title: 'Second Add-On',
         priceCents: 7500,
       });
 
-      const addOns = await repository.getAddOnsByPackageId(pkg.id);
+      const addOns = await repository.getAddOnsByPackageId(testTenantId, pkg.id);
 
       expect(addOns[0]?.id).toBe(addOn1.id);
       expect(addOns[1]?.id).toBe(addOn2.id);
