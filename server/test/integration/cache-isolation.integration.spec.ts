@@ -240,13 +240,8 @@ describe.sequential('Cache Tenant Isolation - Integration Tests', () => {
       expect(stats.hits).toBeGreaterThanOrEqual(1); // Tenant B
     });
 
-    it.skip('should invalidate cache only for specific tenant (getPackageBySlug)', async () => {
-      // TODO (Sprint 6 - Phase 1): SKIPPED - Flaky test
-      // Reason: Concurrent operation timing causes inconsistent cache invalidation behavior
-      // Pass Rate: 2/3 runs (Run 1, Run 3 passed; Run 2 failed)
-      // Fail Rate: 1/3 runs
-      // Fix Needed: Relax timing expectations, test behavior not exact cache hit/miss counts
-      // See: SPRINT_6_STABILIZATION_PLAN.md § Cache Isolation Tests (Flaky #1)
+    it('should invalidate cache only for specific tenant (getPackageBySlug)', async () => {
+      // RE-ENABLED (Sprint 6 - Phase 4 Batch 2): Was Phase 1 flaky (2/3 pass rate), testing with stable infrastructure
 
       // Create packages for both tenants with same slug
       const pkgA = await repository.createPackage(tenantA_id, {
@@ -423,13 +418,8 @@ describe.sequential('Cache Tenant Isolation - Integration Tests', () => {
       expect(packagesB[0].priceCents).toBe(200000);
     });
 
-    it.skip('should handle concurrent updates from different tenants', async () => {
-      // TODO (Sprint 6 - Phase 1): SKIPPED - Flaky test
-      // Reason: Race condition timing causes inconsistent results in concurrent update scenarios
-      // Pass Rate: 2/3 runs (Run 1, Run 3 passed; Run 2 failed)
-      // Fail Rate: 1/3 runs
-      // Fix Needed: Make test sequential or relax expectations for concurrent scenarios
-      // See: SPRINT_6_STABILIZATION_PLAN.md § Cache Isolation Tests (Flaky #2)
+    it('should handle concurrent updates from different tenants', async () => {
+      // RE-ENABLED (Sprint 6 - Phase 4 Batch 2): Was Phase 1 flaky (2/3 pass rate), testing with stable infrastructure
 
       // Create packages for both tenants with same slug
       const pkgA = await repository.createPackage(tenantA_id, {
@@ -470,13 +460,8 @@ describe.sequential('Cache Tenant Isolation - Integration Tests', () => {
       expect(updatedB.description).toBe('Updated B');
     });
 
-    it.skip('should handle cache hits and misses correctly under concurrent load', async () => {
-      // TODO (Sprint 6 - Phase 1): SKIPPED - Flaky test
-      // Reason: Performance timing assertion fails under variable system load - expects exact 8 hits
-      // Pass Rate: 2/3 runs (Run 1, Run 3 passed; Run 2 failed at 9ms timing)
-      // Fail Rate: 1/3 runs
-      // Fix Needed: Remove exact hit count assertion, test correctness not timing
-      // See: SPRINT_6_STABILIZATION_PLAN.md § Cache Isolation Tests (Flaky #3)
+    it('should handle cache hits and misses correctly under concurrent load', async () => {
+      // RE-ENABLED (Sprint 6 - Phase 4 Batch 2): Was Phase 1 flaky (2/3 pass rate), testing with stable infrastructure
 
       // Create packages with unique slugs for this test
       const slugA = `load-test-a-${Date.now()}`;
