@@ -127,23 +127,25 @@ Welcome to the Elope documentation hub. This index helps you navigate all availa
 
 ## 📝 Contributing to Documentation
 
-When adding new documentation:
+**IMPORTANT:** Before creating or updating documentation:
+- **Quick answers?** See [Documentation Quick Reference](./DOCUMENTATION_QUICK_REFERENCE.md) (30-second guide)
+- **Full standards?** See [Documentation Standards](./DOCUMENTATION_STANDARDS.md) (comprehensive guide)
 
-1. **Place it in the appropriate subdirectory:**
-   - `api/` - API documentation
-   - `architecture/` - Architecture diagrams and design docs
-   - `multi-tenant/` - Multi-tenant features and guides
-   - `operations/` - Production operations and runbooks
-   - `phases/` - Phase completion reports
-   - `roadmaps/` - Feature roadmaps and planning
-   - `security/` - Security guides and procedures
-   - `setup/` - Setup and configuration guides
+This comprehensive guide covers:
+- **Naming Conventions:** When to use UPPERCASE_UNDERSCORE vs kebab-case vs timestamps vs ADR format
+- **File Placement Rules:** Decision tree for "where does this document go?"
+- **Metadata Requirements:** Required headers and versioning
+- **Review Process:** Security checks, deduplication, validation
+- **Archive Policy:** When and how to archive old documentation
+- **Ownership Model:** Who reviews what and escalation paths
 
-2. **Update this index** with a link to your new document
-
-3. **Link from README.md** if it's a primary document users need
-
-4. **Archive outdated docs** to `archive/` instead of deleting
+**Quick Reference:**
+1. **Place it correctly:** Use decision tree in [DOCUMENTATION_STANDARDS.md](./DOCUMENTATION_STANDARDS.md#quick-decision-trees)
+2. **Name it properly:** Follow [naming conventions](./DOCUMENTATION_STANDARDS.md#1-naming-conventions)
+3. **Add metadata headers:** Include version, date, owner, status
+4. **Update this index** with a link to your new document
+5. **Run security check:** No exposed secrets or PII
+6. **Archive outdated docs** to `archive/` instead of deleting
 
 ## 🎯 Current Focus
 
