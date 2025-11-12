@@ -129,13 +129,8 @@ describe.sequential('PrismaCatalogRepository - Integration Tests', () => {
       expect(packages.map(p => p.slug)).toContain('package-3');
     });
 
-    it.skip('should update package', async () => {
-      // TODO (Sprint 6 - Phase 1): SKIPPED - Flaky test
-      // Reason: Test setup or data cleanup issue causes intermittent failures
-      // Pass Rate: 2/3 runs (Run 1, Run 3 passed; Run 2 failed)
-      // Fail Rate: 1/3 runs
-      // Fix Needed: Investigate test data isolation, may have cross-test contamination
-      // See: SPRINT_6_STABILIZATION_PLAN.md § Catalog Repository Tests (Flaky #1)
+    it('should update package', async () => {
+      // RE-ENABLED (Sprint 6 - Phase 3 Batch 3): Was Phase 1 flaky (2/3 pass rate), testing with stable infrastructure
 
       const pkg = await repository.createPackage(testTenantId, {
         slug: 'update-test',
@@ -154,13 +149,8 @@ describe.sequential('PrismaCatalogRepository - Integration Tests', () => {
       expect(updated.slug).toBe('update-test'); // Unchanged
     });
 
-    it.skip('should throw error when updating non-existent package', async () => {
-      // TODO (Sprint 6 - Phase 1): SKIPPED - Flaky test
-      // Reason: Error assertion timing issue or test setup problem
-      // Pass Rate: 2/3 runs (Run 1, Run 3 passed; Run 2 failed)
-      // Fail Rate: 1/3 runs
-      // Fix Needed: Verify error throwing mechanism, may need better error handling
-      // See: SPRINT_6_STABILIZATION_PLAN.md § Catalog Repository Tests (Flaky #2)
+    it('should throw error when updating non-existent package', async () => {
+      // RE-ENABLED (Sprint 6 - Phase 3 Batch 3): Was Phase 1 flaky (2/3 pass rate), testing with stable infrastructure
 
       await expect(
         repository.updatePackage(testTenantId, 'non-existent-id', {
@@ -244,13 +234,8 @@ describe.sequential('PrismaCatalogRepository - Integration Tests', () => {
       expect(addOn.packageId).toBe(testPackageId);
     });
 
-    it.skip('should throw error when creating add-on for non-existent package', async () => {
-      // TODO (Sprint 6 - Phase 1): SKIPPED - Flaky test
-      // Reason: Foreign key constraint error handling is timing-dependent
-      // Pass Rate: 2/3 runs (Run 1, Run 3 passed; Run 2 failed)
-      // Fail Rate: 1/3 runs
-      // Fix Needed: Ensure FK constraint is properly checked before add-on creation
-      // See: SPRINT_6_STABILIZATION_PLAN.md § Catalog Repository Tests (Flaky #3)
+    it('should throw error when creating add-on for non-existent package', async () => {
+      // RE-ENABLED (Sprint 6 - Phase 3 Batch 3): Was Phase 1 flaky (2/3 pass rate), testing with stable infrastructure
 
       await expect(
         repository.createAddOn(testTenantId, {
@@ -287,13 +272,8 @@ describe.sequential('PrismaCatalogRepository - Integration Tests', () => {
       expect(addOns).toHaveLength(0);
     });
 
-    it.skip('should update add-on', async () => {
-      // TODO (Sprint 6 - Phase 1): SKIPPED - Flaky test
-      // Reason: Add-on update has test setup or cleanup issue
-      // Pass Rate: 2/3 runs (Run 1, Run 3 passed; Run 2 failed)
-      // Fail Rate: 1/3 runs
-      // Fix Needed: Check add-on data isolation, may have cross-test interference
-      // See: SPRINT_6_STABILIZATION_PLAN.md § Catalog Repository Tests (Flaky #4)
+    it('should update add-on', async () => {
+      // RE-ENABLED (Sprint 6 - Phase 3 Batch 3): Was Phase 1 flaky (2/3 pass rate), testing with stable infrastructure
 
       const addOn = await repository.createAddOn(testTenantId, {
         packageId: testPackageId,

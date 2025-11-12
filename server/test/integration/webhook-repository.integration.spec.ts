@@ -356,11 +356,8 @@ describe.sequential('PrismaWebhookRepository - Integration Tests', () => {
       expect(types).toEqual(eventTypes.sort());
     });
 
-    it.skip('should maintain timestamps correctly', async () => {
-      // TODO (Sprint 6 - Phase 2): SKIPPED - Webhook record not persisting
-      // Failure: PrismaClientKnownRequestError - record not found for update
-      // Root Cause: Similar to other webhook failures - test isolation issue
-      // Fix: Investigate webhook test cleanup and data persistence
+    it('should maintain timestamps correctly', async () => {
+      // RE-ENABLED (Sprint 6 - Phase 3 Batch 3): Was Phase 2 data persistence issue, testing with stable infrastructure
       const eventId = 'evt_timestamp_test';
 
       await repository.recordWebhook({ tenantId: testTenantId, 
