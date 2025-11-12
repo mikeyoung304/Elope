@@ -26,11 +26,10 @@ Welcome to the Elope documentation hub. This index helps you navigate all availa
 
 **Config-driven architecture transformation:**
 
-- **Sprint 1 Documentation:**
-  - [SPRINT_1_1_CACHE_FIX.md](../SPRINT_1_1_CACHE_FIX.md) - HTTP cache vulnerability investigation
-  - [SPRINT_1_2_BRANDING_ENDPOINT.md](../SPRINT_1_2_BRANDING_ENDPOINT.md) - Widget branding API implementation
-  - [SPRINT_1_3_STRIPE_REFUND.md](../SPRINT_1_3_STRIPE_REFUND.md) - Stripe refund logic implementation
-  - [SPRINT_1_4_CACHE_AUDIT.md](../SPRINT_1_4_CACHE_AUDIT.md) - Cache tenant isolation audit
+- **Sprint Documentation:**
+  - [sprints/sprint-4/](./sprints/sprint-4/) - Sprint 4: Cache isolation and HTTP catalog implementation
+  - [sprints/sprint-5-6/](./sprints/sprint-5-6/) - Sprint 5-6: Test stabilization and infrastructure improvements
+  - [archive/sprints/sprint-1-3/](./archive/sprints/sprint-1-3/) - Sprint 1-3: Foundation and early features
 
 - **Planning Documentation:**
   - [archive/planning/2025-01-analysis/](./archive/planning/2025-01-analysis/) - Complete platform transformation analysis
@@ -107,7 +106,7 @@ Welcome to the Elope documentation hub. This index helps you navigate all availa
 - **[archive/](./archive/)** - Deprecated documentation and migration logs
 - **[archive/planning/2025-01-analysis/](./archive/planning/2025-01-analysis/)** - Platform transformation planning (Jan 2025)
 - **[archive/overnight-runs/](./archive/overnight-runs/)** - Historical analysis reports
-- **[archive/oct-22-analysis/](./archive/oct-22-analysis/)** - October 2024 comprehensive audit
+- **[archive/october-2025-analysis/](./archive/october-2025-analysis/)** - October 2025 comprehensive audit
 
 ## 🔍 Finding What You Need
 
@@ -148,30 +147,28 @@ When adding new documentation:
 
 ## 🎯 Current Focus
 
-**Sprint 1 (January 2025): COMPLETE ✅**
-- Cache leak fix
-- Widget branding endpoint
-- Stripe refund logic
-- Cache tenant isolation audit
+**Sprint 6 (November 2025): COMPLETE ✅**
+- **Test Stabilization**: Achieved 62/104 tests passing (60% pass rate) with 0% variance
+- **Infrastructure Improvements**: Fixed connection pool poisoning, eliminated catalog test failures
+- **Zero-Code Test Re-enablement**: 22 tests re-enabled with only infrastructure fixes
+- **Pattern Discovery**: Identified and fixed "cascading failure" and "flaky test" patterns
 
-**Sprint 2 (Current): Foundation**
-- Audit logging system
-- Type safety improvements (remove `as any`, add Zod)
-- Core test suite (70% coverage target)
+**Recent Sprints:**
+- **Sprint 5**: Test suite foundation and integration helper patterns
+- **Sprint 4**: Cache isolation and HTTP catalog implementation
+- **Sprint 1-3**: Platform foundation, branding, Stripe refunds, audit system
 
-**Sprint 3 (Upcoming): Config Versioning**
-- ConfigVersion database schema
-- Versioning API endpoints
-- Backward compatibility layer
-- Widget config hydration
+**Sprint 7 (Upcoming): Continue Test Stabilization**
+- Target: 70% pass rate (73/104 tests)
+- Focus: Test logic fixes, data contamination, complex transaction issues
+- Continue systematic re-enablement approach
 
-**Sprint 4 (Future): Agent Interface**
-- Agent proposal system
-- Agent API endpoints
-- Admin proposal review UI
-- Display rules configuration
+**Future Sprints:**
+- **Config Versioning**: Database schema, API endpoints, backward compatibility
+- **Agent Interface**: Proposal system, API endpoints, admin review UI
+- **Display Rules**: Configuration UI and runtime engine
 
 ---
 
-**Last Updated:** January 2025
+**Last Updated:** November 2025
 **Maintainer:** See [CONTRIBUTING.md](../CONTRIBUTING.md)

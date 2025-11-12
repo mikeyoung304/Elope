@@ -4,7 +4,7 @@
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.3-blue)](https://www.typescriptlang.org/)
 [![Node.js](https://img.shields.io/badge/Node.js-20+-green)](https://nodejs.org/)
 [![PostgreSQL](https://img.shields.io/badge/PostgreSQL-15-blue)](https://www.postgresql.org/)
-[![Test Coverage](https://img.shields.io/badge/coverage-85%25-green)](./TESTING.md)
+[![Test Coverage](https://img.shields.io/badge/coverage-76%25-yellow)](./TESTING.md)
 [![Build Status](https://img.shields.io/badge/build-passing-brightgreen)](./DEVELOPING.md)
 
 > A production-ready, stability-first wedding booking platform for micro-weddings and elopements.
@@ -63,26 +63,26 @@ Tenant admins currently have self-service access to:
 - ❌ **Content Customization** - No copy/messaging control (0% complete)
 - ❌ **Email Templates** - Generic platform emails only (0% complete)
 
-**Latest Update (Nov 7, 2025):**
-Major release v1.1.0 - Unified authentication, package photo upload, and security enhancements:
+**Latest Updates:**
 
-- **Unified Auth System**: Single login with role-based routing (Platform/Tenant Admins)
-- **Photo Upload**: Complete frontend + backend implementation with drag-and-drop UI
-- **Security Fixes**: Login rate limiting, cross-authentication vulnerability patched
-- **Dashboards**: New Platform Admin and Tenant Admin dashboards with full CRUD
-- **Database**: photos JSON column, user roles, tenant relationships
+**Sprint 6 (Nov 2025) - Test Stabilization: COMPLETE ✅**
+- **60% Pass Rate Achieved**: 62/104 tests passing with 0% variance (zero flaky tests)
+- **Infrastructure Improvements**: Fixed connection pool poisoning, eliminated catalog test failures
+- **22 Tests Re-enabled**: All with zero test code changes (infrastructure-only fixes)
+- **Pattern Discovery**: Identified and resolved "cascading failure" and "flaky test" root causes
 
-**Roadmap:** See [MULTI_TENANT_ROADMAP.md](./docs/multi-tenant/MULTI_TENANT_ROADMAP.md) and [CHANGELOG.md](./CHANGELOG.md) for detailed changes.
+**Sprint 4-5 (Oct-Nov 2025):**
+- ✅ Cache isolation and HTTP catalog implementation
+- ✅ Test suite foundation and integration helper patterns
+- ✅ Complete test infrastructure refactoring
 
-**Phase 5 Current Sprint (Next 1-2 weeks):**
+**Earlier 2025:**
+- ✅ **v1.1.0 Release** (Nov 7): Unified authentication, package photo upload, security enhancements
+- ✅ **Sprint 1-3**: Platform foundation, branding endpoint, Stripe refunds, cache audit
 
-1. ✅ Package Photo Upload Backend (COMPLETE - Nov 7, 2025)
-2. ✅ Package Photo Upload Frontend (COMPLETE - Nov 7, 2025)
-3. ✅ Unified Authentication System (COMPLETE - Nov 7, 2025)
-4. ⏳ Add-On Management (NEXT)
-5. ⏳ Email Template Customization (UPCOMING)
+**Roadmap:** See [docs/sprints/](./docs/sprints/) for detailed Sprint reports and [CHANGELOG.md](./CHANGELOG.md) for version history.
 
-**Goal:** By end of Phase 5, tenants can manage complete service catalogs independently with zero platform admin support for routine operations.
+**Next: Sprint 7 (Target 70% test pass rate)**
 
 ---
 
@@ -149,34 +149,38 @@ Embedded widgets automatically fetch configuration at runtime:
 
 ### Implementation Roadmap
 
-**Sprint 2: Foundation (Security & Type Safety)**
+**Completed Sprints (2025):**
 
-- ✅ **Sprint 1 COMPLETE**: Cache leak fix, branding endpoint, Stripe refund, cache audit
-- ⏳ **Sprint 2.1 (60% complete)**: Build ConfigChangeLog table and audit service (full snapshots)
-  - ✅ ConfigChangeLog database schema
-  - ✅ AuditService with trackChange/trackLegacyChange methods
-  - ✅ Package CRUD audit hooks
-  - ⏳ Tenant branding audit hooks (next)
-  - ⏳ Blackout changes audit hooks (next)
-  - ⏳ Unit tests (70% branch coverage)
-  - ⏳ Integration tests
-- ⏳ **Sprint 2.2**: Remove all `as any` casts, add Zod schemas for config types
-- ⏳ **Sprint 2.3**: Build core test suite (unit + integration + E2E, 70% coverage)
+- ✅ **Sprint 1**: Cache leak fix, branding endpoint, Stripe refund logic, cache audit
+- ✅ **Sprint 2**: Audit logging system (ConfigChangeLog + AuditService)
+- ✅ **Sprint 3**: Type safety improvements and Zod schema additions
+- ✅ **Sprint 4**: Cache isolation and HTTP catalog implementation
+- ✅ **Sprint 5**: Test suite foundation and integration helper patterns
+- ✅ **Sprint 6**: Test stabilization (60% pass rate, 0% variance, infrastructure fixes)
 
-**Sprint 3: Versioning Infrastructure**
+**Sprint 7-8: Continue Test Stabilization (Upcoming)**
 
-- Create ConfigVersion database schema (draft/published states)
-- Build config versioning API endpoints (create, publish, rollback)
-- Implement backward compatibility layer with feature flags
-- Add widget config hydration via PostMessage
+- 🎯 **Sprint 7**: Target 70% pass rate (73/104 tests)
+  - Fix test logic issues (slug update, concurrent creation)
+  - Resolve data contamination patterns
+  - Address complex transaction issues (booking tests)
+- 🎯 **Sprint 8**: Target 80% pass rate (83/104 tests)
+  - Systematic approach to remaining 31 skipped tests
+  - Focus on infrastructure improvements over test changes
 
-**Sprint 4: Agent Interface**
+**Future Sprints: Config Versioning & Agent Interface**
 
-- Create AgentProposal table (pending/approved/rejected states)
-- Build agent API endpoints with rate limiting and authentication
-- Create admin proposal review UI with diff view and inline approval
-- Implement display rules configuration (visibility, ordering, grouping)
-- Build end-to-end agent workflow tests
+- **Config Versioning Infrastructure**:
+  - ConfigVersion database schema (draft/published states)
+  - Config versioning API endpoints (create, publish, rollback)
+  - Backward compatibility layer with feature flags
+  - Widget config hydration via PostMessage
+
+- **Agent Interface**:
+  - AgentProposal table (pending/approved/rejected states)
+  - Agent API endpoints with rate limiting and authentication
+  - Admin proposal review UI with diff view and inline approval
+  - Display rules configuration (visibility, ordering, grouping)
 
 ### Security & Safety
 
@@ -195,7 +199,7 @@ Embedded widgets automatically fetch configuration at runtime:
 - **[ARCHITECTURE.md](./ARCHITECTURE.md)** - Config-driven architecture details
 - **[docs/archive/planning/2025-01-analysis/](./docs/archive/planning/2025-01-analysis/)** - Complete planning documentation
 
-**Status**: Sprint 1 complete (4/4 tasks). Documentation cleanup in progress. Sprint 2 starting soon.
+**Status**: Sprint 6 complete (60% test pass rate with 0% variance). Sprint 7 planning in progress. Documentation audit complete (Nov 2025).
 
 ---
 
