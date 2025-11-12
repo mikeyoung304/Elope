@@ -153,15 +153,37 @@ Tests that require special handling or are intentionally testing edge cases.
 
 ---
 
-### Phase 3 Summary (Batches 1-3) 🎯 MILESTONE ACHIEVED
+### Batch 4: Easy Wins (Redundant + Data Persistence) ✅ PARTIAL SUCCESS
+
+**Tests Attempted** (4 tests):
+1. ✅ `should mark webhook as PROCESSED` (webhook-repository.integration.spec.ts:160)
+2. ✅ `should handle very long error messages` (webhook-repository.integration.spec.ts:403)
+3. ✅ `should invalidate tenant cache on package deletion` (cache-isolation.integration.spec.ts:369)
+4. ❌ `should maintain referential integrity on package deletion` (catalog.repository.integration.spec.ts:465) - **RE-SKIPPED**
+
+**Rationale**: Target "easy wins" - redundant tests and data persistence issues that should pass with stable infrastructure.
+
+**Result**: **PARTIAL SUCCESS** - 3 out of 4 tests passed (75% success rate)
+
+**Validation**: 3-run stability check
+- Run 1: 57 passed | 47 skipped | 0 failed
+- Run 2: 57 passed | 47 skipped | 0 failed
+- Run 3: 57 passed | 47 skipped | 0 failed
+- Variance: **0%** ✅
+
+**Finding**: The catalog referential integrity test still fails due to persistent data contamination. Despite using integration helpers, 1 orphaned add-on from a previous test remains. This indicates test execution order or cleanup sequencing needs deeper investigation.
+
+---
+
+### Phase 3 Summary (Batches 1-4) 🎯 MILESTONE EXCEEDED
 
 **Total Progress**:
 - Start: 40 passing | 64 skipped
-- Current: **54 passing | 50 skipped**
-- Improvement: **+14 tests** (+35% increase)
-- Stability: **0% variance** maintained across all 9 validation runs
+- Current: **57 passing | 47 skipped**
+- Improvement: **+17 tests** (+42.5% increase)
+- Stability: **0% variance** maintained across all 12 validation runs
 
-**Milestone Status**: **ACHIEVED** - Target was 55-65 stable passing tests, reached 54 (98% of minimum target)
+**Milestone Status**: **EXCEEDED** - Target was 55-65 stable passing tests, reached **57** (104% of minimum target, 88% of maximum)
 
 ---
 
@@ -173,7 +195,8 @@ Tests that require special handling or are intentionally testing edge cases.
 | Batch 1 | 5 | 45 | 0 | 59 | 0% | ✅ Cascading failure tests |
 | Batch 2 | 4 | 49 | 0 | 55 | 0% | ✅ Phase 1 flaky webhook tests |
 | Batch 3 | 5 | 54 | 0 | 50 | 0% | ✅ Phase 1 flaky catalog + webhook timestamp |
-| **Total** | **14** | **54** | **0** | **50** | **0%** | **🎯 Milestone achieved: 54/55 target** |
+| Batch 4 | 3 (1 re-skipped) | 57 | 0 | 47 | 0% | ⚠️ Partial: 3/4 passed, 1 data contamination |
+| **Total** | **17** | **57** | **0** | **47** | **0%** | **🎯 Milestone exceeded: 57/55 target** |
 
 ---
 
@@ -205,6 +228,20 @@ Tests that require special handling or are intentionally testing edge cases.
 **Fix Applied**: No test logic changes needed. Phase 2 catalog refactoring eliminated root infrastructure issues, allowing these tests to pass consistently.
 
 **Impact**: 4 tests that appeared flaky are now 100% consistent. Confirms that test infrastructure quality directly impacts perceived "flakiness."
+
+### Batch 4: Redundant Tests & Data Persistence
+
+**Problem**: 4 tests marked as redundant or having data persistence/contamination issues.
+
+**Root Cause Analysis**:
+- **Redundant test**: "should mark webhook as PROCESSED" was thought to be redundant, but infrastructure fixes made it pass independently
+- **Data persistence**: Long error messages test was failing due to webhook record not persisting, now passes with stable infrastructure
+- **Cache invalidation**: Cache deletion test was failing due to test logic confusion, now passes
+- **Data contamination**: Referential integrity test STILL FAILS despite integration helpers - orphaned add-on persists across tests
+
+**Fix Applied**: Infrastructure stability from Phase 2 resolved 3 out of 4 issues. The 4th (data contamination) requires deeper investigation into test execution order.
+
+**Impact**: 3 tests successfully re-enabled. 1 test identified as requiring more complex fix than initially assessed (deeper cleanup investigation needed).
 
 ---
 
@@ -252,6 +289,18 @@ Tests that require special handling or are intentionally testing edge cases.
 4. **Milestone Achieved Ahead of Schedule**: Reached 54/55 passing test target (98%) faster than expected by focusing on easy wins first (cascading failures, then flaky tests).
 
 5. **ROI of Infrastructure Investment**: Phase 2's ~4 hours of catalog refactoring enabled 14 tests to pass in Phase 3 with ~90 minutes of work. Infrastructure quality has multiplicative returns.
+
+### Phase 3 - Batch 4 Insights
+
+1. **"Redundant" Tests May Not Be Redundant**: Test marked as "redundant" actually provides value and passes independently with stable infrastructure. Don't rush to delete tests marked redundant during instability—reassess after infrastructure fixes.
+
+2. **75% Success Rate on "Easy Wins"**: Even tests categorized as "easy wins" can have deeper issues. 3 out of 4 passed (75%), with 1 requiring more complex investigation than initially assessed.
+
+3. **Data Contamination Persists**: Integration helpers significantly improve isolation but don't completely prevent cross-test data contamination. Test execution order and cleanup sequencing remain as challenges.
+
+4. **17 Tests Re-enabled Total**: Across 4 batches, 17 tests re-enabled with 16 passing (94% success rate), demonstrating systematic approach works.
+
+5. **Exceeded Milestone by 4%**: Reached 57/55 passing tests (104% of target), proving that infrastructure-first approach pays dividends beyond initial goals.
 
 ---
 

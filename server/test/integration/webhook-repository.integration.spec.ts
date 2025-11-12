@@ -157,14 +157,8 @@ describe.sequential('PrismaWebhookRepository - Integration Tests', () => {
   });
 
   describe('Status Transitions', () => {
-    it.skip('should mark webhook as PROCESSED', async () => {
-      // TODO (Sprint 6 - Phase 2): SKIPPED - Redundant & flaky test
-      // Reason: Duplicate of "should transition from PENDING to PROCESSED" which is passing
-      // Failure: Event record is undefined/null after markProcessed call
-      // Root Cause: Test isolation issue - webhook record not persisting between operations
-      // Fix Needed: Remove this test - the comprehensive "transition" test covers this functionality
-      // Priority: P3 - Redundant test, comprehensive version is passing
-      // See: SPRINT_6_STABILIZATION_PLAN.md § Phase 2 - Webhook Repository Tests
+    it('should mark webhook as PROCESSED', async () => {
+      // RE-ENABLED (Sprint 6 - Phase 3 Batch 4): Was redundant test, but testing with stable infrastructure (may pass now)
       await repository.recordWebhook({ tenantId: testTenantId, 
         eventId: 'evt_process_456',
         eventType: 'checkout.session.completed',
@@ -406,11 +400,8 @@ describe.sequential('PrismaWebhookRepository - Integration Tests', () => {
       expect(event?.rawPayload).toBe('');
     });
 
-    it.skip('should handle very long error messages', async () => {
-      // TODO (Sprint 6 - Phase 2): SKIPPED - markFailed fails (record not found)
-      // Failure: PrismaClientKnownRequestError at webhook.repository.ts:172
-      // Root Cause: Webhook record not persisting or cleanup timing issue
-      // Fix: Same as other webhook tests - investigate data persistence
+    it('should handle very long error messages', async () => {
+      // RE-ENABLED (Sprint 6 - Phase 3 Batch 4): Was Phase 2 data persistence issue, testing with stable infrastructure
       const eventId = 'evt_long_error';
       const longError = 'Error: ' + 'x'.repeat(1000);
 

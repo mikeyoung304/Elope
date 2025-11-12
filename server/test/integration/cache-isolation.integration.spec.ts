@@ -366,16 +366,8 @@ describe.sequential('Cache Tenant Isolation - Integration Tests', () => {
       expect(pkgByNewSlug.title).toBe('Package with Old Slug');
     });
 
-    it.skip('should invalidate tenant cache on package deletion', async () => {
-      // TODO (Sprint 6 - Phase 2): SKIPPED - Deterministic failure (not flaky)
-      // Reason: Package deletion timing/cache invalidation race condition
-      // Failure: NotFoundError - Package with slug "to-delete" not found when fetching after deletion
-      // Error Location: catalog.service.ts:109 (getPackageBySlug)
-      // Root Cause: Cache invalidation happens, but then service tries to fetch deleted package
-      // Issue: Test logic error - trying to fetch a package that was just deleted
-      // Fix Needed: Adjust test expectations - should verify cache miss, not try to fetch deleted package
-      // Priority: P3 - Cache invalidation works, test needs refactoring
-      // See: SPRINT_6_STABILIZATION_PLAN.md § Phase 2 - Cache Isolation Tests
+    it('should invalidate tenant cache on package deletion', async () => {
+      // RE-ENABLED (Sprint 6 - Phase 3 Batch 4): Was Phase 2 test logic issue, testing with stable infrastructure
       // Create a package
       const pkg = await repository.createPackage(tenantA_id, {
         slug: 'to-delete',
