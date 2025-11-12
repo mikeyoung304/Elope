@@ -198,9 +198,9 @@ See [sprints/](./sprints/) for detailed sprint documentation.
 
 Elope is transforming into a config-driven architecture with agent integration:
 
-- **Sprint Documentation:** [sprints/sprint-4/](./sprints/sprint-4/), [sprints/sprint-5-6/](./sprints/sprint-5-6/)
+- **Sprint Documentation:** [archive/2025-11/sprints/sprint-4/](./archive/2025-11/sprints/sprint-4/), [archive/2025-11/sprints/sprint-5-6/](./archive/2025-11/sprints/sprint-5-6/)
 - **Planning Documentation:** [archive/planning/2025-01-analysis/](./archive/planning/2025-01-analysis/)
-- **Comprehensive Analysis:** [archive/october-2025-analysis/](./archive/october-2025-analysis/)
+- **Comprehensive Analysis:** [archive/2025-10/analysis/](./archive/2025-10/analysis/)
 
 ## Getting Help
 

@@ -119,10 +119,11 @@ Welcome to the Elope documentation hub. This index helps you navigate all availa
 
 **Historical documentation and deprecated guides (ISO 8601 time-based organization):**
 
-- **[archive/2025-11/](./archive/2025-11/)** - November 2025 (Sprints 4-6, Phases 1-5, Audits)
+- **[archive/2025-11/](./archive/2025-11/)** - November 2025
+  - Sprints (1-6), Phases (1-5), Audits, Client Reports
+  - Investigations, Test Reports, Test Runs
 - **[archive/2025-10/](./archive/2025-10/)** - October 2025 (Comprehensive system audit)
-- **[archive/planning/2025-01-analysis/](./archive/planning/2025-01-analysis/)** - January 2025 (Platform transformation planning)
-- **[archive/overnight-runs/](./archive/overnight-runs/)** - Historical analysis reports
+- **[archive/2025-01/](./archive/2025-01/)** - January 2025 (Platform transformation planning)
 
 ## 🔍 Finding What You Need
 
