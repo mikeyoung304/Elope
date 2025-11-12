@@ -291,11 +291,8 @@ describe.sequential('Cache Tenant Isolation - Integration Tests', () => {
       expect(stats.hits).toBeGreaterThanOrEqual(1); // Tenant A
     });
 
-    it.skip('should invalidate both all-packages and specific package caches on update', async () => {
-      // TODO (Sprint 6 - Phase 2): SKIPPED - Cascading failure from package operations
-      // Failure: New failure after skipping other cache/catalog tests
-      // Root Cause: Data contamination from skipped catalog repository tests
-      // Fix: May resolve when catalog repository tests are refactored in Phase 3
+    it('should invalidate both all-packages and specific package caches on update', async () => {
+      // RE-ENABLED (Sprint 6 - Phase 4 Batch 1): Was Phase 2 cascading failure, testing with stable infrastructure
       // Create a package for Tenant A
       const pkg = await repository.createPackage(tenantA_id, {
         slug: 'ultimate-cache-test',
@@ -398,11 +395,8 @@ describe.sequential('Cache Tenant Isolation - Integration Tests', () => {
   });
 
   describe('Concurrent Cache Operations Across Tenants', () => {
-    it.skip('should handle concurrent reads from multiple tenants without leakage', async () => {
-      // TODO (Sprint 6 - Phase 2): SKIPPED - Final cascading failure
-      // Failure: New failure after skipping other cache/catalog tests
-      // Root Cause: Data contamination from skipped catalog repository tests
-      // Fix: Should resolve when catalog tests are refactored to use integration helpers (Phase 3)
+    it('should handle concurrent reads from multiple tenants without leakage', async () => {
+      // RE-ENABLED (Sprint 6 - Phase 4 Batch 1): Was Phase 2 cascading failure, testing with stable infrastructure
       // Create unique packages for each tenant sequentially to avoid race conditions
       const pkgA = ctx.factories.package.create({ title: 'Concurrent Package A', priceCents: 100000 });
       const pkgB = ctx.factories.package.create({ title: 'Concurrent Package B', priceCents: 200000 });
