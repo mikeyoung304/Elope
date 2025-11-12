@@ -22,14 +22,30 @@ Welcome to the Elope documentation hub. This index helps you navigate all availa
 - **[DECISIONS.md](../DECISIONS.md)** - Architectural Decision Records (ADRs)
 - **[multi-tenant/MULTI_TENANT_IMPLEMENTATION_GUIDE.md](./multi-tenant/MULTI_TENANT_IMPLEMENTATION_GUIDE.md)** - Multi-tenant patterns and implementation guide
 
+## 📖 Documentation Framework (NEW - November 2025)
+
+**Diátaxis-based organization:**
+
+- **[README.md](./README.md)** - Main documentation hub with Diátaxis framework introduction
+- **[DOCUMENTATION_QUICK_REFERENCE.md](./DOCUMENTATION_QUICK_REFERENCE.md)** - 30-second guide for contributors
+- **[DOCUMENTATION_STANDARDS.md](./DOCUMENTATION_STANDARDS.md)** - Comprehensive governance and standards
+- **[DIATAXIS_IMPLEMENTATION_GUIDE.md](./DIATAXIS_IMPLEMENTATION_GUIDE.md)** - Deep dive on framework
+
+**Architecture Decision Records:**
+- **[adrs/ADR-001](./adrs/ADR-001-adopt-diataxis-framework.md)** - Adopt Diátaxis Framework
+- **[adrs/ADR-002](./adrs/ADR-002-documentation-naming-standards.md)** - Documentation Naming Standards
+- **[adrs/ADR-003](./adrs/ADR-003-sprint-documentation-lifecycle.md)** - Sprint Documentation Lifecycle
+- **[adrs/ADR-004](./adrs/ADR-004-time-based-archive-strategy.md)** - Time-Based Archive Strategy
+- **[adrs/ADR-005](./adrs/ADR-005-documentation-security-review.md)** - Documentation Security Review
+
 ## 🤖 Agent-Powered Platform (2025)
 
 **Config-driven architecture transformation:**
 
-- **Sprint Documentation:**
-  - [sprints/sprint-4/](./sprints/sprint-4/) - Sprint 4: Cache isolation and HTTP catalog implementation
-  - [sprints/sprint-5-6/](./sprints/sprint-5-6/) - Sprint 5-6: Test stabilization and infrastructure improvements
-  - [archive/sprints/sprint-1-3/](./archive/sprints/sprint-1-3/) - Sprint 1-3: Foundation and early features
+- **Sprint Documentation (Archived):**
+  - [archive/2025-11/sprints/sprint-4/](./archive/2025-11/sprints/sprint-4/) - Sprint 4: Cache isolation and HTTP catalog
+  - [archive/2025-11/sprints/sprint-5-6/](./archive/2025-11/sprints/sprint-5-6/) - Sprint 5-6: Test stabilization
+  - [archive/sprints/](./archive/sprints/) - Sprint 1-3: Foundation and early features
 
 - **Planning Documentation:**
   - [archive/planning/2025-01-analysis/](./archive/planning/2025-01-analysis/) - Complete platform transformation analysis
@@ -87,26 +103,26 @@ Welcome to the Elope documentation hub. This index helps you navigate all availa
 - **[roadmaps/WIDGET_INTEGRATION_GUIDE.md](./roadmaps/WIDGET_INTEGRATION_GUIDE.md)** - Widget integration guide
 - **[roadmaps/SDK_IMPLEMENTATION_REPORT.md](./roadmaps/SDK_IMPLEMENTATION_REPORT.md)** - SDK implementation report
 
-## 📊 Phase Completion Reports
+## 📊 Phase Completion Reports (Archived)
 
 **Historical implementation phases:**
 
-- **[phases/PHASE_1_COMPLETION_REPORT.md](./phases/PHASE_1_COMPLETION_REPORT.md)** - Phase 1: Multi-tenant foundation
-- **[phases/PHASE_2B_COMPLETION_REPORT.md](./phases/PHASE_2B_COMPLETION_REPORT.md)** - Phase 2B: Supabase integration
-- **[phases/PHASE_2C_TEST_COVERAGE_REPORT.md](./phases/PHASE_2C_TEST_COVERAGE_REPORT.md)** - Phase 2C: Test coverage improvements
-- **[phases/PHASE_2D_COMPLETION_REPORT.md](./phases/PHASE_2D_COMPLETION_REPORT.md)** - Phase 2D: Package photo upload
-- **[phases/PHASE_3_STRIPE_CONNECT_COMPLETION_REPORT.md](./phases/PHASE_3_STRIPE_CONNECT_COMPLETION_REPORT.md)** - Phase 3: Stripe Connect integration
-- **[phases/PHASE_4_TENANT_ADMIN_COMPLETION_REPORT.md](./phases/PHASE_4_TENANT_ADMIN_COMPLETION_REPORT.md)** - Phase 4: Tenant admin dashboard
-- **[phases/PHASE_5_IMPLEMENTATION_SPEC.md](./phases/PHASE_5_IMPLEMENTATION_SPEC.md)** - Phase 5: Self-service features (in progress)
+- **[archive/2025-11/phases/PHASE_1_COMPLETION_REPORT.md](./archive/2025-11/phases/PHASE_1_COMPLETION_REPORT.md)** - Phase 1: Multi-tenant foundation
+- **[archive/2025-11/phases/PHASE_2B_COMPLETION_REPORT.md](./archive/2025-11/phases/PHASE_2B_COMPLETION_REPORT.md)** - Phase 2B: Supabase integration
+- **[archive/2025-11/phases/PHASE_2C_TEST_COVERAGE_REPORT.md](./archive/2025-11/phases/PHASE_2C_TEST_COVERAGE_REPORT.md)** - Phase 2C: Test coverage improvements
+- **[archive/2025-11/phases/PHASE_2D_COMPLETION_REPORT.md](./archive/2025-11/phases/PHASE_2D_COMPLETION_REPORT.md)** - Phase 2D: Package photo upload
+- **[archive/2025-11/phases/PHASE_3_STRIPE_CONNECT_COMPLETION_REPORT.md](./archive/2025-11/phases/PHASE_3_STRIPE_CONNECT_COMPLETION_REPORT.md)** - Phase 3: Stripe Connect integration
+- **[archive/2025-11/phases/PHASE_4_TENANT_ADMIN_COMPLETION_REPORT.md](./archive/2025-11/phases/PHASE_4_TENANT_ADMIN_COMPLETION_REPORT.md)** - Phase 4: Tenant admin dashboard
+- **[archive/2025-11/phases/PHASE_5_IMPLEMENTATION_SPEC.md](./archive/2025-11/phases/PHASE_5_IMPLEMENTATION_SPEC.md)** - Phase 5: Self-service features (in progress)
 
 ## 📚 Archive
 
-**Historical documentation and deprecated guides:**
+**Historical documentation and deprecated guides (ISO 8601 time-based organization):**
 
-- **[archive/](./archive/)** - Deprecated documentation and migration logs
-- **[archive/planning/2025-01-analysis/](./archive/planning/2025-01-analysis/)** - Platform transformation planning (Jan 2025)
+- **[archive/2025-11/](./archive/2025-11/)** - November 2025 (Sprints 4-6, Phases 1-5, Audits)
+- **[archive/2025-10/](./archive/2025-10/)** - October 2025 (Comprehensive system audit)
+- **[archive/planning/2025-01-analysis/](./archive/planning/2025-01-analysis/)** - January 2025 (Platform transformation planning)
 - **[archive/overnight-runs/](./archive/overnight-runs/)** - Historical analysis reports
-- **[archive/october-2025-analysis/](./archive/october-2025-analysis/)** - October 2025 comprehensive audit
 
 ## 🔍 Finding What You Need
 
