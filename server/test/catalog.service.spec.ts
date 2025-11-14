@@ -25,7 +25,7 @@ describe('CatalogService', () => {
       catalogRepo.addAddOn(addOn);
 
       // Act
-      const result = await service.getAllPackages();
+      const result = await service.getAllPackages('test-tenant');
 
       // Assert
       expect(result).toHaveLength(1);
@@ -44,7 +44,7 @@ describe('CatalogService', () => {
       catalogRepo.addAddOn(addOn);
 
       // Act
-      const result = await service.getPackageBySlug('basic');
+      const result = await service.getPackageBySlug('test-tenant', 'basic');
 
       // Assert
       expect(result.id).toBe('pkg_1');
@@ -54,8 +54,8 @@ describe('CatalogService', () => {
 
     it('throws NotFoundError when package not found', async () => {
       // Act & Assert
-      await expect(service.getPackageBySlug('nonexistent')).rejects.toThrow(NotFoundError);
-      await expect(service.getPackageBySlug('nonexistent')).rejects.toThrow(
+      await expect(service.getPackageBySlug('test-tenant', 'nonexistent')).rejects.toThrow(NotFoundError);
+      await expect(service.getPackageBySlug('test-tenant', 'nonexistent')).rejects.toThrow(
         'Package with slug "nonexistent" not found'
       );
     });
@@ -72,7 +72,7 @@ describe('CatalogService', () => {
       };
 
       // Act
-      const result = await service.createPackage(data);
+      const result = await service.createPackage('test-tenant', data);
 
       // Assert
       expect(result.slug).toBe('new-package');
@@ -91,8 +91,8 @@ describe('CatalogService', () => {
       };
 
       // Act & Assert
-      await expect(service.createPackage(data)).rejects.toThrow(ValidationError);
-      await expect(service.createPackage(data)).rejects.toThrow(
+      await expect(service.createPackage('test-tenant', data)).rejects.toThrow(ValidationError);
+      await expect(service.createPackage('test-tenant', data)).rejects.toThrow(
         'Package: Missing required fields: slug'
       );
     });
@@ -107,8 +107,8 @@ describe('CatalogService', () => {
       };
 
       // Act & Assert
-      await expect(service.createPackage(data)).rejects.toThrow(ValidationError);
-      await expect(service.createPackage(data)).rejects.toThrow(
+      await expect(service.createPackage('test-tenant', data)).rejects.toThrow(ValidationError);
+      await expect(service.createPackage('test-tenant', data)).rejects.toThrow(
         'priceCents must be non-negative'
       );
     });
@@ -124,8 +124,8 @@ describe('CatalogService', () => {
       };
 
       // Act & Assert
-      await expect(service.createPackage(data)).rejects.toThrow(ValidationError);
-      await expect(service.createPackage(data)).rejects.toThrow(
+      await expect(service.createPackage('test-tenant', data)).rejects.toThrow(ValidationError);
+      await expect(service.createPackage('test-tenant', data)).rejects.toThrow(
         'Package with slug "existing" already exists'
       );
     });
@@ -137,7 +137,7 @@ describe('CatalogService', () => {
       catalogRepo.addPackage(buildPackage({ id: 'pkg_1', slug: 'old-slug', title: 'Old Title' }));
 
       // Act
-      const result = await service.updatePackage('pkg_1', {
+      const result = await service.updatePackage('test-tenant', 'pkg_1', {
         title: 'New Title',
         priceCents: 150000,
       });
@@ -151,10 +151,10 @@ describe('CatalogService', () => {
 
     it('throws NotFoundError when package does not exist', async () => {
       // Act & Assert
-      await expect(service.updatePackage('nonexistent', { title: 'New Title' })).rejects.toThrow(
+      await expect(service.updatePackage('test-tenant', 'nonexistent', { title: 'New Title' })).rejects.toThrow(
         NotFoundError
       );
-      await expect(service.updatePackage('nonexistent', { title: 'New Title' })).rejects.toThrow(
+      await expect(service.updatePackage('test-tenant', 'nonexistent', { title: 'New Title' })).rejects.toThrow(
         'Package with id "nonexistent" not found'
       );
     });
@@ -164,10 +164,10 @@ describe('CatalogService', () => {
       catalogRepo.addPackage(buildPackage({ id: 'pkg_1' }));
 
       // Act & Assert
-      await expect(service.updatePackage('pkg_1', { priceCents: -100 })).rejects.toThrow(
+      await expect(service.updatePackage('test-tenant', 'pkg_1', { priceCents: -100 })).rejects.toThrow(
         ValidationError
       );
-      await expect(service.updatePackage('pkg_1', { priceCents: -100 })).rejects.toThrow(
+      await expect(service.updatePackage('test-tenant', 'pkg_1', { priceCents: -100 })).rejects.toThrow(
         'priceCents must be non-negative'
       );
     });
@@ -178,10 +178,10 @@ describe('CatalogService', () => {
       catalogRepo.addPackage(buildPackage({ id: 'pkg_2', slug: 'existing-slug' }));
 
       // Act & Assert
-      await expect(service.updatePackage('pkg_1', { slug: 'existing-slug' })).rejects.toThrow(
+      await expect(service.updatePackage('test-tenant', 'pkg_1', { slug: 'existing-slug' })).rejects.toThrow(
         ValidationError
       );
-      await expect(service.updatePackage('pkg_1', { slug: 'existing-slug' })).rejects.toThrow(
+      await expect(service.updatePackage('test-tenant', 'pkg_1', { slug: 'existing-slug' })).rejects.toThrow(
         'Package with slug "existing-slug" already exists'
       );
     });
@@ -191,7 +191,7 @@ describe('CatalogService', () => {
       catalogRepo.addPackage(buildPackage({ id: 'pkg_1', slug: 'my-slug' }));
 
       // Act
-      const result = await service.updatePackage('pkg_1', { slug: 'my-slug', title: 'Updated' });
+      const result = await service.updatePackage('test-tenant', 'pkg_1', { slug: 'my-slug', title: 'Updated' });
 
       // Assert
       expect(result.slug).toBe('my-slug');
@@ -205,7 +205,7 @@ describe('CatalogService', () => {
       catalogRepo.addPackage(buildPackage({ id: 'pkg_1' }));
 
       // Act
-      await service.deletePackage('pkg_1');
+      await service.deletePackage('test-tenant', 'pkg_1');
 
       // Assert
       const packages = await catalogRepo.getAllPackages();
@@ -214,8 +214,8 @@ describe('CatalogService', () => {
 
     it('throws NotFoundError when package does not exist', async () => {
       // Act & Assert
-      await expect(service.deletePackage('nonexistent')).rejects.toThrow(NotFoundError);
-      await expect(service.deletePackage('nonexistent')).rejects.toThrow(
+      await expect(service.deletePackage('test-tenant', 'nonexistent')).rejects.toThrow(NotFoundError);
+      await expect(service.deletePackage('test-tenant', 'nonexistent')).rejects.toThrow(
         'Package with id "nonexistent" not found'
       );
     });
@@ -232,7 +232,7 @@ describe('CatalogService', () => {
       };
 
       // Act
-      const result = await service.createAddOn(data);
+      const result = await service.createAddOn('test-tenant', data);
 
       // Assert
       expect(result.packageId).toBe('pkg_1');
@@ -250,8 +250,8 @@ describe('CatalogService', () => {
       };
 
       // Act & Assert
-      await expect(service.createAddOn(data)).rejects.toThrow(ValidationError);
-      await expect(service.createAddOn(data)).rejects.toThrow(
+      await expect(service.createAddOn('test-tenant', data)).rejects.toThrow(ValidationError);
+      await expect(service.createAddOn('test-tenant', data)).rejects.toThrow(
         'AddOn: Missing required fields: packageId'
       );
     });
@@ -266,8 +266,8 @@ describe('CatalogService', () => {
       };
 
       // Act & Assert
-      await expect(service.createAddOn(data)).rejects.toThrow(ValidationError);
-      await expect(service.createAddOn(data)).rejects.toThrow(
+      await expect(service.createAddOn('test-tenant', data)).rejects.toThrow(ValidationError);
+      await expect(service.createAddOn('test-tenant', data)).rejects.toThrow(
         'priceCents must be non-negative'
       );
     });
@@ -281,8 +281,8 @@ describe('CatalogService', () => {
       };
 
       // Act & Assert
-      await expect(service.createAddOn(data)).rejects.toThrow(NotFoundError);
-      await expect(service.createAddOn(data)).rejects.toThrow(
+      await expect(service.createAddOn('test-tenant', data)).rejects.toThrow(NotFoundError);
+      await expect(service.createAddOn('test-tenant', data)).rejects.toThrow(
         'Package with id "nonexistent" not found'
       );
     });
@@ -295,7 +295,7 @@ describe('CatalogService', () => {
       catalogRepo.addAddOn(buildAddOn({ id: 'addon_1', packageId: 'pkg_1', title: 'Old Title' }));
 
       // Act
-      const result = await service.updateAddOn('addon_1', {
+      const result = await service.updateAddOn('test-tenant', 'addon_1', {
         title: 'New Title',
         priceCents: 60000,
       });
@@ -312,10 +312,10 @@ describe('CatalogService', () => {
       catalogRepo.addAddOn(buildAddOn({ id: 'addon_1', packageId: 'pkg_1' }));
 
       // Act & Assert
-      await expect(service.updateAddOn('addon_1', { priceCents: -100 })).rejects.toThrow(
+      await expect(service.updateAddOn('test-tenant', 'addon_1', { priceCents: -100 })).rejects.toThrow(
         ValidationError
       );
-      await expect(service.updateAddOn('addon_1', { priceCents: -100 })).rejects.toThrow(
+      await expect(service.updateAddOn('test-tenant', 'addon_1', { priceCents: -100 })).rejects.toThrow(
         'priceCents must be non-negative'
       );
     });
@@ -326,10 +326,10 @@ describe('CatalogService', () => {
       catalogRepo.addAddOn(buildAddOn({ id: 'addon_1', packageId: 'pkg_1' }));
 
       // Act & Assert
-      await expect(service.updateAddOn('addon_1', { packageId: 'nonexistent' })).rejects.toThrow(
+      await expect(service.updateAddOn('test-tenant', 'addon_1', { packageId: 'nonexistent' })).rejects.toThrow(
         NotFoundError
       );
-      await expect(service.updateAddOn('addon_1', { packageId: 'nonexistent' })).rejects.toThrow(
+      await expect(service.updateAddOn('test-tenant', 'addon_1', { packageId: 'nonexistent' })).rejects.toThrow(
         'Package with id "nonexistent" not found'
       );
     });
@@ -342,7 +342,7 @@ describe('CatalogService', () => {
       catalogRepo.addAddOn(buildAddOn({ id: 'addon_1', packageId: 'pkg_1' }));
 
       // Act
-      await service.deleteAddOn('addon_1');
+      await service.deleteAddOn('test-tenant', 'addon_1');
 
       // Assert
       const addOns = await catalogRepo.getAddOnsByPackageId('pkg_1');

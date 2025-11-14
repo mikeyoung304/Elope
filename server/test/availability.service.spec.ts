@@ -25,7 +25,7 @@ describe('AvailabilityService', () => {
   });
 
   it('returns available when no booking, blackout, or busy', async () => {
-    const result = await service.checkAvailability('2025-07-01');
+    const result = await service.checkAvailability('test-tenant', '2025-07-01');
 
     expect(result).toEqual({
       date: '2025-07-01',
@@ -38,7 +38,7 @@ describe('AvailabilityService', () => {
     bookingRepo.addBooking(buildBooking({ eventDate: '2025-07-01' }));
 
     // Act
-    const result = await service.checkAvailability('2025-07-01');
+    const result = await service.checkAvailability('test-tenant', '2025-07-01');
 
     // Assert
     expect(result).toEqual({
@@ -50,10 +50,10 @@ describe('AvailabilityService', () => {
 
   it('returns unavailable "blackout" if date is blackout', async () => {
     // Arrange: add a blackout date
-    await blackoutRepo.addBlackout('2025-07-01', 'Holiday');
+    await blackoutRepo.addBlackout('test-tenant', '2025-07-01', 'Holiday');
 
     // Act
-    const result = await service.checkAvailability('2025-07-01');
+    const result = await service.checkAvailability('test-tenant', '2025-07-01');
 
     // Assert
     expect(result).toEqual({
@@ -68,7 +68,7 @@ describe('AvailabilityService', () => {
     calendarProvider.setBusyDates(['2025-07-01']);
 
     // Act
-    const result = await service.checkAvailability('2025-07-01');
+    const result = await service.checkAvailability('test-tenant', '2025-07-01');
 
     // Assert
     expect(result).toEqual({
@@ -80,11 +80,11 @@ describe('AvailabilityService', () => {
 
   it('prioritizes blackout over booked in availability check', async () => {
     // Arrange: both blackout and booked
-    await blackoutRepo.addBlackout('2025-07-01');
+    await blackoutRepo.addBlackout('test-tenant', '2025-07-01');
     bookingRepo.addBooking(buildBooking({ eventDate: '2025-07-01' }));
 
     // Act
-    const result = await service.checkAvailability('2025-07-01');
+    const result = await service.checkAvailability('test-tenant', '2025-07-01');
 
     // Assert: blackout is checked first
     expect(result.reason).toBe('blackout');
@@ -96,7 +96,7 @@ describe('AvailabilityService', () => {
     calendarProvider.setBusyDates(['2025-07-01']);
 
     // Act
-    const result = await service.checkAvailability('2025-07-01');
+    const result = await service.checkAvailability('test-tenant', '2025-07-01');
 
     // Assert: booked is checked before calendar
     expect(result.reason).toBe('booked');

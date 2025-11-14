@@ -2,7 +2,7 @@
  * Unit tests for BookingService
  */
 
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { BookingService } from '../src/services/booking.service';
 import {
   FakeBookingRepository,
@@ -22,13 +22,37 @@ describe('BookingService', () => {
   let catalogRepo: FakeCatalogRepository;
   let eventEmitter: FakeEventEmitter;
   let paymentProvider: FakePaymentProvider;
+  let commissionService: any;
+  let tenantRepo: any;
 
   beforeEach(() => {
     bookingRepo = new FakeBookingRepository();
     catalogRepo = new FakeCatalogRepository();
     eventEmitter = new FakeEventEmitter();
     paymentProvider = new FakePaymentProvider();
-    service = new BookingService(bookingRepo, catalogRepo, eventEmitter, paymentProvider);
+
+    // Create simple mocks for the new dependencies
+    commissionService = {
+      calculateCommission: vi.fn().mockReturnValue({ platformFeeCents: 500, vendorPayoutCents: 99500 }),
+      calculateBookingTotal: vi.fn().mockResolvedValue({
+        basePrice: 100000,
+        addOnsTotal: 50000,
+        subtotal: 150000,
+        platformFeeCents: 7500,
+        vendorPayoutCents: 142500,
+        customerTotalCents: 150000
+      })
+    };
+
+    tenantRepo = {
+      findById: vi.fn().mockResolvedValue({
+        id: 'test-tenant',
+        stripeConnectedAccountId: 'acct_test123',
+        name: 'Test Tenant'
+      })
+    };
+
+    service = new BookingService(bookingRepo, catalogRepo, eventEmitter, paymentProvider, commissionService, tenantRepo);
   });
 
   describe('createCheckout', () => {
@@ -38,7 +62,7 @@ describe('BookingService', () => {
       catalogRepo.addPackage(pkg);
 
       // Act
-      const result = await service.createCheckout({
+      const result = await service.createCheckout('test-tenant', {
         packageId: 'basic',
         coupleName: 'John & Jane',
         email: 'couple@example.com',
@@ -57,7 +81,7 @@ describe('BookingService', () => {
       catalogRepo.addAddOn(buildAddOn({ id: 'addon_2', packageId: 'pkg_1', priceCents: 30000 }));
 
       // Act
-      const result = await service.createCheckout({
+      const result = await service.createCheckout('test-tenant', {
         packageId: 'basic',
         coupleName: 'John & Jane',
         email: 'couple@example.com',
@@ -72,7 +96,7 @@ describe('BookingService', () => {
     it('throws NotFoundError if package does not exist', async () => {
       // Act & Assert
       await expect(
-        service.createCheckout({
+        service.createCheckout('test-tenant', {
           packageId: 'nonexistent',
           coupleName: 'John & Jane',
           email: 'couple@example.com',
@@ -89,7 +113,7 @@ describe('BookingService', () => {
       catalogRepo.addPackage(pkg);
 
       // Act
-      const booking = await service.onPaymentCompleted({
+      const booking = await service.onPaymentCompleted('test-tenant', {
         sessionId: 'sess_123',
         packageId: 'pkg_1',
         eventDate: '2025-07-01',
@@ -124,7 +148,7 @@ describe('BookingService', () => {
 
       // Act & Assert
       await expect(
-        service.onPaymentCompleted({
+        service.onPaymentCompleted('test-tenant', {
           sessionId: 'sess_123',
           packageId: 'pkg_1',
           eventDate: '2025-07-01',
@@ -143,7 +167,7 @@ describe('BookingService', () => {
 
       // Act & Assert: verify BookingConflictError is thrown (maps to 409)
       try {
-        await service.onPaymentCompleted({
+        await service.onPaymentCompleted('test-tenant', {
           sessionId: 'sess_123',
           packageId: 'pkg_1',
           eventDate: '2025-07-01',
@@ -166,7 +190,7 @@ describe('BookingService', () => {
       bookingRepo.addBooking(buildBooking({ id: 'booking_2', eventDate: '2025-07-02' }));
 
       // Act
-      const bookings = await service.getAllBookings();
+      const bookings = await service.getAllBookings('test-tenant');
 
       // Assert
       expect(bookings).toHaveLength(2);
@@ -179,7 +203,7 @@ describe('BookingService', () => {
       bookingRepo.addBooking(buildBooking({ id: 'booking_1' }));
 
       // Act
-      const booking = await service.getBookingById('booking_1');
+      const booking = await service.getBookingById('test-tenant', 'booking_1');
 
       // Assert
       expect(booking.id).toBe('booking_1');
@@ -187,7 +211,7 @@ describe('BookingService', () => {
 
     it('throws NotFoundError if booking not found', async () => {
       // Act & Assert
-      await expect(service.getBookingById('nonexistent')).rejects.toThrow(NotFoundError);
+      await expect(service.getBookingById('test-tenant', 'nonexistent')).rejects.toThrow(NotFoundError);
     });
   });
 });

@@ -18,7 +18,7 @@ import type { EventEmitter } from '../../src/lib/core/events';
 export class FakeBookingRepository implements BookingRepository {
   private bookings: Booking[] = [];
 
-  async create(booking: Booking): Promise<Booking> {
+  async create(tenantId: string, booking: Booking): Promise<Booking> {
     // Enforce unique-by-date constraint
     const exists = this.bookings.some((b) => b.eventDate === booking.eventDate);
     if (exists) {
@@ -28,15 +28,15 @@ export class FakeBookingRepository implements BookingRepository {
     return booking;
   }
 
-  async findById(id: string): Promise<Booking | null> {
+  async findById(tenantId: string, id: string): Promise<Booking | null> {
     return this.bookings.find((b) => b.id === id) || null;
   }
 
-  async findAll(): Promise<Booking[]> {
+  async findAll(tenantId: string): Promise<Booking[]> {
     return [...this.bookings];
   }
 
-  async isDateBooked(date: string): Promise<boolean> {
+  async isDateBooked(tenantId: string, date: string): Promise<boolean> {
     return this.bookings.some((b) => b.eventDate === date);
   }
 
@@ -54,30 +54,30 @@ export class FakeCatalogRepository implements CatalogRepository {
   private packages: Package[] = [];
   private addOns: AddOn[] = [];
 
-  async getAllPackages(): Promise<Package[]> {
+  async getAllPackages(tenantId: string): Promise<Package[]> {
     return [...this.packages];
   }
 
-  async getAllPackagesWithAddOns(): Promise<Array<Package & { addOns: AddOn[] }>> {
+  async getAllPackagesWithAddOns(tenantId: string): Promise<Array<Package & { addOns: AddOn[] }>> {
     return this.packages.map((pkg) => ({
       ...pkg,
       addOns: this.addOns.filter((a) => a.packageId === pkg.id),
     }));
   }
 
-  async getPackageBySlug(slug: string): Promise<Package | null> {
+  async getPackageBySlug(tenantId: string, slug: string): Promise<Package | null> {
     return this.packages.find((p) => p.slug === slug) || null;
   }
 
-  async getPackageById(id: string): Promise<Package | null> {
+  async getPackageById(tenantId: string, id: string): Promise<Package | null> {
     return this.packages.find((p) => p.id === id) || null;
   }
 
-  async getAddOnsByPackageId(packageId: string): Promise<AddOn[]> {
+  async getAddOnsByPackageId(tenantId: string, packageId: string): Promise<AddOn[]> {
     return this.addOns.filter((a) => a.packageId === packageId);
   }
 
-  async createPackage(data: {
+  async createPackage(tenantId: string, data: {
     slug: string;
     title: string;
     description: string;
@@ -93,6 +93,7 @@ export class FakeCatalogRepository implements CatalogRepository {
   }
 
   async updatePackage(
+    tenantId: string,
     id: string,
     data: {
       slug?: string;
@@ -115,7 +116,7 @@ export class FakeCatalogRepository implements CatalogRepository {
     return updated;
   }
 
-  async deletePackage(id: string): Promise<void> {
+  async deletePackage(tenantId: string, id: string): Promise<void> {
     const index = this.packages.findIndex((p) => p.id === id);
     if (index === -1) {
       throw new Error(`Package with id "${id}" not found`);
@@ -125,7 +126,7 @@ export class FakeCatalogRepository implements CatalogRepository {
     this.addOns = this.addOns.filter((a) => a.packageId !== id);
   }
 
-  async createAddOn(data: {
+  async createAddOn(tenantId: string, data: {
     packageId: string;
     title: string;
     priceCents: number;
@@ -140,6 +141,7 @@ export class FakeCatalogRepository implements CatalogRepository {
   }
 
   async updateAddOn(
+    tenantId: string,
     id: string,
     data: {
       packageId?: string;
@@ -161,7 +163,7 @@ export class FakeCatalogRepository implements CatalogRepository {
     return updated;
   }
 
-  async deleteAddOn(id: string): Promise<void> {
+  async deleteAddOn(tenantId: string, id: string): Promise<void> {
     const index = this.addOns.findIndex((a) => a.id === id);
     if (index === -1) {
       throw new Error(`AddOn with id "${id}" not found`);
@@ -187,15 +189,15 @@ export class FakeCatalogRepository implements CatalogRepository {
 export class FakeBlackoutRepository implements BlackoutRepository {
   private blackouts: Array<{ date: string; reason?: string }> = [];
 
-  async isBlackoutDate(date: string): Promise<boolean> {
+  async isBlackoutDate(tenantId: string, date: string): Promise<boolean> {
     return this.blackouts.some((b) => b.date === date);
   }
 
-  async getAllBlackouts(): Promise<Array<{ date: string; reason?: string }>> {
+  async getAllBlackouts(tenantId: string): Promise<Array<{ date: string; reason?: string }>> {
     return [...this.blackouts];
   }
 
-  async addBlackout(date: string, reason?: string): Promise<void> {
+  async addBlackout(tenantId: string, date: string, reason?: string): Promise<void> {
     this.blackouts.push({ date, reason });
   }
 
