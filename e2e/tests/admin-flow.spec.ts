@@ -20,20 +20,20 @@ test.describe('Admin Flow', () => {
   });
 
   test('admin can login and access dashboard', async ({ page }) => {
-    // 1. Go to admin login page
-    await page.goto('/admin/login');
-    await expect(page).toHaveURL('/admin/login');
+    // 1. Go to login page (unified login)
+    await page.goto('/login');
+    await expect(page).toHaveURL('/login');
 
     // Verify login form is visible
-    await expect(page.getByRole('heading', { name: /Admin Login/i })).toBeVisible();
+    await expect(page.getByRole('heading', { name: /^Login$/i })).toBeVisible();
 
     // 2. Fill login form
-    await page.fill('#email', 'admin@elope.com');
-    await page.fill('#password', 'admin123');
+    await page.fill('#email', 'admin@example.com');
+    await page.fill('#password', 'admin123admin');
 
     // 3. Click login button and wait for navigation
     await page.getByRole('button', { name: /Login/i }).click();
-    await page.waitForURL('/admin', { timeout: 10000 });
+    await page.waitForURL('/admin/dashboard', { timeout: 10000 });
 
     // 4. Wait for dashboard to fully load
     await page.waitForLoadState('networkidle');
@@ -55,11 +55,11 @@ test.describe('Admin Flow', () => {
 
   test('admin can manage packages', async ({ page }) => {
     // Login first
-    await page.goto('/admin/login');
-    await page.fill('#email', 'admin@elope.com');
-    await page.fill('#password', 'admin123');
+    await page.goto('/login');
+    await page.fill('#email', 'admin@example.com');
+    await page.fill('#password', 'admin123admin');
     await page.getByRole('button', { name: /Login/i }).click();
-    await page.waitForURL('/admin', { timeout: 10000 });
+    await page.waitForURL('/admin/dashboard', { timeout: 10000 });
     await page.waitForLoadState('networkidle');
 
     // 1. Click "Packages" tab
@@ -150,11 +150,11 @@ test.describe('Admin Flow', () => {
 
   test('admin can manage blackout dates', async ({ page }) => {
     // Login first
-    await page.goto('/admin/login');
-    await page.fill('#email', 'admin@elope.com');
-    await page.fill('#password', 'admin123');
+    await page.goto('/login');
+    await page.fill('#email', 'admin@example.com');
+    await page.fill('#password', 'admin123admin');
     await page.getByRole('button', { name: /Login/i }).click();
-    await page.waitForURL('/admin', { timeout: 10000 });
+    await page.waitForURL('/admin/dashboard', { timeout: 10000 });
     await page.waitForLoadState('networkidle');
 
     // 1. Click "Blackouts" tab
@@ -184,11 +184,11 @@ test.describe('Admin Flow', () => {
 
   test('admin can view bookings table', async ({ page }) => {
     // Login first
-    await page.goto('/admin/login');
-    await page.fill('#email', 'admin@elope.com');
-    await page.fill('#password', 'admin123');
+    await page.goto('/login');
+    await page.fill('#email', 'admin@example.com');
+    await page.fill('#password', 'admin123admin');
     await page.getByRole('button', { name: /Login/i }).click();
-    await page.waitForURL('/admin', { timeout: 10000 });
+    await page.waitForURL('/admin/dashboard', { timeout: 10000 });
     await page.waitForLoadState('networkidle');
 
     // Bookings tab should be active by default
@@ -206,21 +206,21 @@ test.describe('Admin Flow', () => {
 
   test('admin can logout', async ({ page }) => {
     // Login first
-    await page.goto('/admin/login');
-    await page.fill('#email', 'admin@elope.com');
-    await page.fill('#password', 'admin123');
+    await page.goto('/login');
+    await page.fill('#email', 'admin@example.com');
+    await page.fill('#password', 'admin123admin');
     await page.getByRole('button', { name: /Login/i }).click();
-    await page.waitForURL('/admin', { timeout: 10000 });
+    await page.waitForURL('/admin/dashboard', { timeout: 10000 });
     await page.waitForLoadState('networkidle');
 
     // Click logout button
     await page.getByRole('button', { name: /Logout/i }).click();
 
     // Verify redirect back to login page
-    await expect(page).toHaveURL('/admin/login');
+    await expect(page).toHaveURL('/login');
 
     // Verify cannot access admin without auth
-    await page.goto('/admin');
-    await expect(page).toHaveURL('/admin/login');
+    await page.goto('/admin/dashboard');
+    await expect(page).toHaveURL('/login');
   });
 });

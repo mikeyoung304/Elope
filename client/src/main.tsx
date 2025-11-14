@@ -5,7 +5,17 @@ import { QueryClientProvider } from "@tanstack/react-query";
 import { queryClient } from "./lib/queryClient";
 import { router } from "./router";
 import { AuthProvider } from "./contexts/AuthContext";
+import { api } from "./lib/api";
 import "./index.css";
+
+// Initialize tenant API key for multi-tenant mode
+// In production, this would come from the tenant's subdomain or embedding config
+// For E2E tests, we use a fixed test tenant key
+const tenantApiKey = import.meta.env.VITE_TENANT_API_KEY;
+if (tenantApiKey) {
+  (api as any).setTenantKey(tenantApiKey);
+  console.log('[Elope] Initialized with tenant API key');
+}
 
 const rootElement = document.getElementById("root");
 if (!rootElement) {

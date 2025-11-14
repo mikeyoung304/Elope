@@ -94,7 +94,9 @@ export const api = initClient(Contracts, {
 
     // ts-rest v3.x already serializes the body and sets Content-Type
     // Don't add duplicate headers or double-stringify
-    const response = await fetch(path, {
+    // Construct full URL from baseUrl + path
+    const fullUrl = `${baseUrl}${path}`;
+    const response = await fetch(fullUrl, {
       method,
       headers: requestHeaders,
       body: body,

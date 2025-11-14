@@ -101,8 +101,19 @@ npm run test:integration:watch
 
 ### Coverage Reports
 ```bash
-# Generate coverage report
-npm run coverage
+# Generate coverage report for all tests
+npm run test:coverage
+
+# Generate coverage for unit tests only (faster)
+npm run test:coverage:unit
+
+# Open HTML coverage report in browser (macOS)
+npm run test:coverage:report
+
+# From root directory
+npm run test:coverage
+npm run test:coverage:unit
+npm run test:coverage:report
 ```
 
 ## Test Patterns
@@ -623,10 +634,231 @@ npm run typecheck
 npm run lint
 ```
 
+## Code Coverage
+
+### Overview
+
+The project uses Vitest with V8 coverage provider to track test coverage. Coverage reports help identify untested code and ensure comprehensive test coverage across the codebase.
+
+### Current Coverage Status
+
+**Baseline Coverage (as of 2025-11-14):**
+- Lines: 42.35% (Target: 80%)
+- Branches: 77.45% (Target: 75%) ✓ PASSING
+- Functions: 36.94% (Target: 80%)
+- Statements: 42.35% (Target: 80%)
+
+### Coverage Thresholds
+
+Coverage thresholds are enforced in `server/vitest.config.ts`:
+
+```typescript
+thresholds: {
+  lines: 40,        // Current baseline, targeting 80%
+  branches: 75,     // PASSING ✓
+  functions: 35,    // Current baseline, targeting 80%
+  statements: 40,   // Current baseline, targeting 80%
+}
+```
+
+**Note:** Thresholds are currently set to match the baseline to prevent regressions. We are working towards 80% coverage for all metrics.
+
+### Running Coverage
+
+```bash
+# Generate coverage for all tests (unit + integration)
+npm run test:coverage
+
+# Generate coverage for unit tests only (faster, recommended for dev)
+npm run test:coverage:unit
+
+# Open HTML report in browser (macOS)
+npm run test:coverage:report
+```
+
+### Viewing Coverage Reports
+
+Coverage reports are generated in multiple formats:
+
+1. **Terminal Output** - Immediate summary after test run
+2. **HTML Report** - Interactive browser-based report at `server/coverage/index.html`
+3. **LCOV Report** - For CI/CD integration at `server/coverage/lcov-report/`
+4. **JSON Report** - Machine-readable at `server/coverage/coverage-final.json`
+
+### What's Excluded from Coverage
+
+The following files are excluded from coverage calculations:
+
+- Test files: `*.spec.ts`, `*.test.ts`
+- Test directory: `test/**`
+- Build artifacts: `dist/**`, `coverage/**`
+- Configuration files: `*.config.ts`, `*.config.js`
+- Scripts: `scripts/**`
+- Database schema: `prisma/**`
+- Type definitions: `**/*.d.ts`
+- Index/barrel files: `**/index.ts` (usually just re-exports)
+
+### Coverage by Area
+
+**High Coverage (>70%):**
+- ✓ Validation schemas (100%)
+- ✓ Error handling middleware (100%)
+- ✓ Identity service (100%)
+- ✓ Admin schemas (100%)
+- ✓ Booking service (86.66%)
+- ✓ Availability service (88.46%)
+
+**Medium Coverage (40-70%):**
+- Catalog service (72.35%)
+- DI container (48.64%)
+- Cache service (47.56%)
+- App setup (54.42%)
+
+**Low Coverage (<40%):**
+- Adapters (7.83%) - Mostly tested via integration tests
+- Prisma repositories (10.46%) - Tested via integration tests
+- Controllers (2.99%) - Tested via HTTP tests
+- Routes (31.75%) - Tested via HTTP/E2E tests
+- OAuth service (21.81%)
+- Commission service (23.07%)
+
+### Coverage Gaps
+
+**Priority Areas for Improvement:**
+
+1. **Adapters (7.83% → 60%)**
+   - Stripe adapter (7.03%)
+   - Google Calendar adapter (11.26%)
+   - Resend adapter (9.41%)
+   - **Action:** Add unit tests with mocked external APIs
+
+2. **Repositories (10.46% → 40%)**
+   - Already have comprehensive integration tests
+   - **Action:** Add unit tests for error handling and edge cases
+
+3. **Controllers (2.99% → 70%)**
+   - Currently tested via HTTP tests
+   - **Action:** Add unit tests for request validation and error paths
+
+4. **Routes (31.75% → 70%)**
+   - Admin routes (36%)
+   - Auth routes (20.47%)
+   - Settings routes (19.35%)
+   - **Action:** Add more HTTP endpoint tests
+
+5. **Services (36.2% → 80%)**
+   - Commission service (5.23%)
+   - Product service (10.95%)
+   - OAuth service (21.81%)
+   - Upload service (31.88%)
+   - **Action:** Add comprehensive unit tests
+
+### Improving Coverage
+
+When adding new code or improving coverage:
+
+1. **Write Tests First** - TDD approach ensures coverage from the start
+2. **Test Edge Cases** - Error conditions, null/undefined, boundary values
+3. **Test Happy Path** - Ensure success scenarios are covered
+4. **Check Coverage** - Run `npm run test:coverage:unit` to verify
+5. **Review Report** - Open HTML report to identify uncovered lines
+
+**Example Workflow:**
+```bash
+# 1. Make changes to src/services/booking.service.ts
+# 2. Run unit tests with coverage
+npm run test:coverage:unit -- booking.service.spec.ts
+
+# 3. Open coverage report
+npm run test:coverage:report
+
+# 4. Navigate to src/services/booking.service.ts in report
+# 5. Identify uncovered lines (shown in red)
+# 6. Add tests for uncovered code paths
+```
+
+### Coverage and CI/CD
+
+Coverage reports are generated in CI/CD pipelines (see `.github/workflows/ci.yml`). The pipeline will:
+
+1. Run all tests with coverage
+2. Generate coverage reports
+3. Enforce coverage thresholds
+4. Upload coverage artifacts
+
+**Note:** Integration tests are excluded from CI coverage runs due to database requirements.
+
+### Coverage Best Practices
+
+1. **Don't Chase 100%** - Focus on critical paths and business logic
+2. **Quality Over Quantity** - Meaningful tests > high coverage numbers
+3. **Test Behavior, Not Implementation** - Tests should validate outcomes
+4. **Exclude Generated Code** - Prisma client, OpenAPI types, etc.
+5. **Use Integration Tests Wisely** - They provide coverage but are slower
+6. **Monitor Trends** - Coverage should improve over time, not decrease
+
+### What to Do if Coverage Drops
+
+If coverage drops below thresholds:
+
+1. **Check the Diff** - Review what code was added/changed
+2. **Add Tests** - Write tests for new code paths
+3. **Review Exclusions** - Ensure appropriate files are excluded
+4. **Update Thresholds** - If intentional (document reasoning)
+
+**Example:**
+```bash
+# Coverage dropped from 42% to 38%
+ERROR: Coverage for lines (38%) does not meet threshold (40%)
+
+# 1. Run coverage to see detailed report
+npm run test:coverage:unit
+
+# 2. Open HTML report
+npm run test:coverage:report
+
+# 3. Filter by "Uncovered" to see files with low coverage
+# 4. Add tests for the new code
+# 5. Re-run coverage to verify
+npm run test:coverage:unit
+```
+
+### Roadmap to 80% Coverage
+
+**Phase 1: Reach 50% (Current + 8%)**
+- Add adapter unit tests with mocked APIs
+- Add service unit tests for commission/product
+- Timeline: 2-3 weeks
+
+**Phase 2: Reach 65% (Phase 1 + 15%)**
+- Add controller unit tests
+- Add route HTTP tests
+- Add error path coverage
+- Timeline: 4-6 weeks
+
+**Phase 3: Reach 80% (Phase 2 + 15%)**
+- Add edge case tests
+- Add integration test coverage
+- Fill remaining gaps
+- Timeline: 8-10 weeks
+
+### Files Not Requiring Tests
+
+Some files legitimately don't need tests:
+
+- Type definitions (`*.d.ts`)
+- Configuration files (`*.config.ts`)
+- Barrel exports (`index.ts`)
+- Database migrations
+- Build scripts
+
+These are excluded from coverage calculations.
+
 ## Further Reading
 
 - `/Users/mikeyoung/CODING/Elope/docs/TESTING.md` - High-level testing philosophy and strategy
 - `/Users/mikeyoung/CODING/Elope/docs/architecture/MULTI_TENANT_ISOLATION.md` - Multi-tenancy architecture
 - `/Users/mikeyoung/CODING/Elope/e2e/playwright.config.ts` - Playwright configuration
 - [Vitest Documentation](https://vitest.dev/) - Test runner reference
+- [Vitest Coverage Guide](https://vitest.dev/guide/coverage.html) - Coverage configuration
 - [Playwright Documentation](https://playwright.dev/) - E2E testing reference

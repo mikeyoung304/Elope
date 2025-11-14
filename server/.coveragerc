@@ -1,0 +1,29 @@
+# Vitest Coverage Configuration
+# This file documents coverage exclusions and configuration
+# Actual configuration is in vitest.config.ts
+
+[run]
+source = src/
+
+[report]
+# Exclude test files
+omit =
+    **/test/**
+    **/*.test.ts
+    **/*.spec.ts
+    **/coverage/**
+    **/node_modules/**
+    **/dist/**
+    **/scripts/**
+    **/prisma/**
+    **/*.config.ts
+    **/*.config.js
+    **/*.d.ts
+    **/index.ts
+
+[html]
+directory = coverage
+
+[paths]
+source =
+    server/src/

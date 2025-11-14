@@ -12,9 +12,49 @@ export default defineConfig(({ mode }) => {
       env: env,
       coverage: {
         provider: 'v8',
-        reporter: ['text', 'json', 'html'],
+        reporter: ['text', 'json', 'html', 'lcov'],
         include: ['src/**/*.ts'],
-        exclude: ['src/**/*.spec.ts', 'src/**/*.test.ts'],
+        exclude: [
+          // Test files
+          'src/**/*.spec.ts',
+          'src/**/*.test.ts',
+          'test/**',
+          '**/*.test.ts',
+          '**/*.spec.ts',
+
+          // Build artifacts
+          'dist/**',
+          'coverage/**',
+          'node_modules/**',
+
+          // Configuration and scripts
+          'scripts/**',
+          'prisma/**',
+          '*.config.ts',
+          '*.config.js',
+
+          // Type definitions
+          '**/*.d.ts',
+
+          // Index/barrel files (often just re-exports)
+          '**/index.ts',
+        ],
+        all: true,
+
+        // Coverage thresholds - Starting with current baseline, targeting 80%
+        // Current: 42.35% lines, 77.45% branches, 36.94% functions
+        // Target:  80% lines, 75% branches, 80% functions, 80% statements
+        thresholds: {
+          lines: 40,        // Current: 42.35%, Target: 80%
+          branches: 75,     // Current: 77.45%, Target: 75% ✓
+          functions: 35,    // Current: 36.94%, Target: 80%
+          statements: 40,   // Current: 42.35%, Target: 80%
+        },
+
+        // Additional V8 options
+        reportsDirectory: './coverage',
+        clean: true,
+        cleanOnRerun: true,
       },
     },
   };

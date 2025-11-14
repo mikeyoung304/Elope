@@ -68,15 +68,10 @@ export default defineConfig({
 
   // Run your local dev server before starting the tests
   webServer: {
-    command: 'npm run dev:client',
+    command: 'ADAPTERS_PRESET=real VITE_API_URL=http://localhost:3001 VITE_APP_MODE=mock VITE_E2E=1 VITE_TENANT_API_KEY=pk_live_elope-e2e_000000000000 npm run dev:e2e',
     cwd: '..',
     url: 'http://localhost:5173',
     reuseExistingServer: !process.env.CI,
     timeout: 120 * 1000,
-    env: {
-      VITE_API_URL: 'http://localhost:3001',
-      VITE_APP_MODE: 'mock',
-      VITE_E2E: '1',
-    },
   },
 });

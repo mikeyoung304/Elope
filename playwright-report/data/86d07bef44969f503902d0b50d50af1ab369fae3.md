@@ -36,7 +36,7 @@
       - generic [ref=e36]:
         - heading "Our Packages" [level=2] [ref=e37]
         - paragraph [ref=e38]: Choose the perfect experience for your special day
-      - generic [ref=e39]: "Error loading packages: Failed to fetch packages"
+      - generic [ref=e39]: "Error loading packages: Failed to execute 'fetch' on 'Window': Failed to parse URL from http://localhost:3001http://localhost:3001/v1/packages"
     - generic [ref=e42]:
       - generic [ref=e43]:
         - heading "Why Choose Elope?" [level=2] [ref=e44]
