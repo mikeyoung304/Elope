@@ -204,7 +204,7 @@ describe('Auth Middleware', () => {
       const mockPayload: TokenPayload = {
         userId: 'user_super_admin',
         email: 'super@elope.com',
-        role: 'super_admin' as any,
+        role: 'admin',
       };
 
       (req.get as any).mockReturnValue('Bearer super-admin-token');

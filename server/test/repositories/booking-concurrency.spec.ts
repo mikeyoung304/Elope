@@ -23,8 +23,8 @@ describe('BookingRepository - Concurrency', () => {
 
       // Act: Simulate concurrent execution
       const results = await Promise.allSettled([
-        repository.create(booking1),
-        repository.create(booking2),
+        repository.create('test-tenant', booking1),
+        repository.create('test-tenant', booking2),
       ]);
 
       // Assert: Only one succeeds, one fails
@@ -49,8 +49,8 @@ describe('BookingRepository - Concurrency', () => {
 
       // Act: Simulate concurrent execution
       const results = await Promise.allSettled([
-        repository.create(booking1),
-        repository.create(booking2),
+        repository.create('test-tenant', booking1),
+        repository.create('test-tenant', booking2),
       ]);
 
       // Assert: Both succeed
@@ -58,38 +58,38 @@ describe('BookingRepository - Concurrency', () => {
       expect(successes.length).toBe(2);
 
       // Verify both are in repository
-      const allBookings = await repository.findAll();
+      const allBookings = await repository.findAll('test-tenant');
       expect(allBookings.length).toBe(2);
     });
 
     it('should throw BookingConflictError for duplicate date', async () => {
       // Arrange: Create first booking
       const date = '2025-07-01';
-      await repository.create(buildBooking({ id: 'booking_1', eventDate: date }));
+      await repository.create('test-tenant', buildBooking({ id: 'booking_1', eventDate: date }));
 
       // Act & Assert: Attempt to book same date again
       await expect(
-        repository.create(buildBooking({ id: 'booking_2', eventDate: date }))
+        repository.create('test-tenant', buildBooking({ id: 'booking_2', eventDate: date }))
       ).rejects.toThrow(BookingConflictError);
 
       await expect(
-        repository.create(buildBooking({ id: 'booking_2', eventDate: date }))
+        repository.create('test-tenant', buildBooking({ id: 'booking_2', eventDate: date }))
       ).rejects.toThrow('already booked');
     });
 
     it('should verify date is booked after successful booking', async () => {
       // Arrange & Act
       const date = '2025-08-01';
-      await repository.create(buildBooking({ eventDate: date }));
+      await repository.create('test-tenant', buildBooking({ eventDate: date }));
 
       // Assert
-      const isBooked = await repository.isDateBooked(date);
+      const isBooked = await repository.isDateBooked('test-tenant', date);
       expect(isBooked).toBe(true);
     });
 
     it('should verify date is not booked before any booking', async () => {
       // Act
-      const isBooked = await repository.isDateBooked('2025-12-25');
+      const isBooked = await repository.isDateBooked('test-tenant', '2025-12-25');
 
       // Assert
       expect(isBooked).toBe(false);
@@ -103,16 +103,16 @@ describe('BookingRepository - Concurrency', () => {
 
       // Act: Book each date sequentially
       for (const date of dates) {
-        await repository.create(buildBooking({ id: `booking_${date}`, eventDate: date }));
+        await repository.create('test-tenant', buildBooking({ id: `booking_${date}`, eventDate: date }));
       }
 
       // Assert: All bookings created
-      const allBookings = await repository.findAll();
+      const allBookings = await repository.findAll('test-tenant');
       expect(allBookings.length).toBe(3);
 
       // Verify each date is booked
       for (const date of dates) {
-        const isBooked = await repository.isDateBooked(date);
+        const isBooked = await repository.isDateBooked('test-tenant', date);
         expect(isBooked).toBe(true);
       }
     });
@@ -120,15 +120,15 @@ describe('BookingRepository - Concurrency', () => {
     it('should fail when trying to book already booked date in sequence', async () => {
       // Arrange
       const date = '2025-09-01';
-      await repository.create(buildBooking({ id: 'booking_1', eventDate: date }));
+      await repository.create('test-tenant', buildBooking({ id: 'booking_1', eventDate: date }));
 
       // Act & Assert: Second booking should fail
       await expect(
-        repository.create(buildBooking({ id: 'booking_2', eventDate: date }))
+        repository.create('test-tenant', buildBooking({ id: 'booking_2', eventDate: date }))
       ).rejects.toThrow(BookingConflictError);
 
       // Verify only one booking exists
-      const allBookings = await repository.findAll();
+      const allBookings = await repository.findAll('test-tenant');
       expect(allBookings.length).toBe(1);
     });
   });
@@ -137,41 +137,41 @@ describe('BookingRepository - Concurrency', () => {
     it('should maintain correct state after failed booking attempt', async () => {
       // Arrange
       const date = '2025-10-01';
-      await repository.create(buildBooking({ id: 'booking_1', eventDate: date }));
+      await repository.create('test-tenant', buildBooking({ id: 'booking_1', eventDate: date }));
 
       // Act: Try to create duplicate
       try {
-        await repository.create(buildBooking({ id: 'booking_2', eventDate: date }));
+        await repository.create('test-tenant', buildBooking({ id: 'booking_2', eventDate: date }));
       } catch {
         // Expected error
       }
 
       // Assert: Repository state is consistent
-      const allBookings = await repository.findAll();
+      const allBookings = await repository.findAll('test-tenant');
       expect(allBookings.length).toBe(1);
       expect(allBookings[0]?.id).toBe('booking_1');
     });
 
     it('should clear all bookings when clear() is called', async () => {
       // Arrange: Create multiple bookings
-      await repository.create(buildBooking({ id: 'booking_1', eventDate: '2025-11-01' }));
-      await repository.create(buildBooking({ id: 'booking_2', eventDate: '2025-11-02' }));
+      await repository.create('test-tenant', buildBooking({ id: 'booking_1', eventDate: '2025-11-01' }));
+      await repository.create('test-tenant', buildBooking({ id: 'booking_2', eventDate: '2025-11-02' }));
 
       // Act
       repository.clear();
 
       // Assert
-      const allBookings = await repository.findAll();
+      const allBookings = await repository.findAll('test-tenant');
       expect(allBookings.length).toBe(0);
     });
 
     it('should find booking by ID correctly', async () => {
       // Arrange
       const booking = buildBooking({ id: 'specific_id', eventDate: '2025-12-01' });
-      await repository.create(booking);
+      await repository.create('test-tenant', booking);
 
       // Act
-      const found = await repository.findById('specific_id');
+      const found = await repository.findById('test-tenant', 'specific_id');
 
       // Assert
       expect(found).not.toBeNull();
@@ -181,7 +181,7 @@ describe('BookingRepository - Concurrency', () => {
 
     it('should return null for non-existent booking ID', async () => {
       // Act
-      const found = await repository.findById('non_existent_id');
+      const found = await repository.findById('test-tenant', 'non_existent_id');
 
       // Assert
       expect(found).toBeNull();
@@ -197,7 +197,7 @@ describe('BookingRepository - Concurrency', () => {
       // Act: Try to book same date multiple times rapidly
       const results = await Promise.allSettled(
         Array.from({ length: attempts }, (_, i) =>
-          repository.create(buildBooking({ id: `booking_${i}`, eventDate: date }))
+          repository.create('test-tenant', buildBooking({ id: `booking_${i}`, eventDate: date }))
         )
       );
 
@@ -220,12 +220,12 @@ describe('BookingRepository - Concurrency', () => {
       // Note: This is an edge case that shouldn't happen in real usage
       // but tests repository robustness
       const booking1 = buildBooking({ id: 'same_id', eventDate: '2025-07-01' });
-      await repository.create(booking1);
+      await repository.create('test-tenant', booking1);
 
       // In a real implementation with unique ID constraints, this would fail
       // For FakeRepository, it allows duplicate IDs but enforces unique dates
       const booking2 = buildBooking({ id: 'same_id', eventDate: '2025-07-02' });
-      await expect(repository.create(booking2)).resolves.toBeDefined();
+      await expect(repository.create('test-tenant', booking2)).resolves.toBeDefined();
     });
   });
 
@@ -233,26 +233,26 @@ describe('BookingRepository - Concurrency', () => {
     it('should store bookings correctly', async () => {
       // Arrange & Act
       const originalBooking = buildBooking({ id: 'original', eventDate: '2025-08-15', coupleName: 'John & Jane' });
-      const created = await repository.create(originalBooking);
+      const created = await repository.create('test-tenant', originalBooking);
 
       // Assert: Created booking has correct data
       expect(created.coupleName).toBe('John & Jane');
       expect(created.eventDate).toBe('2025-08-15');
 
       // Finding by ID should return the same data
-      const found = await repository.findById('original');
+      const found = await repository.findById('test-tenant', 'original');
       expect(found?.coupleName).toBe('John & Jane');
       expect(found?.eventDate).toBe('2025-08-15');
     });
 
     it('should return consistent results from findAll()', async () => {
       // Arrange
-      await repository.create(buildBooking({ id: 'booking_1', eventDate: '2025-06-01' }));
-      await repository.create(buildBooking({ id: 'booking_2', eventDate: '2025-06-02' }));
+      await repository.create('test-tenant', buildBooking({ id: 'booking_1', eventDate: '2025-06-01' }));
+      await repository.create('test-tenant', buildBooking({ id: 'booking_2', eventDate: '2025-06-02' }));
 
       // Act: Call findAll multiple times
-      const result1 = await repository.findAll();
-      const result2 = await repository.findAll();
+      const result1 = await repository.findAll('test-tenant');
+      const result2 = await repository.findAll('test-tenant');
 
       // Assert: Results should be consistent
       expect(result1.length).toBe(result2.length);

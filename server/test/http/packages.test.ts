@@ -8,11 +8,38 @@ import request from 'supertest';
 import type { Express } from 'express';
 import { createApp } from '../../src/app';
 import { loadConfig } from '../../src/lib/core/config';
+import { PrismaClient } from '../../src/generated/prisma';
 
 describe('GET /v1/packages', () => {
   let app: Express;
+  let testTenantApiKey: string;
 
-  beforeAll(() => {
+  beforeAll(async () => {
+    // Upsert test tenant with known API key
+    const prisma = new PrismaClient();
+
+    const tenant = await prisma.tenant.upsert({
+      where: { slug: 'elope' },
+      update: {
+        apiKeyPublic: 'pk_live_elope_0123456789abcdef',
+        apiKeySecret: 'sk_live_elope_0123456789abcdef0123456789abcdef',
+        isActive: true,
+      },
+      create: {
+        id: 'tenant_default_legacy',
+        slug: 'elope',
+        name: 'Elope (Test)',
+        apiKeyPublic: 'pk_live_elope_0123456789abcdef',
+        apiKeySecret: 'sk_live_elope_0123456789abcdef0123456789abcdef',
+        commissionPercent: 10.0,
+        branding: {},
+        isActive: true,
+      },
+    });
+
+    testTenantApiKey = tenant.apiKeyPublic;
+    await prisma.$disconnect();
+
     const config = loadConfig();
     app = createApp({ ...config, ADAPTERS_PRESET: 'mock' });
   });
@@ -20,6 +47,7 @@ describe('GET /v1/packages', () => {
   it('returns packages list with contract shape', async () => {
     const res = await request(app)
       .get('/v1/packages')
+      .set('X-Tenant-Key', testTenantApiKey)
       .expect('Content-Type', /json/)
       .expect(200);
 
@@ -47,8 +75,34 @@ describe('GET /v1/packages', () => {
 
 describe('GET /v1/packages/:slug', () => {
   let app: Express;
+  let testTenantApiKey: string;
 
-  beforeAll(() => {
+  beforeAll(async () => {
+    // Upsert test tenant with known API key
+    const prisma = new PrismaClient();
+
+    const tenant = await prisma.tenant.upsert({
+      where: { slug: 'elope' },
+      update: {
+        apiKeyPublic: 'pk_live_elope_0123456789abcdef',
+        apiKeySecret: 'sk_live_elope_0123456789abcdef0123456789abcdef',
+        isActive: true,
+      },
+      create: {
+        id: 'tenant_default_legacy',
+        slug: 'elope',
+        name: 'Elope (Test)',
+        apiKeyPublic: 'pk_live_elope_0123456789abcdef',
+        apiKeySecret: 'sk_live_elope_0123456789abcdef0123456789abcdef',
+        commissionPercent: 10.0,
+        branding: {},
+        isActive: true,
+      },
+    });
+
+    testTenantApiKey = tenant.apiKeyPublic;
+    await prisma.$disconnect();
+
     const config = loadConfig();
     app = createApp({ ...config, ADAPTERS_PRESET: 'mock' });
   });
@@ -56,6 +110,7 @@ describe('GET /v1/packages/:slug', () => {
   it('returns single package by slug', async () => {
     const res = await request(app)
       .get('/v1/packages/basic-elopement')
+      .set('X-Tenant-Key', testTenantApiKey)
       .expect('Content-Type', /json/)
       .expect(200);
 
@@ -67,6 +122,7 @@ describe('GET /v1/packages/:slug', () => {
   it('returns 404 for non-existent package', async () => {
     await request(app)
       .get('/v1/packages/nonexistent-slug')
+      .set('X-Tenant-Key', testTenantApiKey)
       .expect(404);
   });
 });

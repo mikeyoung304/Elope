@@ -3,7 +3,7 @@
  * Tests webhook processing, idempotency, error handling, and validation
  */
 
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { WebhooksController } from '../../src/routes/webhooks.routes';
 import {
   FakePaymentProvider,
@@ -28,6 +28,8 @@ describe('WebhooksController', () => {
   let bookingRepo: FakeBookingRepository;
   let catalogRepo: FakeCatalogRepository;
   let eventEmitter: FakeEventEmitter;
+  let commissionService: any;
+  let tenantRepo: any;
 
   beforeEach(() => {
     paymentProvider = new FakePaymentProvider();
@@ -36,7 +38,31 @@ describe('WebhooksController', () => {
     eventEmitter = new FakeEventEmitter();
     webhookRepo = new FakeWebhookRepository();
 
-    bookingService = new BookingService(bookingRepo, catalogRepo, eventEmitter, paymentProvider);
+    // Create simple mocks for multi-tenancy dependencies
+    commissionService = {
+      calculateCommission: vi.fn().mockReturnValue({ platformFeeCents: 500, vendorPayoutCents: 99500 }),
+      calculateBookingTotal: vi.fn().mockResolvedValue({
+        basePrice: 100000,
+        addOnsTotal: 0,
+        subtotal: 100000,
+        platformFeeCents: 5000,
+        vendorPayoutCents: 95000,
+        customerTotalCents: 100000,
+        commissionAmount: 5000,
+        commissionPercent: 5.0
+      })
+    };
+
+    tenantRepo = {
+      findById: vi.fn().mockResolvedValue({
+        id: 'test-tenant',
+        stripeAccountId: 'acct_test123',
+        stripeOnboarded: true,
+        name: 'Test Tenant'
+      })
+    };
+
+    bookingService = new BookingService(bookingRepo, catalogRepo, eventEmitter, paymentProvider, commissionService, tenantRepo);
     controller = new WebhooksController(paymentProvider, bookingService, webhookRepo);
   });
 
@@ -55,6 +81,7 @@ describe('WebhooksController', () => {
           object: {
             id: 'cs_test_session_123',
             metadata: {
+              tenantId: 'test-tenant',
               packageId: 'pkg_test_123',
               eventDate: '2025-06-15',
               email: 'couple@example.com',
@@ -99,6 +126,7 @@ describe('WebhooksController', () => {
           object: {
             id: 'cs_test_session_dup',
             metadata: {
+              tenantId: 'test-tenant',
               packageId: 'pkg_dup_test',
               eventDate: '2025-06-20',
               email: 'couple@example.com',
@@ -165,6 +193,7 @@ describe('WebhooksController', () => {
           object: {
             id: 'cs_test_session_malformed',
             metadata: {
+              tenantId: 'test-tenant',
               packageId: 'pkg_malformed',
               // Missing eventDate, email, coupleName
             },
@@ -210,6 +239,7 @@ describe('WebhooksController', () => {
           object: {
             id: 'cs_test_session_db',
             metadata: {
+              tenantId: 'test-tenant',
               packageId: 'pkg_db_test',
               eventDate: '2025-07-01',
               email: 'couple@example.com',
@@ -287,6 +317,7 @@ describe('WebhooksController', () => {
           object: {
             id: 'cs_test_session_addons',
             metadata: {
+              tenantId: 'test-tenant',
               packageId: 'pkg_addon_test',
               eventDate: '2025-08-01',
               email: 'couple@example.com',
@@ -329,6 +360,7 @@ describe('WebhooksController', () => {
           object: {
             id: 'cs_test_session_event',
             metadata: {
+              tenantId: 'test-tenant',
               packageId: 'pkg_event_test',
               eventDate: '2025-09-01',
               email: 'couple@example.com',

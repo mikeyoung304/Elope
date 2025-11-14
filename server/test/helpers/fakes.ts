@@ -40,6 +40,15 @@ export class FakeBookingRepository implements BookingRepository {
     return this.bookings.some((b) => b.eventDate === date);
   }
 
+  async getUnavailableDates(tenantId: string, startDate: Date, endDate: Date): Promise<Date[]> {
+    return this.bookings
+      .filter((b) => {
+        const bookingDate = new Date(b.eventDate);
+        return bookingDate >= startDate && bookingDate <= endDate;
+      })
+      .map((b) => new Date(b.eventDate));
+  }
+
   // Test helper
   addBooking(booking: Booking): void {
     this.bookings.push(booking);
@@ -229,10 +238,24 @@ export class FakePaymentProvider implements PaymentProvider {
     amountCents: number;
     email: string;
     metadata: Record<string, string>;
+    applicationFeeAmount?: number;
   }): Promise<CheckoutSession> {
     return {
       url: `https://fake-checkout.com/session_${Date.now()}`,
       sessionId: `sess_${Date.now()}`,
+    };
+  }
+
+  async createConnectCheckoutSession(input: {
+    amountCents: number;
+    email: string;
+    metadata: Record<string, string>;
+    stripeAccountId: string;
+    applicationFeeAmount: number;
+  }): Promise<CheckoutSession> {
+    return {
+      url: `https://fake-connect-checkout.com/session_${Date.now()}`,
+      sessionId: `sess_connect_${Date.now()}`,
     };
   }
 
@@ -361,19 +384,21 @@ export interface WebhookEvent {
 
 export interface WebhookRepository {
   recordWebhook(input: {
+    tenantId: string;
     eventId: string;
     eventType: string;
     rawPayload: string;
   }): Promise<void>;
-  isDuplicate(eventId: string): Promise<boolean>;
-  markProcessed(eventId: string): Promise<void>;
-  markFailed(eventId: string, errorMessage: string): Promise<void>;
+  isDuplicate(tenantId: string, eventId: string): Promise<boolean>;
+  markProcessed(tenantId: string, eventId: string): Promise<void>;
+  markFailed(tenantId: string, eventId: string, errorMessage: string): Promise<void>;
 }
 
 export class FakeWebhookRepository implements WebhookRepository {
   public events: WebhookEvent[] = [];
 
   async recordWebhook(input: {
+    tenantId: string;
     eventId: string;
     eventType: string;
     rawPayload: string;
@@ -390,11 +415,11 @@ export class FakeWebhookRepository implements WebhookRepository {
     this.events.push(event);
   }
 
-  async isDuplicate(eventId: string): Promise<boolean> {
+  async isDuplicate(tenantId: string, eventId: string): Promise<boolean> {
     return this.events.some((e) => e.eventId === eventId);
   }
 
-  async markProcessed(eventId: string): Promise<void> {
+  async markProcessed(tenantId: string, eventId: string): Promise<void> {
     const event = this.events.find((e) => e.eventId === eventId);
     if (event) {
       event.status = 'PROCESSED';
@@ -402,7 +427,7 @@ export class FakeWebhookRepository implements WebhookRepository {
     }
   }
 
-  async markFailed(eventId: string, errorMessage: string): Promise<void> {
+  async markFailed(tenantId: string, eventId: string, errorMessage: string): Promise<void> {
     const event = this.events.find((e) => e.eventId === eventId);
     if (event) {
       event.status = 'FAILED';
