@@ -1,0 +1,12 @@
+#!/bin/sh
+. "$(dirname "$0")/_/husky.sh"
+
+# Run unit tests (fast tests only)
+echo "Running unit tests..."
+npm run test:unit
+
+# Run TypeScript type checking
+echo "Running TypeScript type check..."
+npm run typecheck
+
+echo "Pre-commit checks passed!"

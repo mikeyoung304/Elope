@@ -24,7 +24,8 @@
     "test:e2e:headed": "playwright test -c e2e/playwright.config.ts --headed",
     "dev:api": "npm run dev --workspace=server",
     "dev:client": "npm run dev --workspace=client",
-    "dev:all": "concurrently -n server,client,stripe -c cyan,magenta,yellow \"npm run dev:api\" \"npm run dev:client\" \"stripe listen --forward-to localhost:3001/v1/webhooks/stripe\""
+    "dev:all": "concurrently -n server,client,stripe -c cyan,magenta,yellow \"npm run dev:api\" \"npm run dev:client\" \"stripe listen --forward-to localhost:3001/v1/webhooks/stripe\"",
+    "prepare": "husky"
   },
   "devDependencies": {
     "@playwright/test": "^1.56.0",
@@ -33,6 +34,7 @@
     "concurrently": "^8.2.2",
     "eslint": "^8.56.0",
     "eslint-config-prettier": "^9.1.0",
+    "husky": "^9.1.7",
     "prettier": "^3.2.5",
     "puppeteer": "^24.27.0",
     "tsx": "^4.7.0",
