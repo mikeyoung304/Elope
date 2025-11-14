@@ -33,7 +33,7 @@ export default defineConfig({
   // Shared settings for all the projects below
   use: {
     // Base URL to use in actions like `await page.goto('/')`
-    baseURL: 'http://localhost:3000',
+    baseURL: 'http://localhost:5173',
 
     // Deterministic timezone for E2E tests
     timezoneId: 'UTC',
@@ -68,9 +68,9 @@ export default defineConfig({
 
   // Run your local dev server before starting the tests
   webServer: {
-    command: 'pnpm run dev',
-    cwd: './apps/web',
-    url: 'http://localhost:3000',
+    command: 'npm run dev:client',
+    cwd: '..',
+    url: 'http://localhost:5173',
     reuseExistingServer: !process.env.CI,
     timeout: 120 * 1000,
     env: {
