@@ -127,7 +127,8 @@ export class WebhooksController {
     // We need to extract it early, before full validation
     let tenantId = 'unknown';
     try {
-      const tempSession = event.data.object as any;
+      // Type-safe extraction using Stripe's event data structure
+      const tempSession = event.data.object as Stripe.Checkout.Session;
       tenantId = tempSession?.metadata?.tenantId || 'unknown';
     } catch (err) {
       logger.warn({ eventId: event.id }, 'Could not extract tenantId from webhook metadata');

@@ -69,6 +69,8 @@ model Tenant {
 
   // Relations
   users            User[] // Tenant admin users
+  customers        Customer[] // Tenant-scoped customers
+  venues           Venue[] // Tenant-scoped venues
   packages         Package[]
   addOns           AddOn[]
   bookings         Booking[]
@@ -83,16 +85,23 @@ model Tenant {
 
 model Customer {
   id        String    @id @default(cuid())
-  email     String?   @unique
+  tenantId  String // Tenant isolation - CRITICAL: prevents cross-tenant data leakage
+  email     String? // Optional: some customers may book without email
   phone     String?
   name      String
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
+  tenant    Tenant    @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   bookings  Booking[]
+
+  @@unique([tenantId, email]) // Composite unique: email unique per tenant, not globally
+  @@index([tenantId])
+  @@index([email])
 }
 
 model Venue {
   id        String    @id @default(cuid())
+  tenantId  String // Tenant isolation - CRITICAL: prevents cross-tenant venue sharing
   name      String
   address   String?
   city      String?
@@ -101,7 +110,12 @@ model Venue {
   capacity  Int?
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
+  tenant    Tenant    @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   bookings  Booking[]
+
+  @@unique([tenantId, name]) // Composite unique: venue name unique per tenant
+  @@index([tenantId])
+  @@index([tenantId, city]) // For location-based venue queries
 }
 
 model Package {
@@ -127,6 +141,7 @@ model Package {
   @@unique([tenantId, slug]) // Each tenant has unique package slugs
   @@index([tenantId, active])
   @@index([tenantId])
+  @@index([slug])
 }
 
 model AddOn {
@@ -155,6 +170,8 @@ model PackageAddOn {
   addOn     AddOn   @relation(fields: [addOnId], references: [id], onDelete: Cascade)
 
   @@id([packageId, addOnId])
+  @@index([packageId])
+  @@index([addOnId])
 }
 
 model Booking {
@@ -194,8 +211,11 @@ model Booking {
   @@index([tenantId, status, date])
   @@index([tenantId])
   @@index([customerId])
+  @@index([packageId])
+  @@index([venueId])
   @@index([stripePaymentIntentId])
   @@index([createdAt])
+  @@index([tenantId, confirmedAt])
 }
 
 enum BookingStatus {
@@ -214,6 +234,8 @@ model BookingAddOn {
   addOn     AddOn   @relation(fields: [addOnId], references: [id], onDelete: Restrict)
 
   @@id([bookingId, addOnId])
+  @@index([bookingId])
+  @@index([addOnId])
 }
 
 model Payment {
@@ -227,7 +249,9 @@ model Payment {
   createdAt   DateTime      @default(now())
   booking     Booking       @relation(fields: [bookingId], references: [id], onDelete: Cascade)
 
+  @@index([bookingId])
   @@index([processorId])
+  @@index([status])
 }
 
 enum PaymentStatus {
@@ -254,7 +278,7 @@ model BlackoutDate {
 model WebhookEvent {
   id          String        @id @default(uuid())
   tenantId    String // Tenant isolation
-  eventId     String        @unique // Stripe event ID
+  eventId     String // Stripe event ID - NOT globally unique (different tenants can have same event ID)
   eventType   String
   rawPayload  String        @db.Text
   status      WebhookStatus @default(PENDING)
@@ -264,10 +288,11 @@ model WebhookEvent {
   createdAt   DateTime      @default(now())
   tenant      Tenant        @relation(fields: [tenantId], references: [id], onDelete: Cascade)
 
-  @@index([tenantId, status])
-  @@index([tenantId, createdAt])
+  @@unique([tenantId, eventId]) // Composite unique: CRITICAL for preventing cross-tenant event hijacking
+  @@index([tenantId, status]) // Query webhooks by tenant and status
+  @@index([tenantId, createdAt]) // Query webhooks by tenant chronologically
   @@index([tenantId])
-  @@index([eventId])
+  @@index([eventId]) // Global lookup for debugging
   @@index([status])
   @@index([status, createdAt])
 }
@@ -316,4 +341,18 @@ model ConfigChangeLog {
   @@index([tenantId, entityType, entityId]) // All changes to specific entity
   @@index([tenantId, changeType]) // Filter by change type
   @@index([userId]) // Track changes by user
+  @@index([tenantId, userId]) // Track user changes per tenant
+  @@index([entityType, entityId]) // Global entity change lookup
+}
+
+// Idempotency Key Tracking (Stripe Operations)
+// Prevents duplicate charges, refunds, and transfers via unique key storage
+model IdempotencyKey {
+  id        String   @id @default(cuid())
+  key       String   @unique // Unique idempotency key (e.g., "checkout_a3b2c1d4...")
+  response  String?  @db.Text // Cached JSON response for duplicate requests
+  createdAt DateTime @default(now())
+  expiresAt DateTime // Automatic expiration (24 hours from creation)
+
+  @@index([expiresAt]) // For efficient cleanup of expired keys
 }

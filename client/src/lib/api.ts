@@ -34,6 +34,15 @@ let tenantApiKey: string | null = null;
 let tenantToken: string | null = null;
 
 /**
+ * Extended API client with additional methods for auth management
+ */
+interface ExtendedApiClient extends ReturnType<typeof initClient> {
+  setTenantKey: (key: string | null) => void;
+  setTenantToken: (token: string | null) => void;
+  logoutTenant: () => void;
+}
+
+/**
  * Type-safe API client for Elope wedding booking platform
  *
  * Provides end-to-end type safety between client and server via ts-rest contracts.
@@ -108,13 +117,13 @@ export const api = initClient(Contracts, {
       headers: response.headers,
     };
   },
-});
+}) as ExtendedApiClient;
 
 /**
  * Set tenant API key for multi-tenant widget mode
  * Call this once when the widget loads with tenant-specific key
  */
-(api as any).setTenantKey = (key: string | null) => {
+api.setTenantKey = (key: string | null) => {
   tenantApiKey = key;
 };
 
@@ -122,7 +131,7 @@ export const api = initClient(Contracts, {
  * Set tenant JWT token for tenant admin dashboard
  * Call this when tenant logs in
  */
-(api as any).setTenantToken = (token: string | null) => {
+api.setTenantToken = (token: string | null) => {
   tenantToken = token;
   if (token) {
     localStorage.setItem("tenantToken", token);
@@ -134,7 +143,7 @@ export const api = initClient(Contracts, {
 /**
  * Logout tenant admin (clear tenant token)
  */
-(api as any).logoutTenant = () => {
+api.logoutTenant = () => {
   tenantToken = null;
   localStorage.removeItem("tenantToken");
 };

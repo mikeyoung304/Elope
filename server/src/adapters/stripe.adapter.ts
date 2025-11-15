@@ -32,29 +32,38 @@ export class StripePaymentAdapter implements PaymentProvider {
     amountCents: number;
     email: string;
     metadata: Record<string, string>;
+    idempotencyKey?: string;
   }): Promise<CheckoutSession> {
-    // Create Stripe checkout session
-    const session = await this.stripe.checkout.sessions.create({
-      mode: 'payment',
-      payment_method_types: ['card'],
-      customer_email: input.email,
-      line_items: [
-        {
-          price_data: {
-            currency: 'usd',
-            unit_amount: input.amountCents,
-            product_data: {
-              name: 'Wedding Package',
-              description: 'Elopement/Micro-Wedding Package',
+    // Create Stripe checkout session with idempotency key
+    const options: Stripe.RequestOptions = {};
+    if (input.idempotencyKey) {
+      options.idempotencyKey = input.idempotencyKey;
+    }
+
+    const session = await this.stripe.checkout.sessions.create(
+      {
+        mode: 'payment',
+        payment_method_types: ['card'],
+        customer_email: input.email,
+        line_items: [
+          {
+            price_data: {
+              currency: 'usd',
+              unit_amount: input.amountCents,
+              product_data: {
+                name: 'Wedding Package',
+                description: 'Elopement/Micro-Wedding Package',
+              },
             },
+            quantity: 1,
           },
-          quantity: 1,
-        },
-      ],
-      success_url: `${this.successUrl}?session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: this.cancelUrl,
-      metadata: input.metadata,
-    });
+        ],
+        success_url: `${this.successUrl}?session_id={CHECKOUT_SESSION_ID}`,
+        cancel_url: this.cancelUrl,
+        metadata: input.metadata,
+      },
+      options
+    );
 
     if (!session.url) {
       throw new Error('Stripe session created but no URL returned');
@@ -82,6 +91,7 @@ export class StripePaymentAdapter implements PaymentProvider {
     metadata: Record<string, string>;
     stripeAccountId: string;
     applicationFeeAmount: number;
+    idempotencyKey?: string;
   }): Promise<CheckoutSession> {
     // Validate application fee (Stripe requires 0.5% - 50%)
     const minFee = Math.ceil(input.amountCents * 0.005); // 0.5%
@@ -99,34 +109,42 @@ export class StripePaymentAdapter implements PaymentProvider {
       );
     }
 
-    // Create Stripe Connect checkout session
-    const session = await this.stripe.checkout.sessions.create({
-      mode: 'payment',
-      payment_method_types: ['card'],
-      customer_email: input.email,
-      line_items: [
-        {
-          price_data: {
-            currency: 'usd',
-            unit_amount: input.amountCents,
-            product_data: {
-              name: 'Wedding Package',
-              description: 'Elopement/Micro-Wedding Package',
+    // Create Stripe Connect checkout session with idempotency key
+    const options: Stripe.RequestOptions = {};
+    if (input.idempotencyKey) {
+      options.idempotencyKey = input.idempotencyKey;
+    }
+
+    const session = await this.stripe.checkout.sessions.create(
+      {
+        mode: 'payment',
+        payment_method_types: ['card'],
+        customer_email: input.email,
+        line_items: [
+          {
+            price_data: {
+              currency: 'usd',
+              unit_amount: input.amountCents,
+              product_data: {
+                name: 'Wedding Package',
+                description: 'Elopement/Micro-Wedding Package',
+              },
             },
+            quantity: 1,
           },
-          quantity: 1,
+        ],
+        payment_intent_data: {
+          application_fee_amount: input.applicationFeeAmount,
+          transfer_data: {
+            destination: input.stripeAccountId,
+          },
         },
-      ],
-      payment_intent_data: {
-        application_fee_amount: input.applicationFeeAmount,
-        transfer_data: {
-          destination: input.stripeAccountId,
-        },
+        success_url: `${this.successUrl}?session_id={CHECKOUT_SESSION_ID}`,
+        cancel_url: this.cancelUrl,
+        metadata: input.metadata,
       },
-      success_url: `${this.successUrl}?session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: this.cancelUrl,
-      metadata: input.metadata,
-    });
+      options
+    );
 
     if (!session.url) {
       throw new Error('Stripe Connect session created but no URL returned');
@@ -170,6 +188,7 @@ export class StripePaymentAdapter implements PaymentProvider {
     paymentIntentId: string;
     amountCents?: number;
     reason?: string;
+    idempotencyKey?: string;
   }): Promise<{
     refundId: string;
     status: string;
@@ -183,12 +202,20 @@ export class StripePaymentAdapter implements PaymentProvider {
       );
     }
 
-    // Create refund via Stripe API
-    const refund = await this.stripe.refunds.create({
-      payment_intent: input.paymentIntentId,
-      amount: input.amountCents, // Omit for full refund, specify for partial
-      reason: input.reason as 'duplicate' | 'fraudulent' | 'requested_by_customer' | undefined,
-    });
+    // Create refund via Stripe API with idempotency key
+    const options: Stripe.RequestOptions = {};
+    if (input.idempotencyKey) {
+      options.idempotencyKey = input.idempotencyKey;
+    }
+
+    const refund = await this.stripe.refunds.create(
+      {
+        payment_intent: input.paymentIntentId,
+        amount: input.amountCents, // Omit for full refund, specify for partial
+        reason: input.reason as 'duplicate' | 'fraudulent' | 'requested_by_customer' | undefined,
+      },
+      options
+    );
 
     return {
       refundId: refund.id,

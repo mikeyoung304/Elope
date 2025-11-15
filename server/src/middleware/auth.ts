@@ -39,7 +39,8 @@ export function createAuthMiddleware(identityService: IdentityService) {
       // SECURITY: Validate token type - reject tenant tokens on admin routes
       // Tenant tokens have a 'type' field set to 'tenant'
       // Admin tokens have a 'role' field set to 'admin'
-      if ('type' in payload && (payload as any).type === 'tenant') {
+      if ('type' in payload && typeof payload === 'object' && payload !== null &&
+          'type' in payload && (payload as { type: string }).type === 'tenant') {
         throw new UnauthorizedError(
           'Invalid token type: tenant tokens are not allowed for admin routes'
         );

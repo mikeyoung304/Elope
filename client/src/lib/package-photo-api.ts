@@ -58,7 +58,7 @@ export interface PackageWithPhotos {
  */
 interface ErrorResponse {
   error: string;
-  details?: any;
+  details?: unknown;
 }
 
 /**
@@ -371,8 +371,8 @@ export const photoValidation = {
       return `File too large (${sizeMB}MB). Maximum size is 5MB.`;
     }
 
-    // Check MIME type
-    if (!this.ALLOWED_MIME_TYPES.includes(file.type as any)) {
+    // Check MIME type - type assertion is safe because we're checking against known MIME types
+    if (!this.ALLOWED_MIME_TYPES.includes(file.type as typeof this.ALLOWED_MIME_TYPES[number])) {
       return `Invalid file type (${file.type}). Allowed types: JPG, PNG, WebP, SVG.`;
     }
 

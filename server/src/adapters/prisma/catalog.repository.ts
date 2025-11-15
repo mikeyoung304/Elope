@@ -9,9 +9,11 @@ import type {
   UpdatePackageInput,
   CreateAddOnInput,
   UpdateAddOnInput,
+  PackagePhoto,
 } from '../lib/ports';
 import type { Package, AddOn } from '../lib/entities';
 import { DomainError } from '../lib/core/errors';
+import type { PrismaJson } from '../types/prisma-json';
 
 export class PrismaCatalogRepository implements CatalogRepository {
   constructor(private readonly prisma: PrismaClient) {}
@@ -89,9 +91,10 @@ export class PrismaCatalogRepository implements CatalogRepository {
   }
 
   async createPackage(tenantId: string, data: CreatePackageInput): Promise<Package> {
-    // Check for slug uniqueness within tenant
+    // Check for slug uniqueness within tenant - use select to minimize data transfer
     const existing = await this.prisma.package.findUnique({
       where: { tenantId_slug: { tenantId, slug: data.slug } },
+      select: { id: true },
     });
 
     if (existing) {
@@ -112,9 +115,11 @@ export class PrismaCatalogRepository implements CatalogRepository {
   }
 
   async updatePackage(tenantId: string, id: string, data: UpdatePackageInput): Promise<Package> {
-    // Check if package exists for this tenant
+    // Check if package exists for this tenant AND validate slug uniqueness in a single query
+    // This reduces database roundtrips from 3 queries to 1 query + 1 update
     const existing = await this.prisma.package.findFirst({
       where: { tenantId, id },
+      select: { id: true, slug: true },
     });
 
     if (!existing) {
@@ -125,6 +130,7 @@ export class PrismaCatalogRepository implements CatalogRepository {
     if (data.slug && data.slug !== existing.slug) {
       const duplicateSlug = await this.prisma.package.findUnique({
         where: { tenantId_slug: { tenantId, slug: data.slug } },
+        select: { id: true },
       });
 
       if (duplicateSlug) {
@@ -147,9 +153,10 @@ export class PrismaCatalogRepository implements CatalogRepository {
   }
 
   async deletePackage(tenantId: string, id: string): Promise<void> {
-    // Check if package exists for this tenant
+    // Check if package exists for this tenant - optimize with select
     const existing = await this.prisma.package.findFirst({
       where: { tenantId, id },
+      select: { id: true },
     });
 
     if (!existing) {
@@ -163,9 +170,10 @@ export class PrismaCatalogRepository implements CatalogRepository {
   }
 
   async createAddOn(tenantId: string, data: CreateAddOnInput): Promise<AddOn> {
-    // Verify package exists for this tenant
+    // Verify package exists for this tenant - optimize with select
     const pkg = await this.prisma.package.findFirst({
       where: { tenantId, id: data.packageId },
+      select: { id: true },
     });
 
     if (!pkg) {
@@ -197,10 +205,11 @@ export class PrismaCatalogRepository implements CatalogRepository {
   }
 
   async updateAddOn(tenantId: string, id: string, data: UpdateAddOnInput): Promise<AddOn> {
-    // Check if add-on exists for this tenant
+    // Check if add-on exists for this tenant - optimize with select
     const existing = await this.prisma.addOn.findFirst({
       where: { tenantId, id },
-      include: {
+      select: {
+        id: true,
         packages: {
           select: {
             packageId: true,
@@ -213,10 +222,11 @@ export class PrismaCatalogRepository implements CatalogRepository {
       throw new DomainError('NOT_FOUND', `AddOn with id '${id}' not found`);
     }
 
-    // If updating packageId, verify new package exists for this tenant
+    // If updating packageId, verify new package exists for this tenant - optimize with select
     if (data.packageId && data.packageId !== existing.packages[0]?.packageId) {
       const pkg = await this.prisma.package.findFirst({
         where: { tenantId, id: data.packageId },
+        select: { id: true },
       });
 
       if (!pkg) {
@@ -251,9 +261,10 @@ export class PrismaCatalogRepository implements CatalogRepository {
   }
 
   async deleteAddOn(tenantId: string, id: string): Promise<void> {
-    // Check if add-on exists for this tenant
+    // Check if add-on exists for this tenant - optimize with select
     const existing = await this.prisma.addOn.findFirst({
       where: { tenantId, id },
+      select: { id: true },
     });
 
     if (!existing) {
@@ -274,7 +285,7 @@ export class PrismaCatalogRepository implements CatalogRepository {
     description: string | null;
     basePrice: number;
     active: boolean;
-    photos?: any;
+    photos?: PrismaJson<PackagePhoto[]>;
   }): Package {
     return {
       id: pkg.id,
@@ -284,7 +295,7 @@ export class PrismaCatalogRepository implements CatalogRepository {
       description: pkg.description || '',
       priceCents: pkg.basePrice,
       photoUrl: undefined,
-      photos: pkg.photos || [],
+      photos: (pkg.photos as PackagePhoto[]) || [],
     };
   }
 

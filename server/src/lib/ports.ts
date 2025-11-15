@@ -90,6 +90,7 @@ export interface PaymentProvider {
     email: string;
     metadata: Record<string, string>;
     applicationFeeAmount?: number; // Platform commission in cents
+    idempotencyKey?: string; // Idempotency key to prevent duplicate charges
   }): Promise<CheckoutSession>;
   createConnectCheckoutSession(input: {
     amountCents: number;
@@ -97,6 +98,7 @@ export interface PaymentProvider {
     metadata: Record<string, string>;
     stripeAccountId: string; // Connected account ID
     applicationFeeAmount: number; // Platform commission in cents (required for Connect)
+    idempotencyKey?: string; // Idempotency key to prevent duplicate charges
   }): Promise<CheckoutSession>;
   verifyWebhook(
     payload: string,
@@ -106,6 +108,7 @@ export interface PaymentProvider {
     paymentIntentId: string;
     amountCents?: number; // Optional: for partial refunds, omit for full refund
     reason?: string; // Optional: reason for refund
+    idempotencyKey?: string; // Idempotency key to prevent duplicate refunds
   }): Promise<{
     refundId: string;
     status: string;
@@ -209,6 +212,15 @@ export interface CreatePackageInput {
 }
 
 /**
+ * Photo object for package gallery
+ */
+export interface PackagePhoto {
+  url: string;
+  altText?: string;
+  order?: number;
+}
+
+/**
  * Input for updating an existing package
  */
 export interface UpdatePackageInput {
@@ -217,7 +229,7 @@ export interface UpdatePackageInput {
   description?: string;
   priceCents?: number;
   photoUrl?: string;
-  photos?: any; // Photo gallery JSON array
+  photos?: PackagePhoto[]; // Photo gallery JSON array
 }
 
 /**

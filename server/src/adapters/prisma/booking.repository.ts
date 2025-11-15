@@ -108,14 +108,20 @@ export class PrismaBookingRepository implements BookingRepository {
           throw new BookingConflictError(booking.eventDate);
         }
 
-        // Create or find the customer
+        // Create or find the customer (tenant-scoped)
         const customer = await tx.customer.upsert({
-          where: { email: booking.email },
+          where: {
+            tenantId_email: {
+              tenantId,
+              email: booking.email,
+            },
+          },
           update: {
             name: booking.coupleName,
             phone: booking.phone,
           },
           create: {
+            tenantId,
             email: booking.email,
             name: booking.coupleName,
             phone: booking.phone,

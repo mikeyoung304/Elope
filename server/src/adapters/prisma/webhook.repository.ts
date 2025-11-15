@@ -15,16 +15,18 @@ export class PrismaWebhookRepository implements WebhookRepository {
    * Checks if a webhook event has already been processed
    *
    * Implements idempotency protection by tracking webhook event IDs.
+   * Uses atomic operations to prevent race conditions when checking duplicates.
    * If the event exists but isn't marked as DUPLICATE or PROCESSED,
    * updates its status to DUPLICATE and increments attempt counter.
    *
+   * @param tenantId - Tenant ID for data isolation
    * @param eventId - Stripe event ID (e.g., "evt_1234...")
    *
    * @returns True if event is a duplicate, false if new
    *
    * @example
    * ```typescript
-   * const isDupe = await webhookRepo.isDuplicate('evt_abc123');
+   * const isDupe = await webhookRepo.isDuplicate('tenant_123', 'evt_abc123');
    * if (isDupe) {
    *   console.log('Already processed - returning 200 OK to Stripe');
    *   return;
@@ -32,6 +34,7 @@ export class PrismaWebhookRepository implements WebhookRepository {
    * ```
    */
   async isDuplicate(tenantId: string, eventId: string): Promise<boolean> {
+    // Use atomic findFirst with composite key for tenant isolation
     const existing = await this.prisma.webhookEvent.findFirst({
       where: {
         tenantId,
@@ -43,9 +46,15 @@ export class PrismaWebhookRepository implements WebhookRepository {
       // Webhook exists for this tenant - check if already processed
 
       // If webhook already exists, mark as duplicate (unless it's already processed)
+      // Use atomic update with composite key to prevent race conditions
       if (existing.status !== 'DUPLICATE' && existing.status !== 'PROCESSED') {
         await this.prisma.webhookEvent.update({
-          where: { id: existing.id },
+          where: {
+            tenantId_eventId: {
+              tenantId,
+              eventId,
+            },
+          },
           data: {
             status: 'DUPLICATE',
             attempts: { increment: 1 },
@@ -137,7 +146,12 @@ export class PrismaWebhookRepository implements WebhookRepository {
    */
   async markProcessed(tenantId: string, eventId: string): Promise<void> {
     await this.prisma.webhookEvent.update({
-      where: { eventId },
+      where: {
+        tenantId_eventId: {
+          tenantId,
+          eventId,
+        },
+      },
       data: {
         status: 'PROCESSED',
         processedAt: new Date(),
@@ -170,7 +184,12 @@ export class PrismaWebhookRepository implements WebhookRepository {
    */
   async markFailed(tenantId: string, eventId: string, errorMessage: string): Promise<void> {
     await this.prisma.webhookEvent.update({
-      where: { eventId },
+      where: {
+        tenantId_eventId: {
+          tenantId,
+          eventId,
+        },
+      },
       data: {
         status: 'FAILED',
         lastError: errorMessage,

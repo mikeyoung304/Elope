@@ -448,6 +448,7 @@ export class MockPaymentProvider implements PaymentProvider {
     amountCents: number;
     email: string;
     metadata: Record<string, string>;
+    idempotencyKey?: string;
   }): Promise<CheckoutSession> {
     const sessionId = `mock_session_${Date.now()}`;
     const successUrl = input.metadata.successUrl || 'http://localhost:5173/success';
@@ -465,6 +466,7 @@ export class MockPaymentProvider implements PaymentProvider {
     metadata: Record<string, string>;
     stripeAccountId: string;
     applicationFeeAmount: number;
+    idempotencyKey?: string;
   }): Promise<CheckoutSession> {
     const sessionId = `mock_connect_session_${Date.now()}`;
     const successUrl = input.metadata.successUrl || 'http://localhost:5173/success';
@@ -496,6 +498,24 @@ export class MockPaymentProvider implements PaymentProvider {
       pending_webhooks: 0,
       request: null,
     } as Stripe.Event;
+  }
+
+  async refund(input: {
+    paymentIntentId: string;
+    amountCents?: number;
+    reason?: string;
+    idempotencyKey?: string;
+  }): Promise<{
+    refundId: string;
+    status: string;
+    amountCents: number;
+  }> {
+    // Mock refund - always succeeds
+    return {
+      refundId: `mock_refund_${Date.now()}`,
+      status: 'succeeded',
+      amountCents: input.amountCents || 100000, // Default to $1000 if not specified
+    };
   }
 }
 
