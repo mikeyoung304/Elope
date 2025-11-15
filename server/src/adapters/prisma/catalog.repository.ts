@@ -276,6 +276,124 @@ export class PrismaCatalogRepository implements CatalogRepository {
     });
   }
 
+  /**
+   * Get packages for a specific segment
+   *
+   * MULTI-TENANT: Scoped by tenantId and segmentId
+   * Used for segment landing pages
+   *
+   * @param tenantId - Tenant ID for isolation
+   * @param segmentId - Segment ID to filter packages
+   * @returns Array of packages ordered by groupingOrder then createdAt
+   */
+  async getPackagesBySegment(tenantId: string, segmentId: string): Promise<Package[]> {
+    const packages = await this.prisma.package.findMany({
+      where: {
+        tenantId,
+        segmentId,
+        active: true,
+      },
+      orderBy: [
+        { groupingOrder: 'asc' },
+        { createdAt: 'asc' },
+      ],
+    });
+
+    return packages.map(this.toDomainPackage);
+  }
+
+  /**
+   * Get packages with add-ons for a specific segment
+   *
+   * MULTI-TENANT: Scoped by tenantId and segmentId
+   * Returns packages with both segment-specific and global add-ons
+   * Used for segment landing pages
+   *
+   * @param tenantId - Tenant ID for isolation
+   * @param segmentId - Segment ID to filter packages
+   * @returns Array of packages with add-ons, ordered by grouping
+   */
+  async getPackagesBySegmentWithAddOns(
+    tenantId: string,
+    segmentId: string
+  ): Promise<Array<Package & { addOns: AddOn[] }>> {
+    const packages = await this.prisma.package.findMany({
+      where: {
+        tenantId,
+        segmentId,
+        active: true,
+      },
+      include: {
+        addOns: {
+          include: {
+            addOn: true,
+          },
+        },
+      },
+      orderBy: [
+        { groupingOrder: 'asc' },
+        { createdAt: 'asc' },
+      ],
+    });
+
+    // Filter add-ons to include only those that are segment-specific or global
+    return packages.map((pkg) => ({
+      ...this.toDomainPackage(pkg),
+      addOns: pkg.addOns
+        .filter((pa: any) => {
+          // Include add-ons that are either segment-specific OR global (null segmentId)
+          const addOn = pa.addOn;
+          return (
+            addOn.active &&
+            (addOn.segmentId === segmentId || addOn.segmentId === null)
+          );
+        })
+        .map((pa: any) => this.toDomainAddOn({
+          id: pa.addOn.id,
+          name: pa.addOn.name,
+          price: pa.addOn.price,
+          packages: [{ packageId: pkg.id }],
+        })),
+    }));
+  }
+
+  /**
+   * Get add-ons available for a segment
+   *
+   * Returns both:
+   * - Add-ons scoped to this specific segment (segmentId = specified)
+   * - Global add-ons available to all segments (segmentId = null)
+   *
+   * Used for segment landing pages and package detail pages
+   *
+   * @param tenantId - Tenant ID for isolation
+   * @param segmentId - Segment ID to filter add-ons
+   * @returns Array of add-ons ordered by createdAt
+   */
+  async getAddOnsForSegment(tenantId: string, segmentId: string): Promise<AddOn[]> {
+    const addOns = await this.prisma.addOn.findMany({
+      where: {
+        tenantId,
+        // Include add-ons that are either segment-specific OR global
+        OR: [
+          { segmentId },
+          { segmentId: null },
+        ],
+        active: true,
+      },
+      include: {
+        packages: {
+          select: {
+            packageId: true,
+          },
+        },
+      },
+      orderBy: { createdAt: 'asc' },
+    });
+
+    return addOns.map(this.toDomainAddOn);
+  }
+
   // Mappers
   private toDomainPackage(pkg: {
     id: string;

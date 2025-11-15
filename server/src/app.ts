@@ -162,6 +162,7 @@ export function createApp(config: Config): express.Application {
     catalog: container.services.catalog,
     booking: container.services.booking,
     tenantAuth: container.services.tenantAuth,
+    segment: container.services.segment,
   });
 
   // Mount dev routes (mock mode only)

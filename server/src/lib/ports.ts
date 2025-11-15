@@ -24,6 +24,11 @@ export interface CatalogRepository {
   createAddOn(tenantId: string, data: CreateAddOnInput): Promise<AddOn>;
   updateAddOn(tenantId: string, id: string, data: UpdateAddOnInput): Promise<AddOn>;
   deleteAddOn(tenantId: string, id: string): Promise<void>;
+
+  // Segment-scoped methods (Phase A - Segment Implementation)
+  getPackagesBySegment(tenantId: string, segmentId: string): Promise<Package[]>;
+  getPackagesBySegmentWithAddOns(tenantId: string, segmentId: string): Promise<(Package & { addOns: AddOn[] })[]>;
+  getAddOnsForSegment(tenantId: string, segmentId: string): Promise<AddOn[]>;
 }
 
 /**

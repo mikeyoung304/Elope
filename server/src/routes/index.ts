@@ -19,6 +19,7 @@ import type { IdentityService } from '../services/identity.service';
 import type { TenantAuthService } from '../services/tenant-auth.service';
 import type { CatalogService } from '../services/catalog.service';
 import type { BookingService } from '../services/booking.service';
+import type { SegmentService } from '../services/segment.service';
 import { resolveTenant, requireTenant, getTenantId, type TenantRequest } from '../middleware/tenant';
 import { PrismaClient } from '../generated/prisma';
 import { PrismaTenantRepository, PrismaBlackoutRepository } from '../adapters/prisma';
@@ -27,6 +28,8 @@ import adminStripeRoutes from './admin/stripe.routes';
 import { createTenantAdminRoutes } from './tenant-admin.routes';
 import { createTenantAuthRoutes } from './tenant-auth.routes';
 import { createUnifiedAuthRoutes } from './auth.routes';
+import { createSegmentsRouter } from './segments.routes';
+import { createTenantAdminSegmentsRouter } from './tenant-admin-segments.routes';
 import { loginLimiter } from '../middleware/rateLimiter';
 import { logger } from '../lib/core/logger';
 
@@ -45,6 +48,7 @@ interface Services {
   catalog: CatalogService;
   booking: BookingService;
   tenantAuth: TenantAuthService;
+  segment: SegmentService;
 }
 
 export function createV1Router(
@@ -283,5 +287,17 @@ export function createV1Router(
       tenantRepo
     );
     app.use('/v1/auth', unifiedAuthRoutes);
+
+    // Register public segment routes (for customer browsing)
+    // Requires tenant context via X-Tenant-Key header
+    const segmentsRouter = createSegmentsRouter(services.segment);
+    app.use('/v1/segments', tenantMiddleware, requireTenant, segmentsRouter);
+    logger.info('✅ Public segment routes mounted at /v1/segments');
+
+    // Register tenant admin segment routes (for segment CRUD)
+    // Requires tenant admin authentication
+    const tenantAdminSegmentsRouter = createTenantAdminSegmentsRouter(services.segment);
+    app.use('/v1/tenant/admin/segments', tenantAuthMiddleware, tenantAdminSegmentsRouter);
+    logger.info('✅ Tenant admin segment routes mounted at /v1/tenant/admin/segments');
   }
 }

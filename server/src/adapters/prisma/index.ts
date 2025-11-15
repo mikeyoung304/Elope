@@ -8,3 +8,4 @@ export { PrismaBlackoutRepository } from './blackout.repository';
 export { PrismaUserRepository } from './user.repository';
 export { PrismaWebhookRepository } from './webhook.repository';
 export { PrismaTenantRepository } from './tenant.repository';
+export { PrismaSegmentRepository } from './segment.repository';

@@ -14,6 +14,7 @@ import { StripeConnectService } from './services/stripe-connect.service';
 import { TenantAuthService } from './services/tenant-auth.service';
 import { AuditService } from './services/audit.service';
 import { IdempotencyService } from './services/idempotency.service';
+import { SegmentService } from './services/segment.service';
 import { PackagesController } from './routes/packages.routes';
 import { AvailabilityController } from './routes/availability.routes';
 import { BookingsController } from './routes/bookings.routes';
@@ -34,6 +35,7 @@ import {
   PrismaUserRepository,
   PrismaWebhookRepository,
   PrismaTenantRepository,
+  PrismaSegmentRepository,
 } from './adapters/prisma';
 import { StripePaymentAdapter } from './adapters/stripe.adapter';
 import { PostmarkMailAdapter } from './adapters/postmark.adapter';
@@ -61,6 +63,7 @@ export interface Container {
     catalog: CatalogService;
     booking: BookingService;
     audit: AuditService;
+    segment: SegmentService;
   };
 }
 
@@ -116,6 +119,11 @@ export function buildContainer(config: Config): Container {
 
     // Create TenantAuthService with mock Prisma tenant repo
     const tenantAuthService = new TenantAuthService(mockTenantRepo, config.JWT_SECRET);
+
+    // Create SegmentService with mock Prisma segment repo
+    const segmentRepo = new PrismaSegmentRepository(mockPrisma);
+    const segmentService = new SegmentService(segmentRepo, cacheService);
+
     const controllers = {
       packages: new PackagesController(catalogService),
       availability: new AvailabilityController(availabilityService),
@@ -137,6 +145,7 @@ export function buildContainer(config: Config): Container {
       catalog: catalogService,
       booking: bookingService,
       audit: auditService,
+      segment: segmentService,
     };
 
     return { controllers, services };
@@ -180,6 +189,7 @@ export function buildContainer(config: Config): Container {
   const userRepo = new PrismaUserRepository(prisma);
   const webhookRepo = new PrismaWebhookRepository(prisma);
   const tenantRepo = new PrismaTenantRepository(prisma);
+  const segmentRepo = new PrismaSegmentRepository(prisma);
 
   // Create CommissionService with real Prisma
   const commissionService = new CommissionService(prisma);
@@ -246,6 +256,9 @@ export function buildContainer(config: Config): Container {
   // Create TenantAuthService with real Prisma tenant repo
   const tenantAuthService = new TenantAuthService(tenantRepo, config.JWT_SECRET);
 
+  // Create SegmentService with real Prisma segment repo
+  const segmentService = new SegmentService(segmentRepo, cacheService);
+
   // Subscribe to BookingPaid events to send confirmation emails
   eventEmitter.subscribe<{
     bookingId: string;
@@ -290,6 +303,7 @@ export function buildContainer(config: Config): Container {
     catalog: catalogService,
     booking: bookingService,
     audit: auditService,
+    segment: segmentService,
   };
 
   return { controllers, services };

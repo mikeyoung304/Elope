@@ -186,6 +186,7 @@ export function createMultiTenantSetup(
     });
     await prisma.addOn.deleteMany({ where: { tenantId: { in: tenantIds } } });
     await prisma.package.deleteMany({ where: { tenantId: { in: tenantIds } } });
+    await prisma.segment.deleteMany({ where: { tenantId: { in: tenantIds } } });
   };
 
   const cleanupTenantA = async () => {

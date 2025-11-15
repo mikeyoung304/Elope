@@ -71,6 +71,7 @@ model Tenant {
   users            User[] // Tenant admin users
   customers        Customer[] // Tenant-scoped customers
   venues           Venue[] // Tenant-scoped venues
+  segments         Segment[] // Tenant's business segments (e.g., "Wellness Retreat", "Micro-Wedding")
   packages         Package[]
   addOns           AddOn[]
   bookings         Booking[]
@@ -118,6 +119,47 @@ model Venue {
   @@index([tenantId, city]) // For location-based venue queries
 }
 
+// Segment Model - Represents distinct business lines or customer routes per tenant
+// Examples: "Wellness Retreat", "Micro-Wedding", "Weekend Getaway" (Little Bit Farm)
+//           "Elopement", "Micro Wedding", "Full Wedding" (Traditional wedding venue)
+model Segment {
+  id String @id @default(cuid())
+  tenantId String // Tenant isolation
+
+  // URL and Display
+  slug String // URL-safe identifier (e.g., "wellness-retreat", "micro-wedding")
+  name String // Display name (e.g., "Wellness Retreats", "Intimate Weddings")
+
+  // Landing Page Content
+  heroTitle String // Hero section title (e.g., "Rejuvenate Your Mind & Body")
+  heroSubtitle String? // Optional subtitle/tagline
+  heroImage String? // URL to segment-specific hero image
+  description String? @db.Text // Extended description for SEO and landing page
+
+  // SEO Metadata
+  metaTitle String? // Custom page title for SEO
+  metaDescription String? @db.Text // Meta description for search engines
+
+  // Display & Status
+  sortOrder Int @default(0) // Order for displaying segments in navigation (lower = first)
+  active Boolean @default(true) // Whether segment is publicly visible
+
+  // Timestamps
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  packages Package[] // Packages within this segment
+  addOns AddOn[] // Segment-specific add-ons
+
+  // Constraints & Indexes
+  @@unique([tenantId, slug]) // Each tenant has unique segment slugs
+  @@index([tenantId, active]) // Query active segments for tenant
+  @@index([tenantId, sortOrder]) // Query segments in display order
+  @@index([tenantId])
+}
+
 model Package {
   id          String  @id @default(cuid())
   tenantId    String // Tenant isolation
@@ -127,6 +169,15 @@ model Package {
   basePrice   Int
   active      Boolean @default(true)
 
+  // Segment Relationship (nullable for backward compatibility)
+  segmentId String? // Which segment this package belongs to
+
+  // Optional Grouping within Segment (for flexible tiering)
+  // Examples: "Solo", "Couple", "Group" OR "Budget", "Premium", "Luxury"
+  // Leave null for flat package structure
+  grouping      String? // Optional tier/group label
+  groupingOrder Int?    // Order within grouping (lower = first)
+
   // Photo Gallery - Array of photo objects
   // Structure: [{url: string, filename: string, size: number, order: number}]
   // Max 5 photos per package, order determines display sequence
@@ -135,6 +186,7 @@ model Package {
   createdAt DateTime       @default(now())
   updatedAt DateTime       @updatedAt
   tenant    Tenant         @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  segment   Segment?       @relation(fields: [segmentId], references: [id], onDelete: SetNull)
   addOns    PackageAddOn[]
   bookings  Booking[]
 
@@ -142,6 +194,8 @@ model Package {
   @@index([tenantId, active])
   @@index([tenantId])
   @@index([slug])
+  @@index([segmentId]) // Query packages by segment
+  @@index([segmentId, grouping]) // Query packages by segment and grouping
 }
 
 model AddOn {
@@ -152,15 +206,21 @@ model AddOn {
   description String?
   price       Int
   active      Boolean        @default(true)
+
+  // Segment Scoping (nullable - null = available to all segments)
+  segmentId String? // If set, add-on only available for packages in this segment
+
   createdAt   DateTime       @default(now())
   updatedAt   DateTime       @updatedAt
   tenant      Tenant         @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  segment     Segment?       @relation(fields: [segmentId], references: [id], onDelete: SetNull)
   packages    PackageAddOn[]
   bookingRefs BookingAddOn[]
 
   @@unique([tenantId, slug]) // Each tenant has unique add-on slugs
   @@index([tenantId, active])
   @@index([tenantId])
+  @@index([tenantId, segmentId]) // Query add-ons by tenant and segment (null = global)
 }
 
 model PackageAddOn {

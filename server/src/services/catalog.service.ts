@@ -326,9 +326,139 @@ export class CatalogService {
     this.invalidateCatalogCache(tenantId);
   }
 
+  // ============================================================================
+  // SEGMENT-SCOPED CATALOG METHODS (Phase A - Segment Implementation)
+  // ============================================================================
+
+  /**
+   * Get packages for a specific segment
+   *
+   * MULTI-TENANT: Scoped by tenantId and segmentId
+   * Used for segment landing pages
+   * Implements application-level caching with 15-minute TTL
+   * Packages ordered by groupingOrder for proper display (e.g., Solo/Couple/Group)
+   *
+   * @param tenantId - Tenant ID for data isolation
+   * @param segmentId - Segment ID to filter packages
+   * @returns Array of packages ordered by groupingOrder then createdAt
+   *
+   * @example
+   * ```typescript
+   * const packages = await catalogService.getPackagesBySegment('tenant_123', 'wellness-retreat-id');
+   * // Returns: [{ id: 'pkg1', title: 'Weekend Detox', grouping: 'Solo', ... }, ...]
+   * ```
+   */
+  async getPackagesBySegment(tenantId: string, segmentId: string): Promise<Package[]> {
+    // CRITICAL: Cache key includes tenantId AND segmentId
+    const cacheKey = `catalog:${tenantId}:segment:${segmentId}:packages`;
+
+    // Try cache first
+    const cached = this.cache?.get<Package[]>(cacheKey);
+    if (cached) {
+      return cached;
+    }
+
+    // Cache miss - fetch from repository
+    const packages = await this.repository.getPackagesBySegment(tenantId, segmentId);
+
+    // Cache for 15 minutes (900 seconds)
+    this.cache?.set(cacheKey, packages, 900);
+
+    return packages;
+  }
+
+  /**
+   * Get packages with add-ons for a specific segment
+   *
+   * MULTI-TENANT: Scoped by tenantId and segmentId
+   * Returns packages with both segment-specific and global add-ons
+   * Used for segment landing pages to display complete offering
+   *
+   * @param tenantId - Tenant ID for data isolation
+   * @param segmentId - Segment ID to filter packages
+   * @returns Array of packages with add-ons, ordered by grouping
+   *
+   * @example
+   * ```typescript
+   * const packages = await catalogService.getPackagesBySegmentWithAddOns('tenant_123', 'wellness-retreat-id');
+   * // Returns: [
+   * //   { id: 'pkg1', title: 'Weekend Detox', addOns: [
+   * //     { title: 'Farm-Fresh Meals' },      // Global add-on (segmentId = null)
+   * //     { title: 'Yoga Session' }            // Wellness-specific add-on
+   * //   ]},
+   * //   ...
+   * // ]
+   * ```
+   */
+  async getPackagesBySegmentWithAddOns(
+    tenantId: string,
+    segmentId: string
+  ): Promise<PackageWithAddOns[]> {
+    // CRITICAL: Cache key includes tenantId AND segmentId
+    const cacheKey = `catalog:${tenantId}:segment:${segmentId}:packages-with-addons`;
+
+    // Try cache first
+    const cached = this.cache?.get<PackageWithAddOns[]>(cacheKey);
+    if (cached) {
+      return cached;
+    }
+
+    // Cache miss - fetch from repository
+    const packages = await this.repository.getPackagesBySegmentWithAddOns(tenantId, segmentId);
+
+    // Cache for 15 minutes (900 seconds)
+    this.cache?.set(cacheKey, packages, 900);
+
+    return packages;
+  }
+
+  /**
+   * Get add-ons available for a segment
+   *
+   * Returns both:
+   * - Add-ons scoped to this specific segment (segmentId = specified)
+   * - Global add-ons available to all segments (segmentId = null)
+   *
+   * Used for segment landing pages and package detail pages within a segment
+   *
+   * @param tenantId - Tenant ID for data isolation
+   * @param segmentId - Segment ID to filter add-ons
+   * @returns Array of add-ons ordered by createdAt
+   *
+   * @example
+   * ```typescript
+   * const addOns = await catalogService.getAddOnsForSegment('tenant_123', 'wellness-retreat-id');
+   * // Returns: [
+   * //   { title: 'Farm-Fresh Meals', priceCents: 15000 },  // Global
+   * //   { title: 'Yoga Session', priceCents: 7500 }        // Wellness-specific
+   * // ]
+   * ```
+   */
+  async getAddOnsForSegment(tenantId: string, segmentId: string): Promise<AddOn[]> {
+    // CRITICAL: Cache key includes tenantId AND segmentId
+    const cacheKey = `catalog:${tenantId}:segment:${segmentId}:addons`;
+
+    // Try cache first
+    const cached = this.cache?.get<AddOn[]>(cacheKey);
+    if (cached) {
+      return cached;
+    }
+
+    // Cache miss - fetch from repository
+    const addOns = await this.repository.getAddOnsForSegment(tenantId, segmentId);
+
+    // Cache for 15 minutes (900 seconds)
+    this.cache?.set(cacheKey, addOns, 900);
+
+    return addOns;
+  }
+
   /**
    * Invalidate all catalog-related cache entries for a tenant
    * MULTI-TENANT: Only invalidates cache for the specified tenant
+   *
+   * NOTE: This does NOT invalidate segment-scoped caches. Use
+   * invalidateSegmentCatalogCache() for segment-specific invalidation.
    *
    * @param tenantId - Tenant whose cache should be invalidated
    */
@@ -346,5 +476,25 @@ export class CatalogService {
    */
   private invalidatePackageCache(tenantId: string, slug: string): void {
     this.cache?.del(`catalog:${tenantId}:package:${slug}`);
+  }
+
+  /**
+   * Invalidate segment-scoped catalog cache entries
+   *
+   * Called when packages or add-ons are updated/deleted within a segment
+   * Invalidates all segment-related caches for proper cache consistency
+   *
+   * @param tenantId - Tenant ID
+   * @param segmentId - Segment ID whose cache should be invalidated
+   *
+   * @private
+   */
+  private invalidateSegmentCatalogCache(tenantId: string, segmentId: string): void {
+    if (!this.cache) return;
+
+    // Invalidate all segment-scoped caches
+    this.cache.del(`catalog:${tenantId}:segment:${segmentId}:packages`);
+    this.cache.del(`catalog:${tenantId}:segment:${segmentId}:packages-with-addons`);
+    this.cache.del(`catalog:${tenantId}:segment:${segmentId}:addons`);
   }
 }
