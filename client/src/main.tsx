@@ -7,7 +7,11 @@ import { router } from "./router";
 import { AuthProvider } from "./contexts/AuthContext";
 import { ErrorBoundary } from "./components/errors";
 import { api } from "./lib/api";
+import { initSentry } from "./lib/sentry";
 import "./index.css";
+
+// Initialize Sentry error tracking (optional - gracefully degrades if no DSN)
+initSentry();
 
 // Initialize tenant API key for multi-tenant mode
 // In production, this would come from the tenant's subdomain or embedding config

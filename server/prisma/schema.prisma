@@ -288,7 +288,7 @@ model WebhookEvent {
   createdAt   DateTime      @default(now())
   tenant      Tenant        @relation(fields: [tenantId], references: [id], onDelete: Cascade)
 
-  @@unique([tenantId, eventId]) // Composite unique: CRITICAL for preventing cross-tenant event hijacking
+  @@unique([tenantId, eventId], name: "tenantId_eventId") // Composite unique: CRITICAL for preventing cross-tenant event hijacking
   @@index([tenantId, status]) // Query webhooks by tenant and status
   @@index([tenantId, createdAt]) // Query webhooks by tenant chronologically
   @@index([tenantId])

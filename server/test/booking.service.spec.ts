@@ -24,6 +24,7 @@ describe('BookingService', () => {
   let paymentProvider: FakePaymentProvider;
   let commissionService: any;
   let tenantRepo: any;
+  let idempotencyService: any;
 
   beforeEach(() => {
     bookingRepo = new FakeBookingRepository();
@@ -52,7 +53,14 @@ describe('BookingService', () => {
       })
     };
 
-    service = new BookingService(bookingRepo, catalogRepo, eventEmitter, paymentProvider, commissionService, tenantRepo);
+    idempotencyService = {
+      generateCheckoutKey: vi.fn().mockReturnValue('checkout_test_key_123'),
+      checkAndStore: vi.fn().mockResolvedValue(true),
+      getStoredResponse: vi.fn().mockResolvedValue(null),
+      updateResponse: vi.fn().mockResolvedValue(undefined)
+    };
+
+    service = new BookingService(bookingRepo, catalogRepo, eventEmitter, paymentProvider, commissionService, tenantRepo, idempotencyService);
   });
 
   describe('createCheckout', () => {

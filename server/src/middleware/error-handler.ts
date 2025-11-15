@@ -1,26 +1,36 @@
 /**
  * Centralized error handling middleware
+ * Enhanced with request ID support and Sentry integration
  */
 
 import type { Request, Response, NextFunction } from 'express';
 import { logger } from '../lib/core/logger';
 import { DomainError } from '../lib/core/errors';
+import { AppError } from '../lib/errors/base';
+import { captureException } from '../lib/errors/sentry';
 
 /**
  * 404 Not Found handler
  */
 export function notFoundHandler(
-  _req: Request,
+  req: Request,
   res: Response,
   _next: NextFunction
 ): void {
+  const requestId = res.locals.requestId;
+
   res.status(404).json({
-    error: 'NotFound',
+    status: 'error',
+    statusCode: 404,
+    error: 'NOT_FOUND',
+    message: `Route ${req.method} ${req.path} not found`,
+    requestId,
   });
 }
 
 /**
  * Centralized error handler that maps domain errors to HTTP status codes
+ * Integrates with Sentry for non-operational errors
  */
 export function errorHandler(
   err: Error,
@@ -29,26 +39,74 @@ export function errorHandler(
   _next: NextFunction
 ): void {
   const reqLogger = res.locals.logger || logger;
+  const requestId = res.locals.requestId;
 
-  // Map domain errors to HTTP status codes
+  // Map domain errors to HTTP status codes (existing DomainError from core)
   if (err instanceof DomainError) {
     reqLogger.info(
-      { err: { name: err.name, message: err.message, code: err.code } },
+      { err: { name: err.name, message: err.message, code: err.code }, requestId },
       'Domain error'
     );
 
     res.status(err.statusCode).json({
+      status: 'error',
+      statusCode: err.statusCode,
       error: err.code,
       message: err.message,
+      requestId,
+    });
+    return;
+  }
+
+  // Handle new AppError instances from error infrastructure
+  if (err instanceof AppError) {
+    // Log based on operational status
+    if (err.isOperational) {
+      reqLogger.info(
+        { err: { name: err.name, message: err.message, code: err.code }, requestId },
+        'Application error'
+      );
+    } else {
+      reqLogger.error({ err, requestId }, 'Non-operational error');
+
+      // Report non-operational errors to Sentry
+      captureException(err, {
+        requestId,
+        url: req.url,
+        method: req.method,
+        userAgent: req.get('user-agent'),
+      });
+    }
+
+    res.status(err.statusCode).json({
+      status: 'error',
+      statusCode: err.statusCode,
+      error: err.code,
+      message: err.message,
+      requestId,
     });
     return;
   }
 
   // Unknown errors - log full details but hide from client
-  reqLogger.error({ err }, 'Unhandled error');
+  reqLogger.error({ err, requestId }, 'Unhandled error');
+
+  // Report to Sentry
+  captureException(err, {
+    requestId,
+    url: req.url,
+    method: req.method,
+    userAgent: req.get('user-agent'),
+  });
+
+  // Hide error details in production
+  const isDev = process.env.NODE_ENV !== 'production';
 
   res.status(500).json({
-    error: 'InternalServerError',
-    message: 'An unexpected error occurred',
+    status: 'error',
+    statusCode: 500,
+    error: 'INTERNAL_SERVER_ERROR',
+    message: isDev ? err.message : 'An unexpected error occurred',
+    requestId,
   });
 }

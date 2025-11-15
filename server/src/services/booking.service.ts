@@ -9,6 +9,7 @@ import type { EventEmitter } from '../lib/core/events';
 import { NotFoundError } from '../lib/core/errors';
 import { CommissionService } from './commission.service';
 import type { PrismaTenantRepository } from '../adapters/prisma/tenant.repository';
+import { IdempotencyService } from './idempotency.service';
 
 export class BookingService {
   constructor(
@@ -17,7 +18,8 @@ export class BookingService {
     private readonly _eventEmitter: EventEmitter,
     private readonly paymentProvider: PaymentProvider,
     private readonly commissionService: CommissionService,
-    private readonly tenantRepo: PrismaTenantRepository
+    private readonly tenantRepo: PrismaTenantRepository,
+    private readonly idempotencyService: IdempotencyService
   ) {}
 
   /**
@@ -72,6 +74,36 @@ export class BookingService {
       input.addOnIds || []
     );
 
+    // Generate idempotency key for checkout session
+    // This prevents duplicate checkout sessions if the request is retried
+    const idempotencyKey = this.idempotencyService.generateCheckoutKey(
+      tenantId,
+      input.email,
+      pkg.id,
+      input.eventDate,
+      Date.now()
+    );
+
+    // Check if this request has already been processed
+    const cachedResponse = await this.idempotencyService.getStoredResponse(idempotencyKey);
+    if (cachedResponse) {
+      // Return cached checkout session URL
+      return { checkoutUrl: cachedResponse.data.url };
+    }
+
+    // Store idempotency key before making Stripe call
+    const isNew = await this.idempotencyService.checkAndStore(idempotencyKey);
+    if (!isNew) {
+      // Race condition: another request stored the key while we were checking
+      // Wait briefly and try to get the cached response
+      await new Promise(resolve => setTimeout(resolve, 100));
+      const retryResponse = await this.idempotencyService.getStoredResponse(idempotencyKey);
+      if (retryResponse) {
+        return { checkoutUrl: retryResponse.data.url };
+      }
+      // If still no response, proceed anyway (edge case)
+    }
+
     // Prepare session metadata
     const metadata = {
       tenantId, // CRITICAL: Include tenantId in metadata
@@ -84,7 +116,7 @@ export class BookingService {
       commissionPercent: String(calculation.commissionPercent),
     };
 
-    // Create Stripe checkout session
+    // Create Stripe checkout session with idempotency key
     // Use Stripe Connect if tenant has connected account, otherwise use standard checkout
     let session;
 
@@ -96,6 +128,7 @@ export class BookingService {
         metadata,
         stripeAccountId: tenant.stripeAccountId,
         applicationFeeAmount: calculation.commissionAmount,
+        idempotencyKey,
       });
     } else {
       // Standard Stripe checkout - payment goes to platform account
@@ -105,8 +138,15 @@ export class BookingService {
         email: input.email,
         metadata,
         applicationFeeAmount: calculation.commissionAmount,
+        idempotencyKey,
       });
     }
+
+    // Cache the response for future duplicate requests
+    await this.idempotencyService.updateResponse(idempotencyKey, {
+      data: session,
+      timestamp: new Date().toISOString(),
+    });
 
     return { checkoutUrl: session.url };
   }

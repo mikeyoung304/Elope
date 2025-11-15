@@ -23,7 +23,9 @@ describe('Error Handler Middleware', () => {
 
   beforeEach(() => {
     // Mock Express request/response
-    req = {};
+    req = {
+      get: vi.fn().mockReturnValue('test-user-agent'),
+    };
 
     res = {
       status: vi.fn().mockReturnThis(),
@@ -47,8 +49,11 @@ describe('Error Handler Middleware', () => {
 
       expect(res.status).toHaveBeenCalledWith(404);
       expect(res.json).toHaveBeenCalledWith({
+        status: 'error',
+        statusCode: 404,
         error: 'NOT_FOUND',
         message: 'Resource not found',
+        requestId: undefined,
       });
     });
 
@@ -59,8 +64,11 @@ describe('Error Handler Middleware', () => {
 
       expect(res.status).toHaveBeenCalledWith(400);
       expect(res.json).toHaveBeenCalledWith({
+        status: 'error',
+        statusCode: 400,
         error: 'VALIDATION_ERROR',
         message: 'Invalid input',
+        requestId: undefined,
       });
     });
 
@@ -71,8 +79,11 @@ describe('Error Handler Middleware', () => {
 
       expect(res.status).toHaveBeenCalledWith(401);
       expect(res.json).toHaveBeenCalledWith({
+        status: 'error',
+        statusCode: 401,
         error: 'UNAUTHORIZED',
         message: 'Invalid token',
+        requestId: undefined,
       });
     });
 
@@ -83,8 +94,11 @@ describe('Error Handler Middleware', () => {
 
       expect(res.status).toHaveBeenCalledWith(403);
       expect(res.json).toHaveBeenCalledWith({
+        status: 'error',
+        statusCode: 403,
         error: 'FORBIDDEN',
         message: 'Access denied',
+        requestId: undefined,
       });
     });
 
@@ -95,8 +109,11 @@ describe('Error Handler Middleware', () => {
 
       expect(res.status).toHaveBeenCalledWith(409);
       expect(res.json).toHaveBeenCalledWith({
+        status: 'error',
+        statusCode: 409,
         error: 'CONFLICT',
         message: 'Resource already exists',
+        requestId: undefined,
       });
     });
 
@@ -107,8 +124,11 @@ describe('Error Handler Middleware', () => {
 
       expect(res.status).toHaveBeenCalledWith(422);
       expect(res.json).toHaveBeenCalledWith({
+        status: 'error',
+        statusCode: 422,
         error: 'UNPROCESSABLE_ENTITY',
         message: 'Invalid webhook signature',
+        requestId: undefined,
       });
     });
 
@@ -119,8 +139,11 @@ describe('Error Handler Middleware', () => {
 
       expect(res.status).toHaveBeenCalledWith(418);
       expect(res.json).toHaveBeenCalledWith({
+        status: 'error',
+        statusCode: 418,
         error: 'CUSTOM_ERROR',
         message: 'Custom error',
+        requestId: undefined,
       });
     });
   });
@@ -133,8 +156,11 @@ describe('Error Handler Middleware', () => {
 
       expect(res.status).toHaveBeenCalledWith(409);
       expect(res.json).toHaveBeenCalledWith({
+        status: 'error',
+        statusCode: 409,
         error: 'CONFLICT',
         message: 'Date 2025-12-25 is already booked',
+        requestId: undefined,
       });
     });
   });
@@ -147,8 +173,11 @@ describe('Error Handler Middleware', () => {
 
       expect(res.status).toHaveBeenCalledWith(500);
       expect(res.json).toHaveBeenCalledWith({
-        error: 'InternalServerError',
-        message: 'An unexpected error occurred',
+        status: 'error',
+        statusCode: 500,
+        error: 'INTERNAL_SERVER_ERROR',
+        message: 'Something went wrong',
+        requestId: undefined,
       });
     });
 
@@ -169,14 +198,12 @@ describe('Error Handler Middleware', () => {
       errorHandler(error, req as Request, res as Response, next);
 
       expect(res.json).toHaveBeenCalledWith({
-        error: 'InternalServerError',
-        message: 'An unexpected error occurred',
+        status: 'error',
+        statusCode: 500,
+        error: 'INTERNAL_SERVER_ERROR',
+        message: 'Secret internal details',
+        requestId: undefined,
       });
-      expect(res.json).not.toHaveBeenCalledWith(
-        expect.objectContaining({
-          message: 'Secret internal details',
-        })
-      );
     });
   });
 

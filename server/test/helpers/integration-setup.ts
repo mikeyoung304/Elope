@@ -90,8 +90,17 @@ export function setupIntegrationTest(): IntegrationTestContext {
     },
   });
 
+  // Ensure connection is established
+  prisma.$connect().catch((err) => {
+    console.error('Failed to connect Prisma client:', err);
+  });
+
   const cleanup = async () => {
-    await prisma.$disconnect();
+    try {
+      await prisma.$disconnect();
+    } catch (err) {
+      console.error('Error disconnecting Prisma:', err);
+    }
   };
 
   return { prisma, cleanup };

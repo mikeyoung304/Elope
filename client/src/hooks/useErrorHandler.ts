@@ -1,19 +1,23 @@
 /**
  * Error handling hook
  * Provides error state management and reporting
+ * Integrated with Sentry for error tracking
  */
 
 import { useState, useCallback } from 'react';
+import { captureException } from '../lib/sentry';
+import { handleError as handleErrorUtil } from '../lib/error-handler';
 
 export interface UseErrorHandlerReturn {
   error: Error | null;
-  handleError: (error: Error) => void;
+  handleError: (error: Error, context?: Record<string, any>) => void;
   clearError: () => void;
   hasError: boolean;
 }
 
 /**
  * Hook for managing error state in components
+ * Automatically reports errors to Sentry
  *
  * @example
  * ```tsx
@@ -24,7 +28,7 @@ export interface UseErrorHandlerReturn {
  *     try {
  *       const data = await api.getData();
  *     } catch (err) {
- *       handleError(err as Error);
+ *       handleError(err as Error, { component: 'MyComponent', action: 'fetchData' });
  *     }
  *   };
  *
@@ -40,15 +44,12 @@ export interface UseErrorHandlerReturn {
 export function useErrorHandler(): UseErrorHandlerReturn {
   const [error, setError] = useState<Error | null>(null);
 
-  const handleError = useCallback((error: Error) => {
+  const handleError = useCallback((error: Error, context?: Record<string, any>) => {
     console.error('Error:', error);
     setError(error);
 
-    // TODO: Send to Sentry when available
-    /*
-    import * as Sentry from '@sentry/react';
-    Sentry.captureException(error);
-    */
+    // Report to Sentry with context
+    handleErrorUtil(error, context);
   }, []);
 
   const clearError = useCallback(() => {
@@ -65,6 +66,7 @@ export function useErrorHandler(): UseErrorHandlerReturn {
 
 /**
  * Hook for wrapping async functions with error handling
+ * Automatically reports errors to Sentry
  *
  * @example
  * ```tsx
@@ -107,11 +109,11 @@ export function useAsyncError<T>(
       console.error('Async error:', error);
       setError(error);
 
-      // TODO: Send to Sentry when available
-      /*
-      import * as Sentry from '@sentry/react';
-      Sentry.captureException(error);
-      */
+      // Report to Sentry
+      handleErrorUtil(error, {
+        type: 'async',
+        location: window.location.href,
+      });
     } finally {
       setLoading(false);
     }

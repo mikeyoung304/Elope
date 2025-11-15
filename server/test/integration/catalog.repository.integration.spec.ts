@@ -9,7 +9,7 @@
  * to setupCompleteIntegrationTest() pattern to fix connection pool poisoning.
  */
 
-import { describe, it, expect, beforeEach, afterEach } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach, afterAll } from 'vitest';
 import { PrismaCatalogRepository } from '../../src/adapters/prisma/catalog.repository';
 import { DomainError } from '../../src/lib/core/errors';
 import { setupCompleteIntegrationTest } from '../helpers/integration-setup';
@@ -30,7 +30,12 @@ describe.sequential('PrismaCatalogRepository - Integration Tests', () => {
   });
 
   afterEach(async () => {
-    // Use managed cleanup (proper FK handling, no manual disconnect)
+    // Clean up test data but keep connection open
+    await ctx.tenants.cleanupTenants();
+  });
+
+  // Cleanup connection after all tests
+  afterAll(async () => {
     await ctx.cleanup();
   });
 

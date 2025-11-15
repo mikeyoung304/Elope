@@ -6,7 +6,7 @@
  * Run: npm run test:integration
  */
 
-import { describe, it, expect, beforeEach, afterEach } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach, afterAll } from 'vitest';
 import { PrismaBookingRepository } from '../../src/adapters/prisma/booking.repository';
 import { BookingConflictError, BookingLockTimeoutError } from '../../src/lib/errors';
 import type { Booking } from '../../src/lib/entities';
@@ -43,6 +43,12 @@ describe.sequential('PrismaBookingRepository - Integration Tests', () => {
   });
 
   afterEach(async () => {
+    // Clean up test data but keep connection open
+    await ctx.tenants.cleanupTenants();
+  });
+
+  // Cleanup connection after all tests
+  afterAll(async () => {
     await ctx.cleanup();
   });
 
@@ -237,7 +243,7 @@ describe.sequential('PrismaBookingRepository - Integration Tests', () => {
 
       // Verify NO partial data committed
       const customerCount = await ctx.prisma.customer.count({
-        where: { email: booking.email },
+        where: { tenantId: testTenantId, email: booking.email },
       });
       expect(customerCount).toBe(0);
 
@@ -320,7 +326,7 @@ describe.sequential('PrismaBookingRepository - Integration Tests', () => {
 
       // Verify only one customer exists with updated info
       const customers = await ctx.prisma.customer.findMany({
-        where: { email: 'upsert@test.com' },
+        where: { tenantId: testTenantId, email: 'upsert@test.com' },
       });
 
       expect(customers.length).toBe(1);
@@ -330,6 +336,7 @@ describe.sequential('PrismaBookingRepository - Integration Tests', () => {
       // Verify both bookings exist
       const bookings = await ctx.prisma.booking.findMany({
         where: {
+          tenantId: testTenantId,
           customer: { email: 'upsert@test.com' },
         },
       });

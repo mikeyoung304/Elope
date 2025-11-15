@@ -4,12 +4,16 @@
 
 import { loadConfig } from './lib/core/config';
 import { logger } from './lib/core/logger';
+import { initSentry } from './lib/errors/sentry';
 import { createApp } from './app';
 
 async function main(): Promise<void> {
   try {
     const config = loadConfig();
     logger.info('Configuration loaded');
+
+    // Initialize Sentry error tracking (optional - gracefully degrades if no DSN)
+    initSentry();
 
     const app = createApp(config);
 

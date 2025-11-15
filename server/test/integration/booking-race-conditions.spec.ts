@@ -287,8 +287,8 @@ describe.sequential('Booking Race Conditions - Integration Tests', () => {
         .toThrow();
 
       // Verify no customer was created (rollback worked)
-      const customer = await ctx.prisma.customer.findUnique({
-        where: { email: 'rollback@example.com' },
+      const customer = await ctx.prisma.customer.findFirst({
+        where: { tenantId: testTenantId, email: 'rollback@example.com' },
       });
       expect(customer).toBeNull();
 

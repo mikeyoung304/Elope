@@ -6,7 +6,7 @@
  * Run: npm run test:integration
  */
 
-import { describe, it, expect, beforeEach, afterEach } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach, afterAll } from 'vitest';
 import { PrismaWebhookRepository } from '../../src/adapters/prisma/webhook.repository';
 import { setupCompleteIntegrationTest } from '../helpers/integration-setup';
 
@@ -26,6 +26,12 @@ describe.sequential('PrismaWebhookRepository - Integration Tests', () => {
   });
 
   afterEach(async () => {
+    // Clean up test data but keep connection open
+    await ctx.tenants.cleanupTenants();
+  });
+
+  // Cleanup connection after all tests
+  afterAll(async () => {
     await ctx.cleanup();
   });
 
@@ -40,7 +46,7 @@ describe.sequential('PrismaWebhookRepository - Integration Tests', () => {
       await repository.recordWebhook({ tenantId: testTenantId, ...webhook });
 
       const event = await ctx.prisma.webhookEvent.findUnique({
-        where: { eventId: 'evt_test_12345' },
+        where: { tenantId_eventId: { tenantId: testTenantId, eventId: 'evt_test_12345' } },
       });
 
       expect(event).not.toBeNull();
@@ -66,7 +72,7 @@ describe.sequential('PrismaWebhookRepository - Integration Tests', () => {
 
       // Verify status updated to DUPLICATE
       const event = await ctx.prisma.webhookEvent.findUnique({
-        where: { eventId: 'evt_test_duplicate' },
+        where: { tenantId_eventId: { tenantId: testTenantId, eventId: 'evt_test_duplicate' } },
       });
       expect(event?.status).toBe('DUPLICATE');
       expect(event?.attempts).toBeGreaterThanOrEqual(1);
@@ -99,7 +105,7 @@ describe.sequential('PrismaWebhookRepository - Integration Tests', () => {
 
       // Verify final state
       const event = await ctx.prisma.webhookEvent.findUnique({
-        where: { eventId: 'evt_concurrent_789' },
+        where: { tenantId_eventId: { tenantId: testTenantId, eventId: 'evt_concurrent_789' } },
       });
       expect(event?.status).toBe('DUPLICATE');
     });
@@ -122,7 +128,7 @@ describe.sequential('PrismaWebhookRepository - Integration Tests', () => {
 
       // Verify status remains PROCESSED
       const event = await ctx.prisma.webhookEvent.findUnique({
-        where: { eventId: 'evt_already_processed' },
+        where: { tenantId_eventId: { tenantId: testTenantId, eventId: 'evt_already_processed' } },
       });
       expect(event?.status).toBe('PROCESSED');
     });
@@ -148,7 +154,7 @@ describe.sequential('PrismaWebhookRepository - Integration Tests', () => {
 
       // Should only have one record in database
       const events = await ctx.prisma.webhookEvent.findMany({
-        where: { eventId: 'evt_race_condition' },
+        where: { tenantId_eventId: { tenantId: testTenantId, eventId: 'evt_race_condition' } },
       });
 
       expect(events.length).toBe(1);
@@ -168,7 +174,7 @@ describe.sequential('PrismaWebhookRepository - Integration Tests', () => {
       await repository.markProcessed(testTenantId, 'evt_process_456');
 
       const event = await ctx.prisma.webhookEvent.findUnique({
-        where: { eventId: 'evt_process_456' },
+        where: { tenantId_eventId: { tenantId: testTenantId, eventId: 'evt_process_456' } },
       });
 
       expect(event?.status).toBe('PROCESSED');
@@ -188,7 +194,7 @@ describe.sequential('PrismaWebhookRepository - Integration Tests', () => {
       await repository.markFailed(testTenantId, 'evt_fail_999', errorMsg);
 
       const event = await ctx.prisma.webhookEvent.findUnique({
-        where: { eventId: 'evt_fail_999' },
+        where: { tenantId_eventId: { tenantId: testTenantId, eventId: 'evt_fail_999' } },
       });
 
       expect(event?.status).toBe('FAILED');
@@ -207,7 +213,7 @@ describe.sequential('PrismaWebhookRepository - Integration Tests', () => {
 
       // Get initial attempts
       const initial = await ctx.prisma.webhookEvent.findUnique({
-        where: { eventId: 'evt_retry_test' },
+        where: { tenantId_eventId: { tenantId: testTenantId, eventId: 'evt_retry_test' } },
       });
       const initialAttempts = initial?.attempts || 0;
 
@@ -215,7 +221,7 @@ describe.sequential('PrismaWebhookRepository - Integration Tests', () => {
       await repository.markFailed(testTenantId, 'evt_retry_test', 'First failure');
 
       const afterFirst = await ctx.prisma.webhookEvent.findUnique({
-        where: { eventId: 'evt_retry_test' },
+        where: { tenantId_eventId: { tenantId: testTenantId, eventId: 'evt_retry_test' } },
       });
 
       expect(afterFirst?.attempts).toBe(initialAttempts + 1);
@@ -226,7 +232,7 @@ describe.sequential('PrismaWebhookRepository - Integration Tests', () => {
       await repository.markFailed(testTenantId, 'evt_retry_test', 'Second failure');
 
       const afterSecond = await ctx.prisma.webhookEvent.findUnique({
-        where: { eventId: 'evt_retry_test' },
+        where: { tenantId_eventId: { tenantId: testTenantId, eventId: 'evt_retry_test' } },
       });
 
       expect(afterSecond?.attempts).toBe(initialAttempts + 2);
@@ -244,7 +250,7 @@ describe.sequential('PrismaWebhookRepository - Integration Tests', () => {
 
       // Verify PENDING
       let event = await ctx.prisma.webhookEvent.findUnique({
-        where: { eventId },
+        where: { tenantId_eventId: { tenantId: testTenantId, eventId } },
       });
       expect(event?.status).toBe('PENDING');
       expect(event?.processedAt).toBeNull();
@@ -254,7 +260,7 @@ describe.sequential('PrismaWebhookRepository - Integration Tests', () => {
 
       // Verify PROCESSED
       event = await ctx.prisma.webhookEvent.findUnique({
-        where: { eventId },
+        where: { tenantId_eventId: { tenantId: testTenantId, eventId } },
       });
       expect(event?.status).toBe('PROCESSED');
       expect(event?.processedAt).not.toBeNull();
@@ -271,7 +277,7 @@ describe.sequential('PrismaWebhookRepository - Integration Tests', () => {
 
       // Verify PENDING
       let event = await ctx.prisma.webhookEvent.findUnique({
-        where: { eventId },
+        where: { tenantId_eventId: { tenantId: testTenantId, eventId } },
       });
       expect(event?.status).toBe('PENDING');
       expect(event?.lastError).toBeNull();
@@ -282,7 +288,7 @@ describe.sequential('PrismaWebhookRepository - Integration Tests', () => {
 
       // Verify FAILED
       event = await ctx.prisma.webhookEvent.findUnique({
-        where: { eventId },
+        where: { tenantId_eventId: { tenantId: testTenantId, eventId } },
       });
       expect(event?.status).toBe('FAILED');
       expect(event?.lastError).toBe(errorMessage);
@@ -314,7 +320,7 @@ describe.sequential('PrismaWebhookRepository - Integration Tests', () => {
       });
 
       const event = await ctx.prisma.webhookEvent.findUnique({
-        where: { eventId: 'evt_complex' },
+        where: { tenantId_eventId: { tenantId: testTenantId, eventId: 'evt_complex' } },
       });
 
       expect(event?.rawPayload).toBe(JSON.stringify(complexPayload));
@@ -361,7 +367,7 @@ describe.sequential('PrismaWebhookRepository - Integration Tests', () => {
       });
 
       const initial = await ctx.prisma.webhookEvent.findUnique({
-        where: { eventId },
+        where: { tenantId_eventId: { tenantId: testTenantId, eventId } },
       });
 
       expect(initial?.createdAt).toBeInstanceOf(Date);
@@ -373,7 +379,7 @@ describe.sequential('PrismaWebhookRepository - Integration Tests', () => {
       await repository.markProcessed(testTenantId, eventId);
 
       const processed = await ctx.prisma.webhookEvent.findUnique({
-        where: { eventId },
+        where: { tenantId_eventId: { tenantId: testTenantId, eventId } },
       });
 
       expect(processed?.processedAt).toBeInstanceOf(Date);
@@ -394,7 +400,7 @@ describe.sequential('PrismaWebhookRepository - Integration Tests', () => {
       });
 
       const event = await ctx.prisma.webhookEvent.findUnique({
-        where: { eventId: 'evt_empty_payload' },
+        where: { tenantId_eventId: { tenantId: testTenantId, eventId: 'evt_empty_payload' } },
       });
 
       expect(event?.rawPayload).toBe('');
@@ -414,7 +420,7 @@ describe.sequential('PrismaWebhookRepository - Integration Tests', () => {
       await repository.markFailed(testTenantId, eventId, longError);
 
       const event = await ctx.prisma.webhookEvent.findUnique({
-        where: { eventId },
+        where: { tenantId_eventId: { tenantId: testTenantId, eventId } },
       });
 
       expect(event?.lastError).toBe(longError);
@@ -430,7 +436,7 @@ describe.sequential('PrismaWebhookRepository - Integration Tests', () => {
       });
 
       const event = await ctx.prisma.webhookEvent.findUnique({
-        where: { eventId: specialEventId },
+        where: { tenantId_eventId: { tenantId: testTenantId, eventId: specialEventId } },
       });
 
       expect(event?.eventId).toBe(specialEventId);

@@ -17,9 +17,13 @@ import { requestLogger } from './middleware/request-logger';
 import { skipIfHealth, adminLimiter } from './middleware/rateLimiter';
 import { openApiSpec } from './api-docs';
 import { uploadService } from './services/upload.service';
+import { sentryRequestHandler, sentryErrorHandler } from './lib/errors/sentry';
 
 export function createApp(config: Config): express.Application {
   const app = express();
+
+  // Sentry request tracking (MUST be first)
+  app.use(sentryRequestHandler());
 
   // Security middleware
   app.use(helmet());
@@ -203,6 +207,9 @@ export function createApp(config: Config): express.Application {
 
   // 404 handler (must come after all routes)
   app.use(notFoundHandler);
+
+  // Sentry error handler (MUST be before custom error handler)
+  app.use(sentryErrorHandler());
 
   // Error handling (must be last)
   app.use(errorHandler);

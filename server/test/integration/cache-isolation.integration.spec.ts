@@ -9,7 +9,7 @@
  * Run: npm run test:integration
  */
 
-import { describe, it, expect, beforeEach, afterEach } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach, afterAll } from 'vitest';
 import { PrismaCatalogRepository } from '../../src/adapters/prisma/catalog.repository';
 import { CatalogService } from '../../src/services/catalog.service';
 import type { CreatePackageInput } from '../../src/lib/ports';
@@ -46,6 +46,13 @@ describe.sequential('Cache Tenant Isolation - Integration Tests', () => {
   });
 
   afterEach(async () => {
+    // Clean up test data but keep connection open
+    await ctx.tenants.cleanupTenants();
+    ctx.cache.flush();
+  });
+
+  // Cleanup connection after all tests
+  afterAll(async () => {
     await ctx.cleanup();
   });
 

@@ -1,0 +1,2117 @@
+
+> @elope/api@0.0.0 test
+> vitest run --reporter=verbose
+
+
+ RUN  v3.2.4 /Users/mikeyoung/CODING/Elope/server
+
+ ✓ test/type-safety.regression.spec.ts > Type Safety Regression Tests > Zod Schema Validation (replaces unsafe JSON.parse) > should validate Stripe metadata with proper types 2ms
+ ✓ test/type-safety.regression.spec.ts > Type Safety Regression Tests > Zod Schema Validation (replaces unsafe JSON.parse) > should reject invalid metadata gracefully 1ms
+ ✓ test/type-safety.regression.spec.ts > Type Safety Regression Tests > PrismaJson<T> Type Wrapper > should handle nullable JSON fields with type safety 0ms
+ ✓ test/type-safety.regression.spec.ts > Type Safety Regression Tests > PrismaJson<T> Type Wrapper > should handle null JSON gracefully 0ms
+ ✓ test/type-safety.regression.spec.ts > Type Safety Regression Tests > Result<T, E> Pattern (replaces throw-based errors) > should use Result type for safe error handling 0ms
+ ✓ test/type-safety.regression.spec.ts > Type Safety Regression Tests > Intentional Type Casts (documented workarounds) > should document remaining type casts with comments 0ms
+ ✓ test/type-safety.regression.spec.ts > Type Safety Regression Tests > Multi-Tenant Type Safety > should enforce tenantId in service method signatures 0ms
+ ✓ test/type-safety.regression.spec.ts > Type Safety Regression Tests > Unknown vs Any Usage > should use unknown for dynamic values requiring validation 0ms
+ ✓ test/type-safety.regression.spec.ts > Type Safety Regression Tests > Unknown vs Any Usage > should never use any without justification 0ms
+ ✓ test/middleware/auth.spec.ts > Auth Middleware > Success Cases > should authenticate valid Bearer token 2ms
+ ✓ test/middleware/auth.spec.ts > Auth Middleware > Success Cases > should log authentication success 1ms
+ ✓ test/middleware/auth.spec.ts > Auth Middleware > Failure Cases - Missing Token > should reject request without Authorization header 1ms
+ ✓ test/middleware/auth.spec.ts > Auth Middleware > Failure Cases - Missing Token > should reject request with empty Authorization header 0ms
+ ✓ test/middleware/auth.spec.ts > Auth Middleware > Failure Cases - Invalid Format > should reject Authorization header without Bearer prefix 0ms
+ ✓ test/middleware/auth.spec.ts > Auth Middleware > Failure Cases - Invalid Format > should reject malformed Bearer token (no space) 0ms
+ ✓ test/middleware/auth.spec.ts > Auth Middleware > Failure Cases - Invalid Format > should reject Bearer with empty token 0ms
+ ✓ test/middleware/auth.spec.ts > Auth Middleware > Failure Cases - Invalid Format > should reject Bearer with only whitespace 0ms
+ ✓ test/middleware/auth.spec.ts > Auth Middleware > Failure Cases - Invalid Token > should reject expired token 0ms
+ ✓ test/middleware/auth.spec.ts > Auth Middleware > Failure Cases - Invalid Token > should reject tampered token 0ms
+ ✓ test/middleware/auth.spec.ts > Auth Middleware > Failure Cases - Invalid Token > should reject malformed JWT 0ms
+ ✓ test/middleware/auth.spec.ts > Auth Middleware > Error Handling > should not attach admin to res.locals on failure 0ms
+ ✓ test/middleware/auth.spec.ts > Auth Middleware > Error Handling > should pass error to next() without throwing 0ms
+ ✓ test/middleware/auth.spec.ts > Auth Middleware > Integration Scenarios > should handle multiple admin roles 0ms
+ ✓ test/middleware/auth.spec.ts > Auth Middleware > Integration Scenarios > should work without logger in res.locals 0ms
+ ✓ test/booking.service.spec.ts > BookingService > createCheckout > validates package exists and calculates total 1ms
+ ✓ test/booking.service.spec.ts > BookingService > createCheckout > includes add-on prices in total calculation 0ms
+ ✓ test/booking.service.spec.ts > BookingService > createCheckout > throws NotFoundError if package does not exist 0ms
+ ✓ test/booking.service.spec.ts > BookingService > onPaymentCompleted > inserts a PAID booking and emits BookingPaid event 1ms
+ ✓ test/booking.service.spec.ts > BookingService > onPaymentCompleted > throws BookingConflictError if date is already booked (duplicate date) 0ms
+ ✓ test/booking.service.spec.ts > BookingService > onPaymentCompleted > duplicate date error should map to 409 Conflict 0ms
+ ✓ test/booking.service.spec.ts > BookingService > getAllBookings > returns all bookings 0ms
+ ✓ test/booking.service.spec.ts > BookingService > getBookingById > returns booking if found 0ms
+ ✓ test/booking.service.spec.ts > BookingService > getBookingById > throws NotFoundError if booking not found 0ms
+ ✓ test/controllers/webhooks.controller.spec.ts > WebhooksController > handleStripeWebhook > should process valid checkout.session.completed webhook 2ms
+ ✓ test/controllers/webhooks.controller.spec.ts > WebhooksController > handleStripeWebhook > should ignore duplicate webhook gracefully (idempotency) 1ms
+ ✓ test/controllers/webhooks.controller.spec.ts > WebhooksController > handleStripeWebhook > should throw WebhookValidationError on invalid signature 1ms
+ ✓ test/controllers/webhooks.controller.spec.ts > WebhooksController > handleStripeWebhook > should handle malformed metadata gracefully 0ms
+ ✓ test/controllers/webhooks.controller.spec.ts > WebhooksController > handleStripeWebhook > should handle database failure and mark webhook as failed 0ms
+ ✓ test/controllers/webhooks.controller.spec.ts > WebhooksController > handleStripeWebhook > should ignore unknown event types without error 0ms
+ ✓ test/controllers/webhooks.controller.spec.ts > WebhooksController > handleStripeWebhook > should process webhook with add-ons correctly 1ms
+ ✓ test/controllers/webhooks.controller.spec.ts > WebhooksController > handleStripeWebhook > should emit BookingPaid event after successful processing 0ms
+[17:11:27] [32mINFO[39m: [36mStripe webhook received[39m
+    [35meventId[39m: "evt_test_123"
+    [35mtype[39m: "checkout.session.completed"
+[17:11:27] [32mINFO[39m: [36mProcessing checkout completion[39m
+    [35meventId[39m: "evt_test_123"
+    [35msessionId[39m: "cs_test_session_123"
+    [35mtenantId[39m: "test-tenant"
+    [35mpackageId[39m: "pkg_test_123"
+    [35meventDate[39m: "2025-06-15"
+    [35memail[39m: "couple@example.com"
+[17:11:27] [32mINFO[39m: [36mBooking created successfully[39m
+    [35meventId[39m: "evt_test_123"
+    [35msessionId[39m: "cs_test_session_123"
+    [35mtenantId[39m: "test-tenant"
+[17:11:27] [32mINFO[39m: [36mStripe webhook received[39m
+    [35meventId[39m: "evt_test_duplicate"
+    [35mtype[39m: "checkout.session.completed"
+[17:11:27] [32mINFO[39m: [36mProcessing checkout completion[39m
+    [35meventId[39m: "evt_test_duplicate"
+    [35msessionId[39m: "cs_test_session_dup"
+    [35mtenantId[39m: "test-tenant"
+    [35mpackageId[39m: "pkg_dup_test"
+    [35meventDate[39m: "2025-06-20"
+    [35memail[39m: "couple@example.com"
+[17:11:27] [32mINFO[39m: [36mBooking created successfully[39m
+    [35meventId[39m: "evt_test_duplicate"
+    [35msessionId[39m: "cs_test_session_dup"
+    [35mtenantId[39m: "test-tenant"
+[17:11:27] [32mINFO[39m: [36mStripe webhook received[39m
+    [35meventId[39m: "evt_test_duplicate"
+    [35mtype[39m: "checkout.session.completed"
+[17:11:27] [32mINFO[39m: [36mDuplicate webhook ignored - returning 200 OK to Stripe[39m
+    [35meventId[39m: "evt_test_duplicate"
+    [35mtenantId[39m: "test-tenant"
+[17:11:27] [31mERROR[39m: [36mWebhook signature verification failed[39m
+    error: {}
+[17:11:27] [31mERROR[39m: [36mWebhook signature verification failed[39m
+    error: {}
+[17:11:27] [32mINFO[39m: [36mStripe webhook received[39m
+    [35meventId[39m: "evt_test_malformed"
+    [35mtype[39m: "checkout.session.completed"
+[17:11:27] [31mERROR[39m: [36mInvalid session structure from Stripe[39m
+    [35merrors[39m: {
+      "formErrors": [],
+      "fieldErrors": {
+        "metadata": [
+          "Invalid input: expected string, received undefined",
+          "Invalid input: expected string, received undefined",
+          "Invalid input: expected string, received undefined"
+        ]
+      }
+    }
+[17:11:27] [32mINFO[39m: [36mStripe webhook received[39m
+    [35meventId[39m: "evt_test_db_fail"
+    [35mtype[39m: "checkout.session.completed"
+[17:11:27] [32mINFO[39m: [36mProcessing checkout completion[39m
+    [35meventId[39m: "evt_test_db_fail"
+    [35msessionId[39m: "cs_test_session_db"
+    [35mtenantId[39m: "test-tenant"
+    [35mpackageId[39m: "pkg_db_test"
+    [35meventDate[39m: "2025-07-01"
+    [35memail[39m: "couple@example.com"
+[17:11:27] [31mERROR[39m: [36mWebhook processing failed[39m
+    [35meventId[39m: "evt_test_db_fail"
+    [35meventType[39m: "checkout.session.completed"
+    error: "Database connection failed"
+[17:11:27] [32mINFO[39m: [36mStripe webhook received[39m
+    [35meventId[39m: "evt_test_unknown"
+    [35mtype[39m: "payment_intent.succeeded"
+[17:11:27] [32mINFO[39m: [36mIgnoring unhandled webhook event type[39m
+    [35meventId[39m: "evt_test_unknown"
+    [35mtype[39m: "payment_intent.succeeded"
+[17:11:27] [32mINFO[39m: [36mStripe webhook received[39m
+    [35meventId[39m: "evt_test_addons"
+    [35mtype[39m: "checkout.session.completed"
+[17:11:27] [32mINFO[39m: [36mProcessing checkout completion[39m
+    [35meventId[39m: "evt_test_addons"
+    [35msessionId[39m: "cs_test_session_addons"
+    [35mtenantId[39m: "test-tenant"
+    [35mpackageId[39m: "pkg_addon_test"
+    [35meventDate[39m: "2025-08-01"
+    [35memail[39m: "couple@example.com"
+[17:11:27] [32mINFO[39m: [36mBooking created successfully[39m
+    [35meventId[39m: "evt_test_addons"
+    [35msessionId[39m: "cs_test_session_addons"
+    [35mtenantId[39m: "test-tenant"
+[17:11:27] [32mINFO[39m: [36mStripe webhook received[39m
+    [35meventId[39m: "evt_test_event_emission"
+    [35mtype[39m: "checkout.session.completed"
+[17:11:27] [32mINFO[39m: [36mProcessing checkout completion[39m
+    [35meventId[39m: "evt_test_event_emission"
+    [35msessionId[39m: "cs_test_session_event"
+    [35mtenantId[39m: "test-tenant"
+    [35mpackageId[39m: "pkg_event_test"
+    [35meventDate[39m: "2025-09-01"
+    [35memail[39m: "couple@example.com"
+[17:11:27] [32mINFO[39m: [36mBooking created successfully[39m
+    [35meventId[39m: "evt_test_event_emission"
+    [35msessionId[39m: "cs_test_session_event"
+    [35mtenantId[39m: "test-tenant"
+ ↓ test/integration/booking-repository.integration.spec.ts > PrismaBookingRepository - Integration Tests > Pessimistic Locking > should create booking successfully with lock
+ ↓ test/integration/booking-repository.integration.spec.ts > PrismaBookingRepository - Integration Tests > Pessimistic Locking > should throw BookingConflictError on duplicate date
+ ↓ test/integration/booking-repository.integration.spec.ts > PrismaBookingRepository - Integration Tests > Pessimistic Locking > should handle concurrent booking attempts
+ ↓ test/integration/booking-repository.integration.spec.ts > PrismaBookingRepository - Integration Tests > Pessimistic Locking > should handle rapid sequential booking attempts
+ ✓ src/services/audit.service.test.ts > AuditService > trackChange > should create audit log for config version change with all fields 1ms
+ ✓ src/services/audit.service.test.ts > AuditService > trackChange > should create audit log with minimal fields (null userId/agentId) 0ms
+ ✓ src/services/audit.service.test.ts > AuditService > trackChange > should handle agent proposal changes 0ms
+ ✓ src/services/audit.service.test.ts > AuditService > trackLegacyChange > should create audit log for package CRUD 0ms
+ ✓ src/services/audit.service.test.ts > AuditService > trackLegacyChange > should create audit log for branding update 0ms
+ ✓ src/services/audit.service.test.ts > AuditService > trackLegacyChange > should create audit log for blackout change 0ms
+ ✓ src/services/audit.service.test.ts > AuditService > trackLegacyChange > should handle null beforeSnapshot for creates 0ms
+ ✓ src/services/audit.service.test.ts > AuditService > trackLegacyChange > should handle null afterSnapshot for deletes 0ms
+ ✓ src/services/audit.service.test.ts > AuditService > getEntityHistory > should return all changes for entity ordered by recency 0ms
+ ✓ src/services/audit.service.test.ts > AuditService > getEntityHistory > should filter by tenantId 0ms
+ ✓ src/services/audit.service.test.ts > AuditService > getEntityHistory > should filter by entityType and entityId 0ms
+ ✓ src/services/audit.service.test.ts > AuditService > getEntityHistory > should return empty array if no history 0ms
+ ✓ src/services/audit.service.test.ts > AuditService > getLatestSnapshot > should return most recent afterSnapshot 0ms
+ ✓ src/services/audit.service.test.ts > AuditService > getLatestSnapshot > should return null if no history 0ms
+ ✓ src/services/audit.service.test.ts > AuditService > getTenantAuditLog > should return paginated audit log 0ms
+ ✓ src/services/audit.service.test.ts > AuditService > getTenantAuditLog > should filter by changeType if provided 0ms
+ ✓ src/services/audit.service.test.ts > AuditService > getTenantAuditLog > should respect limit parameter 0ms
+ ✓ src/services/audit.service.test.ts > AuditService > getTenantAuditLog > should respect offset parameter 0ms
+ ✓ src/services/audit.service.test.ts > AuditService > getTenantAuditLog > should default to 50 entries 0ms
+ ✓ test/catalog.service.spec.ts > CatalogService > getAllPackages > returns all packages with their add-ons 1ms
+ ✓ test/catalog.service.spec.ts > CatalogService > getPackageBySlug > returns package with add-ons when found 0ms
+ ✓ test/catalog.service.spec.ts > CatalogService > getPackageBySlug > throws NotFoundError when package not found 1ms
+ ✓ test/catalog.service.spec.ts > CatalogService > createPackage > creates a new package successfully 0ms
+ ✓ test/catalog.service.spec.ts > CatalogService > createPackage > throws ValidationError when slug is empty 0ms
+ ✓ test/catalog.service.spec.ts > CatalogService > createPackage > throws ValidationError when price is negative 0ms
+ ✓ test/catalog.service.spec.ts > CatalogService > createPackage > throws ValidationError when slug already exists 0ms
+ ✓ test/catalog.service.spec.ts > CatalogService > updatePackage > updates a package successfully 0ms
+ ✓ test/catalog.service.spec.ts > CatalogService > updatePackage > throws NotFoundError when package does not exist 0ms
+ ✓ test/catalog.service.spec.ts > CatalogService > updatePackage > throws ValidationError when new price is negative 0ms
+ ✓ test/catalog.service.spec.ts > CatalogService > updatePackage > throws ValidationError when new slug already exists 0ms
+ ✓ test/catalog.service.spec.ts > CatalogService > updatePackage > allows updating slug to the same value 0ms
+ ✓ test/catalog.service.spec.ts > CatalogService > deletePackage > deletes a package successfully 0ms
+ ✓ test/catalog.service.spec.ts > CatalogService > deletePackage > throws NotFoundError when package does not exist 0ms
+ ✓ test/catalog.service.spec.ts > CatalogService > createAddOn > creates a new add-on successfully 0ms
+ ✓ test/catalog.service.spec.ts > CatalogService > createAddOn > throws ValidationError when packageId is empty 0ms
+ ✓ test/catalog.service.spec.ts > CatalogService > createAddOn > throws ValidationError when price is negative 0ms
+ ✓ test/catalog.service.spec.ts > CatalogService > createAddOn > throws NotFoundError when package does not exist 0ms
+ ✓ test/catalog.service.spec.ts > CatalogService > updateAddOn > updates an add-on successfully 0ms
+ ✓ test/catalog.service.spec.ts > CatalogService > updateAddOn > throws ValidationError when new price is negative 0ms
+ ✓ test/catalog.service.spec.ts > CatalogService > updateAddOn > throws NotFoundError when moving to nonexistent package 0ms
+ ✓ test/catalog.service.spec.ts > CatalogService > deleteAddOn > deletes an add-on successfully 0ms
+ ↓ test/integration/booking-race-conditions.spec.ts > Booking Race Conditions - Integration Tests > Concurrent Booking Prevention > should prevent double-booking when concurrent requests arrive
+ ↓ test/integration/booking-race-conditions.spec.ts > Booking Race Conditions - Integration Tests > Concurrent Booking Prevention > should handle high-concurrency booking attempts (10 simultaneous)
+ ↓ test/integration/booking-race-conditions.spec.ts > Booking Race Conditions - Integration Tests > Concurrent Booking Prevention > should allow concurrent bookings for different dates
+ ↓ test/integration/booking-race-conditions.spec.ts > Booking Race Conditions - Integration Tests > Transaction Isolation > should maintain serializable isolation during transaction
+ ✓ test/repositories/booking-concurrency.spec.ts > BookingRepository - Concurrency > Concurrent booking prevention > should prevent concurrent bookings for same date - only one succeeds 1ms
+ ✓ test/repositories/booking-concurrency.spec.ts > BookingRepository - Concurrency > Concurrent booking prevention > should allow bookings for different dates concurrently 0ms
+ ✓ test/repositories/booking-concurrency.spec.ts > BookingRepository - Concurrency > Concurrent booking prevention > should throw BookingConflictError for duplicate date 1ms
+ ✓ test/repositories/booking-concurrency.spec.ts > BookingRepository - Concurrency > Concurrent booking prevention > should verify date is booked after successful booking 0ms
+ ✓ test/repositories/booking-concurrency.spec.ts > BookingRepository - Concurrency > Concurrent booking prevention > should verify date is not booked before any booking 0ms
+ ✓ test/repositories/booking-concurrency.spec.ts > BookingRepository - Concurrency > Sequential booking flow > should successfully process bookings sequentially for different dates 0ms
+ ✓ test/repositories/booking-concurrency.spec.ts > BookingRepository - Concurrency > Sequential booking flow > should fail when trying to book already booked date in sequence 0ms
+ ✓ test/repositories/booking-concurrency.spec.ts > BookingRepository - Concurrency > Repository state management > should maintain correct state after failed booking attempt 0ms
+ ✓ test/repositories/booking-concurrency.spec.ts > BookingRepository - Concurrency > Repository state management > should clear all bookings when clear() is called 0ms
+ ✓ test/repositories/booking-concurrency.spec.ts > BookingRepository - Concurrency > Repository state management > should find booking by ID correctly 0ms
+ ✓ test/repositories/booking-concurrency.spec.ts > BookingRepository - Concurrency > Repository state management > should return null for non-existent booking ID 0ms
+ ✓ test/repositories/booking-concurrency.spec.ts > BookingRepository - Concurrency > Edge cases > should handle rapid sequential booking attempts for same date 0ms
+ ✓ test/repositories/booking-concurrency.spec.ts > BookingRepository - Concurrency > Edge cases > should handle bookings with same ID but different dates 0ms
+ ✓ test/repositories/booking-concurrency.spec.ts > BookingRepository - Concurrency > Data consistency > should store bookings correctly 0ms
+ ✓ test/repositories/booking-concurrency.spec.ts > BookingRepository - Concurrency > Data consistency > should return consistent results from findAll() 0ms
+ ✓ test/availability.service.spec.ts > AvailabilityService > returns available when no booking, blackout, or busy 1ms
+ ✓ test/availability.service.spec.ts > AvailabilityService > returns unavailable "booked" if date is booked 0ms
+ ✓ test/availability.service.spec.ts > AvailabilityService > returns unavailable "blackout" if date is blackout 0ms
+ ✓ test/availability.service.spec.ts > AvailabilityService > returns unavailable "calendar" if external calendar is busy 0ms
+ ✓ test/availability.service.spec.ts > AvailabilityService > prioritizes blackout over booked in availability check 0ms
+ ✓ test/availability.service.spec.ts > AvailabilityService > prioritizes booked over calendar busy 0ms
+ × test/middleware/error-handler.spec.ts > Error Handler Middleware > Domain Error Mapping > should map NotFoundError to 404 5ms
+   → expected "spy" to be called with arguments: [ { error: 'NOT_FOUND', …(1) } ][90m
+
+Received: 
+
+[1m  1st spy call:
+
+[22m[2m  [[22m
+[2m    {[22m
+[2m      "error": "NOT_FOUND",[22m
+[2m      "message": "Resource not found",[22m
+[31m+     "requestId": undefined,[90m
+[31m+     "status": "error",[90m
+[31m+     "statusCode": 404,[90m
+[2m    },[22m
+[2m  ][22m
+[39m[90m
+
+Number of calls: [1m1[22m
+[39m
+ × test/middleware/error-handler.spec.ts > Error Handler Middleware > Domain Error Mapping > should map ValidationError to 400 1ms
+   → expected "spy" to be called with arguments: [ { error: 'VALIDATION_ERROR', …(1) } ][90m
+
+Received: 
+
+[1m  1st spy call:
+
+[22m[2m  [[22m
+[2m    {[22m
+[2m      "error": "VALIDATION_ERROR",[22m
+[2m      "message": "Invalid input",[22m
+[31m+     "requestId": undefined,[90m
+[31m+     "status": "error",[90m
+[31m+     "statusCode": 400,[90m
+[2m    },[22m
+[2m  ][22m
+[39m[90m
+
+Number of calls: [1m1[22m
+[39m
+ × test/middleware/error-handler.spec.ts > Error Handler Middleware > Domain Error Mapping > should map UnauthorizedError to 401 0ms
+   → expected "spy" to be called with arguments: [ { error: 'UNAUTHORIZED', …(1) } ][90m
+
+Received: 
+
+[1m  1st spy call:
+
+[22m[2m  [[22m
+[2m    {[22m
+[2m      "error": "UNAUTHORIZED",[22m
+[2m      "message": "Invalid token",[22m
+[31m+     "requestId": undefined,[90m
+[31m+     "status": "error",[90m
+[31m+     "statusCode": 401,[90m
+[2m    },[22m
+[2m  ][22m
+[39m[90m
+
+Number of calls: [1m1[22m
+[39m
+ × test/middleware/error-handler.spec.ts > Error Handler Middleware > Domain Error Mapping > should map ForbiddenError to 403 0ms
+   → expected "spy" to be called with arguments: [ { error: 'FORBIDDEN', …(1) } ][90m
+
+Received: 
+
+[1m  1st spy call:
+
+[22m[2m  [[22m
+[2m    {[22m
+[2m      "error": "FORBIDDEN",[22m
+[2m      "message": "Access denied",[22m
+[31m+     "requestId": undefined,[90m
+[31m+     "status": "error",[90m
+[31m+     "statusCode": 403,[90m
+[2m    },[22m
+[2m  ][22m
+[39m[90m
+
+Number of calls: [1m1[22m
+[39m
+ × test/middleware/error-handler.spec.ts > Error Handler Middleware > Domain Error Mapping > should map ConflictError to 409 0ms
+   → expected "spy" to be called with arguments: [ { error: 'CONFLICT', …(1) } ][90m
+
+Received: 
+
+[1m  1st spy call:
+
+[22m[2m  [[22m
+[2m    {[22m
+[2m      "error": "CONFLICT",[22m
+[2m      "message": "Resource already exists",[22m
+[31m+     "requestId": undefined,[90m
+[31m+     "status": "error",[90m
+[31m+     "statusCode": 409,[90m
+[2m    },[22m
+[2m  ][22m
+[39m[90m
+
+Number of calls: [1m1[22m
+[39m
+ × test/middleware/error-handler.spec.ts > Error Handler Middleware > Domain Error Mapping > should map UnprocessableEntityError to 422 0ms
+   → expected "spy" to be called with arguments: [ { …(2) } ][90m
+
+Received: 
+
+[1m  1st spy call:
+
+[22m[2m  [[22m
+[2m    {[22m
+[2m      "error": "UNPROCESSABLE_ENTITY",[22m
+[2m      "message": "Invalid webhook signature",[22m
+[31m+     "requestId": undefined,[90m
+[31m+     "status": "error",[90m
+[31m+     "statusCode": 422,[90m
+[2m    },[22m
+[2m  ][22m
+[39m[90m
+
+Number of calls: [1m1[22m
+[39m
+ × test/middleware/error-handler.spec.ts > Error Handler Middleware > Domain Error Mapping > should map custom DomainError to specified status code 0ms
+   → expected "spy" to be called with arguments: [ { error: 'CUSTOM_ERROR', …(1) } ][90m
+
+Received: 
+
+[1m  1st spy call:
+
+[22m[2m  [[22m
+[2m    {[22m
+[2m      "error": "CUSTOM_ERROR",[22m
+[2m      "message": "Custom error",[22m
+[31m+     "requestId": undefined,[90m
+[31m+     "status": "error",[90m
+[31m+     "statusCode": 418,[90m
+[2m    },[22m
+[2m  ][22m
+[39m[90m
+
+Number of calls: [1m1[22m
+[39m
+ × test/middleware/error-handler.spec.ts > Error Handler Middleware > Booking-specific Errors > should map BookingConflictError to 409 0ms
+   → expected "spy" to be called with arguments: [ { error: 'CONFLICT', …(1) } ][90m
+
+Received: 
+
+[1m  1st spy call:
+
+[22m[2m  [[22m
+[2m    {[22m
+[2m      "error": "CONFLICT",[22m
+[2m      "message": "Date 2025-12-25 is already booked",[22m
+[31m+     "requestId": undefined,[90m
+[31m+     "status": "error",[90m
+[31m+     "statusCode": 409,[90m
+[2m    },[22m
+[2m  ][22m
+[39m[90m
+
+Number of calls: [1m1[22m
+[39m
+ × test/middleware/error-handler.spec.ts > Error Handler Middleware > Unknown Error Handling > should map generic Error to 500 0ms
+   → req.get is not a function
+ × test/middleware/error-handler.spec.ts > Error Handler Middleware > Unknown Error Handling > should log unknown errors with full details 0ms
+   → req.get is not a function
+ × test/middleware/error-handler.spec.ts > Error Handler Middleware > Unknown Error Handling > should hide unknown error details from client 0ms
+   → req.get is not a function
+ ✓ test/middleware/error-handler.spec.ts > Error Handler Middleware > Logging Behavior > should log domain errors at info level 0ms
+ × test/middleware/error-handler.spec.ts > Error Handler Middleware > Logging Behavior > should log unknown errors at error level 0ms
+   → req.get is not a function
+ ✓ test/middleware/error-handler.spec.ts > Error Handler Middleware > Logging Behavior > should use fallback logger if res.locals.logger is missing 1ms
+ ✓ test/middleware/error-handler.spec.ts > Error Handler Middleware > Response Format > should always return JSON format 0ms
+ ✓ test/middleware/error-handler.spec.ts > Error Handler Middleware > Response Format > should include error code and message in response 0ms
+ ✓ test/identity.service.spec.ts > IdentityService > login > returns token on successful login with correct password 131ms
+ ↓ test/http/webhooks.http.spec.ts > POST /v1/webhooks/stripe - HTTP Tests > Signature Verification > should reject webhook without signature header
+ ↓ test/http/webhooks.http.spec.ts > POST /v1/webhooks/stripe - HTTP Tests > Signature Verification > should reject webhook with invalid signature
+ ↓ test/http/webhooks.http.spec.ts > POST /v1/webhooks/stripe - HTTP Tests > Signature Verification > should accept webhook with valid signature
+ ↓ test/http/webhooks.http.spec.ts > POST /v1/webhooks/stripe - HTTP Tests > Idempotency > should return 200 for duplicate webhook
+ ↓ test/http/webhooks.http.spec.ts > POST /v1/webhooks/stripe - HTTP Tests > Idempotency > should not process duplicate webhook
+ ↓ test/http/webhooks.http.spec.ts > POST /v1/webhooks/stripe - HTTP Tests > Error Handling > should return 400 for invalid JSON
+ ↓ test/http/webhooks.http.spec.ts > POST /v1/webhooks/stripe - HTTP Tests > Error Handling > should return 422 for missing required fields
+ ↓ test/http/webhooks.http.spec.ts > POST /v1/webhooks/stripe - HTTP Tests > Error Handling > should return 500 for internal server errors
+ ↓ test/http/webhooks.http.spec.ts > POST /v1/webhooks/stripe - HTTP Tests > Event Types > should handle checkout.session.completed events
+ ↓ test/http/webhooks.http.spec.ts > POST /v1/webhooks/stripe - HTTP Tests > Event Types > should ignore unsupported event types
+ ↓ test/http/webhooks.http.spec.ts > POST /v1/webhooks/stripe - HTTP Tests > Webhook Recording > should record all webhook events in database
+ ↓ test/http/webhooks.http.spec.ts > POST /v1/webhooks/stripe - HTTP Tests > Webhook Recording > should mark failed webhooks in database
+ ↓ test/integration/webhook-race-conditions.spec.ts > Webhook Race Conditions - Integration Tests > Duplicate Webhook Prevention > should prevent duplicate webhook processing
+ ↓ test/integration/webhook-race-conditions.spec.ts > Webhook Race Conditions - Integration Tests > Duplicate Webhook Prevention > should handle high-concurrency duplicate webhooks (10 simultaneous)
+ ↓ test/integration/webhook-race-conditions.spec.ts > Webhook Race Conditions - Integration Tests > Duplicate Webhook Prevention > should detect duplicates at repository level
+ ↓ test/integration/webhook-race-conditions.spec.ts > Webhook Race Conditions - Integration Tests > Duplicate Webhook Prevention > should handle concurrent isDuplicate checks
+ ↓ test/integration/webhook-race-conditions.spec.ts > Webhook Race Conditions - Integration Tests > Race Conditions with Booking Creation > should prevent double-booking from concurrent webhooks
+ ↓ test/integration/webhook-race-conditions.spec.ts > Webhook Race Conditions - Integration Tests > Race Conditions with Booking Creation > should handle rapid sequential webhook processing
+ ↓ test/integration/webhook-race-conditions.spec.ts > Webhook Race Conditions - Integration Tests > Idempotency Guarantees > should return success for already-processed webhook
+ ↓ test/integration/webhook-race-conditions.spec.ts > Webhook Race Conditions - Integration Tests > Idempotency Guarantees > should handle webhook retries from Stripe gracefully
+ ↓ test/integration/webhook-race-conditions.spec.ts > Webhook Race Conditions - Integration Tests > Idempotency Guarantees > should maintain idempotency across different date bookings
+ ↓ test/integration/webhook-race-conditions.spec.ts > Webhook Race Conditions - Integration Tests > Webhook Status Transitions > should transition from PENDING to PROCESSED on success
+ ↓ test/integration/webhook-race-conditions.spec.ts > Webhook Race Conditions - Integration Tests > Webhook Status Transitions > should transition from PENDING to FAILED on booking error
+ ↓ test/integration/webhook-race-conditions.spec.ts > Webhook Race Conditions - Integration Tests > Webhook Status Transitions > should handle concurrent status updates
+ ↓ test/integration/webhook-race-conditions.spec.ts > Webhook Race Conditions - Integration Tests > Edge Cases > should handle webhook with invalid booking data
+ ↓ test/integration/webhook-race-conditions.spec.ts > Webhook Race Conditions - Integration Tests > Edge Cases > should handle very rapid webhook bursts
+ ✓ test/identity.service.spec.ts > IdentityService > login > throws UnauthorizedError on wrong password 114ms
+ ✓ test/identity.service.spec.ts > IdentityService > login > throws UnauthorizedError if user does not exist 0ms
+stdout | test/http/packages.test.ts
+✅ Mock data seeded: 6 packages, 6 add-ons, 1 admin user
+
+ ✓ test/identity.service.spec.ts > IdentityService > login > returned token contains user information 110ms
+ ✓ test/identity.service.spec.ts > IdentityService > verifyToken > returns payload for valid token 111ms
+ ✓ test/identity.service.spec.ts > IdentityService > verifyToken > throws UnauthorizedError for invalid token 0ms
+ ✓ test/identity.service.spec.ts > IdentityService > verifyToken > throws UnauthorizedError for token with wrong secret 108ms
+stdout | test/http/packages.test.ts
+[dotenv@17.2.3] injecting env (0) from .env -- tip: ⚙️  enable debug logging with { debug: true }
+
+ ✓ test/http/packages.test.ts > GET /v1/packages > returns packages list with contract shape 528ms
+ ✓ test/http/packages.test.ts > GET /v1/packages > handles invalid route with 404 4ms
+ ✓ src/services/catalog.service.integration.test.ts > CatalogService Integration - Audit Logging > createPackage > should create package AND audit log when audit context provided 1698ms
+[17:11:29] [32mINFO[39m: [36mWebhook event recorded[39m
+    [35mtenantId[39m: "cmhuomqfp0000p0e6vw767p9j"
+    [35meventId[39m: "evt_test_12345"
+    [35meventType[39m: "checkout.session.completed"
+[17:11:28] [32mINFO[39m: [36mServing uploaded logos from static directory[39m
+    [35muploadDir[39m: "/Users/mikeyoung/CODING/Elope/server/uploads/logos"
+[17:11:28] [32mINFO[39m: [36mServing package photos from static directory[39m
+    [35muploadDir[39m: "/Users/mikeyoung/CODING/Elope/server/uploads/packages"
+[17:11:28] [32mINFO[39m: [36m✅ Cache service initialized with 900s TTL[39m
+[17:11:28] [32mINFO[39m: [36m🧪 Using MOCK adapters[39m
+[17:11:28] [32mINFO[39m: [36mIdempotencyService initialized[39m
+[17:11:28] [32mINFO[39m: [36m✅ StripeConnectService initialized[39m
+[17:11:28] [32mINFO[39m: [36m🧪 Mounting dev simulator routes[39m
+[17:11:28] [32mINFO[39m: [36mRequest started[39m
+    [35mrequestId[39m: "6e58a97a-bb6d-43a5-b7bc-abf96cdadb31"
+    [35mmethod[39m: "GET"
+    [35murl[39m: "/v1/packages"
+[17:11:28] [32mINFO[39m: [36mTenant resolved successfully[39m
+    [35mtenantId[39m: "tenant_default_legacy"
+    [35mslug[39m: "elope"
+    [35mapiKey[39m: "pk_live_elope_012345..."
+    [35mpath[39m: "/v1/packages"
+[17:11:28] [32mINFO[39m: [36mRequest completed[39m
+    [35mrequestId[39m: "6e58a97a-bb6d-43a5-b7bc-abf96cdadb31"
+    [35mmethod[39m: "GET"
+    [35murl[39m: "/v1/packages"
+    [35mstatusCode[39m: 200
+    [35mduration[39m: 505
+[17:11:28] [32mINFO[39m: [36mRequest started[39m
+    [35mrequestId[39m: "043acedc-633c-4072-9728-4068750bbbb4"
+    [35mmethod[39m: "GET"
+    [35murl[39m: "/v1/nonexistent"
+[17:11:28] [32mINFO[39m: [36mRequest completed[39m
+    [35mrequestId[39m: "043acedc-633c-4072-9728-4068750bbbb4"
+    [35mmethod[39m: "GET"
+    [35murl[39m: "/v1/nonexistent"
+    [35mstatusCode[39m: 404
+    [35mduration[39m: 1
+ × test/integration/webhook-repository.integration.spec.ts > PrismaWebhookRepository - Integration Tests > Idempotency > should record webhook successfully 2131ms
+   → 
+Invalid `ctx.prisma.webhookEvent.findUnique()` invocation in
+/Users/mikeyoung/CODING/Elope/server/test/integration/webhook-repository.integration.spec.ts:48:51
+
+  45 
+  46 await repository.recordWebhook({ tenantId: testTenantId, ...webhook });
+  47 
+→ 48 const event = await ctx.prisma.webhookEvent.findUnique({
+       where: {
+         eventId: "evt_test_12345",
+     ?   id?: String,
+     ?   tenantId_eventId?: WebhookEventTenantId_eventIdCompoundUniqueInput,
+     ?   AND?: WebhookEventWhereInput | WebhookEventWhereInput[],
+     ?   OR?: WebhookEventWhereInput[],
+     ?   NOT?: WebhookEventWhereInput | WebhookEventWhereInput[],
+     ?   tenantId?: StringFilter | String,
+     ?   eventType?: StringFilter | String,
+     ?   rawPayload?: StringFilter | String,
+     ?   status?: EnumWebhookStatusFilter | WebhookStatus,
+     ?   attempts?: IntFilter | Int,
+     ?   lastError?: StringNullableFilter | String | Null,
+     ?   processedAt?: DateTimeNullableFilter | DateTime | Null,
+     ?   createdAt?: DateTimeFilter | DateTime,
+     ?   tenant?: TenantScalarRelationFilter | TenantWhereInput
+       }
+     })
+
+Argument `where` of type WebhookEventWhereUniqueInput needs at least one of `id` or `tenantId_eventId` arguments. Available options are marked with ?.
+ ✓ test/integration/catalog.repository.integration.spec.ts > PrismaCatalogRepository - Integration Tests > Package Operations > should create package successfully 2131ms
+[17:11:29] [32mINFO[39m: [36mServing uploaded logos from static directory[39m
+    [35muploadDir[39m: "/Users/mikeyoung/CODING/Elope/server/uploads/logos"
+[17:11:29] [32mINFO[39m: [36mServing package photos from static directory[39m
+    [35muploadDir[39m: "/Users/mikeyoung/CODING/Elope/server/uploads/packages"
+[17:11:29] [32mINFO[39m: [36m✅ Cache service initialized with 900s TTL[39m
+[17:11:29] [32mINFO[39m: [36m🧪 Using MOCK adapters[39m
+[17:11:29] [32mINFO[39m: [36mIdempotencyService initialized[39m
+[17:11:29] [32mINFO[39m: [36m✅ StripeConnectService initialized[39m
+[17:11:29] [32mINFO[39m: [36m🧪 Mounting dev simulator routes[39m
+[17:11:29] [32mINFO[39m: [36mRequest started[39m
+    [35mrequestId[39m: "8cf73532-427e-4452-a661-02198a9f2baa"
+    [35mmethod[39m: "GET"
+    [35murl[39m: "/v1/packages/basic-elopement"
+ ✓ src/services/catalog.service.integration.test.ts > CatalogService Integration - Audit Logging > createPackage > should create package WITHOUT audit log when audit context missing 565ms
+ ✓ test/integration/cache-isolation.integration.spec.ts > Cache Tenant Isolation - Integration Tests > Cache Key Generation > should generate cache keys with tenantId prefix for getAllPackages 2571ms
+ ✓ test/http/packages.test.ts > GET /v1/packages/:slug > returns single package by slug 470ms
+ ✓ test/http/packages.test.ts > GET /v1/packages/:slug > returns 404 for non-existent package 49ms
+ × test/integration/booking-race-conditions.spec.ts > Booking Race Conditions - Integration Tests > Transaction Isolation > should rollback on error with no partial data committed 2770ms
+   → 
+Invalid `ctx.prisma.customer.findFirst()` invocation in
+/Users/mikeyoung/CODING/Elope/server/test/integration/booking-race-conditions.spec.ts:290:50
+
+  287   .toThrow();
+  288 
+  289 // Verify no customer was created (rollback worked)
+→ 290 const customer = await ctx.prisma.customer.findFirst(
+The column `Customer.tenantId` does not exist in the current database.
+ ↓ test/integration/booking-race-conditions.spec.ts > Booking Race Conditions - Integration Tests > Service Layer Race Conditions > should handle concurrent payment completion for same date
+ ↓ test/integration/booking-race-conditions.spec.ts > Booking Race Conditions - Integration Tests > Service Layer Race Conditions > should handle rapid sequential payment attempts
+ ↓ test/integration/booking-race-conditions.spec.ts > Booking Race Conditions - Integration Tests > Pessimistic Locking Behavior > should use FOR UPDATE NOWAIT to prevent deadlocks
+ ↓ test/integration/booking-race-conditions.spec.ts > Booking Race Conditions - Integration Tests > Pessimistic Locking Behavior > should release lock after successful transaction
+ ↓ test/integration/booking-race-conditions.spec.ts > Booking Race Conditions - Integration Tests > Pessimistic Locking Behavior > should release lock after failed transaction
+ ↓ test/integration/booking-race-conditions.spec.ts > Booking Race Conditions - Integration Tests > Edge Cases > should handle bookings with add-ons during race conditions
+ ↓ test/integration/booking-race-conditions.spec.ts > Booking Race Conditions - Integration Tests > Edge Cases > should handle mixed success/failure scenarios across different dates
+[17:11:30] [32mINFO[39m: [36mWebhook event recorded[39m
+    [35mtenantId[39m: "cmhuomqfp0000p0e6vw767p9j"
+    [35meventId[39m: "evt_test_duplicate"
+    [35meventType[39m: "checkout.session.completed"
+[17:11:29] [32mINFO[39m: [36mCache flushed[39m
+ × test/integration/booking-repository.integration.spec.ts > PrismaBookingRepository - Integration Tests > Data Integrity > should rollback on error (no partial data) 3275ms
+   → 
+Invalid `ctx.prisma.customer.count()` invocation in
+/Users/mikeyoung/CODING/Elope/server/test/integration/booking-repository.integration.spec.ts:245:55
+
+  242 }
+  243 
+  244 // Verify NO partial data committed
+→ 245 const customerCount = await ctx.prisma.customer.count(
+The column `Customer.tenantId` does not exist in the current database.
+ ↓ test/integration/booking-repository.integration.spec.ts > PrismaBookingRepository - Integration Tests > Data Integrity > should create booking with add-ons atomically
+ ↓ test/integration/booking-repository.integration.spec.ts > PrismaBookingRepository - Integration Tests > Data Integrity > should create or update customer upsert correctly
+ ↓ test/integration/booking-repository.integration.spec.ts > PrismaBookingRepository - Integration Tests > Query Operations > should find booking by id
+ ↓ test/integration/booking-repository.integration.spec.ts > PrismaBookingRepository - Integration Tests > Query Operations > should return null for non-existent booking
+ ↓ test/integration/booking-repository.integration.spec.ts > PrismaBookingRepository - Integration Tests > Query Operations > should check if date is booked
+ ↓ test/integration/booking-repository.integration.spec.ts > PrismaBookingRepository - Integration Tests > Query Operations > should find all bookings ordered by creation date
+ ✓ src/services/catalog.service.integration.test.ts > CatalogService Integration - Audit Logging > updatePackage > should update package AND audit log with before/after snapshots 1007ms
+ ✓ test/integration/catalog.repository.integration.spec.ts > PrismaCatalogRepository - Integration Tests > Package Operations > should enforce unique slug constraint 1146ms
+ × test/integration/webhook-repository.integration.spec.ts > PrismaWebhookRepository - Integration Tests > Idempotency > should detect duplicate webhooks 1251ms
+   → 
+Invalid `ctx.prisma.webhookEvent.findUnique()` invocation in
+/Users/mikeyoung/CODING/Elope/server/test/integration/webhook-repository.integration.spec.ts:74:51
+
+  71 expect(isDupe).toBe(true);
+  72 
+  73 // Verify status updated to DUPLICATE
+→ 74 const event = await ctx.prisma.webhookEvent.findUnique({
+       where: {
+         eventId: "evt_test_duplicate",
+     ?   id?: String,
+     ?   tenantId_eventId?: WebhookEventTenantId_eventIdCompoundUniqueInput,
+     ?   AND?: WebhookEventWhereInput | WebhookEventWhereInput[],
+     ?   OR?: WebhookEventWhereInput[],
+     ?   NOT?: WebhookEventWhereInput | WebhookEventWhereInput[],
+     ?   tenantId?: StringFilter | String,
+     ?   eventType?: StringFilter | String,
+     ?   rawPayload?: StringFilter | String,
+     ?   status?: EnumWebhookStatusFilter | WebhookStatus,
+     ?   attempts?: IntFilter | Int,
+     ?   lastError?: StringNullableFilter | String | Null,
+     ?   processedAt?: DateTimeNullableFilter | DateTime | Null,
+     ?   createdAt?: DateTimeFilter | DateTime,
+     ?   tenant?: TenantScalarRelationFilter | TenantWhereInput
+       }
+     })
+
+Argument `where` of type WebhookEventWhereUniqueInput needs at least one of `id` or `tenantId_eventId` arguments. Available options are marked with ?.
+[17:11:31] [32mINFO[39m: [36mCache flushed[39m
+ ✓ test/integration/cache-isolation.integration.spec.ts > Cache Tenant Isolation - Integration Tests > Cache Key Generation > should generate cache keys with tenantId prefix for getPackageBySlug 1479ms
+ ✓ src/services/catalog.service.integration.test.ts > CatalogService Integration - Audit Logging > updatePackage > should update package WITHOUT audit log when context missing 682ms
+ ✓ test/integration/webhook-repository.integration.spec.ts > PrismaWebhookRepository - Integration Tests > Idempotency > should return false for non-existent webhook 993ms
+ ✓ test/integration/catalog.repository.integration.spec.ts > PrismaCatalogRepository - Integration Tests > Package Operations > should get package by slug 1107ms
+[17:11:32] [32mINFO[39m: [36mWebhook event recorded[39m
+    [35mtenantId[39m: "cmhuomqfp0000p0e6vw767p9j"
+    [35meventId[39m: "evt_concurrent_789"
+    [35meventType[39m: "checkout.session.completed"
+ ✓ src/services/catalog.service.integration.test.ts > CatalogService Integration - Audit Logging > deletePackage > should delete package AND audit log with beforeSnapshot 917ms
+ ✓ test/integration/catalog.repository.integration.spec.ts > PrismaCatalogRepository - Integration Tests > Package Operations > should return null for non-existent slug 964ms
+ ✓ src/services/catalog.service.integration.test.ts > CatalogService Integration - Audit Logging > deletePackage > should delete package WITHOUT audit log when context missing 804ms
+[17:11:32] [32mINFO[39m: [36mCache flushed[39m
+ × test/integration/webhook-repository.integration.spec.ts > PrismaWebhookRepository - Integration Tests > Idempotency > should handle concurrent duplicate checks 1884ms
+   → 
+Invalid `ctx.prisma.webhookEvent.findUnique()` invocation in
+/Users/mikeyoung/CODING/Elope/server/test/integration/webhook-repository.integration.spec.ts:107:51
+
+  104 expect(checks.every(c => c === true)).toBe(true);
+  105 
+  106 // Verify final state
+→ 107 const event = await ctx.prisma.webhookEvent.findUnique({
+        where: {
+          eventId: "evt_concurrent_789",
+      ?   id?: String,
+      ?   tenantId_eventId?: WebhookEventTenantId_eventIdCompoundUniqueInput,
+      ?   AND?: WebhookEventWhereInput | WebhookEventWhereInput[],
+      ?   OR?: WebhookEventWhereInput[],
+      ?   NOT?: WebhookEventWhereInput | WebhookEventWhereInput[],
+      ?   tenantId?: StringFilter | String,
+      ?   eventType?: StringFilter | String,
+      ?   rawPayload?: StringFilter | String,
+      ?   status?: EnumWebhookStatusFilter | WebhookStatus,
+      ?   attempts?: IntFilter | Int,
+      ?   lastError?: StringNullableFilter | String | Null,
+      ?   processedAt?: DateTimeNullableFilter | DateTime | Null,
+      ?   createdAt?: DateTimeFilter | DateTime,
+      ?   tenant?: TenantScalarRelationFilter | TenantWhereInput
+        }
+      })
+
+Argument `where` of type WebhookEventWhereUniqueInput needs at least one of `id` or `tenantId_eventId` arguments. Available options are marked with ?.
+ ✓ test/integration/cache-isolation.integration.spec.ts > Cache Tenant Isolation - Integration Tests > Cross-Tenant Cache Isolation > should not return cached data for different tenant (getAllPackages) 1541ms
+ ✓ test/integration/catalog.repository.integration.spec.ts > PrismaCatalogRepository - Integration Tests > Package Operations > should get all packages 1390ms
+[17:11:34] [32mINFO[39m: [36mWebhook event recorded[39m
+    [35mtenantId[39m: "cmhuomqfp0000p0e6vw767p9j"
+    [35meventId[39m: "evt_already_processed"
+    [35meventType[39m: "checkout.session.completed"
+ ✓ src/services/catalog.service.integration.test.ts > CatalogService Integration - Audit Logging > Tenant Isolation > should not see other tenant audit logs 1445ms
+[17:11:34] [32mINFO[39m: [36mWebhook marked as processed[39m
+    [35mtenantId[39m: "cmhuomqfp0000p0e6vw767p9j"
+    [35meventId[39m: "evt_already_processed"
+ ✓ test/integration/cache-isolation.integration.spec.ts > Cache Tenant Isolation - Integration Tests > Cross-Tenant Cache Isolation > should not return cached data for different tenant (getPackageBySlug) 1621ms
+ × test/integration/webhook-repository.integration.spec.ts > PrismaWebhookRepository - Integration Tests > Idempotency > should not mark already processed webhook as duplicate 1379ms
+   → 
+Invalid `ctx.prisma.webhookEvent.findUnique()` invocation in
+/Users/mikeyoung/CODING/Elope/server/test/integration/webhook-repository.integration.spec.ts:130:51
+
+  127 expect(isDupe).toBe(true);
+  128 
+  129 // Verify status remains PROCESSED
+→ 130 const event = await ctx.prisma.webhookEvent.findUnique({
+        where: {
+          eventId: "evt_already_processed",
+      ?   id?: String,
+      ?   tenantId_eventId?: WebhookEventTenantId_eventIdCompoundUniqueInput,
+      ?   AND?: WebhookEventWhereInput | WebhookEventWhereInput[],
+      ?   OR?: WebhookEventWhereInput[],
+      ?   NOT?: WebhookEventWhereInput | WebhookEventWhereInput[],
+      ?   tenantId?: StringFilter | String,
+      ?   eventType?: StringFilter | String,
+      ?   rawPayload?: StringFilter | String,
+      ?   status?: EnumWebhookStatusFilter | WebhookStatus,
+      ?   attempts?: IntFilter | Int,
+      ?   lastError?: StringNullableFilter | String | Null,
+      ?   processedAt?: DateTimeNullableFilter | DateTime | Null,
+      ?   createdAt?: DateTimeFilter | DateTime,
+      ?   tenant?: TenantScalarRelationFilter | TenantWhereInput
+        }
+      })
+
+Argument `where` of type WebhookEventWhereUniqueInput needs at least one of `id` or `tenantId_eventId` arguments. Available options are marked with ?.
+ ✓ test/integration/catalog.repository.integration.spec.ts > PrismaCatalogRepository - Integration Tests > Package Operations > should update package 1251ms
+[17:11:34] [32mINFO[39m: [36mCache flushed[39m
+ ✓ src/services/catalog.service.integration.test.ts > CatalogService Integration - Audit Logging > getEntityHistory > should return full audit history for entity 1138ms
+ ✓ test/integration/webhook-repository.integration.spec.ts > PrismaWebhookRepository - Integration Tests > Idempotency > should handle race condition on webhook recording 1495ms
+[17:11:36] [32mINFO[39m: [36mCache flushed[39m
+[17:11:35] [32mINFO[39m: [36mWebhook event recorded[39m
+    [35mtenantId[39m: "cmhuomqfp0000p0e6vw767p9j"
+    [35meventId[39m: "evt_race_condition"
+    [35meventType[39m: "checkout.session.completed"
+[17:11:35] [31mERROR[39m: [36mFailed to record webhook event[39m
+    [35mtenantId[39m: "cmhuomqfp0000p0e6vw767p9j"
+    [35meventId[39m: "evt_race_condition"
+    [35meventType[39m: "checkout.session.completed"
+    error: {
+      "code": "P2002",
+      "meta": {
+        "modelName": "WebhookEvent",
+        "target": [
+          "eventId"
+        ]
+      },
+      "clientVersion": "6.18.0",
+      "name": "PrismaClientKnownRequestError"
+    }
+[17:11:35] [31mERROR[39m: [36mFailed to record webhook event[39m
+    [35mtenantId[39m: "cmhuomqfp0000p0e6vw767p9j"
+    [35meventId[39m: "evt_race_condition"
+    [35meventType[39m: "checkout.session.completed"
+    error: {
+      "code": "P2002",
+      "meta": {
+        "modelName": "WebhookEvent",
+        "target": [
+          "eventId"
+        ]
+      },
+      "clientVersion": "6.18.0",
+      "name": "PrismaClientKnownRequestError"
+    }
+ ✓ test/integration/catalog.repository.integration.spec.ts > PrismaCatalogRepository - Integration Tests > Package Operations > should throw error when updating non-existent package 1017ms
+ ✓ test/integration/cache-isolation.integration.spec.ts > Cache Tenant Isolation - Integration Tests > Cross-Tenant Cache Isolation > should maintain separate cache entries for same resource across tenants 1554ms
+ ✓ test/integration/catalog.repository.integration.spec.ts > PrismaCatalogRepository - Integration Tests > Package Operations > should prevent duplicate slug on update 1170ms
+[17:11:37] [32mINFO[39m: [36mWebhook event recorded[39m
+    [35mtenantId[39m: "cmhuomqfp0000p0e6vw767p9j"
+    [35meventId[39m: "evt_process_456"
+    [35meventType[39m: "checkout.session.completed"
+[17:11:37] [32mINFO[39m: [36mWebhook marked as processed[39m
+    [35mtenantId[39m: "cmhuomqfp0000p0e6vw767p9j"
+    [35meventId[39m: "evt_process_456"
+ ✓ test/integration/cache-isolation.integration.spec.ts > Cache Tenant Isolation - Integration Tests > Cache Invalidation Scoping > should invalidate cache only for specific tenant (getAllPackages) 1869ms
+ × test/integration/webhook-repository.integration.spec.ts > PrismaWebhookRepository - Integration Tests > Status Transitions > should mark webhook as PROCESSED 1181ms
+   → 
+Invalid `ctx.prisma.webhookEvent.findUnique()` invocation in
+/Users/mikeyoung/CODING/Elope/server/test/integration/webhook-repository.integration.spec.ts:176:51
+
+  173 
+  174 await repository.markProcessed(testTenantId, 'evt_process_456');
+  175 
+→ 176 const event = await ctx.prisma.webhookEvent.findUnique({
+        where: {
+          eventId: "evt_process_456",
+      ?   id?: String,
+      ?   tenantId_eventId?: WebhookEventTenantId_eventIdCompoundUniqueInput,
+      ?   AND?: WebhookEventWhereInput | WebhookEventWhereInput[],
+      ?   OR?: WebhookEventWhereInput[],
+      ?   NOT?: WebhookEventWhereInput | WebhookEventWhereInput[],
+      ?   tenantId?: StringFilter | String,
+      ?   eventType?: StringFilter | String,
+      ?   rawPayload?: StringFilter | String,
+      ?   status?: EnumWebhookStatusFilter | WebhookStatus,
+      ?   attempts?: IntFilter | Int,
+      ?   lastError?: StringNullableFilter | String | Null,
+      ?   processedAt?: DateTimeNullableFilter | DateTime | Null,
+      ?   createdAt?: DateTimeFilter | DateTime,
+      ?   tenant?: TenantScalarRelationFilter | TenantWhereInput
+        }
+      })
+
+Argument `where` of type WebhookEventWhereUniqueInput needs at least one of `id` or `tenantId_eventId` arguments. Available options are marked with ?.
+[17:11:37] [32mINFO[39m: [36mCache flushed[39m
+[17:11:38] [32mINFO[39m: [36mWebhook event recorded[39m
+    [35mtenantId[39m: "cmhuomqfp0000p0e6vw767p9j"
+    [35meventId[39m: "evt_fail_999"
+    [35meventType[39m: "checkout.session.completed"
+[17:11:38] [31mERROR[39m: [36mWebhook marked as failed[39m
+    [35mtenantId[39m: "cmhuomqfp0000p0e6vw767p9j"
+    [35meventId[39m: "evt_fail_999"
+    error: "Database connection timeout"
+ × test/integration/webhook-repository.integration.spec.ts > PrismaWebhookRepository - Integration Tests > Status Transitions > should mark webhook as FAILED with error message 1094ms
+   → 
+Invalid `ctx.prisma.webhookEvent.findUnique()` invocation in
+/Users/mikeyoung/CODING/Elope/server/test/integration/webhook-repository.integration.spec.ts:196:51
+
+  193 const errorMsg = 'Database connection timeout';
+  194 await repository.markFailed(testTenantId, 'evt_fail_999', errorMsg);
+  195 
+→ 196 const event = await ctx.prisma.webhookEvent.findUnique({
+        where: {
+          eventId: "evt_fail_999",
+      ?   id?: String,
+      ?   tenantId_eventId?: WebhookEventTenantId_eventIdCompoundUniqueInput,
+      ?   AND?: WebhookEventWhereInput | WebhookEventWhereInput[],
+      ?   OR?: WebhookEventWhereInput[],
+      ?   NOT?: WebhookEventWhereInput | WebhookEventWhereInput[],
+      ?   tenantId?: StringFilter | String,
+      ?   eventType?: StringFilter | String,
+      ?   rawPayload?: StringFilter | String,
+      ?   status?: EnumWebhookStatusFilter | WebhookStatus,
+      ?   attempts?: IntFilter | Int,
+      ?   lastError?: StringNullableFilter | String | Null,
+      ?   processedAt?: DateTimeNullableFilter | DateTime | Null,
+      ?   createdAt?: DateTimeFilter | DateTime,
+      ?   tenant?: TenantScalarRelationFilter | TenantWhereInput
+        }
+      })
+
+Argument `where` of type WebhookEventWhereUniqueInput needs at least one of `id` or `tenantId_eventId` arguments. Available options are marked with ?.
+ ✓ test/integration/catalog.repository.integration.spec.ts > PrismaCatalogRepository - Integration Tests > Package Operations > should delete package 1354ms
+[17:11:39] [32mINFO[39m: [36mWebhook event recorded[39m
+    [35mtenantId[39m: "cmhuomqfp0000p0e6vw767p9j"
+    [35meventId[39m: "evt_retry_test"
+    [35meventType[39m: "checkout.session.completed"
+ × test/integration/webhook-repository.integration.spec.ts > PrismaWebhookRepository - Integration Tests > Status Transitions > should increment attempts on failure 1000ms
+   → 
+Invalid `ctx.prisma.webhookEvent.findUnique()` invocation in
+/Users/mikeyoung/CODING/Elope/server/test/integration/webhook-repository.integration.spec.ts:215:53
+
+  212 });
+  213 
+  214 // Get initial attempts
+→ 215 const initial = await ctx.prisma.webhookEvent.findUnique({
+        where: {
+          eventId: "evt_retry_test",
+      ?   id?: String,
+      ?   tenantId_eventId?: WebhookEventTenantId_eventIdCompoundUniqueInput,
+      ?   AND?: WebhookEventWhereInput | WebhookEventWhereInput[],
+      ?   OR?: WebhookEventWhereInput[],
+      ?   NOT?: WebhookEventWhereInput | WebhookEventWhereInput[],
+      ?   tenantId?: StringFilter | String,
+      ?   eventType?: StringFilter | String,
+      ?   rawPayload?: StringFilter | String,
+      ?   status?: EnumWebhookStatusFilter | WebhookStatus,
+      ?   attempts?: IntFilter | Int,
+      ?   lastError?: StringNullableFilter | String | Null,
+      ?   processedAt?: DateTimeNullableFilter | DateTime | Null,
+      ?   createdAt?: DateTimeFilter | DateTime,
+      ?   tenant?: TenantScalarRelationFilter | TenantWhereInput
+        }
+      })
+
+Argument `where` of type WebhookEventWhereUniqueInput needs at least one of `id` or `tenantId_eventId` arguments. Available options are marked with ?.
+ ✓ test/integration/catalog.repository.integration.spec.ts > PrismaCatalogRepository - Integration Tests > Package Operations > should throw error when deleting non-existent package 994ms
+ ✓ test/integration/cache-isolation.integration.spec.ts > Cache Tenant Isolation - Integration Tests > Cache Invalidation Scoping > should invalidate cache only for specific tenant (getPackageBySlug) 1985ms
+[17:11:39] [32mINFO[39m: [36mCache flushed[39m
+[17:11:40] [32mINFO[39m: [36mWebhook event recorded[39m
+    [35mtenantId[39m: "cmhuomqfp0000p0e6vw767p9j"
+    [35meventId[39m: "evt_transition_pending_processed"
+    [35meventType[39m: "checkout.session.completed"
+ × test/integration/webhook-repository.integration.spec.ts > PrismaWebhookRepository - Integration Tests > Status Transitions > should transition from PENDING to PROCESSED 943ms
+   → 
+Invalid `ctx.prisma.webhookEvent.findUnique()` invocation in
+/Users/mikeyoung/CODING/Elope/server/test/integration/webhook-repository.integration.spec.ts:252:49
+
+  249 });
+  250 
+  251 // Verify PENDING
+→ 252 let event = await ctx.prisma.webhookEvent.findUnique({
+        where: {
+          eventId: "evt_transition_pending_processed",
+      ?   id?: String,
+      ?   tenantId_eventId?: WebhookEventTenantId_eventIdCompoundUniqueInput,
+      ?   AND?: WebhookEventWhereInput | WebhookEventWhereInput[],
+      ?   OR?: WebhookEventWhereInput[],
+      ?   NOT?: WebhookEventWhereInput | WebhookEventWhereInput[],
+      ?   tenantId?: StringFilter | String,
+      ?   eventType?: StringFilter | String,
+      ?   rawPayload?: StringFilter | String,
+      ?   status?: EnumWebhookStatusFilter | WebhookStatus,
+      ?   attempts?: IntFilter | Int,
+      ?   lastError?: StringNullableFilter | String | Null,
+      ?   processedAt?: DateTimeNullableFilter | DateTime | Null,
+      ?   createdAt?: DateTimeFilter | DateTime,
+      ?   tenant?: TenantScalarRelationFilter | TenantWhereInput
+        }
+      })
+
+Argument `where` of type WebhookEventWhereUniqueInput needs at least one of `id` or `tenantId_eventId` arguments. Available options are marked with ?.
+ ✓ test/integration/catalog.repository.integration.spec.ts > PrismaCatalogRepository - Integration Tests > Add-On Operations > should create add-on successfully 1531ms
+ × test/integration/webhook-repository.integration.spec.ts > PrismaWebhookRepository - Integration Tests > Status Transitions > should transition from PENDING to FAILED 974ms
+   → 
+Invalid `ctx.prisma.webhookEvent.findUnique()` invocation in
+/Users/mikeyoung/CODING/Elope/server/test/integration/webhook-repository.integration.spec.ts:279:49
+
+  276 });
+  277 
+  278 // Verify PENDING
+→ 279 let event = await ctx.prisma.webhookEvent.findUnique({
+        where: {
+          eventId: "evt_transition_pending_failed",
+      ?   id?: String,
+      ?   tenantId_eventId?: WebhookEventTenantId_eventIdCompoundUniqueInput,
+      ?   AND?: WebhookEventWhereInput | WebhookEventWhereInput[],
+      ?   OR?: WebhookEventWhereInput[],
+      ?   NOT?: WebhookEventWhereInput | WebhookEventWhereInput[],
+      ?   tenantId?: StringFilter | String,
+      ?   eventType?: StringFilter | String,
+      ?   rawPayload?: StringFilter | String,
+      ?   status?: EnumWebhookStatusFilter | WebhookStatus,
+      ?   attempts?: IntFilter | Int,
+      ?   lastError?: StringNullableFilter | String | Null,
+      ?   processedAt?: DateTimeNullableFilter | DateTime | Null,
+      ?   createdAt?: DateTimeFilter | DateTime,
+      ?   tenant?: TenantScalarRelationFilter | TenantWhereInput
+        }
+      })
+
+Argument `where` of type WebhookEventWhereUniqueInput needs at least one of `id` or `tenantId_eventId` arguments. Available options are marked with ?.
+[17:11:41] [32mINFO[39m: [36mWebhook event recorded[39m
+    [35mtenantId[39m: "cmhuomqfp0000p0e6vw767p9j"
+    [35meventId[39m: "evt_transition_pending_failed"
+    [35meventType[39m: "checkout.session.completed"
+[17:11:42] [32mINFO[39m: [36mWebhook event recorded[39m
+    [35mtenantId[39m: "cmhuomqfp0000p0e6vw767p9j"
+    [35meventId[39m: "evt_complex"
+    [35meventType[39m: "checkout.session.completed"
+ ✓ test/integration/catalog.repository.integration.spec.ts > PrismaCatalogRepository - Integration Tests > Add-On Operations > should throw error when creating add-on for non-existent package 1071ms
+ ✓ test/integration/cache-isolation.integration.spec.ts > Cache Tenant Isolation - Integration Tests > Cache Invalidation Scoping > should invalidate both all-packages and specific package caches on update 1874ms
+ ↓ test/integration/cache-isolation.integration.spec.ts > Cache Tenant Isolation - Integration Tests > Cache Invalidation Scoping > should invalidate old and new slug caches when slug is updated
+ × test/integration/webhook-repository.integration.spec.ts > PrismaWebhookRepository - Integration Tests > Data Integrity > should store complete raw payload 1009ms
+   → 
+Invalid `ctx.prisma.webhookEvent.findUnique()` invocation in
+/Users/mikeyoung/CODING/Elope/server/test/integration/webhook-repository.integration.spec.ts:322:51
+
+  319   rawPayload: JSON.stringify(complexPayload),
+  320 });
+  321 
+→ 322 const event = await ctx.prisma.webhookEvent.findUnique({
+        where: {
+          eventId: "evt_complex",
+      ?   id?: String,
+      ?   tenantId_eventId?: WebhookEventTenantId_eventIdCompoundUniqueInput,
+      ?   AND?: WebhookEventWhereInput | WebhookEventWhereInput[],
+      ?   OR?: WebhookEventWhereInput[],
+      ?   NOT?: WebhookEventWhereInput | WebhookEventWhereInput[],
+      ?   tenantId?: StringFilter | String,
+      ?   eventType?: StringFilter | String,
+      ?   rawPayload?: StringFilter | String,
+      ?   status?: EnumWebhookStatusFilter | WebhookStatus,
+      ?   attempts?: IntFilter | Int,
+      ?   lastError?: StringNullableFilter | String | Null,
+      ?   processedAt?: DateTimeNullableFilter | DateTime | Null,
+      ?   createdAt?: DateTimeFilter | DateTime,
+      ?   tenant?: TenantScalarRelationFilter | TenantWhereInput
+        }
+      })
+
+Argument `where` of type WebhookEventWhereUniqueInput needs at least one of `id` or `tenantId_eventId` arguments. Available options are marked with ?.
+[17:11:41] [32mINFO[39m: [36mCache flushed[39m
+[17:11:43] [32mINFO[39m: [36mWebhook event recorded[39m
+    [35mtenantId[39m: "cmhuomqfp0000p0e6vw767p9j"
+    [35meventId[39m: "evt_checkout.session.completed"
+    [35meventType[39m: "checkout.session.completed"
+[17:11:43] [32mINFO[39m: [36mWebhook event recorded[39m
+    [35mtenantId[39m: "cmhuomqfp0000p0e6vw767p9j"
+    [35meventId[39m: "evt_checkout.session.expired"
+    [35meventType[39m: "checkout.session.expired"
+[17:11:43] [32mINFO[39m: [36mWebhook event recorded[39m
+    [35mtenantId[39m: "cmhuomqfp0000p0e6vw767p9j"
+    [35meventId[39m: "evt_payment_intent.succeeded"
+    [35meventType[39m: "payment_intent.succeeded"
+[17:11:43] [32mINFO[39m: [36mWebhook event recorded[39m
+    [35mtenantId[39m: "cmhuomqfp0000p0e6vw767p9j"
+    [35meventId[39m: "evt_charge.refunded"
+    [35meventType[39m: "charge.refunded"
+ ✓ test/integration/cache-isolation.integration.spec.ts > Cache Tenant Isolation - Integration Tests > Cache Invalidation Scoping > should invalidate tenant cache on package deletion 1825ms
+[17:11:43] [32mINFO[39m: [36mCache flushed[39m
+ ✓ test/integration/webhook-repository.integration.spec.ts > PrismaWebhookRepository - Integration Tests > Data Integrity > should store different event types 1225ms
+ ✓ test/integration/catalog.repository.integration.spec.ts > PrismaCatalogRepository - Integration Tests > Add-On Operations > should get add-ons by package ID 1912ms
+[17:11:44] [32mINFO[39m: [36mWebhook event recorded[39m
+    [35mtenantId[39m: "cmhuomqfp0000p0e6vw767p9j"
+    [35meventId[39m: "evt_timestamp_test"
+    [35meventType[39m: "checkout.session.completed"
+ × test/integration/webhook-repository.integration.spec.ts > PrismaWebhookRepository - Integration Tests > Data Integrity > should maintain timestamps correctly 949ms
+   → 
+Invalid `ctx.prisma.webhookEvent.findUnique()` invocation in
+/Users/mikeyoung/CODING/Elope/server/test/integration/webhook-repository.integration.spec.ts:369:53
+
+  366   rawPayload: JSON.stringify({ data: 'timestamp' }),
+  367 });
+  368 
+→ 369 const initial = await ctx.prisma.webhookEvent.findUnique({
+        where: {
+          eventId: "evt_timestamp_test",
+      ?   id?: String,
+      ?   tenantId_eventId?: WebhookEventTenantId_eventIdCompoundUniqueInput,
+      ?   AND?: WebhookEventWhereInput | WebhookEventWhereInput[],
+      ?   OR?: WebhookEventWhereInput[],
+      ?   NOT?: WebhookEventWhereInput | WebhookEventWhereInput[],
+      ?   tenantId?: StringFilter | String,
+      ?   eventType?: StringFilter | String,
+      ?   rawPayload?: StringFilter | String,
+      ?   status?: EnumWebhookStatusFilter | WebhookStatus,
+      ?   attempts?: IntFilter | Int,
+      ?   lastError?: StringNullableFilter | String | Null,
+      ?   processedAt?: DateTimeNullableFilter | DateTime | Null,
+      ?   createdAt?: DateTimeFilter | DateTime,
+      ?   tenant?: TenantScalarRelationFilter | TenantWhereInput
+        }
+      })
+
+Argument `where` of type WebhookEventWhereUniqueInput needs at least one of `id` or `tenantId_eventId` arguments. Available options are marked with ?.
+[17:11:45] [32mINFO[39m: [36mWebhook event recorded[39m
+    [35mtenantId[39m: "cmhuomqfp0000p0e6vw767p9j"
+    [35meventId[39m: "evt_empty_payload"
+    [35meventType[39m: "test.event"
+ ✓ test/integration/catalog.repository.integration.spec.ts > PrismaCatalogRepository - Integration Tests > Add-On Operations > should return empty array for package with no add-ons 1091ms
+ × test/integration/webhook-repository.integration.spec.ts > PrismaWebhookRepository - Integration Tests > Edge Cases > should handle empty payload 1005ms
+   → 
+Invalid `ctx.prisma.webhookEvent.findUnique()` invocation in
+/Users/mikeyoung/CODING/Elope/server/test/integration/webhook-repository.integration.spec.ts:402:51
+
+  399   rawPayload: '',
+  400 });
+  401 
+→ 402 const event = await ctx.prisma.webhookEvent.findUnique({
+        where: {
+          eventId: "evt_empty_payload",
+      ?   id?: String,
+      ?   tenantId_eventId?: WebhookEventTenantId_eventIdCompoundUniqueInput,
+      ?   AND?: WebhookEventWhereInput | WebhookEventWhereInput[],
+      ?   OR?: WebhookEventWhereInput[],
+      ?   NOT?: WebhookEventWhereInput | WebhookEventWhereInput[],
+      ?   tenantId?: StringFilter | String,
+      ?   eventType?: StringFilter | String,
+      ?   rawPayload?: StringFilter | String,
+      ?   status?: EnumWebhookStatusFilter | WebhookStatus,
+      ?   attempts?: IntFilter | Int,
+      ?   lastError?: StringNullableFilter | String | Null,
+      ?   processedAt?: DateTimeNullableFilter | DateTime | Null,
+      ?   createdAt?: DateTimeFilter | DateTime,
+      ?   tenant?: TenantScalarRelationFilter | TenantWhereInput
+        }
+      })
+
+Argument `where` of type WebhookEventWhereUniqueInput needs at least one of `id` or `tenantId_eventId` arguments. Available options are marked with ?.
+[17:11:46] [32mINFO[39m: [36mWebhook event recorded[39m
+    [35mtenantId[39m: "cmhuomqfp0000p0e6vw767p9j"
+    [35meventId[39m: "evt_long_error"
+    [35meventType[39m: "test.event"
+[17:11:46] [31mERROR[39m: [36mWebhook marked as failed[39m
+    [35mtenantId[39m: "cmhuomqfp0000p0e6vw767p9j"
+    [35meventId[39m: "evt_long_error"
+    error: "Error: xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+[17:11:45] [32mINFO[39m: [36mCache flushed[39m
+ ✓ test/integration/cache-isolation.integration.spec.ts > Cache Tenant Isolation - Integration Tests > Concurrent Cache Operations Across Tenants > should handle concurrent reads from multiple tenants without leakage 2278ms
+ × test/integration/webhook-repository.integration.spec.ts > PrismaWebhookRepository - Integration Tests > Edge Cases > should handle very long error messages 1023ms
+   → 
+Invalid `ctx.prisma.webhookEvent.findUnique()` invocation in
+/Users/mikeyoung/CODING/Elope/server/test/integration/webhook-repository.integration.spec.ts:422:51
+
+  419 
+  420 await repository.markFailed(testTenantId, eventId, longError);
+  421 
+→ 422 const event = await ctx.prisma.webhookEvent.findUnique({
+        where: {
+          eventId: "evt_long_error",
+      ?   id?: String,
+      ?   tenantId_eventId?: WebhookEventTenantId_eventIdCompoundUniqueInput,
+      ?   AND?: WebhookEventWhereInput | WebhookEventWhereInput[],
+      ?   OR?: WebhookEventWhereInput[],
+      ?   NOT?: WebhookEventWhereInput | WebhookEventWhereInput[],
+      ?   tenantId?: StringFilter | String,
+      ?   eventType?: StringFilter | String,
+      ?   rawPayload?: StringFilter | String,
+      ?   status?: EnumWebhookStatusFilter | WebhookStatus,
+      ?   attempts?: IntFilter | Int,
+      ?   lastError?: StringNullableFilter | String | Null,
+      ?   processedAt?: DateTimeNullableFilter | DateTime | Null,
+      ?   createdAt?: DateTimeFilter | DateTime,
+      ?   tenant?: TenantScalarRelationFilter | TenantWhereInput
+        }
+      })
+
+Argument `where` of type WebhookEventWhereUniqueInput needs at least one of `id` or `tenantId_eventId` arguments. Available options are marked with ?.
+ ✓ test/integration/catalog.repository.integration.spec.ts > PrismaCatalogRepository - Integration Tests > Add-On Operations > should update add-on 1813ms
+[17:11:47] [32mINFO[39m: [36mWebhook event recorded[39m
+    [35mtenantId[39m: "cmhuomqfp0000p0e6vw767p9j"
+    [35meventId[39m: "evt_test_special-chars_123.456"
+    [35meventType[39m: "test.event"
+ × test/integration/webhook-repository.integration.spec.ts > PrismaWebhookRepository - Integration Tests > Edge Cases > should handle special characters in event IDs 1017ms
+   → 
+Invalid `ctx.prisma.webhookEvent.findUnique()` invocation in
+/Users/mikeyoung/CODING/Elope/server/test/integration/webhook-repository.integration.spec.ts:438:51
+
+  435   rawPayload: JSON.stringify({ data: 'special' }),
+  436 });
+  437 
+→ 438 const event = await ctx.prisma.webhookEvent.findUnique({
+        where: {
+          eventId: "evt_test_special-chars_123.456",
+      ?   id?: String,
+      ?   tenantId_eventId?: WebhookEventTenantId_eventIdCompoundUniqueInput,
+      ?   AND?: WebhookEventWhereInput | WebhookEventWhereInput[],
+      ?   OR?: WebhookEventWhereInput[],
+      ?   NOT?: WebhookEventWhereInput | WebhookEventWhereInput[],
+      ?   tenantId?: StringFilter | String,
+      ?   eventType?: StringFilter | String,
+      ?   rawPayload?: StringFilter | String,
+      ?   status?: EnumWebhookStatusFilter | WebhookStatus,
+      ?   attempts?: IntFilter | Int,
+      ?   lastError?: StringNullableFilter | String | Null,
+      ?   processedAt?: DateTimeNullableFilter | DateTime | Null,
+      ?   createdAt?: DateTimeFilter | DateTime,
+      ?   tenant?: TenantScalarRelationFilter | TenantWhereInput
+        }
+      })
+
+Argument `where` of type WebhookEventWhereUniqueInput needs at least one of `id` or `tenantId_eventId` arguments. Available options are marked with ?.
+ ✓ test/integration/cache-isolation.integration.spec.ts > Cache Tenant Isolation - Integration Tests > Concurrent Cache Operations Across Tenants > should handle concurrent updates from different tenants 2266ms
+ ✓ test/integration/catalog.repository.integration.spec.ts > PrismaCatalogRepository - Integration Tests > Add-On Operations > should throw error when updating non-existent add-on 1047ms
+[17:11:48] [32mINFO[39m: [36mCache flushed[39m
+ ✓ test/integration/cache-isolation.integration.spec.ts > Cache Tenant Isolation - Integration Tests > Concurrent Cache Operations Across Tenants > should handle cache hits and misses correctly under concurrent load 1741ms
+ ↓ test/integration/cache-isolation.integration.spec.ts > Cache Tenant Isolation - Integration Tests > Cache Security Validation > should never allow cache key without tenantId prefix
+ ↓ test/integration/cache-isolation.integration.spec.ts > Cache Tenant Isolation - Integration Tests > Cache Security Validation > should have cache key format: catalog:${tenantId}:resource
+ ↓ test/integration/cache-isolation.integration.spec.ts > Cache Tenant Isolation - Integration Tests > Cache Performance and Behavior > should improve response time on cache hit
+ ↓ test/integration/cache-isolation.integration.spec.ts > Cache Tenant Isolation - Integration Tests > Cache Performance and Behavior > should track cache statistics correctly
+[17:11:49] [32mINFO[39m: [36mCache flushed[39m
+[17:11:49] [32mINFO[39m: [36mCache flushed[39m
+ ✓ test/integration/catalog.repository.integration.spec.ts > PrismaCatalogRepository - Integration Tests > Add-On Operations > should delete add-on 1543ms
+ ✓ test/integration/catalog.repository.integration.spec.ts > PrismaCatalogRepository - Integration Tests > Add-On Operations > should throw error when deleting non-existent add-on 1014ms
+ ✓ test/integration/catalog.repository.integration.spec.ts > PrismaCatalogRepository - Integration Tests > Query Optimization > should fetch all packages with add-ons in single query 2398ms
+ ✓ test/integration/catalog.repository.integration.spec.ts > PrismaCatalogRepository - Integration Tests > Query Optimization > should efficiently query add-ons with package filter 2280ms
+ ✓ test/integration/catalog.repository.integration.spec.ts > PrismaCatalogRepository - Integration Tests > Query Optimization > should handle large number of add-ons efficiently 3969ms
+ ↓ test/integration/catalog.repository.integration.spec.ts > PrismaCatalogRepository - Integration Tests > Data Integrity > should maintain referential integrity on package deletion
+ ✓ test/integration/catalog.repository.integration.spec.ts > PrismaCatalogRepository - Integration Tests > Data Integrity > should store complete package data 1424ms
+ ✓ test/integration/catalog.repository.integration.spec.ts > PrismaCatalogRepository - Integration Tests > Data Integrity > should handle empty descriptions 1120ms
+ ✓ test/integration/catalog.repository.integration.spec.ts > PrismaCatalogRepository - Integration Tests > Data Integrity > should generate unique slugs for add-ons 2001ms
+ ✓ test/integration/catalog.repository.integration.spec.ts > PrismaCatalogRepository - Integration Tests > Edge Cases > should handle very long titles 1137ms
+ ✓ test/integration/catalog.repository.integration.spec.ts > PrismaCatalogRepository - Integration Tests > Edge Cases > should handle special characters in slug 1227ms
+ ✓ test/integration/catalog.repository.integration.spec.ts > PrismaCatalogRepository - Integration Tests > Edge Cases > should handle zero price 1451ms
+ ✓ test/integration/catalog.repository.integration.spec.ts > PrismaCatalogRepository - Integration Tests > Edge Cases > should handle very high prices 1086ms
+ ↓ test/integration/catalog.repository.integration.spec.ts > PrismaCatalogRepository - Integration Tests > Edge Cases > should handle concurrent package creation
+ ✓ test/integration/catalog.repository.integration.spec.ts > PrismaCatalogRepository - Integration Tests > Edge Cases > should handle package update race condition 1679ms
+ ✓ test/integration/catalog.repository.integration.spec.ts > PrismaCatalogRepository - Integration Tests > Ordering and Sorting > should return packages in creation order 1669ms
+ ✓ test/integration/catalog.repository.integration.spec.ts > PrismaCatalogRepository - Integration Tests > Ordering and Sorting > should return add-ons in creation order 1877ms
+
+⎯⎯⎯⎯⎯⎯ Failed Tests 28 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  test/integration/booking-race-conditions.spec.ts > Booking Race Conditions - Integration Tests > Transaction Isolation > should rollback on error with no partial data committed
+PrismaClientKnownRequestError: 
+Invalid `ctx.prisma.customer.findFirst()` invocation in
+/Users/mikeyoung/CODING/Elope/server/test/integration/booking-race-conditions.spec.ts:290:50
+
+  287   .toThrow();
+  288 
+  289 // Verify no customer was created (rollback worked)
+→ 290 const customer = await ctx.prisma.customer.findFirst(
+The column `Customer.tenantId` does not exist in the current database.
+ ❯ ei.handleRequestError src/generated/prisma/runtime/library.js:124:7268
+ ❯ ei.handleAndLogRequestError src/generated/prisma/runtime/library.js:124:6593
+ ❯ ei.request src/generated/prisma/runtime/library.js:124:6300
+ ❯ a src/generated/prisma/runtime/library.js:133:9551
+ ❯ test/integration/booking-race-conditions.spec.ts:290:24
+    288| 
+    289|       // Verify no customer was created (rollback worked)
+    290|       const customer = await ctx.prisma.customer.findFirst({
+       |                        ^
+    291|         where: { tenantId: testTenantId, email: 'rollback@example.com'…
+    292|       });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯
+Serialized Error: { code: 'P2022', meta: { modelName: 'Customer', column: 'Customer.tenantId' }, clientVersion: '6.18.0', batchRequestIdx: undefined }
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/28]⎯
+
+ FAIL  test/integration/booking-repository.integration.spec.ts > PrismaBookingRepository - Integration Tests > Data Integrity > should rollback on error (no partial data)
+PrismaClientKnownRequestError: 
+Invalid `ctx.prisma.customer.count()` invocation in
+/Users/mikeyoung/CODING/Elope/server/test/integration/booking-repository.integration.spec.ts:245:55
+
+  242 }
+  243 
+  244 // Verify NO partial data committed
+→ 245 const customerCount = await ctx.prisma.customer.count(
+The column `Customer.tenantId` does not exist in the current database.
+ ❯ ei.handleRequestError src/generated/prisma/runtime/library.js:124:7268
+ ❯ ei.handleAndLogRequestError src/generated/prisma/runtime/library.js:124:6593
+ ❯ ei.request src/generated/prisma/runtime/library.js:124:6300
+ ❯ a src/generated/prisma/runtime/library.js:133:9551
+ ❯ test/integration/booking-repository.integration.spec.ts:245:29
+    243| 
+    244|       // Verify NO partial data committed
+    245|       const customerCount = await ctx.prisma.customer.count({
+       |                             ^
+    246|         where: { tenantId: testTenantId, email: booking.email },
+    247|       });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯
+Serialized Error: { code: 'P2022', meta: { modelName: 'Customer', column: 'Customer.tenantId' }, clientVersion: '6.18.0', batchRequestIdx: undefined }
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/28]⎯
+
+ FAIL  test/integration/webhook-repository.integration.spec.ts > PrismaWebhookRepository - Integration Tests > Idempotency > should record webhook successfully
+PrismaClientValidationError: 
+Invalid `ctx.prisma.webhookEvent.findUnique()` invocation in
+/Users/mikeyoung/CODING/Elope/server/test/integration/webhook-repository.integration.spec.ts:48:51
+
+  45 
+  46 await repository.recordWebhook({ tenantId: testTenantId, ...webhook });
+  47 
+→ 48 const event = await ctx.prisma.webhookEvent.findUnique({
+       where: {
+         eventId: "evt_test_12345",
+     ?   id?: String,
+     ?   tenantId_eventId?: WebhookEventTenantId_eventIdCompoundUniqueInput,
+     ?   AND?: WebhookEventWhereInput | WebhookEventWhereInput[],
+     ?   OR?: WebhookEventWhereInput[],
+     ?   NOT?: WebhookEventWhereInput | WebhookEventWhereInput[],
+     ?   tenantId?: StringFilter | String,
+     ?   eventType?: StringFilter | String,
+     ?   rawPayload?: StringFilter | String,
+     ?   status?: EnumWebhookStatusFilter | WebhookStatus,
+     ?   attempts?: IntFilter | Int,
+     ?   lastError?: StringNullableFilter | String | Null,
+     ?   processedAt?: DateTimeNullableFilter | DateTime | Null,
+     ?   createdAt?: DateTimeFilter | DateTime,
+     ?   tenant?: TenantScalarRelationFilter | TenantWhereInput
+       }
+     })
+
+Argument `where` of type WebhookEventWhereUniqueInput needs at least one of `id` or `tenantId_eventId` arguments. Available options are marked with ?.
+ ❯ Nn src/generated/prisma/runtime/library.js:32:1363
+ ❯ ei.handleRequestError src/generated/prisma/runtime/library.js:124:6911
+ ❯ ei.handleAndLogRequestError src/generated/prisma/runtime/library.js:124:6593
+ ❯ ei.request src/generated/prisma/runtime/library.js:124:6300
+ ❯ a src/generated/prisma/runtime/library.js:133:9551
+ ❯ test/integration/webhook-repository.integration.spec.ts:48:21
+     46|       await repository.recordWebhook({ tenantId: testTenantId, ...webh…
+     47| 
+     48|       const event = await ctx.prisma.webhookEvent.findUnique({
+       |                     ^
+     49|         where: { eventId: 'evt_test_12345' },
+     50|       });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯
+Serialized Error: { clientVersion: '6.18.0' }
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/28]⎯
+
+ FAIL  test/integration/webhook-repository.integration.spec.ts > PrismaWebhookRepository - Integration Tests > Idempotency > should detect duplicate webhooks
+PrismaClientValidationError: 
+Invalid `ctx.prisma.webhookEvent.findUnique()` invocation in
+/Users/mikeyoung/CODING/Elope/server/test/integration/webhook-repository.integration.spec.ts:74:51
+
+  71 expect(isDupe).toBe(true);
+  72 
+  73 // Verify status updated to DUPLICATE
+→ 74 const event = await ctx.prisma.webhookEvent.findUnique({
+       where: {
+         eventId: "evt_test_duplicate",
+     ?   id?: String,
+     ?   tenantId_eventId?: WebhookEventTenantId_eventIdCompoundUniqueInput,
+     ?   AND?: WebhookEventWhereInput | WebhookEventWhereInput[],
+     ?   OR?: WebhookEventWhereInput[],
+     ?   NOT?: WebhookEventWhereInput | WebhookEventWhereInput[],
+     ?   tenantId?: StringFilter | String,
+     ?   eventType?: StringFilter | String,
+     ?   rawPayload?: StringFilter | String,
+     ?   status?: EnumWebhookStatusFilter | WebhookStatus,
+     ?   attempts?: IntFilter | Int,
+     ?   lastError?: StringNullableFilter | String | Null,
+     ?   processedAt?: DateTimeNullableFilter | DateTime | Null,
+     ?   createdAt?: DateTimeFilter | DateTime,
+     ?   tenant?: TenantScalarRelationFilter | TenantWhereInput
+       }
+     })
+
+Argument `where` of type WebhookEventWhereUniqueInput needs at least one of `id` or `tenantId_eventId` arguments. Available options are marked with ?.
+ ❯ Nn src/generated/prisma/runtime/library.js:32:1363
+ ❯ ei.handleRequestError src/generated/prisma/runtime/library.js:124:6911
+ ❯ ei.handleAndLogRequestError src/generated/prisma/runtime/library.js:124:6593
+ ❯ ei.request src/generated/prisma/runtime/library.js:124:6300
+ ❯ a src/generated/prisma/runtime/library.js:133:9551
+ ❯ test/integration/webhook-repository.integration.spec.ts:74:21
+     72| 
+     73|       // Verify status updated to DUPLICATE
+     74|       const event = await ctx.prisma.webhookEvent.findUnique({
+       |                     ^
+     75|         where: { eventId: 'evt_test_duplicate' },
+     76|       });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯
+Serialized Error: { clientVersion: '6.18.0' }
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/28]⎯
+
+ FAIL  test/integration/webhook-repository.integration.spec.ts > PrismaWebhookRepository - Integration Tests > Idempotency > should handle concurrent duplicate checks
+PrismaClientValidationError: 
+Invalid `ctx.prisma.webhookEvent.findUnique()` invocation in
+/Users/mikeyoung/CODING/Elope/server/test/integration/webhook-repository.integration.spec.ts:107:51
+
+  104 expect(checks.every(c => c === true)).toBe(true);
+  105 
+  106 // Verify final state
+→ 107 const event = await ctx.prisma.webhookEvent.findUnique({
+        where: {
+          eventId: "evt_concurrent_789",
+      ?   id?: String,
+      ?   tenantId_eventId?: WebhookEventTenantId_eventIdCompoundUniqueInput,
+      ?   AND?: WebhookEventWhereInput | WebhookEventWhereInput[],
+      ?   OR?: WebhookEventWhereInput[],
+      ?   NOT?: WebhookEventWhereInput | WebhookEventWhereInput[],
+      ?   tenantId?: StringFilter | String,
+      ?   eventType?: StringFilter | String,
+      ?   rawPayload?: StringFilter | String,
+      ?   status?: EnumWebhookStatusFilter | WebhookStatus,
+      ?   attempts?: IntFilter | Int,
+      ?   lastError?: StringNullableFilter | String | Null,
+      ?   processedAt?: DateTimeNullableFilter | DateTime | Null,
+      ?   createdAt?: DateTimeFilter | DateTime,
+      ?   tenant?: TenantScalarRelationFilter | TenantWhereInput
+        }
+      })
+
+Argument `where` of type WebhookEventWhereUniqueInput needs at least one of `id` or `tenantId_eventId` arguments. Available options are marked with ?.
+ ❯ Nn src/generated/prisma/runtime/library.js:32:1363
+ ❯ ei.handleRequestError src/generated/prisma/runtime/library.js:124:6911
+ ❯ ei.handleAndLogRequestError src/generated/prisma/runtime/library.js:124:6593
+ ❯ ei.request src/generated/prisma/runtime/library.js:124:6300
+ ❯ a src/generated/prisma/runtime/library.js:133:9551
+ ❯ test/integration/webhook-repository.integration.spec.ts:107:21
+    105| 
+    106|       // Verify final state
+    107|       const event = await ctx.prisma.webhookEvent.findUnique({
+       |                     ^
+    108|         where: { eventId: 'evt_concurrent_789' },
+    109|       });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯
+Serialized Error: { clientVersion: '6.18.0' }
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/28]⎯
+
+ FAIL  test/integration/webhook-repository.integration.spec.ts > PrismaWebhookRepository - Integration Tests > Idempotency > should not mark already processed webhook as duplicate
+PrismaClientValidationError: 
+Invalid `ctx.prisma.webhookEvent.findUnique()` invocation in
+/Users/mikeyoung/CODING/Elope/server/test/integration/webhook-repository.integration.spec.ts:130:51
+
+  127 expect(isDupe).toBe(true);
+  128 
+  129 // Verify status remains PROCESSED
+→ 130 const event = await ctx.prisma.webhookEvent.findUnique({
+        where: {
+          eventId: "evt_already_processed",
+      ?   id?: String,
+      ?   tenantId_eventId?: WebhookEventTenantId_eventIdCompoundUniqueInput,
+      ?   AND?: WebhookEventWhereInput | WebhookEventWhereInput[],
+      ?   OR?: WebhookEventWhereInput[],
+      ?   NOT?: WebhookEventWhereInput | WebhookEventWhereInput[],
+      ?   tenantId?: StringFilter | String,
+      ?   eventType?: StringFilter | String,
+      ?   rawPayload?: StringFilter | String,
+      ?   status?: EnumWebhookStatusFilter | WebhookStatus,
+      ?   attempts?: IntFilter | Int,
+      ?   lastError?: StringNullableFilter | String | Null,
+      ?   processedAt?: DateTimeNullableFilter | DateTime | Null,
+      ?   createdAt?: DateTimeFilter | DateTime,
+      ?   tenant?: TenantScalarRelationFilter | TenantWhereInput
+        }
+      })
+
+Argument `where` of type WebhookEventWhereUniqueInput needs at least one of `id` or `tenantId_eventId` arguments. Available options are marked with ?.
+ ❯ Nn src/generated/prisma/runtime/library.js:32:1363
+ ❯ ei.handleRequestError src/generated/prisma/runtime/library.js:124:6911
+ ❯ ei.handleAndLogRequestError src/generated/prisma/runtime/library.js:124:6593
+ ❯ ei.request src/generated/prisma/runtime/library.js:124:6300
+ ❯ a src/generated/prisma/runtime/library.js:133:9551
+ ❯ test/integration/webhook-repository.integration.spec.ts:130:21
+    128| 
+    129|       // Verify status remains PROCESSED
+    130|       const event = await ctx.prisma.webhookEvent.findUnique({
+       |                     ^
+    131|         where: { eventId: 'evt_already_processed' },
+    132|       });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯
+Serialized Error: { clientVersion: '6.18.0' }
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/28]⎯
+
+ FAIL  test/integration/webhook-repository.integration.spec.ts > PrismaWebhookRepository - Integration Tests > Status Transitions > should mark webhook as PROCESSED
+PrismaClientValidationError: 
+Invalid `ctx.prisma.webhookEvent.findUnique()` invocation in
+/Users/mikeyoung/CODING/Elope/server/test/integration/webhook-repository.integration.spec.ts:176:51
+
+  173 
+  174 await repository.markProcessed(testTenantId, 'evt_process_456');
+  175 
+→ 176 const event = await ctx.prisma.webhookEvent.findUnique({
+        where: {
+          eventId: "evt_process_456",
+      ?   id?: String,
+      ?   tenantId_eventId?: WebhookEventTenantId_eventIdCompoundUniqueInput,
+      ?   AND?: WebhookEventWhereInput | WebhookEventWhereInput[],
+      ?   OR?: WebhookEventWhereInput[],
+      ?   NOT?: WebhookEventWhereInput | WebhookEventWhereInput[],
+      ?   tenantId?: StringFilter | String,
+      ?   eventType?: StringFilter | String,
+      ?   rawPayload?: StringFilter | String,
+      ?   status?: EnumWebhookStatusFilter | WebhookStatus,
+      ?   attempts?: IntFilter | Int,
+      ?   lastError?: StringNullableFilter | String | Null,
+      ?   processedAt?: DateTimeNullableFilter | DateTime | Null,
+      ?   createdAt?: DateTimeFilter | DateTime,
+      ?   tenant?: TenantScalarRelationFilter | TenantWhereInput
+        }
+      })
+
+Argument `where` of type WebhookEventWhereUniqueInput needs at least one of `id` or `tenantId_eventId` arguments. Available options are marked with ?.
+ ❯ Nn src/generated/prisma/runtime/library.js:32:1363
+ ❯ ei.handleRequestError src/generated/prisma/runtime/library.js:124:6911
+ ❯ ei.handleAndLogRequestError src/generated/prisma/runtime/library.js:124:6593
+ ❯ ei.request src/generated/prisma/runtime/library.js:124:6300
+ ❯ a src/generated/prisma/runtime/library.js:133:9551
+ ❯ test/integration/webhook-repository.integration.spec.ts:176:21
+    174|       await repository.markProcessed(testTenantId, 'evt_process_456');
+    175| 
+    176|       const event = await ctx.prisma.webhookEvent.findUnique({
+       |                     ^
+    177|         where: { eventId: 'evt_process_456' },
+    178|       });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯
+Serialized Error: { clientVersion: '6.18.0' }
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[7/28]⎯
+
+ FAIL  test/integration/webhook-repository.integration.spec.ts > PrismaWebhookRepository - Integration Tests > Status Transitions > should mark webhook as FAILED with error message
+PrismaClientValidationError: 
+Invalid `ctx.prisma.webhookEvent.findUnique()` invocation in
+/Users/mikeyoung/CODING/Elope/server/test/integration/webhook-repository.integration.spec.ts:196:51
+
+  193 const errorMsg = 'Database connection timeout';
+  194 await repository.markFailed(testTenantId, 'evt_fail_999', errorMsg);
+  195 
+→ 196 const event = await ctx.prisma.webhookEvent.findUnique({
+        where: {
+          eventId: "evt_fail_999",
+      ?   id?: String,
+      ?   tenantId_eventId?: WebhookEventTenantId_eventIdCompoundUniqueInput,
+      ?   AND?: WebhookEventWhereInput | WebhookEventWhereInput[],
+      ?   OR?: WebhookEventWhereInput[],
+      ?   NOT?: WebhookEventWhereInput | WebhookEventWhereInput[],
+      ?   tenantId?: StringFilter | String,
+      ?   eventType?: StringFilter | String,
+      ?   rawPayload?: StringFilter | String,
+      ?   status?: EnumWebhookStatusFilter | WebhookStatus,
+      ?   attempts?: IntFilter | Int,
+      ?   lastError?: StringNullableFilter | String | Null,
+      ?   processedAt?: DateTimeNullableFilter | DateTime | Null,
+      ?   createdAt?: DateTimeFilter | DateTime,
+      ?   tenant?: TenantScalarRelationFilter | TenantWhereInput
+        }
+      })
+
+Argument `where` of type WebhookEventWhereUniqueInput needs at least one of `id` or `tenantId_eventId` arguments. Available options are marked with ?.
+ ❯ Nn src/generated/prisma/runtime/library.js:32:1363
+ ❯ ei.handleRequestError src/generated/prisma/runtime/library.js:124:6911
+ ❯ ei.handleAndLogRequestError src/generated/prisma/runtime/library.js:124:6593
+ ❯ ei.request src/generated/prisma/runtime/library.js:124:6300
+ ❯ a src/generated/prisma/runtime/library.js:133:9551
+ ❯ test/integration/webhook-repository.integration.spec.ts:196:21
+    194|       await repository.markFailed(testTenantId, 'evt_fail_999', errorM…
+    195| 
+    196|       const event = await ctx.prisma.webhookEvent.findUnique({
+       |                     ^
+    197|         where: { eventId: 'evt_fail_999' },
+    198|       });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯
+Serialized Error: { clientVersion: '6.18.0' }
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[8/28]⎯
+
+ FAIL  test/integration/webhook-repository.integration.spec.ts > PrismaWebhookRepository - Integration Tests > Status Transitions > should increment attempts on failure
+PrismaClientValidationError: 
+Invalid `ctx.prisma.webhookEvent.findUnique()` invocation in
+/Users/mikeyoung/CODING/Elope/server/test/integration/webhook-repository.integration.spec.ts:215:53
+
+  212 });
+  213 
+  214 // Get initial attempts
+→ 215 const initial = await ctx.prisma.webhookEvent.findUnique({
+        where: {
+          eventId: "evt_retry_test",
+      ?   id?: String,
+      ?   tenantId_eventId?: WebhookEventTenantId_eventIdCompoundUniqueInput,
+      ?   AND?: WebhookEventWhereInput | WebhookEventWhereInput[],
+      ?   OR?: WebhookEventWhereInput[],
+      ?   NOT?: WebhookEventWhereInput | WebhookEventWhereInput[],
+      ?   tenantId?: StringFilter | String,
+      ?   eventType?: StringFilter | String,
+      ?   rawPayload?: StringFilter | String,
+      ?   status?: EnumWebhookStatusFilter | WebhookStatus,
+      ?   attempts?: IntFilter | Int,
+      ?   lastError?: StringNullableFilter | String | Null,
+      ?   processedAt?: DateTimeNullableFilter | DateTime | Null,
+      ?   createdAt?: DateTimeFilter | DateTime,
+      ?   tenant?: TenantScalarRelationFilter | TenantWhereInput
+        }
+      })
+
+Argument `where` of type WebhookEventWhereUniqueInput needs at least one of `id` or `tenantId_eventId` arguments. Available options are marked with ?.
+ ❯ Nn src/generated/prisma/runtime/library.js:32:1363
+ ❯ ei.handleRequestError src/generated/prisma/runtime/library.js:124:6911
+ ❯ ei.handleAndLogRequestError src/generated/prisma/runtime/library.js:124:6593
+ ❯ ei.request src/generated/prisma/runtime/library.js:124:6300
+ ❯ a src/generated/prisma/runtime/library.js:133:9551
+ ❯ test/integration/webhook-repository.integration.spec.ts:215:23
+    213| 
+    214|       // Get initial attempts
+    215|       const initial = await ctx.prisma.webhookEvent.findUnique({
+       |                       ^
+    216|         where: { eventId: 'evt_retry_test' },
+    217|       });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯
+Serialized Error: { clientVersion: '6.18.0' }
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[9/28]⎯
+
+ FAIL  test/integration/webhook-repository.integration.spec.ts > PrismaWebhookRepository - Integration Tests > Status Transitions > should transition from PENDING to PROCESSED
+PrismaClientValidationError: 
+Invalid `ctx.prisma.webhookEvent.findUnique()` invocation in
+/Users/mikeyoung/CODING/Elope/server/test/integration/webhook-repository.integration.spec.ts:252:49
+
+  249 });
+  250 
+  251 // Verify PENDING
+→ 252 let event = await ctx.prisma.webhookEvent.findUnique({
+        where: {
+          eventId: "evt_transition_pending_processed",
+      ?   id?: String,
+      ?   tenantId_eventId?: WebhookEventTenantId_eventIdCompoundUniqueInput,
+      ?   AND?: WebhookEventWhereInput | WebhookEventWhereInput[],
+      ?   OR?: WebhookEventWhereInput[],
+      ?   NOT?: WebhookEventWhereInput | WebhookEventWhereInput[],
+      ?   tenantId?: StringFilter | String,
+      ?   eventType?: StringFilter | String,
+      ?   rawPayload?: StringFilter | String,
+      ?   status?: EnumWebhookStatusFilter | WebhookStatus,
+      ?   attempts?: IntFilter | Int,
+      ?   lastError?: StringNullableFilter | String | Null,
+      ?   processedAt?: DateTimeNullableFilter | DateTime | Null,
+      ?   createdAt?: DateTimeFilter | DateTime,
+      ?   tenant?: TenantScalarRelationFilter | TenantWhereInput
+        }
+      })
+
+Argument `where` of type WebhookEventWhereUniqueInput needs at least one of `id` or `tenantId_eventId` arguments. Available options are marked with ?.
+ ❯ Nn src/generated/prisma/runtime/library.js:32:1363
+ ❯ ei.handleRequestError src/generated/prisma/runtime/library.js:124:6911
+ ❯ ei.handleAndLogRequestError src/generated/prisma/runtime/library.js:124:6593
+ ❯ ei.request src/generated/prisma/runtime/library.js:124:6300
+ ❯ a src/generated/prisma/runtime/library.js:133:9551
+ ❯ test/integration/webhook-repository.integration.spec.ts:252:19
+    250| 
+    251|       // Verify PENDING
+    252|       let event = await ctx.prisma.webhookEvent.findUnique({
+       |                   ^
+    253|         where: { eventId },
+    254|       });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯
+Serialized Error: { clientVersion: '6.18.0' }
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[10/28]⎯
+
+ FAIL  test/integration/webhook-repository.integration.spec.ts > PrismaWebhookRepository - Integration Tests > Status Transitions > should transition from PENDING to FAILED
+PrismaClientValidationError: 
+Invalid `ctx.prisma.webhookEvent.findUnique()` invocation in
+/Users/mikeyoung/CODING/Elope/server/test/integration/webhook-repository.integration.spec.ts:279:49
+
+  276 });
+  277 
+  278 // Verify PENDING
+→ 279 let event = await ctx.prisma.webhookEvent.findUnique({
+        where: {
+          eventId: "evt_transition_pending_failed",
+      ?   id?: String,
+      ?   tenantId_eventId?: WebhookEventTenantId_eventIdCompoundUniqueInput,
+      ?   AND?: WebhookEventWhereInput | WebhookEventWhereInput[],
+      ?   OR?: WebhookEventWhereInput[],
+      ?   NOT?: WebhookEventWhereInput | WebhookEventWhereInput[],
+      ?   tenantId?: StringFilter | String,
+      ?   eventType?: StringFilter | String,
+      ?   rawPayload?: StringFilter | String,
+      ?   status?: EnumWebhookStatusFilter | WebhookStatus,
+      ?   attempts?: IntFilter | Int,
+      ?   lastError?: StringNullableFilter | String | Null,
+      ?   processedAt?: DateTimeNullableFilter | DateTime | Null,
+      ?   createdAt?: DateTimeFilter | DateTime,
+      ?   tenant?: TenantScalarRelationFilter | TenantWhereInput
+        }
+      })
+
+Argument `where` of type WebhookEventWhereUniqueInput needs at least one of `id` or `tenantId_eventId` arguments. Available options are marked with ?.
+ ❯ Nn src/generated/prisma/runtime/library.js:32:1363
+ ❯ ei.handleRequestError src/generated/prisma/runtime/library.js:124:6911
+ ❯ ei.handleAndLogRequestError src/generated/prisma/runtime/library.js:124:6593
+ ❯ ei.request src/generated/prisma/runtime/library.js:124:6300
+ ❯ a src/generated/prisma/runtime/library.js:133:9551
+ ❯ test/integration/webhook-repository.integration.spec.ts:279:19
+    277| 
+    278|       // Verify PENDING
+    279|       let event = await ctx.prisma.webhookEvent.findUnique({
+       |                   ^
+    280|         where: { eventId },
+    281|       });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯
+Serialized Error: { clientVersion: '6.18.0' }
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[11/28]⎯
+
+ FAIL  test/integration/webhook-repository.integration.spec.ts > PrismaWebhookRepository - Integration Tests > Data Integrity > should store complete raw payload
+PrismaClientValidationError: 
+Invalid `ctx.prisma.webhookEvent.findUnique()` invocation in
+/Users/mikeyoung/CODING/Elope/server/test/integration/webhook-repository.integration.spec.ts:322:51
+
+  319   rawPayload: JSON.stringify(complexPayload),
+  320 });
+  321 
+→ 322 const event = await ctx.prisma.webhookEvent.findUnique({
+        where: {
+          eventId: "evt_complex",
+      ?   id?: String,
+      ?   tenantId_eventId?: WebhookEventTenantId_eventIdCompoundUniqueInput,
+      ?   AND?: WebhookEventWhereInput | WebhookEventWhereInput[],
+      ?   OR?: WebhookEventWhereInput[],
+      ?   NOT?: WebhookEventWhereInput | WebhookEventWhereInput[],
+      ?   tenantId?: StringFilter | String,
+      ?   eventType?: StringFilter | String,
+      ?   rawPayload?: StringFilter | String,
+      ?   status?: EnumWebhookStatusFilter | WebhookStatus,
+      ?   attempts?: IntFilter | Int,
+      ?   lastError?: StringNullableFilter | String | Null,
+      ?   processedAt?: DateTimeNullableFilter | DateTime | Null,
+      ?   createdAt?: DateTimeFilter | DateTime,
+      ?   tenant?: TenantScalarRelationFilter | TenantWhereInput
+        }
+      })
+
+Argument `where` of type WebhookEventWhereUniqueInput needs at least one of `id` or `tenantId_eventId` arguments. Available options are marked with ?.
+ ❯ Nn src/generated/prisma/runtime/library.js:32:1363
+ ❯ ei.handleRequestError src/generated/prisma/runtime/library.js:124:6911
+ ❯ ei.handleAndLogRequestError src/generated/prisma/runtime/library.js:124:6593
+ ❯ ei.request src/generated/prisma/runtime/library.js:124:6300
+ ❯ a src/generated/prisma/runtime/library.js:133:9551
+ ❯ test/integration/webhook-repository.integration.spec.ts:322:21
+    320|       });
+    321| 
+    322|       const event = await ctx.prisma.webhookEvent.findUnique({
+       |                     ^
+    323|         where: { eventId: 'evt_complex' },
+    324|       });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯
+Serialized Error: { clientVersion: '6.18.0' }
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[12/28]⎯
+
+ FAIL  test/integration/webhook-repository.integration.spec.ts > PrismaWebhookRepository - Integration Tests > Data Integrity > should maintain timestamps correctly
+PrismaClientValidationError: 
+Invalid `ctx.prisma.webhookEvent.findUnique()` invocation in
+/Users/mikeyoung/CODING/Elope/server/test/integration/webhook-repository.integration.spec.ts:369:53
+
+  366   rawPayload: JSON.stringify({ data: 'timestamp' }),
+  367 });
+  368 
+→ 369 const initial = await ctx.prisma.webhookEvent.findUnique({
+        where: {
+          eventId: "evt_timestamp_test",
+      ?   id?: String,
+      ?   tenantId_eventId?: WebhookEventTenantId_eventIdCompoundUniqueInput,
+      ?   AND?: WebhookEventWhereInput | WebhookEventWhereInput[],
+      ?   OR?: WebhookEventWhereInput[],
+      ?   NOT?: WebhookEventWhereInput | WebhookEventWhereInput[],
+      ?   tenantId?: StringFilter | String,
+      ?   eventType?: StringFilter | String,
+      ?   rawPayload?: StringFilter | String,
+      ?   status?: EnumWebhookStatusFilter | WebhookStatus,
+      ?   attempts?: IntFilter | Int,
+      ?   lastError?: StringNullableFilter | String | Null,
+      ?   processedAt?: DateTimeNullableFilter | DateTime | Null,
+      ?   createdAt?: DateTimeFilter | DateTime,
+      ?   tenant?: TenantScalarRelationFilter | TenantWhereInput
+        }
+      })
+
+Argument `where` of type WebhookEventWhereUniqueInput needs at least one of `id` or `tenantId_eventId` arguments. Available options are marked with ?.
+ ❯ Nn src/generated/prisma/runtime/library.js:32:1363
+ ❯ ei.handleRequestError src/generated/prisma/runtime/library.js:124:6911
+ ❯ ei.handleAndLogRequestError src/generated/prisma/runtime/library.js:124:6593
+ ❯ ei.request src/generated/prisma/runtime/library.js:124:6300
+ ❯ a src/generated/prisma/runtime/library.js:133:9551
+ ❯ test/integration/webhook-repository.integration.spec.ts:369:23
+    367|       });
+    368| 
+    369|       const initial = await ctx.prisma.webhookEvent.findUnique({
+       |                       ^
+    370|         where: { eventId },
+    371|       });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯
+Serialized Error: { clientVersion: '6.18.0' }
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[13/28]⎯
+
+ FAIL  test/integration/webhook-repository.integration.spec.ts > PrismaWebhookRepository - Integration Tests > Edge Cases > should handle empty payload
+PrismaClientValidationError: 
+Invalid `ctx.prisma.webhookEvent.findUnique()` invocation in
+/Users/mikeyoung/CODING/Elope/server/test/integration/webhook-repository.integration.spec.ts:402:51
+
+  399   rawPayload: '',
+  400 });
+  401 
+→ 402 const event = await ctx.prisma.webhookEvent.findUnique({
+        where: {
+          eventId: "evt_empty_payload",
+      ?   id?: String,
+      ?   tenantId_eventId?: WebhookEventTenantId_eventIdCompoundUniqueInput,
+      ?   AND?: WebhookEventWhereInput | WebhookEventWhereInput[],
+      ?   OR?: WebhookEventWhereInput[],
+      ?   NOT?: WebhookEventWhereInput | WebhookEventWhereInput[],
+      ?   tenantId?: StringFilter | String,
+      ?   eventType?: StringFilter | String,
+      ?   rawPayload?: StringFilter | String,
+      ?   status?: EnumWebhookStatusFilter | WebhookStatus,
+      ?   attempts?: IntFilter | Int,
+      ?   lastError?: StringNullableFilter | String | Null,
+      ?   processedAt?: DateTimeNullableFilter | DateTime | Null,
+      ?   createdAt?: DateTimeFilter | DateTime,
+      ?   tenant?: TenantScalarRelationFilter | TenantWhereInput
+        }
+      })
+
+Argument `where` of type WebhookEventWhereUniqueInput needs at least one of `id` or `tenantId_eventId` arguments. Available options are marked with ?.
+ ❯ Nn src/generated/prisma/runtime/library.js:32:1363
+ ❯ ei.handleRequestError src/generated/prisma/runtime/library.js:124:6911
+ ❯ ei.handleAndLogRequestError src/generated/prisma/runtime/library.js:124:6593
+ ❯ ei.request src/generated/prisma/runtime/library.js:124:6300
+ ❯ a src/generated/prisma/runtime/library.js:133:9551
+ ❯ test/integration/webhook-repository.integration.spec.ts:402:21
+    400|       });
+    401| 
+    402|       const event = await ctx.prisma.webhookEvent.findUnique({
+       |                     ^
+    403|         where: { eventId: 'evt_empty_payload' },
+    404|       });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯
+Serialized Error: { clientVersion: '6.18.0' }
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[14/28]⎯
+
+ FAIL  test/integration/webhook-repository.integration.spec.ts > PrismaWebhookRepository - Integration Tests > Edge Cases > should handle very long error messages
+PrismaClientValidationError: 
+Invalid `ctx.prisma.webhookEvent.findUnique()` invocation in
+/Users/mikeyoung/CODING/Elope/server/test/integration/webhook-repository.integration.spec.ts:422:51
+
+  419 
+  420 await repository.markFailed(testTenantId, eventId, longError);
+  421 
+→ 422 const event = await ctx.prisma.webhookEvent.findUnique({
+        where: {
+          eventId: "evt_long_error",
+      ?   id?: String,
+      ?   tenantId_eventId?: WebhookEventTenantId_eventIdCompoundUniqueInput,
+      ?   AND?: WebhookEventWhereInput | WebhookEventWhereInput[],
+      ?   OR?: WebhookEventWhereInput[],
+      ?   NOT?: WebhookEventWhereInput | WebhookEventWhereInput[],
+      ?   tenantId?: StringFilter | String,
+      ?   eventType?: StringFilter | String,
+      ?   rawPayload?: StringFilter | String,
+      ?   status?: EnumWebhookStatusFilter | WebhookStatus,
+      ?   attempts?: IntFilter | Int,
+      ?   lastError?: StringNullableFilter | String | Null,
+      ?   processedAt?: DateTimeNullableFilter | DateTime | Null,
+      ?   createdAt?: DateTimeFilter | DateTime,
+      ?   tenant?: TenantScalarRelationFilter | TenantWhereInput
+        }
+      })
+
+Argument `where` of type WebhookEventWhereUniqueInput needs at least one of `id` or `tenantId_eventId` arguments. Available options are marked with ?.
+ ❯ Nn src/generated/prisma/runtime/library.js:32:1363
+ ❯ ei.handleRequestError src/generated/prisma/runtime/library.js:124:6911
+ ❯ ei.handleAndLogRequestError src/generated/prisma/runtime/library.js:124:6593
+ ❯ ei.request src/generated/prisma/runtime/library.js:124:6300
+ ❯ a src/generated/prisma/runtime/library.js:133:9551
+ ❯ test/integration/webhook-repository.integration.spec.ts:422:21
+    420|       await repository.markFailed(testTenantId, eventId, longError);
+    421| 
+    422|       const event = await ctx.prisma.webhookEvent.findUnique({
+       |                     ^
+    423|         where: { eventId },
+    424|       });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯
+Serialized Error: { clientVersion: '6.18.0' }
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[15/28]⎯
+
+ FAIL  test/integration/webhook-repository.integration.spec.ts > PrismaWebhookRepository - Integration Tests > Edge Cases > should handle special characters in event IDs
+PrismaClientValidationError: 
+Invalid `ctx.prisma.webhookEvent.findUnique()` invocation in
+/Users/mikeyoung/CODING/Elope/server/test/integration/webhook-repository.integration.spec.ts:438:51
+
+  435   rawPayload: JSON.stringify({ data: 'special' }),
+  436 });
+  437 
+→ 438 const event = await ctx.prisma.webhookEvent.findUnique({
+        where: {
+          eventId: "evt_test_special-chars_123.456",
+      ?   id?: String,
+      ?   tenantId_eventId?: WebhookEventTenantId_eventIdCompoundUniqueInput,
+      ?   AND?: WebhookEventWhereInput | WebhookEventWhereInput[],
+      ?   OR?: WebhookEventWhereInput[],
+      ?   NOT?: WebhookEventWhereInput | WebhookEventWhereInput[],
+      ?   tenantId?: StringFilter | String,
+      ?   eventType?: StringFilter | String,
+      ?   rawPayload?: StringFilter | String,
+      ?   status?: EnumWebhookStatusFilter | WebhookStatus,
+      ?   attempts?: IntFilter | Int,
+      ?   lastError?: StringNullableFilter | String | Null,
+      ?   processedAt?: DateTimeNullableFilter | DateTime | Null,
+      ?   createdAt?: DateTimeFilter | DateTime,
+      ?   tenant?: TenantScalarRelationFilter | TenantWhereInput
+        }
+      })
+
+Argument `where` of type WebhookEventWhereUniqueInput needs at least one of `id` or `tenantId_eventId` arguments. Available options are marked with ?.
+ ❯ Nn src/generated/prisma/runtime/library.js:32:1363
+ ❯ ei.handleRequestError src/generated/prisma/runtime/library.js:124:6911
+ ❯ ei.handleAndLogRequestError src/generated/prisma/runtime/library.js:124:6593
+ ❯ ei.request src/generated/prisma/runtime/library.js:124:6300
+ ❯ a src/generated/prisma/runtime/library.js:133:9551
+ ❯ test/integration/webhook-repository.integration.spec.ts:438:21
+    436|       });
+    437| 
+    438|       const event = await ctx.prisma.webhookEvent.findUnique({
+       |                     ^
+    439|         where: { eventId: specialEventId },
+    440|       });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯
+Serialized Error: { clientVersion: '6.18.0' }
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[16/28]⎯
+
+ FAIL  test/middleware/error-handler.spec.ts > Error Handler Middleware > Domain Error Mapping > should map NotFoundError to 404
+AssertionError: expected "spy" to be called with arguments: [ { error: 'NOT_FOUND', …(1) } ][90m
+
+Received: 
+
+[1m  1st spy call:
+
+[22m[2m  [[22m
+[2m    {[22m
+[2m      "error": "NOT_FOUND",[22m
+[2m      "message": "Resource not found",[22m
+[31m+     "requestId": undefined,[90m
+[31m+     "status": "error",[90m
+[31m+     "statusCode": 404,[90m
+[2m    },[22m
+[2m  ][22m
+[39m[90m
+
+Number of calls: [1m1[22m
+[39m
+ ❯ test/middleware/error-handler.spec.ts:49:24
+     47| 
+     48|       expect(res.status).toHaveBeenCalledWith(404);
+     49|       expect(res.json).toHaveBeenCalledWith({
+       |                        ^
+     50|         error: 'NOT_FOUND',
+     51|         message: 'Resource not found',
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[17/28]⎯
+
+ FAIL  test/middleware/error-handler.spec.ts > Error Handler Middleware > Domain Error Mapping > should map ValidationError to 400
+AssertionError: expected "spy" to be called with arguments: [ { error: 'VALIDATION_ERROR', …(1) } ][90m
+
+Received: 
+
+[1m  1st spy call:
+
+[22m[2m  [[22m
+[2m    {[22m
+[2m      "error": "VALIDATION_ERROR",[22m
+[2m      "message": "Invalid input",[22m
+[31m+     "requestId": undefined,[90m
+[31m+     "status": "error",[90m
+[31m+     "statusCode": 400,[90m
+[2m    },[22m
+[2m  ][22m
+[39m[90m
+
+Number of calls: [1m1[22m
+[39m
+ ❯ test/middleware/error-handler.spec.ts:61:24
+     59| 
+     60|       expect(res.status).toHaveBeenCalledWith(400);
+     61|       expect(res.json).toHaveBeenCalledWith({
+       |                        ^
+     62|         error: 'VALIDATION_ERROR',
+     63|         message: 'Invalid input',
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[18/28]⎯
+
+ FAIL  test/middleware/error-handler.spec.ts > Error Handler Middleware > Domain Error Mapping > should map UnauthorizedError to 401
+AssertionError: expected "spy" to be called with arguments: [ { error: 'UNAUTHORIZED', …(1) } ][90m
+
+Received: 
+
+[1m  1st spy call:
+
+[22m[2m  [[22m
+[2m    {[22m
+[2m      "error": "UNAUTHORIZED",[22m
+[2m      "message": "Invalid token",[22m
+[31m+     "requestId": undefined,[90m
+[31m+     "status": "error",[90m
+[31m+     "statusCode": 401,[90m
+[2m    },[22m
+[2m  ][22m
+[39m[90m
+
+Number of calls: [1m1[22m
+[39m
+ ❯ test/middleware/error-handler.spec.ts:73:24
+     71| 
+     72|       expect(res.status).toHaveBeenCalledWith(401);
+     73|       expect(res.json).toHaveBeenCalledWith({
+       |                        ^
+     74|         error: 'UNAUTHORIZED',
+     75|         message: 'Invalid token',
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[19/28]⎯
+
+ FAIL  test/middleware/error-handler.spec.ts > Error Handler Middleware > Domain Error Mapping > should map ForbiddenError to 403
+AssertionError: expected "spy" to be called with arguments: [ { error: 'FORBIDDEN', …(1) } ][90m
+
+Received: 
+
+[1m  1st spy call:
+
+[22m[2m  [[22m
+[2m    {[22m
+[2m      "error": "FORBIDDEN",[22m
+[2m      "message": "Access denied",[22m
+[31m+     "requestId": undefined,[90m
+[31m+     "status": "error",[90m
+[31m+     "statusCode": 403,[90m
+[2m    },[22m
+[2m  ][22m
+[39m[90m
+
+Number of calls: [1m1[22m
+[39m
+ ❯ test/middleware/error-handler.spec.ts:85:24
+     83| 
+     84|       expect(res.status).toHaveBeenCalledWith(403);
+     85|       expect(res.json).toHaveBeenCalledWith({
+       |                        ^
+     86|         error: 'FORBIDDEN',
+     87|         message: 'Access denied',
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[20/28]⎯
+
+ FAIL  test/middleware/error-handler.spec.ts > Error Handler Middleware > Domain Error Mapping > should map ConflictError to 409
+AssertionError: expected "spy" to be called with arguments: [ { error: 'CONFLICT', …(1) } ][90m
+
+Received: 
+
+[1m  1st spy call:
+
+[22m[2m  [[22m
+[2m    {[22m
+[2m      "error": "CONFLICT",[22m
+[2m      "message": "Resource already exists",[22m
+[31m+     "requestId": undefined,[90m
+[31m+     "status": "error",[90m
+[31m+     "statusCode": 409,[90m
+[2m    },[22m
+[2m  ][22m
+[39m[90m
+
+Number of calls: [1m1[22m
+[39m
+ ❯ test/middleware/error-handler.spec.ts:97:24
+     95| 
+     96|       expect(res.status).toHaveBeenCalledWith(409);
+     97|       expect(res.json).toHaveBeenCalledWith({
+       |                        ^
+     98|         error: 'CONFLICT',
+     99|         message: 'Resource already exists',
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[21/28]⎯
+
+ FAIL  test/middleware/error-handler.spec.ts > Error Handler Middleware > Domain Error Mapping > should map UnprocessableEntityError to 422
+AssertionError: expected "spy" to be called with arguments: [ { …(2) } ][90m
+
+Received: 
+
+[1m  1st spy call:
+
+[22m[2m  [[22m
+[2m    {[22m
+[2m      "error": "UNPROCESSABLE_ENTITY",[22m
+[2m      "message": "Invalid webhook signature",[22m
+[31m+     "requestId": undefined,[90m
+[31m+     "status": "error",[90m
+[31m+     "statusCode": 422,[90m
+[2m    },[22m
+[2m  ][22m
+[39m[90m
+
+Number of calls: [1m1[22m
+[39m
+ ❯ test/middleware/error-handler.spec.ts:109:24
+    107| 
+    108|       expect(res.status).toHaveBeenCalledWith(422);
+    109|       expect(res.json).toHaveBeenCalledWith({
+       |                        ^
+    110|         error: 'UNPROCESSABLE_ENTITY',
+    111|         message: 'Invalid webhook signature',
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[22/28]⎯
+
+ FAIL  test/middleware/error-handler.spec.ts > Error Handler Middleware > Domain Error Mapping > should map custom DomainError to specified status code
+AssertionError: expected "spy" to be called with arguments: [ { error: 'CUSTOM_ERROR', …(1) } ][90m
+
+Received: 
+
+[1m  1st spy call:
+
+[22m[2m  [[22m
+[2m    {[22m
+[2m      "error": "CUSTOM_ERROR",[22m
+[2m      "message": "Custom error",[22m
+[31m+     "requestId": undefined,[90m
+[31m+     "status": "error",[90m
+[31m+     "statusCode": 418,[90m
+[2m    },[22m
+[2m  ][22m
+[39m[90m
+
+Number of calls: [1m1[22m
+[39m
+ ❯ test/middleware/error-handler.spec.ts:121:24
+    119| 
+    120|       expect(res.status).toHaveBeenCalledWith(418);
+    121|       expect(res.json).toHaveBeenCalledWith({
+       |                        ^
+    122|         error: 'CUSTOM_ERROR',
+    123|         message: 'Custom error',
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[23/28]⎯
+
+ FAIL  test/middleware/error-handler.spec.ts > Error Handler Middleware > Booking-specific Errors > should map BookingConflictError to 409
+AssertionError: expected "spy" to be called with arguments: [ { error: 'CONFLICT', …(1) } ][90m
+
+Received: 
+
+[1m  1st spy call:
+
+[22m[2m  [[22m
+[2m    {[22m
+[2m      "error": "CONFLICT",[22m
+[2m      "message": "Date 2025-12-25 is already booked",[22m
+[31m+     "requestId": undefined,[90m
+[31m+     "status": "error",[90m
+[31m+     "statusCode": 409,[90m
+[2m    },[22m
+[2m  ][22m
+[39m[90m
+
+Number of calls: [1m1[22m
+[39m
+ ❯ test/middleware/error-handler.spec.ts:135:24
+    133| 
+    134|       expect(res.status).toHaveBeenCalledWith(409);
+    135|       expect(res.json).toHaveBeenCalledWith({
+       |                        ^
+    136|         error: 'CONFLICT',
+    137|         message: 'Date 2025-12-25 is already booked',
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[24/28]⎯
+
+ FAIL  test/middleware/error-handler.spec.ts > Error Handler Middleware > Unknown Error Handling > should map generic Error to 500
+TypeError: req.get is not a function
+ ❯ errorHandler src/middleware/error-handler.ts:99:20
+     97|     url: req.url,
+     98|     method: req.method,
+     99|     userAgent: req.get('user-agent'),
+       |                    ^
+    100|   });
+    101| 
+ ❯ test/middleware/error-handler.spec.ts:146:7
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[25/28]⎯
+
+ FAIL  test/middleware/error-handler.spec.ts > Error Handler Middleware > Unknown Error Handling > should log unknown errors with full details
+TypeError: req.get is not a function
+ ❯ errorHandler src/middleware/error-handler.ts:99:20
+     97|     url: req.url,
+     98|     method: req.method,
+     99|     userAgent: req.get('user-agent'),
+       |                    ^
+    100|   });
+    101| 
+ ❯ test/middleware/error-handler.spec.ts:158:7
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[26/28]⎯
+
+ FAIL  test/middleware/error-handler.spec.ts > Error Handler Middleware > Unknown Error Handling > should hide unknown error details from client
+TypeError: req.get is not a function
+ ❯ errorHandler src/middleware/error-handler.ts:99:20
+     97|     url: req.url,
+     98|     method: req.method,
+     99|     userAgent: req.get('user-agent'),
+       |                    ^
+    100|   });
+    101| 
+ ❯ test/middleware/error-handler.spec.ts:169:7
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[27/28]⎯
+
+ FAIL  test/middleware/error-handler.spec.ts > Error Handler Middleware > Logging Behavior > should log unknown errors at error level
+TypeError: req.get is not a function
+ ❯ errorHandler src/middleware/error-handler.ts:99:20
+     97|     url: req.url,
+     98|     method: req.method,
+     99|     userAgent: req.get('user-agent'),
+       |                    ^
+    100|   });
+    101| 
+ ❯ test/middleware/error-handler.spec.ts:204:7
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[28/28]⎯
+
+
+ Test Files  4 failed | 13 passed | 2 skipped (19)
+      Tests  28 failed | 172 passed | 42 skipped | 12 todo (254)
+   Start at  12:11:26
+   Duration  47.22s (transform 620ms, setup 0ms, collect 2.41s, tests 107.05s, environment 1ms, prepare 806ms)
+
+npm error Lifecycle script `test` failed with error:
+npm error code 1
+npm error path /Users/mikeyoung/CODING/Elope/server
+npm error workspace @elope/api@0.0.0
+npm error location /Users/mikeyoung/CODING/Elope/server
+npm error command failed
+npm error command sh -c vitest run --reporter=verbose

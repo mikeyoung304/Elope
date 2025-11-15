@@ -13,6 +13,7 @@ import { IdentityService } from './services/identity.service';
 import { StripeConnectService } from './services/stripe-connect.service';
 import { TenantAuthService } from './services/tenant-auth.service';
 import { AuditService } from './services/audit.service';
+import { IdempotencyService } from './services/idempotency.service';
 import { PackagesController } from './routes/packages.routes';
 import { AvailabilityController } from './routes/availability.routes';
 import { BookingsController } from './routes/bookings.routes';
@@ -85,6 +86,9 @@ export function buildContainer(config: Config): Container {
     // Create AuditService with mock Prisma (Sprint 2.1)
     const auditService = new AuditService({ prisma: mockPrisma });
 
+    // Create IdempotencyService with mock Prisma
+    const idempotencyService = new IdempotencyService(mockPrisma);
+
     // Build domain services with caching and audit logging
     const catalogService = new CatalogService(adapters.catalogRepo, cacheService, auditService);
     const availabilityService = new AvailabilityService(
@@ -102,7 +106,8 @@ export function buildContainer(config: Config): Container {
       eventEmitter,
       adapters.paymentProvider,
       commissionService,
-      mockTenantRepo
+      mockTenantRepo,
+      idempotencyService
     );
     const identityService = new IdentityService(adapters.userRepo, config.JWT_SECRET);
 
@@ -217,6 +222,9 @@ export function buildContainer(config: Config): Container {
   // Create AuditService with real Prisma (Sprint 2.1)
   const auditService = new AuditService({ prisma });
 
+  // Create IdempotencyService with real Prisma
+  const idempotencyService = new IdempotencyService(prisma);
+
   // Build domain services with caching and audit logging
   const catalogService = new CatalogService(catalogRepo, cacheService, auditService);
   const availabilityService = new AvailabilityService(
@@ -230,7 +238,8 @@ export function buildContainer(config: Config): Container {
     eventEmitter,
     paymentProvider,
     commissionService,
-    tenantRepo
+    tenantRepo,
+    idempotencyService
   );
   const identityService = new IdentityService(userRepo, config.JWT_SECRET);
 
