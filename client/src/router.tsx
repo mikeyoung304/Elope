@@ -13,7 +13,7 @@ import type { UserRole } from "./contexts/AuthContext";
 // Lazy load pages for code splitting
 const Home = lazy(() => import("./pages/Home").then(m => ({ default: m.Home })));
 const Package = lazy(() => import("./pages/Package").then(m => ({ default: m.Package })));
-const Success = lazy(() => import("./pages/Success").then(m => ({ default: m.Success })));
+const Success = lazy(() => import("./pages/success").then(m => ({ default: m.Success })));
 const Login = lazy(() => import("./pages/Login").then(m => ({ default: m.Login })));
 const PlatformAdminDashboard = lazy(() => import("./pages/admin/PlatformAdminDashboard").then(m => ({ default: m.PlatformAdminDashboard })));
 const TenantAdminDashboard = lazy(() => import("./pages/tenant/TenantAdminDashboard").then(m => ({ default: m.TenantAdminDashboard })));

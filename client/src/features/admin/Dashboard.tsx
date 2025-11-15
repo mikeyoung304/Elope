@@ -4,7 +4,7 @@ import { LogOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { api } from "../../lib/api";
 import type { BookingDto, PackageDto } from "@elope/contracts";
-import { PackagesManager } from "./PackagesManager";
+import { PackagesManager } from "./packages";
 import { BookingList } from "./BookingList";
 import { DashboardMetrics } from "./dashboard/components/DashboardMetrics";
 import { TabNavigation } from "./dashboard/components/TabNavigation";

@@ -1,0 +1,89 @@
+import { useState } from "react";
+import { Card } from "@/components/ui/card";
+import { PackageCard } from "../PackageCard";
+import { AddOnManager } from "../AddOnManager";
+import type { PackageDto } from "@elope/contracts";
+import type { AddOnFormData } from "../types";
+
+interface PackagesListProps {
+  packages: PackageDto[];
+  onEditPackage: (pkg: PackageDto) => void;
+  onDeletePackage: (packageId: string) => void;
+  onPackagesChange: () => void;
+  isAddingAddOn: string | null;
+  editingAddOnId: string | null;
+  addOnForm: AddOnFormData;
+  isSaving: boolean;
+  error: string | null;
+  onAddOnFormChange: (form: AddOnFormData) => void;
+  onSubmitAddOn: (e: React.FormEvent, packageId: string) => void;
+  onCancelAddOn: () => void;
+  onEditAddOn: (addOn: any) => void;
+  onDeleteAddOn: (addOnId: string) => void;
+  onStartAddingAddOn: (packageId: string) => void;
+}
+
+export function PackagesList({
+  packages,
+  onEditPackage,
+  onDeletePackage,
+  onPackagesChange,
+  isAddingAddOn,
+  editingAddOnId,
+  addOnForm,
+  isSaving,
+  error,
+  onAddOnFormChange,
+  onSubmitAddOn,
+  onCancelAddOn,
+  onEditAddOn,
+  onDeleteAddOn,
+  onStartAddingAddOn,
+}: PackagesListProps) {
+  const [expandedPackageId, setExpandedPackageId] = useState<string | null>(null);
+
+  return (
+    <Card className="p-6 bg-navy-800 border-navy-600">
+      <h2 className="text-2xl font-semibold mb-4 text-lavender-50">Packages</h2>
+      {packages.length === 0 ? (
+        <p className="text-lavender-100 text-lg">No packages yet. Create your first package above.</p>
+      ) : (
+        <div className="space-y-3">
+          {packages.map((pkg) => (
+            <div key={pkg.id}>
+              <PackageCard
+                package={pkg}
+                isExpanded={expandedPackageId === pkg.id}
+                onToggleExpand={() =>
+                  setExpandedPackageId(expandedPackageId === pkg.id ? null : pkg.id)
+                }
+                onEdit={onEditPackage}
+                onDelete={onDeletePackage}
+                onAddOnChange={onPackagesChange}
+              />
+
+              {expandedPackageId === pkg.id && (
+                <div className="mt-4 ml-4">
+                  <AddOnManager
+                    package={pkg}
+                    isAddingAddOn={isAddingAddOn === pkg.id}
+                    editingAddOnId={editingAddOnId}
+                    addOnForm={addOnForm}
+                    isSaving={isSaving}
+                    error={error}
+                    onFormChange={onAddOnFormChange}
+                    onSubmit={(e) => onSubmitAddOn(e, pkg.id)}
+                    onCancel={onCancelAddOn}
+                    onEdit={onEditAddOn}
+                    onDelete={onDeleteAddOn}
+                    onStartAdding={() => onStartAddingAddOn(pkg.id)}
+                  />
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
+      )}
+    </Card>
+  );
+}
