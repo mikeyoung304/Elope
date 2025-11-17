@@ -20,11 +20,11 @@ describe('PrismaUserRepository', () => {
   });
 
   describe('findByEmail', () => {
-    it('returns user when exists and is ADMIN', async () => {
+    it('returns user when exists and is PLATFORM_ADMIN', async () => {
       // Arrange
       const user = buildUser({
         email: 'admin@example.com',
-        role: 'ADMIN' as any,
+        role: 'PLATFORM_ADMIN' as any,
       });
       mockPrisma.user.findUnique.mockResolvedValue(user);
 
@@ -35,8 +35,8 @@ describe('PrismaUserRepository', () => {
       expect(result).toBeDefined();
       expect(result?.email).toBe('admin@example.com');
       // NOTE: The implementation casts the role but doesn't transform it
-      // so it remains uppercase 'ADMIN' from the database
-      expect(result?.role).toBe('ADMIN');
+      // so it remains uppercase 'PLATFORM_ADMIN' from the database
+      expect(result?.role).toBe('PLATFORM_ADMIN');
       expect(mockPrisma.user.findUnique).toHaveBeenCalledWith({
         where: { email: 'admin@example.com' },
       });
@@ -58,7 +58,7 @@ describe('PrismaUserRepository', () => {
       expect(mockPrisma.user.findUnique).toHaveBeenCalledTimes(1);
     });
 
-    it('returns null when user exists but is not ADMIN', async () => {
+    it('returns null when user exists but is not PLATFORM_ADMIN', async () => {
       // Arrange - user with USER role
       const user = buildUser({
         email: 'user@example.com',
@@ -97,7 +97,7 @@ describe('PrismaUserRepository', () => {
         id: 'user_123',
         email: 'admin@test.com',
         passwordHash: '$2a$10$TESTHASHABCDEF123456789012',
-        role: 'ADMIN' as any,
+        role: 'PLATFORM_ADMIN' as any,
       });
       mockPrisma.user.findUnique.mockResolvedValue(dbUser);
 
@@ -106,12 +106,12 @@ describe('PrismaUserRepository', () => {
 
       // Assert
       // NOTE: The implementation casts the role but doesn't transform it
-      // so it remains uppercase 'ADMIN' from the database
+      // so it remains uppercase 'PLATFORM_ADMIN' from the database
       expect(result).toEqual({
         id: 'user_123',
         email: 'admin@test.com',
         passwordHash: '$2a$10$TESTHASHABCDEF123456789012',
-        role: 'ADMIN',
+        role: 'PLATFORM_ADMIN',
       });
     });
   });

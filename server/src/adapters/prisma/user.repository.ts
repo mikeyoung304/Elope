@@ -13,7 +13,7 @@ export class PrismaUserRepository implements UserRepository {
       where: { email },
     });
 
-    if (!user || user.role !== 'ADMIN') {
+    if (!user || user.role !== 'PLATFORM_ADMIN') {
       return null;
     }
 
