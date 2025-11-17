@@ -17,6 +17,12 @@ const Success = lazy(() => import("./pages/success").then(m => ({ default: m.Suc
 const Login = lazy(() => import("./pages/Login").then(m => ({ default: m.Login })));
 const PlatformAdminDashboard = lazy(() => import("./pages/admin/PlatformAdminDashboard").then(m => ({ default: m.PlatformAdminDashboard })));
 const TenantAdminDashboard = lazy(() => import("./pages/tenant/TenantAdminDashboard").then(m => ({ default: m.TenantAdminDashboard })));
+const SegmentsManager = lazy(() =>
+  import("./features/admin/segments").then((m) => ({ default: m.SegmentsManager }))
+);
+const TenantForm = lazy(() =>
+  import("./features/admin/tenants/TenantForm").then((m) => ({ default: m.TenantForm }))
+);
 
 // Wrapper with Suspense
 const SuspenseWrapper = ({ children }: { children: React.ReactNode }) => (
@@ -62,6 +68,30 @@ export const router = createBrowserRouter([
         element: (
           <ProtectedSuspenseWrapper allowedRoles={["PLATFORM_ADMIN"]}>
             <PlatformAdminDashboard />
+          </ProtectedSuspenseWrapper>
+        ),
+      },
+      {
+        path: "admin/segments",
+        element: (
+          <ProtectedSuspenseWrapper allowedRoles={["PLATFORM_ADMIN"]}>
+            <SegmentsManager />
+          </ProtectedSuspenseWrapper>
+        ),
+      },
+      {
+        path: "admin/tenants/new",
+        element: (
+          <ProtectedSuspenseWrapper allowedRoles={["PLATFORM_ADMIN"]}>
+            <TenantForm />
+          </ProtectedSuspenseWrapper>
+        ),
+      },
+      {
+        path: "admin/tenants/:id",
+        element: (
+          <ProtectedSuspenseWrapper allowedRoles={["PLATFORM_ADMIN"]}>
+            <TenantForm />
           </ProtectedSuspenseWrapper>
         ),
       },

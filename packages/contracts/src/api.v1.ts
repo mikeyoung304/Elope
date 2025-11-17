@@ -18,6 +18,14 @@ import {
   AddOnDtoSchema,
   TenantBrandingDtoSchema,
   TenantDtoSchema,
+  SegmentDtoSchema,
+  CreateSegmentDtoSchema,
+  UpdateSegmentDtoSchema,
+  CreateTenantDtoSchema,
+  CreateTenantResponseDtoSchema,
+  UpdateTenantDtoSchema,
+  TenantDetailDtoSchema,
+  PlatformStatsSchema,
 } from './dto';
 
 const c = initContract();
@@ -151,6 +159,63 @@ export const Contracts = c.router({
     summary: 'Get all tenants (requires platform admin authentication)',
   },
 
+  platformCreateTenant: {
+    method: 'POST',
+    path: '/v1/admin/tenants',
+    body: CreateTenantDtoSchema,
+    responses: {
+      201: CreateTenantResponseDtoSchema,
+    },
+    summary: 'Create new tenant (requires platform admin authentication)',
+  },
+
+  platformGetTenant: {
+    method: 'GET',
+    path: '/v1/admin/tenants/:id',
+    pathParams: z.object({
+      id: z.string(),
+    }),
+    responses: {
+      200: TenantDetailDtoSchema,
+    },
+    summary: 'Get tenant details (requires platform admin authentication)',
+  },
+
+  platformUpdateTenant: {
+    method: 'PUT',
+    path: '/v1/admin/tenants/:id',
+    pathParams: z.object({
+      id: z.string(),
+    }),
+    body: UpdateTenantDtoSchema,
+    responses: {
+      200: TenantDtoSchema,
+    },
+    summary: 'Update tenant (requires platform admin authentication)',
+  },
+
+  platformDeleteTenant: {
+    method: 'DELETE',
+    path: '/v1/admin/tenants/:id',
+    pathParams: z.object({
+      id: z.string(),
+    }),
+    body: z.undefined(),
+    responses: {
+      204: z.void(),
+    },
+    summary: 'Deactivate tenant (requires platform admin authentication)',
+  },
+
+  platformGetStats: {
+    method: 'GET',
+    path: '/v1/admin/stats',
+    responses: {
+      200: PlatformStatsSchema,
+    },
+    summary: 'Get platform-wide statistics (requires platform admin authentication)',
+  },
+
   adminGetBookings: {
     method: 'GET',
     path: '/v1/admin/bookings',
@@ -264,5 +329,78 @@ export const Contracts = c.router({
       204: z.void(),
     },
     summary: 'Delete an add-on (requires authentication)',
+  },
+
+  // Tenant Admin Segment CRUD endpoints
+  tenantAdminGetSegments: {
+    method: 'GET',
+    path: '/v1/tenant/admin/segments',
+    responses: {
+      200: z.array(SegmentDtoSchema),
+    },
+    summary: 'Get all segments for tenant (requires tenant admin authentication)',
+  },
+
+  tenantAdminCreateSegment: {
+    method: 'POST',
+    path: '/v1/tenant/admin/segments',
+    body: CreateSegmentDtoSchema,
+    responses: {
+      200: SegmentDtoSchema,
+    },
+    summary: 'Create a new segment (requires tenant admin authentication)',
+  },
+
+  tenantAdminGetSegment: {
+    method: 'GET',
+    path: '/v1/tenant/admin/segments/:id',
+    pathParams: z.object({
+      id: z.string(),
+    }),
+    responses: {
+      200: SegmentDtoSchema,
+    },
+    summary: 'Get segment by ID (requires tenant admin authentication)',
+  },
+
+  tenantAdminUpdateSegment: {
+    method: 'PUT',
+    path: '/v1/tenant/admin/segments/:id',
+    pathParams: z.object({
+      id: z.string(),
+    }),
+    body: UpdateSegmentDtoSchema,
+    responses: {
+      200: SegmentDtoSchema,
+    },
+    summary: 'Update a segment (requires tenant admin authentication)',
+  },
+
+  tenantAdminDeleteSegment: {
+    method: 'DELETE',
+    path: '/v1/tenant/admin/segments/:id',
+    pathParams: z.object({
+      id: z.string(),
+    }),
+    body: z.undefined(),
+    responses: {
+      204: z.void(),
+    },
+    summary: 'Delete a segment (requires tenant admin authentication)',
+  },
+
+  tenantAdminGetSegmentStats: {
+    method: 'GET',
+    path: '/v1/tenant/admin/segments/:id/stats',
+    pathParams: z.object({
+      id: z.string(),
+    }),
+    responses: {
+      200: z.object({
+        packageCount: z.number().int(),
+        addOnCount: z.number().int(),
+      }),
+    },
+    summary: 'Get segment statistics (requires tenant admin authentication)',
   },
 });

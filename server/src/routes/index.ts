@@ -13,6 +13,7 @@ import type { AdminController } from './admin.routes';
 import type { BlackoutsController } from './blackouts.routes';
 import type { AdminPackagesController } from './admin-packages.routes';
 import type { TenantController } from './tenant.routes';
+import type { PlatformAdminController } from '../controllers/platform-admin.controller';
 import { createAuthMiddleware } from '../middleware/auth';
 import { createTenantAuthMiddleware } from '../middleware/tenant-auth';
 import type { IdentityService } from '../services/identity.service';
@@ -41,6 +42,7 @@ interface Controllers {
   admin: AdminController;
   blackouts: BlackoutsController;
   adminPackages: AdminPackagesController;
+  platformAdmin: PlatformAdminController;
   tenant: TenantController;
 }
 
@@ -162,6 +164,34 @@ export function createV1Router(
     platformGetAllTenants: async () => {
       // Auth middleware applied via app.use('/v1/admin/tenants', authMiddleware)
       const data = await controllers.platformAdmin.getAllTenants();
+      return { status: 200 as const, body: data };
+    },
+
+    platformCreateTenant: async ({ body }: { body: any }) => {
+      // Note: Actual tenant creation is handled by the Express route
+      // This is just a placeholder for ts-rest contract compliance
+      // See /server/src/routes/admin/tenants.routes.ts
+      throw new Error('Use Express route /api/v1/admin/tenants directly');
+    },
+
+    platformGetTenant: async ({ params }: { params: { id: string } }) => {
+      // Note: Actual implementation in Express routes
+      throw new Error('Use Express route /api/v1/admin/tenants/:id directly');
+    },
+
+    platformUpdateTenant: async ({ params, body }: { params: { id: string }; body: any }) => {
+      // Note: Actual implementation in Express routes
+      throw new Error('Use Express route /api/v1/admin/tenants/:id directly');
+    },
+
+    platformDeleteTenant: async ({ params }: { params: { id: string } }) => {
+      // Note: Actual implementation in Express routes
+      throw new Error('Use Express route /api/v1/admin/tenants/:id directly');
+    },
+
+    platformGetStats: async () => {
+      // Auth middleware applied via app.use('/v1/admin/stats', authMiddleware)
+      const data = await controllers.platformAdmin.getStats();
       return { status: 200 as const, body: data };
     },
 

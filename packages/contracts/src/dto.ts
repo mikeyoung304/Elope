@@ -208,3 +208,131 @@ export const TenantDtoSchema = z.object({
 });
 
 export type TenantDto = z.infer<typeof TenantDtoSchema>;
+
+// Segment DTOs
+export const SegmentDtoSchema = z.object({
+  id: z.string(),
+  tenantId: z.string(),
+  slug: z.string(),
+  name: z.string(),
+  heroTitle: z.string(),
+  heroSubtitle: z.string().nullable(),
+  heroImage: z.string().nullable(),
+  description: z.string().nullable(),
+  metaTitle: z.string().nullable(),
+  metaDescription: z.string().nullable(),
+  sortOrder: z.number().int(),
+  active: z.boolean(),
+  createdAt: z.string(), // ISO date string
+  updatedAt: z.string(), // ISO date string
+});
+
+export type SegmentDto = z.infer<typeof SegmentDtoSchema>;
+
+export const CreateSegmentDtoSchema = z.object({
+  slug: z.string().min(1).max(100).regex(/^[a-z0-9-]+$/, 'Lowercase alphanumeric + hyphens only'),
+  name: z.string().min(1).max(100),
+  heroTitle: z.string().min(1).max(200),
+  heroSubtitle: z.string().max(300).optional(),
+  heroImage: z.string().url().or(z.literal('')).optional(),
+  description: z.string().max(2000).optional(),
+  metaTitle: z.string().max(60).optional(),
+  metaDescription: z.string().max(160).optional(),
+  sortOrder: z.number().int().default(0),
+  active: z.boolean().default(true),
+});
+
+export type CreateSegmentDto = z.infer<typeof CreateSegmentDtoSchema>;
+
+export const UpdateSegmentDtoSchema = z.object({
+  slug: z.string().min(1).max(100).regex(/^[a-z0-9-]+$/, 'Lowercase alphanumeric + hyphens only').optional(),
+  name: z.string().min(1).max(100).optional(),
+  heroTitle: z.string().min(1).max(200).optional(),
+  heroSubtitle: z.string().max(300).optional(),
+  heroImage: z.string().url().or(z.literal('')).optional(),
+  description: z.string().max(2000).optional(),
+  metaTitle: z.string().max(60).optional(),
+  metaDescription: z.string().max(160).optional(),
+  sortOrder: z.number().int().optional(),
+  active: z.boolean().optional(),
+});
+
+export type UpdateSegmentDto = z.infer<typeof UpdateSegmentDtoSchema>;
+
+// Platform Admin - Tenant Management DTOs
+
+export const CreateTenantDtoSchema = z.object({
+  slug: z.string()
+    .min(2, 'Slug must be at least 2 characters')
+    .max(50, 'Slug must be less than 50 characters')
+    .regex(/^[a-z0-9-]+$/, 'Slug must be lowercase alphanumeric with hyphens'),
+  name: z.string()
+    .min(2, 'Name is required')
+    .max(100, 'Name must be less than 100 characters'),
+  email: z.string()
+    .email('Invalid email format')
+    .optional(),
+  commissionPercent: z.number()
+    .min(0, 'Commission must be at least 0%')
+    .max(100, 'Commission cannot exceed 100%')
+    .default(10.0),
+});
+
+export type CreateTenantDto = z.infer<typeof CreateTenantDtoSchema>;
+
+export const CreateTenantResponseDtoSchema = z.object({
+  tenant: TenantDtoSchema,
+  secretKey: z.string(), // API secret key - shown ONCE, never stored in plaintext
+});
+
+export type CreateTenantResponseDto = z.infer<typeof CreateTenantResponseDtoSchema>;
+
+export const UpdateTenantDtoSchema = z.object({
+  name: z.string().min(2).max(100).optional(),
+  email: z.string().email().optional(),
+  commissionPercent: z.number().min(0).max(100).optional(),
+  branding: z.record(z.any()).optional(), // JSON object
+  isActive: z.boolean().optional(),
+  stripeAccountId: z.string().optional(),
+  stripeOnboarded: z.boolean().optional(),
+});
+
+export type UpdateTenantDto = z.infer<typeof UpdateTenantDtoSchema>;
+
+export const TenantDetailDtoSchema = TenantDtoSchema.extend({
+  stats: z.object({
+    bookings: z.number().int(),
+    packages: z.number().int(),
+    addOns: z.number().int(),
+    segments: z.number().int(),
+    blackoutDates: z.number().int(),
+  }),
+});
+
+export type TenantDetailDto = z.infer<typeof TenantDetailDtoSchema>;
+
+export const PlatformStatsSchema = z.object({
+  // Tenant metrics
+  totalTenants: z.number().int(),
+  activeTenants: z.number().int(),
+
+  // Segment metrics
+  totalSegments: z.number().int(),
+  activeSegments: z.number().int(),
+
+  // Booking metrics
+  totalBookings: z.number().int(),
+  confirmedBookings: z.number().int(),
+  pendingBookings: z.number().int(),
+
+  // Revenue metrics (in cents)
+  totalRevenue: z.number().int(),
+  platformCommission: z.number().int(),
+  tenantRevenue: z.number().int(),
+
+  // Time-based metrics (optional)
+  revenueThisMonth: z.number().int().optional(),
+  bookingsThisMonth: z.number().int().optional(),
+});
+
+export type PlatformStats = z.infer<typeof PlatformStatsSchema>;
