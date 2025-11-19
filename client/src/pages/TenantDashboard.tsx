@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Container } from "../ui/Container";
 import { TenantDashboard as TenantDashboardComponent } from "../features/tenant-admin/TenantDashboard";
 import { api } from "../lib/api";
 
@@ -51,9 +50,5 @@ export function TenantDashboard() {
     return null;
   }
 
-  return (
-    <Container className="py-12">
-      <TenantDashboardComponent tenantInfo={tenantInfo} />
-    </Container>
-  );
+  return <TenantDashboardComponent tenantInfo={tenantInfo} />;
 }

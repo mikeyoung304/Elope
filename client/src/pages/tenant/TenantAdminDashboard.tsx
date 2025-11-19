@@ -9,7 +9,6 @@
  */
 
 import { useEffect, useState } from "react";
-import { Container } from "../../ui/Container";
 import { TenantDashboard as TenantDashboardComponent } from "../../features/tenant-admin/TenantDashboard";
 import { useAuth } from "../../contexts/AuthContext";
 import { api } from "../../lib/api";
@@ -50,9 +49,5 @@ export function TenantAdminDashboard() {
     }
   }, [user]);
 
-  return (
-    <Container className="py-12">
-      <TenantDashboardComponent tenantInfo={tenantInfo} />
-    </Container>
-  );
+  return <TenantDashboardComponent tenantInfo={tenantInfo} />;
 }

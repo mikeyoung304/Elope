@@ -1,8 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
-import { useNavigate } from "react-router-dom";
-import { Package, XCircle, Calendar, Palette, LogOut } from "lucide-react";
+import { Package, XCircle, Calendar, Palette } from "lucide-react";
 import { Card } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
 import { api } from "../../lib/api";
 import { cn } from "@/lib/utils";
 import type { PackageDto, BookingDto } from "@elope/contracts";
@@ -10,6 +8,7 @@ import { TenantPackagesManager } from "./TenantPackagesManager";
 import { BlackoutsManager } from "./BlackoutsManager";
 import { TenantBookingList } from "./TenantBookingList";
 import { BrandingEditor } from "./BrandingEditor";
+import { AdminLayout } from "../../layouts/AdminLayout";
 
 type BlackoutDto = {
   id: string;
@@ -47,7 +46,6 @@ interface TenantDashboardProps {
 }
 
 export function TenantDashboard({ tenantInfo }: TenantDashboardProps) {
-  const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState<"packages" | "blackouts" | "bookings" | "branding">("packages");
   const [packages, setPackages] = useState<PackageDto[]>([]);
   const [blackouts, setBlackouts] = useState<BlackoutDto[]>([]);
@@ -124,153 +122,143 @@ export function TenantDashboard({ tenantInfo }: TenantDashboardProps) {
     }
   }, []);
 
-  const handleLogout = useCallback(() => {
-    (api as any).logoutTenant();
-    navigate("/tenant/login");
-  }, [navigate]);
-
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="flex justify-between items-center">
+    <AdminLayout
+      breadcrumbs={[
+        { label: "Dashboard" }
+      ]}
+    >
+      <div className="max-w-7xl mx-auto space-y-6">
+        {/* Header */}
         <div>
-          <h1 className="text-4xl font-bold text-macon-navy-50">Tenant Dashboard</h1>
+          <h1 className="text-3xl font-bold text-gray-900">Tenant Dashboard</h1>
           {tenantInfo && (
-            <p className="text-lg text-macon-navy-200 mt-2">
+            <p className="text-gray-600 mt-1">
               {tenantInfo.name} ({tenantInfo.slug})
             </p>
           )}
         </div>
-        <Button
-          onClick={handleLogout}
-          variant="outline"
-          size="lg"
-          className="border-macon-navy-600 text-macon-navy-100 hover:bg-macon-navy-800 text-lg"
-        >
-          <LogOut className="w-5 h-5 mr-2" />
-          Logout
-        </Button>
+
+        {/* Metrics Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+          <Card className="p-6 border-gray-200 shadow-sm hover:shadow-md transition-shadow">
+            <div className="flex items-center gap-3 mb-2">
+              <div className="p-2 bg-macon-navy-50 rounded">
+                <Package className="w-5 h-5 text-macon-navy-600" />
+              </div>
+              <div className="text-sm font-medium text-gray-700">Total Packages</div>
+            </div>
+            <div className="text-3xl font-bold text-gray-900">{packages.length}</div>
+          </Card>
+
+          <Card className="p-6 border-gray-200 shadow-sm hover:shadow-md transition-shadow">
+            <div className="flex items-center gap-3 mb-2">
+              <div className="p-2 bg-macon-orange-50 rounded">
+                <XCircle className="w-5 h-5 text-macon-orange-600" />
+              </div>
+              <div className="text-sm font-medium text-gray-700">Blackout Dates</div>
+            </div>
+            <div className="text-3xl font-bold text-gray-900">{blackouts.length}</div>
+          </Card>
+
+          <Card className="p-6 border-gray-200 shadow-sm hover:shadow-md transition-shadow">
+            <div className="flex items-center gap-3 mb-2">
+              <div className="p-2 bg-blue-50 rounded">
+                <Calendar className="w-5 h-5 text-blue-600" />
+              </div>
+              <div className="text-sm font-medium text-gray-700">Total Bookings</div>
+            </div>
+            <div className="text-3xl font-bold text-gray-900">{bookings.length}</div>
+          </Card>
+
+          <Card className="p-6 border-gray-200 shadow-sm hover:shadow-md transition-shadow">
+            <div className="flex items-center gap-3 mb-2">
+              <div className="p-2 bg-purple-50 rounded">
+                <Palette className="w-5 h-5 text-purple-600" />
+              </div>
+              <div className="text-sm font-medium text-gray-700">Branding</div>
+            </div>
+            <div className="text-lg font-medium text-gray-600">
+              {branding ? "Configured" : "Not Set"}
+            </div>
+          </Card>
+        </div>
+
+        {/* Tabs */}
+        <div className="border-b border-gray-200">
+          <nav className="flex -mb-px space-x-8">
+            <button
+              onClick={() => setActiveTab("packages")}
+              className={cn(
+                "py-2 px-1 border-b-2 font-medium text-sm transition-colors",
+                activeTab === "packages"
+                  ? "border-macon-navy-600 text-macon-navy-600"
+                  : "border-transparent text-gray-600 hover:text-gray-900 hover:border-gray-300"
+              )}
+            >
+              Packages
+            </button>
+            <button
+              onClick={() => setActiveTab("blackouts")}
+              className={cn(
+                "py-2 px-1 border-b-2 font-medium text-sm transition-colors",
+                activeTab === "blackouts"
+                  ? "border-macon-navy-600 text-macon-navy-600"
+                  : "border-transparent text-gray-600 hover:text-gray-900 hover:border-gray-300"
+              )}
+            >
+              Blackouts
+            </button>
+            <button
+              onClick={() => setActiveTab("bookings")}
+              className={cn(
+                "py-2 px-1 border-b-2 font-medium text-sm transition-colors",
+                activeTab === "bookings"
+                  ? "border-macon-navy-600 text-macon-navy-600"
+                  : "border-transparent text-gray-600 hover:text-gray-900 hover:border-gray-300"
+              )}
+            >
+              Bookings
+            </button>
+            <button
+              onClick={() => setActiveTab("branding")}
+              className={cn(
+                "py-2 px-1 border-b-2 font-medium text-sm transition-colors",
+                activeTab === "branding"
+                  ? "border-macon-navy-600 text-macon-navy-600"
+                  : "border-transparent text-gray-600 hover:text-gray-900 hover:border-gray-300"
+              )}
+            >
+              Branding
+            </button>
+          </nav>
+        </div>
+
+        {/* Tab Content */}
+        {activeTab === "packages" && (
+          <TenantPackagesManager packages={packages} onPackagesChange={loadPackages} />
+        )}
+
+        {activeTab === "blackouts" && (
+          <BlackoutsManager
+            blackouts={blackouts}
+            isLoading={isLoading}
+            onBlackoutsChange={loadBlackouts}
+          />
+        )}
+
+        {activeTab === "bookings" && (
+          <TenantBookingList bookings={bookings} isLoading={isLoading} />
+        )}
+
+        {activeTab === "branding" && (
+          <BrandingEditor
+            branding={branding}
+            isLoading={isLoading}
+            onBrandingChange={loadBranding}
+          />
+        )}
       </div>
-
-      {/* Metrics Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <Card className="p-6 bg-macon-navy-800 border-macon-navy-600">
-          <div className="flex items-center gap-3 mb-2">
-            <div className="p-2 bg-macon-navy-700 rounded">
-              <Package className="w-5 h-5 text-macon-navy-300" />
-            </div>
-            <div className="text-base text-macon-navy-100">Total Packages</div>
-          </div>
-          <div className="text-4xl font-bold text-macon-navy-50">{packages.length}</div>
-        </Card>
-
-        <Card className="p-6 bg-macon-navy-800 border-macon-navy-600">
-          <div className="flex items-center gap-3 mb-2">
-            <div className="p-2 bg-macon-navy-700 rounded">
-              <XCircle className="w-5 h-5 text-macon-navy-300" />
-            </div>
-            <div className="text-base text-macon-navy-100">Blackout Dates</div>
-          </div>
-          <div className="text-4xl font-bold text-macon-navy-300">{blackouts.length}</div>
-        </Card>
-
-        <Card className="p-6 bg-macon-navy-800 border-macon-navy-600">
-          <div className="flex items-center gap-3 mb-2">
-            <div className="p-2 bg-macon-navy-700 rounded">
-              <Calendar className="w-5 h-5 text-macon-navy-300" />
-            </div>
-            <div className="text-base text-macon-navy-100">Total Bookings</div>
-          </div>
-          <div className="text-4xl font-bold text-macon-navy-50">{bookings.length}</div>
-        </Card>
-
-        <Card className="p-6 bg-macon-navy-800 border-macon-navy-600">
-          <div className="flex items-center gap-3 mb-2">
-            <div className="p-2 bg-macon-navy-700 rounded">
-              <Palette className="w-5 h-5 text-macon-navy-300" />
-            </div>
-            <div className="text-base text-macon-navy-100">Branding</div>
-          </div>
-          <div className="text-lg font-medium text-macon-navy-300">
-            {branding ? "Configured" : "Not Set"}
-          </div>
-        </Card>
-      </div>
-
-      {/* Tabs */}
-      <div className="border-b border-macon-navy-600">
-        <nav className="flex -mb-px space-x-8">
-          <button
-            onClick={() => setActiveTab("packages")}
-            className={cn(
-              "py-2 px-1 border-b-2 font-medium text-lg transition-colors",
-              activeTab === "packages"
-                ? "border-macon-navy-500 text-macon-navy-300"
-                : "border-transparent text-macon-navy-100 hover:text-macon-navy-300 hover:border-macon-navy-500"
-            )}
-          >
-            Packages
-          </button>
-          <button
-            onClick={() => setActiveTab("blackouts")}
-            className={cn(
-              "py-2 px-1 border-b-2 font-medium text-lg transition-colors",
-              activeTab === "blackouts"
-                ? "border-macon-navy-500 text-macon-navy-300"
-                : "border-transparent text-macon-navy-100 hover:text-macon-navy-300 hover:border-macon-navy-500"
-            )}
-          >
-            Blackouts
-          </button>
-          <button
-            onClick={() => setActiveTab("bookings")}
-            className={cn(
-              "py-2 px-1 border-b-2 font-medium text-lg transition-colors",
-              activeTab === "bookings"
-                ? "border-macon-navy-500 text-macon-navy-300"
-                : "border-transparent text-macon-navy-100 hover:text-macon-navy-300 hover:border-macon-navy-500"
-            )}
-          >
-            Bookings
-          </button>
-          <button
-            onClick={() => setActiveTab("branding")}
-            className={cn(
-              "py-2 px-1 border-b-2 font-medium text-lg transition-colors",
-              activeTab === "branding"
-                ? "border-macon-navy-500 text-macon-navy-300"
-                : "border-transparent text-macon-navy-100 hover:text-macon-navy-300 hover:border-macon-navy-500"
-            )}
-          >
-            Branding
-          </button>
-        </nav>
-      </div>
-
-      {/* Tab Content */}
-      {activeTab === "packages" && (
-        <TenantPackagesManager packages={packages} onPackagesChange={loadPackages} />
-      )}
-
-      {activeTab === "blackouts" && (
-        <BlackoutsManager
-          blackouts={blackouts}
-          isLoading={isLoading}
-          onBlackoutsChange={loadBlackouts}
-        />
-      )}
-
-      {activeTab === "bookings" && (
-        <TenantBookingList bookings={bookings} isLoading={isLoading} />
-      )}
-
-      {activeTab === "branding" && (
-        <BrandingEditor
-          branding={branding}
-          isLoading={isLoading}
-          onBrandingChange={loadBranding}
-        />
-      )}
-    </div>
+    </AdminLayout>
   );
 }
