@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { Calendar, Mail, Users, Package, Plus, CheckCircle } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { formatCurrency } from "@/lib/utils";
@@ -27,12 +28,54 @@ export function BookingConfirmation({
     });
   };
 
+  // Celebration animation on mount
+  useEffect(() => {
+    // Create confetti effect using emoji
+    const createConfetti = () => {
+      const confettiCount = 50;
+      const confettiContainer = document.createElement('div');
+      confettiContainer.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:9999;overflow:hidden';
+      document.body.appendChild(confettiContainer);
+
+      const emojis = ['🎉', '✨', '💍', '💐', '🎊', '💕', '🥂'];
+
+      for (let i = 0; i < confettiCount; i++) {
+        const confetti = document.createElement('div');
+        confetti.textContent = emojis[Math.floor(Math.random() * emojis.length)];
+        confetti.style.cssText = `position:absolute;font-size:${20 + Math.random() * 20}px;left:${Math.random() * 100}%;top:-20px;opacity:${0.6 + Math.random() * 0.4};animation:confetti-fall ${2 + Math.random() * 3}s linear forwards`;
+        confettiContainer.appendChild(confetti);
+      }
+
+      // Add animation keyframes if not already added
+      if (!document.getElementById('confetti-animation')) {
+        const style = document.createElement('style');
+        style.id = 'confetti-animation';
+        style.textContent = `
+          @keyframes confetti-fall {
+            to {
+              transform: translateY(100vh) rotate(${360 + Math.random() * 360}deg);
+              opacity: 0;
+            }
+          }
+        `;
+        document.head.appendChild(style);
+      }
+
+      // Clean up after animation
+      setTimeout(() => {
+        document.body.removeChild(confettiContainer);
+      }, 5000);
+    };
+
+    createConfetti();
+  }, []);
+
   return (
     <div className="space-y-8">
-      {/* Success Message */}
-      <div className="p-6 border border-macon-navy-600 bg-macon-navy-700 rounded-lg">
+      {/* Success Message with celebration animation */}
+      <div className="p-6 border border-macon-navy-600 bg-macon-navy-700 rounded-lg animate-in fade-in-0 slide-in-from-bottom-4 duration-500">
         <div className="flex items-start gap-3">
-          <CheckCircle className="w-5 h-5 text-macon-navy-300 mt-0.5" />
+          <CheckCircle className="w-5 h-5 text-green-400 mt-0.5 animate-in zoom-in-50 duration-700" />
           <div>
             <p className="text-lg font-medium text-macon-navy-50 mb-1">
               Payment Received!
