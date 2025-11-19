@@ -23,12 +23,15 @@ export class TenantController {
       throw new Error(`Tenant not found: ${tenantId}`);
     }
 
-    // Parse branding JSON and ensure it matches the DTO schema
+    // Colors come from dedicated database columns
+    // fontFamily and logo still come from branding JSON
     const branding = tenant.branding as any || {};
 
     return {
-      primaryColor: branding.primaryColor,
-      secondaryColor: branding.secondaryColor,
+      primaryColor: tenant.primaryColor,
+      secondaryColor: tenant.secondaryColor,
+      accentColor: tenant.accentColor,
+      backgroundColor: tenant.backgroundColor,
       fontFamily: branding.fontFamily,
       logo: branding.logo,
     };

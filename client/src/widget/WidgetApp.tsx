@@ -186,7 +186,7 @@ export function WidgetApp({ config }: Props): JSX.Element {
   }
 
   return (
-    <div ref={containerRef} className="elope-widget min-h-screen bg-navy-900 p-4">
+    <div ref={containerRef} className="elope-widget min-h-screen bg-macon-navy-900 p-4">
       {currentView === 'catalog' && <WidgetCatalogGrid onPackageClick={handlePackageClick} />}
 
       {currentView === 'package' && selectedPackageSlug && (

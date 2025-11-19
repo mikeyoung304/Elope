@@ -44,9 +44,9 @@ export function TenantPackagesManager({ packages, onPackagesChange }: TenantPack
     <div className="space-y-6">
       {/* Success Message */}
       {packageManager.successMessage && (
-        <div className="flex items-center gap-2 p-4 border border-lavender-600 bg-navy-700 rounded-lg">
-          <CheckCircle className="w-5 h-5 text-lavender-300" />
-          <span className="text-lg font-medium text-lavender-100">{packageManager.successMessage}</span>
+        <div className="flex items-center gap-2 p-4 border border-macon-navy-600 bg-macon-navy-700 rounded-lg">
+          <CheckCircle className="w-5 h-5 text-macon-navy-300" />
+          <span className="text-lg font-medium text-macon-navy-100">{packageManager.successMessage}</span>
         </div>
       )}
 
@@ -55,7 +55,7 @@ export function TenantPackagesManager({ packages, onPackagesChange }: TenantPack
         <div className="flex justify-end">
           <Button
             onClick={packageManager.handleCreate}
-            className="bg-lavender-500 hover:bg-lavender-600 text-lg h-12 px-6"
+            className="bg-macon-navy hover:bg-macon-navy-dark text-lg h-12 px-6"
           >
             <Plus className="w-5 h-5 mr-2" />
             Create Package

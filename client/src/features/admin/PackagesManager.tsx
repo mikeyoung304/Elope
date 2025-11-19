@@ -331,9 +331,9 @@ export function PackagesManager({ packages, onPackagesChange }: PackagesManagerP
     <div className="space-y-6">
       {/* Success Message */}
       {successMessage && (
-        <div className="flex items-center gap-2 p-4 border border-lavender-600 bg-navy-700 rounded-lg">
-          <CheckCircle className="w-5 h-5 text-lavender-300" />
-          <span className="text-lg font-medium text-lavender-100">{successMessage}</span>
+        <div className="flex items-center gap-2 p-4 border border-macon-navy-600 bg-macon-navy-700 rounded-lg">
+          <CheckCircle className="w-5 h-5 text-macon-navy-300" />
+          <span className="text-lg font-medium text-macon-navy-100">{successMessage}</span>
         </div>
       )}
 
@@ -342,7 +342,7 @@ export function PackagesManager({ packages, onPackagesChange }: PackagesManagerP
         <div className="flex justify-end">
           <Button
             onClick={handleCreatePackage}
-            className="bg-lavender-500 hover:bg-lavender-600 text-lg h-12 px-6"
+            className="bg-macon-navy hover:bg-macon-navy-dark text-lg h-12 px-6"
           >
             <Plus className="w-5 h-5 mr-2" />
             Create Package
@@ -364,10 +364,10 @@ export function PackagesManager({ packages, onPackagesChange }: PackagesManagerP
       )}
 
       {/* Packages List */}
-      <Card className="p-6 bg-navy-800 border-navy-600">
-        <h2 className="text-2xl font-semibold mb-4 text-lavender-50">Packages</h2>
+      <Card className="p-6 bg-macon-navy-800 border-macon-navy-600">
+        <h2 className="text-2xl font-semibold mb-4 text-macon-navy-50">Packages</h2>
         {packages.length === 0 ? (
-          <p className="text-lavender-100 text-lg">No packages yet. Create your first package above.</p>
+          <p className="text-macon-navy-100 text-lg">No packages yet. Create your first package above.</p>
         ) : (
           <div className="space-y-3">
             {packages.map((pkg) => (

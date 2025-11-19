@@ -1,9 +1,9 @@
 {
-  "name": "@elope/shared",
+  "name": "@macon/shared",
   "version": "0.0.0",
   "private": true,
   "type": "module",
-  "description": "Shared utilities and helpers",
+  "description": "Macon AI Solutions - Shared utilities and helpers",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "exports": {

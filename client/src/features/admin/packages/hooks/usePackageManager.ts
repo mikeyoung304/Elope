@@ -1,4 +1,4 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { api } from "@/lib/api";
 import type {
   PackageDto,
@@ -17,6 +17,7 @@ export function usePackageManager({ onPackagesChange, showSuccess }: UsePackageM
   const [editingPackageId, setEditingPackageId] = useState<string | null>(null);
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [segments, setSegments] = useState<Array<{ id: string; name: string; active: boolean }>>([]);
 
   const [packageForm, setPackageForm] = useState<PackageFormData>({
     slug: "",
@@ -24,7 +25,23 @@ export function usePackageManager({ onPackagesChange, showSuccess }: UsePackageM
     description: "",
     priceCents: "",
     photoUrl: "",
+    segmentId: "",
   });
+
+  // Fetch segments
+  useEffect(() => {
+    const fetchSegments = async () => {
+      try {
+        const result = await api.tenantAdminGetSegments();
+        if (result.status === 200) {
+          setSegments(result.body);
+        }
+      } catch (err) {
+        // Silent fail - segments are optional
+      }
+    };
+    fetchSegments();
+  }, []);
 
   // Validate slug format
   const isValidSlug = (slug: string): boolean => {
@@ -39,6 +56,7 @@ export function usePackageManager({ onPackagesChange, showSuccess }: UsePackageM
       description: "",
       priceCents: "",
       photoUrl: "",
+      segmentId: "",
     });
     setError(null);
   }, []);
@@ -57,6 +75,7 @@ export function usePackageManager({ onPackagesChange, showSuccess }: UsePackageM
       description: pkg.description,
       priceCents: pkg.priceCents.toString(),
       photoUrl: pkg.photoUrl || "",
+      segmentId: pkg.segmentId || "",
     });
     setEditingPackageId(pkg.id);
     setIsCreatingPackage(true);
@@ -92,6 +111,7 @@ export function usePackageManager({ onPackagesChange, showSuccess }: UsePackageM
           description: packageForm.description,
           priceCents,
           photoUrl: packageForm.photoUrl || undefined,
+          segmentId: packageForm.segmentId || undefined,
         };
 
         const result = await api.adminUpdatePackage({
@@ -114,6 +134,7 @@ export function usePackageManager({ onPackagesChange, showSuccess }: UsePackageM
           description: packageForm.description,
           priceCents,
           photoUrl: packageForm.photoUrl || undefined,
+          segmentId: packageForm.segmentId || undefined,
         };
 
         const result = await api.adminCreatePackage({
@@ -172,6 +193,7 @@ export function usePackageManager({ onPackagesChange, showSuccess }: UsePackageM
     isSaving,
     error,
     packageForm,
+    segments,
 
     // Actions
     setPackageForm,

@@ -9,6 +9,8 @@ type BrandingDto = {
   tenantId: string;
   primaryColor: string;
   secondaryColor: string;
+  accentColor: string;
+  backgroundColor: string;
   fontFamily: string;
   logoUrl?: string;
   createdAt: string;
@@ -29,8 +31,10 @@ interface BrandingEditorProps {
  */
 
 export function BrandingEditor({ branding, isLoading, onBrandingChange }: BrandingEditorProps) {
-  const [primaryColor, setPrimaryColor] = useState("#9b87f5");
-  const [secondaryColor, setSecondaryColor] = useState("#7e69ab");
+  const [primaryColor, setPrimaryColor] = useState("#1a365d");
+  const [secondaryColor, setSecondaryColor] = useState("#fb923c");
+  const [accentColor, setAccentColor] = useState("#38b2ac");
+  const [backgroundColor, setBackgroundColor] = useState("#ffffff");
   const [fontFamily, setFontFamily] = useState("Inter");
   const [logoUrl, setLogoUrl] = useState("");
   const [isSaving, setIsSaving] = useState(false);
@@ -42,6 +46,8 @@ export function BrandingEditor({ branding, isLoading, onBrandingChange }: Brandi
     if (branding) {
       setPrimaryColor(branding.primaryColor);
       setSecondaryColor(branding.secondaryColor);
+      setAccentColor(branding.accentColor);
+      setBackgroundColor(branding.backgroundColor);
       setFontFamily(branding.fontFamily);
       setLogoUrl(branding.logoUrl || "");
     }
@@ -59,11 +65,19 @@ export function BrandingEditor({ branding, isLoading, onBrandingChange }: Brandi
     // Validate hex colors
     const hexColorRegex = /^#[0-9A-F]{6}$/i;
     if (!hexColorRegex.test(primaryColor)) {
-      setError("Primary color must be a valid hex color (e.g., #9b87f5)");
+      setError("Primary color must be a valid hex color (e.g., #1a365d)");
       return;
     }
     if (!hexColorRegex.test(secondaryColor)) {
-      setError("Secondary color must be a valid hex color (e.g., #7e69ab)");
+      setError("Secondary color must be a valid hex color (e.g., #fb923c)");
+      return;
+    }
+    if (!hexColorRegex.test(accentColor)) {
+      setError("Accent color must be a valid hex color (e.g., #38b2ac)");
+      return;
+    }
+    if (!hexColorRegex.test(backgroundColor)) {
+      setError("Background color must be a valid hex color (e.g., #ffffff)");
       return;
     }
 
@@ -74,6 +88,8 @@ export function BrandingEditor({ branding, isLoading, onBrandingChange }: Brandi
         body: {
           primaryColor,
           secondaryColor,
+          accentColor,
+          backgroundColor,
           fontFamily,
           logoUrl: logoUrl || undefined,
         },
@@ -91,21 +107,21 @@ export function BrandingEditor({ branding, isLoading, onBrandingChange }: Brandi
     } finally {
       setIsSaving(false);
     }
-  }, [primaryColor, secondaryColor, fontFamily, logoUrl, showSuccess, onBrandingChange]);
+  }, [primaryColor, secondaryColor, accentColor, backgroundColor, fontFamily, logoUrl, showSuccess, onBrandingChange]);
 
   return (
     <div className="space-y-6">
       {/* Success Message */}
       {successMessage && (
-        <div className="flex items-center gap-2 p-4 border border-lavender-600 bg-navy-700 rounded-lg">
-          <CheckCircle className="w-5 h-5 text-lavender-300" />
-          <span className="text-lg font-medium text-lavender-100">{successMessage}</span>
+        <div className="flex items-center gap-2 p-4 border border-macon-navy-600 bg-macon-navy-700 rounded-lg">
+          <CheckCircle className="w-5 h-5 text-macon-navy-300" />
+          <span className="text-lg font-medium text-macon-navy-100">{successMessage}</span>
         </div>
       )}
 
       {isLoading ? (
         <div className="flex items-center justify-center py-12">
-          <Loader2 className="w-8 h-8 animate-spin text-lavender-300" />
+          <Loader2 className="w-8 h-8 animate-spin text-macon-navy-300" />
         </div>
       ) : (
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -113,12 +129,16 @@ export function BrandingEditor({ branding, isLoading, onBrandingChange }: Brandi
           <BrandingForm
             primaryColor={primaryColor}
             secondaryColor={secondaryColor}
+            accentColor={accentColor}
+            backgroundColor={backgroundColor}
             fontFamily={fontFamily}
             logoUrl={logoUrl}
             isSaving={isSaving}
             error={error}
             onPrimaryColorChange={setPrimaryColor}
             onSecondaryColorChange={setSecondaryColor}
+            onAccentColorChange={setAccentColor}
+            onBackgroundColorChange={setBackgroundColor}
             onFontFamilyChange={setFontFamily}
             onLogoUrlChange={setLogoUrl}
             onSubmit={handleSave}

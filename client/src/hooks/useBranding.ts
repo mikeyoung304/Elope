@@ -53,6 +53,7 @@ export function useBranding() {
       throw new Error('Failed to fetch branding');
     },
     staleTime: 1000 * 60 * 5, // Cache for 5 minutes
+    retry: false, // Don't retry on auth errors
   });
 
   // Apply branding CSS variables when branding is loaded
@@ -60,14 +61,25 @@ export function useBranding() {
     if (branding) {
       const root = document.documentElement;
 
-      // Apply primary color
+      // Apply color scheme
       if (branding.primaryColor) {
         root.style.setProperty('--color-primary', branding.primaryColor);
+        root.style.setProperty('--macon-navy', branding.primaryColor);
       }
 
-      // Apply secondary color
       if (branding.secondaryColor) {
         root.style.setProperty('--color-secondary', branding.secondaryColor);
+        root.style.setProperty('--macon-orange', branding.secondaryColor);
+      }
+
+      if (branding.accentColor) {
+        root.style.setProperty('--color-success', branding.accentColor);
+        root.style.setProperty('--macon-teal', branding.accentColor);
+      }
+
+      if (branding.backgroundColor) {
+        root.style.setProperty('--color-background', branding.backgroundColor);
+        document.body.style.backgroundColor = branding.backgroundColor;
       }
 
       // Apply font family

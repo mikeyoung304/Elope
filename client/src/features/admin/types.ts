@@ -10,12 +10,27 @@ export interface PackageFormData {
   description: string;
   priceCents: string;
   photoUrl: string;
+  segmentId: string;
 }
 
 export interface AddOnFormData {
   title: string;
   priceCents: string;
   photoUrl: string;
+  segmentId: string;
+}
+
+export interface SegmentFormData {
+  slug: string;
+  name: string;
+  heroTitle: string;
+  heroSubtitle: string;
+  heroImage: string;
+  description: string;
+  metaTitle: string;
+  metaDescription: string;
+  sortOrder: string; // Store as string for input, parse on submit
+  active: boolean;
 }
 
 export interface PackageCardProps {
@@ -32,6 +47,7 @@ export interface PackageFormProps {
   editingPackageId: string | null;
   isSaving: boolean;
   error: string | null;
+  segments?: Array<{ id: string; name: string; active: boolean }>;
   onFormChange: (form: PackageFormData) => void;
   onSubmit: (e: React.FormEvent) => void;
   onCancel: () => void;
@@ -44,6 +60,7 @@ export interface AddOnManagerProps {
   addOnForm: AddOnFormData;
   isSaving: boolean;
   error: string | null;
+  segments?: Array<{ id: string; name: string; active: boolean }>;
   onFormChange: (form: AddOnFormData) => void;
   onSubmit: (e: React.FormEvent) => void;
   onCancel: () => void;

@@ -80,22 +80,22 @@ export function TenantBookingList({ bookings, isLoading }: TenantBookingListProp
       case "cancelled":
         return "border-red-500 bg-red-900/20 text-red-300";
       default:
-        return "border-navy-500 bg-navy-700 text-lavender-200";
+        return "border-macon-navy-500 bg-macon-navy-700 text-macon-navy-200";
     }
   };
 
   return (
     <div className="space-y-6">
       {/* Filters */}
-      <Card className="p-6 bg-navy-800 border-navy-600">
+      <Card className="p-6 bg-macon-navy-800 border-macon-navy-600">
         <div className="flex items-center gap-2 mb-4">
-          <Filter className="w-5 h-5 text-lavender-300" />
-          <h3 className="text-xl font-semibold text-lavender-50">Filters</h3>
+          <Filter className="w-5 h-5 text-macon-navy-300" />
+          <h3 className="text-xl font-semibold text-macon-navy-50">Filters</h3>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div className="space-y-2">
-            <Label htmlFor="dateFrom" className="text-lavender-100 text-base">
+            <Label htmlFor="dateFrom" className="text-macon-navy-100 text-base">
               Event Date From
             </Label>
             <Input
@@ -103,12 +103,12 @@ export function TenantBookingList({ bookings, isLoading }: TenantBookingListProp
               type="date"
               value={dateFrom}
               onChange={(e) => setDateFrom(e.target.value)}
-              className="bg-navy-900 border-navy-600 text-lavender-50 focus:border-lavender-500 h-10"
+              className="bg-macon-navy-900 border-macon-navy-600 text-macon-navy-50 focus:border-macon-navy-500 h-10"
             />
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="dateTo" className="text-lavender-100 text-base">
+            <Label htmlFor="dateTo" className="text-macon-navy-100 text-base">
               Event Date To
             </Label>
             <Input
@@ -116,19 +116,19 @@ export function TenantBookingList({ bookings, isLoading }: TenantBookingListProp
               type="date"
               value={dateTo}
               onChange={(e) => setDateTo(e.target.value)}
-              className="bg-navy-900 border-navy-600 text-lavender-50 focus:border-lavender-500 h-10"
+              className="bg-macon-navy-900 border-macon-navy-600 text-macon-navy-50 focus:border-macon-navy-500 h-10"
             />
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="status" className="text-lavender-100 text-base">
+            <Label htmlFor="status" className="text-macon-navy-100 text-base">
               Status
             </Label>
             <select
               id="status"
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value)}
-              className="w-full h-10 px-3 bg-navy-900 border border-navy-600 text-lavender-50 rounded-md focus:border-lavender-500 focus:outline-none"
+              className="w-full h-10 px-3 bg-macon-navy-900 border border-macon-navy-600 text-macon-navy-50 rounded-md focus:border-macon-navy-500 focus:outline-none"
             >
               <option value="all">All Statuses</option>
               <option value="confirmed">Confirmed</option>
@@ -148,7 +148,7 @@ export function TenantBookingList({ bookings, isLoading }: TenantBookingListProp
               }}
               variant="outline"
               size="sm"
-              className="border-navy-600 text-lavender-100 hover:bg-navy-700"
+              className="border-macon-navy-600 text-macon-navy-100 hover:bg-macon-navy-700"
             >
               Clear Filters
             </Button>
@@ -157,9 +157,9 @@ export function TenantBookingList({ bookings, isLoading }: TenantBookingListProp
       </Card>
 
       {/* Bookings List */}
-      <Card className="p-6 bg-navy-800 border-navy-600">
+      <Card className="p-6 bg-macon-navy-800 border-macon-navy-600">
         <div className="flex justify-between items-center mb-6">
-          <h2 className="text-2xl font-semibold text-lavender-50">
+          <h2 className="text-2xl font-semibold text-macon-navy-50">
             Bookings {filteredBookings.length !== bookings.length && `(${filteredBookings.length} of ${bookings.length})`}
           </h2>
           <Button
@@ -167,7 +167,7 @@ export function TenantBookingList({ bookings, isLoading }: TenantBookingListProp
             variant="outline"
             size="lg"
             disabled={filteredBookings.length === 0}
-            className="border-navy-600 text-lavender-100 hover:bg-navy-700 hover:text-lavender-50 text-base"
+            className="border-macon-navy-600 text-macon-navy-100 hover:bg-macon-navy-700 hover:text-macon-navy-50 text-base"
           >
             <Download className="w-5 h-5 mr-2" />
             Export CSV
@@ -176,47 +176,47 @@ export function TenantBookingList({ bookings, isLoading }: TenantBookingListProp
 
         <Table>
           <TableHeader>
-            <TableRow className="border-navy-600 hover:bg-navy-700">
-              <TableHead className="text-lavender-100 text-lg">Couple</TableHead>
-              <TableHead className="text-lavender-100 text-lg">Email</TableHead>
-              <TableHead className="text-lavender-100 text-lg">Event Date</TableHead>
-              <TableHead className="text-lavender-100 text-lg">Package</TableHead>
-              <TableHead className="text-lavender-100 text-lg">Status</TableHead>
-              <TableHead className="text-right text-lavender-100 text-lg">Total</TableHead>
+            <TableRow className="border-macon-navy-600 hover:bg-macon-navy-700">
+              <TableHead className="text-macon-navy-100 text-lg">Couple</TableHead>
+              <TableHead className="text-macon-navy-100 text-lg">Email</TableHead>
+              <TableHead className="text-macon-navy-100 text-lg">Event Date</TableHead>
+              <TableHead className="text-macon-navy-100 text-lg">Package</TableHead>
+              <TableHead className="text-macon-navy-100 text-lg">Status</TableHead>
+              <TableHead className="text-right text-macon-navy-100 text-lg">Total</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {isLoading ? (
-              <TableRow className="hover:bg-navy-700">
+              <TableRow className="hover:bg-macon-navy-700">
                 <TableCell colSpan={6} className="text-center py-8">
-                  <Loader2 className="w-6 h-6 animate-spin mx-auto text-lavender-300" />
+                  <Loader2 className="w-6 h-6 animate-spin mx-auto text-macon-navy-300" />
                 </TableCell>
               </TableRow>
             ) : !hasBookings ? (
-              <TableRow className="hover:bg-navy-700">
-                <TableCell colSpan={6} className="text-center py-8 text-lavender-100 text-lg">
+              <TableRow className="hover:bg-macon-navy-700">
+                <TableCell colSpan={6} className="text-center py-8 text-macon-navy-100 text-lg">
                   No bookings yet
                 </TableCell>
               </TableRow>
             ) : filteredBookings.length === 0 ? (
-              <TableRow className="hover:bg-navy-700">
-                <TableCell colSpan={6} className="text-center py-8 text-lavender-100 text-lg">
+              <TableRow className="hover:bg-macon-navy-700">
+                <TableCell colSpan={6} className="text-center py-8 text-macon-navy-100 text-lg">
                   No bookings match the current filters
                 </TableCell>
               </TableRow>
             ) : (
               filteredBookings.map((booking) => (
-                <TableRow key={booking.id} className="border-navy-600 hover:bg-navy-700">
-                  <TableCell className="font-medium text-lavender-50 text-base">
+                <TableRow key={booking.id} className="border-macon-navy-600 hover:bg-macon-navy-700">
+                  <TableCell className="font-medium text-macon-navy-50 text-base">
                     {booking.coupleName}
                   </TableCell>
-                  <TableCell className="text-lavender-100 text-base">
+                  <TableCell className="text-macon-navy-100 text-base">
                     {booking.email}
                   </TableCell>
                   <TableCell>
                     <Badge
                       variant="outline"
-                      className="border-navy-500 bg-navy-700 text-lavender-200 text-base"
+                      className="border-macon-navy-500 bg-macon-navy-700 text-macon-navy-200 text-base"
                     >
                       {new Date(booking.eventDate).toLocaleDateString('en-US', {
                         year: 'numeric',
@@ -225,7 +225,7 @@ export function TenantBookingList({ bookings, isLoading }: TenantBookingListProp
                       })}
                     </Badge>
                   </TableCell>
-                  <TableCell className="text-lavender-100 text-base">
+                  <TableCell className="text-macon-navy-100 text-base">
                     {booking.packageId}
                   </TableCell>
                   <TableCell>
@@ -237,7 +237,7 @@ export function TenantBookingList({ bookings, isLoading }: TenantBookingListProp
                         ((booking as any).status || "confirmed").slice(1)}
                     </Badge>
                   </TableCell>
-                  <TableCell className="text-right font-medium text-lavender-300 text-xl">
+                  <TableCell className="text-right font-medium text-macon-navy-300 text-xl">
                     {formatCurrency(booking.totalCents)}
                   </TableCell>
                 </TableRow>

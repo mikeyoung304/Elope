@@ -15,6 +15,7 @@ interface PackagesListProps {
   addOnForm: AddOnFormData;
   isSaving: boolean;
   error: string | null;
+  segments?: Array<{ id: string; name: string; active: boolean }>;
   onAddOnFormChange: (form: AddOnFormData) => void;
   onSubmitAddOn: (e: React.FormEvent, packageId: string) => void;
   onCancelAddOn: () => void;
@@ -33,6 +34,7 @@ export function PackagesList({
   addOnForm,
   isSaving,
   error,
+  segments,
   onAddOnFormChange,
   onSubmitAddOn,
   onCancelAddOn,
@@ -43,10 +45,10 @@ export function PackagesList({
   const [expandedPackageId, setExpandedPackageId] = useState<string | null>(null);
 
   return (
-    <Card className="p-6 bg-navy-800 border-navy-600">
-      <h2 className="text-2xl font-semibold mb-4 text-lavender-50">Packages</h2>
+    <Card className="p-6 bg-macon-navy-800 border-macon-navy-600">
+      <h2 className="text-2xl font-semibold mb-4 text-macon-navy-50">Packages</h2>
       {packages.length === 0 ? (
-        <p className="text-lavender-100 text-lg">No packages yet. Create your first package above.</p>
+        <p className="text-macon-navy-100 text-lg">No packages yet. Create your first package above.</p>
       ) : (
         <div className="space-y-3">
           {packages.map((pkg) => (
@@ -71,6 +73,7 @@ export function PackagesList({
                     addOnForm={addOnForm}
                     isSaving={isSaving}
                     error={error}
+                    segments={segments}
                     onFormChange={onAddOnFormChange}
                     onSubmit={(e) => onSubmitAddOn(e, pkg.id)}
                     onCancel={onCancelAddOn}

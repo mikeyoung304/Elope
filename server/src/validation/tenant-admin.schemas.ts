@@ -52,6 +52,14 @@ export const updateBrandingSchema = z.object({
     .string()
     .regex(hexColorRegex, 'Secondary color must be a valid hex color (e.g., #3498DB)')
     .optional(),
+  accentColor: z
+    .string()
+    .regex(hexColorRegex, 'Accent color must be a valid hex color (e.g., #38B2AC)')
+    .optional(),
+  backgroundColor: z
+    .string()
+    .regex(hexColorRegex, 'Background color must be a valid hex color (e.g., #FFFFFF)')
+    .optional(),
   fontFamily: z.string().min(1).optional(),
   logo: z.string().url().optional(),
 });

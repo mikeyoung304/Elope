@@ -17,7 +17,8 @@ import {
   LogOut,
   Plus,
   Loader2,
-  Search
+  Search,
+  Layers
 } from "lucide-react";
 import { Card } from "../../components/ui/card";
 import { Button } from "../../components/ui/button";
@@ -50,12 +51,24 @@ type TenantDto = {
   };
 };
 
+type SegmentDto = {
+  id: string;
+  tenantId: string;
+  slug: string;
+  name: string;
+  active: boolean;
+  createdAt: string;
+  updatedAt: string;
+};
+
 type SystemStats = {
   totalTenants: number;
   activeTenants: number;
   totalBookings: number;
   totalRevenue: number;
   platformCommission: number;
+  totalSegments: number;
+  activeSegments: number;
 };
 
 export function PlatformAdminDashboard() {
@@ -68,6 +81,8 @@ export function PlatformAdminDashboard() {
     totalBookings: 0,
     totalRevenue: 0,
     platformCommission: 0,
+    totalSegments: 0,
+    activeSegments: 0,
   });
   const [isLoading, setIsLoading] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
@@ -89,6 +104,31 @@ export function PlatformAdminDashboard() {
       const statsResult = await (api as any).platformGetStats();
       if (statsResult.status === 200) {
         setStats(statsResult.body);
+      }
+
+      // Fetch segments count across all tenants
+      try {
+        const segmentsResult = await (api as any).tenantAdminGetSegments();
+        if (segmentsResult.status === 200) {
+          const segments = segmentsResult.body as SegmentDto[];
+          const segmentCount = segments.length;
+          const activeSegmentCount = segments.filter((s) => s.active).length;
+
+          setStats(prev => ({
+            ...prev,
+            totalSegments: segmentCount,
+            activeSegments: activeSegmentCount,
+          }));
+        }
+      } catch (segmentError) {
+        // Segments endpoint might not be accessible or might fail
+        // Set to 0 as fallback
+        console.warn("Could not fetch segments:", segmentError);
+        setStats(prev => ({
+          ...prev,
+          totalSegments: 0,
+          activeSegments: 0,
+        }));
       }
     } catch (error) {
       console.error("Failed to load dashboard data:", error);
@@ -113,8 +153,8 @@ export function PlatformAdminDashboard() {
         {/* Header */}
         <div className="flex justify-between items-center">
           <div>
-            <h1 className="text-4xl font-bold text-lavender-50">Platform Admin Dashboard</h1>
-            <p className="text-lg text-lavender-200 mt-2">
+            <h1 className="text-4xl font-bold text-macon-navy-50">Platform Admin Dashboard</h1>
+            <p className="text-lg text-macon-navy-200 mt-2">
               System Overview - {user?.email}
             </p>
           </div>
@@ -122,7 +162,7 @@ export function PlatformAdminDashboard() {
             onClick={handleLogout}
             variant="outline"
             size="lg"
-            className="border-navy-600 text-lavender-100 hover:bg-navy-800 text-lg"
+            className="border-macon-navy-600 text-macon-navy-100 hover:bg-macon-navy-800 text-lg"
           >
             <LogOut className="w-5 h-5 mr-2" />
             Logout
@@ -130,62 +170,73 @@ export function PlatformAdminDashboard() {
         </div>
 
         {/* System Metrics */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-          <Card className="p-6 bg-navy-800 border-navy-600">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+          <Card className="p-6 bg-macon-navy-800 border-macon-navy-600">
             <div className="flex items-center gap-3 mb-2">
-              <div className="p-2 bg-navy-700 rounded">
-                <Building2 className="w-5 h-5 text-lavender-300" />
+              <div className="p-2 bg-macon-navy-700 rounded">
+                <Building2 className="w-5 h-5 text-macon-navy-300" />
               </div>
-              <div className="text-base text-lavender-100">Total Tenants</div>
+              <div className="text-base text-macon-navy-100">Total Tenants</div>
             </div>
-            <div className="text-4xl font-bold text-lavender-50">{stats.totalTenants}</div>
-            <p className="text-sm text-lavender-300 mt-1">{stats.activeTenants} active</p>
+            <div className="text-4xl font-bold text-macon-navy-50">{stats.totalTenants}</div>
+            <p className="text-sm text-macon-navy-300 mt-1">{stats.activeTenants} active</p>
           </Card>
 
-          <Card className="p-6 bg-navy-800 border-navy-600">
+          <Card className="p-6 bg-macon-navy-800 border-macon-navy-600">
             <div className="flex items-center gap-3 mb-2">
-              <div className="p-2 bg-navy-700 rounded">
-                <Calendar className="w-5 h-5 text-lavender-300" />
+              <div className="p-2 bg-macon-navy-700 rounded">
+                <Layers className="w-5 h-5 text-macon-navy-300" />
               </div>
-              <div className="text-base text-lavender-100">Total Bookings</div>
+              <div className="text-base text-macon-navy-100">Business Segments</div>
             </div>
-            <div className="text-4xl font-bold text-lavender-50">{stats.totalBookings}</div>
-            <p className="text-sm text-lavender-300 mt-1">All tenants</p>
+            <div className="text-4xl font-bold text-macon-navy-50">{stats.totalSegments}</div>
+            <p className="text-sm text-macon-navy-300 mt-1">{stats.activeSegments} active</p>
           </Card>
 
-          <Card className="p-6 bg-navy-800 border-navy-600">
+          <Card className="p-6 bg-macon-navy-800 border-macon-navy-600">
             <div className="flex items-center gap-3 mb-2">
-              <div className="p-2 bg-navy-700 rounded">
-                <DollarSign className="w-5 h-5 text-lavender-300" />
+              <div className="p-2 bg-macon-navy-700 rounded">
+                <Calendar className="w-5 h-5 text-macon-navy-300" />
               </div>
-              <div className="text-base text-lavender-100">Total Revenue</div>
+              <div className="text-base text-macon-navy-100">Total Bookings</div>
             </div>
-            <div className="text-4xl font-bold text-lavender-300">
+            <div className="text-4xl font-bold text-macon-navy-50">{stats.totalBookings}</div>
+            <p className="text-sm text-macon-navy-300 mt-1">All tenants</p>
+          </Card>
+
+          <Card className="p-6 bg-macon-navy-800 border-macon-navy-600">
+            <div className="flex items-center gap-3 mb-2">
+              <div className="p-2 bg-macon-navy-700 rounded">
+                <DollarSign className="w-5 h-5 text-macon-navy-300" />
+              </div>
+              <div className="text-base text-macon-navy-100">Total Revenue</div>
+            </div>
+            <div className="text-4xl font-bold text-macon-navy-300">
               {formatCurrency(stats.totalRevenue)}
             </div>
-            <p className="text-sm text-lavender-300 mt-1">All tenants</p>
+            <p className="text-sm text-macon-navy-300 mt-1">All tenants</p>
           </Card>
 
-          <Card className="p-6 bg-navy-800 border-navy-600">
+          <Card className="p-6 bg-macon-navy-800 border-macon-navy-600">
             <div className="flex items-center gap-3 mb-2">
-              <div className="p-2 bg-navy-700 rounded">
-                <Users className="w-5 h-5 text-lavender-300" />
+              <div className="p-2 bg-macon-navy-700 rounded">
+                <Users className="w-5 h-5 text-macon-navy-300" />
               </div>
-              <div className="text-base text-lavender-100">Platform Commission</div>
+              <div className="text-base text-macon-navy-100">Platform Commission</div>
             </div>
-            <div className="text-4xl font-bold text-lavender-300">
+            <div className="text-4xl font-bold text-macon-navy-300">
               {formatCurrency(stats.platformCommission)}
             </div>
-            <p className="text-sm text-lavender-300 mt-1">From all bookings</p>
+            <p className="text-sm text-macon-navy-300 mt-1">From all bookings</p>
           </Card>
         </div>
 
         {/* Tenants Management */}
-        <Card className="p-6 bg-navy-800 border-navy-600">
+        <Card className="p-6 bg-macon-navy-800 border-macon-navy-600">
           <div className="flex justify-between items-center mb-6">
-            <h2 className="text-2xl font-semibold text-lavender-50">All Tenants</h2>
+            <h2 className="text-2xl font-semibold text-macon-navy-50">All Tenants</h2>
             <Button
-              className="bg-lavender-500 hover:bg-lavender-600 text-lg"
+              className="bg-macon-navy hover:bg-macon-navy-dark text-lg"
               onClick={() => navigate("/admin/tenants/new")}
             >
               <Plus className="w-5 h-5 mr-2" />
@@ -196,13 +247,13 @@ export function PlatformAdminDashboard() {
           {/* Search */}
           <div className="mb-6">
             <div className="relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-navy-400" />
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-macon-navy-400" />
               <Input
                 type="search"
                 placeholder="Search tenants by name, slug, or email..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-10 bg-navy-900 border-navy-600 text-lavender-50 placeholder:text-navy-400 focus:border-lavender-500 h-12"
+                className="pl-10 bg-macon-navy-900 border-macon-navy-600 text-macon-navy-50 placeholder:text-macon-navy-400 focus:border-macon-navy-500 h-12"
               />
             </div>
           </div>
@@ -210,49 +261,49 @@ export function PlatformAdminDashboard() {
           {/* Tenants Table */}
           <Table>
             <TableHeader>
-              <TableRow className="border-navy-600 hover:bg-navy-700">
-                <TableHead className="text-lavender-100 text-lg">Tenant</TableHead>
-                <TableHead className="text-lavender-100 text-lg">Slug</TableHead>
-                <TableHead className="text-lavender-100 text-lg">Email</TableHead>
-                <TableHead className="text-lavender-100 text-lg">Packages</TableHead>
-                <TableHead className="text-lavender-100 text-lg">Bookings</TableHead>
-                <TableHead className="text-lavender-100 text-lg">Commission</TableHead>
-                <TableHead className="text-lavender-100 text-lg">Status</TableHead>
-                <TableHead className="text-lavender-100 text-lg">Actions</TableHead>
+              <TableRow className="border-macon-navy-600 hover:bg-macon-navy-700">
+                <TableHead className="text-macon-navy-100 text-lg">Tenant</TableHead>
+                <TableHead className="text-macon-navy-100 text-lg">Slug</TableHead>
+                <TableHead className="text-macon-navy-100 text-lg">Email</TableHead>
+                <TableHead className="text-macon-navy-100 text-lg">Packages</TableHead>
+                <TableHead className="text-macon-navy-100 text-lg">Bookings</TableHead>
+                <TableHead className="text-macon-navy-100 text-lg">Commission</TableHead>
+                <TableHead className="text-macon-navy-100 text-lg">Status</TableHead>
+                <TableHead className="text-macon-navy-100 text-lg">Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {isLoading ? (
-                <TableRow className="hover:bg-navy-700">
+                <TableRow className="hover:bg-macon-navy-700">
                   <TableCell colSpan={8} className="text-center py-8">
-                    <Loader2 className="w-6 h-6 animate-spin mx-auto text-lavender-300" />
+                    <Loader2 className="w-6 h-6 animate-spin mx-auto text-macon-navy-300" />
                   </TableCell>
                 </TableRow>
               ) : filteredTenants.length === 0 ? (
-                <TableRow className="hover:bg-navy-700">
-                  <TableCell colSpan={8} className="text-center py-8 text-lavender-100 text-lg">
+                <TableRow className="hover:bg-macon-navy-700">
+                  <TableCell colSpan={8} className="text-center py-8 text-macon-navy-100 text-lg">
                     {searchTerm ? "No tenants match your search" : "No tenants yet"}
                   </TableCell>
                 </TableRow>
               ) : (
                 filteredTenants.map((tenant) => (
-                  <TableRow key={tenant.id} className="border-navy-600 hover:bg-navy-700">
-                    <TableCell className="font-medium text-lavender-50 text-base">
+                  <TableRow key={tenant.id} className="border-macon-navy-600 hover:bg-macon-navy-700">
+                    <TableCell className="font-medium text-macon-navy-50 text-base">
                       {tenant.name}
                     </TableCell>
-                    <TableCell className="text-lavender-200 text-base">
+                    <TableCell className="text-macon-navy-200 text-base">
                       {tenant.slug}
                     </TableCell>
-                    <TableCell className="text-lavender-200 text-base">
+                    <TableCell className="text-macon-navy-200 text-base">
                       {tenant.email || "—"}
                     </TableCell>
-                    <TableCell className="text-lavender-200 text-base">
+                    <TableCell className="text-macon-navy-200 text-base">
                       {tenant._count?.packages || 0}
                     </TableCell>
-                    <TableCell className="text-lavender-200 text-base">
+                    <TableCell className="text-macon-navy-200 text-base">
                       {tenant._count?.bookings || 0}
                     </TableCell>
-                    <TableCell className="text-lavender-200 text-base">
+                    <TableCell className="text-macon-navy-200 text-base">
                       {tenant.commissionPercent}%
                     </TableCell>
                     <TableCell>
@@ -267,7 +318,7 @@ export function PlatformAdminDashboard() {
                           </Badge>
                         )}
                         {tenant.stripeOnboarded && (
-                          <Badge variant="outline" className="border-blue-500 bg-blue-500/10 text-blue-200">
+                          <Badge variant="outline" className="border-macon-teal bg-macon-teal/10 text-macon-teal">
                             Stripe
                           </Badge>
                         )}
@@ -278,7 +329,7 @@ export function PlatformAdminDashboard() {
                         variant="outline"
                         size="sm"
                         onClick={() => navigate(`/admin/tenants/${tenant.id}`)}
-                        className="border-navy-600 text-lavender-200 hover:bg-navy-700"
+                        className="border-macon-navy-600 text-macon-navy-200 hover:bg-macon-navy-700"
                       >
                         View Details
                       </Button>

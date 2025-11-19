@@ -1,8 +1,8 @@
 {
-  "name": "elope",
+  "name": "macon-ai-solutions",
   "version": "0.0.0",
   "private": true,
-  "description": "Modular monolith workspace",
+  "description": "Macon AI Solutions - AI-Powered Tenant Management Platform",
   "workspaces": [
     "client",
     "server",

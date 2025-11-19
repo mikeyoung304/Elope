@@ -33,7 +33,7 @@ function normalizeHex(color: string): string {
   return `#${normalized}`.toUpperCase();
 }
 
-export function ColorPicker({ label, value = '#7C3AED', onChange, className = '' }: ColorPickerProps) {
+export function ColorPicker({ label, value = '#fb923c', onChange, className = '' }: ColorPickerProps) {
   const [color, setColor] = useState(value);
   const [inputValue, setInputValue] = useState(value);
   const [isPickerOpen, setIsPickerOpen] = useState(false);
@@ -87,14 +87,14 @@ export function ColorPicker({ label, value = '#7C3AED', onChange, className = ''
 
   return (
     <div className={`space-y-2 ${className}`}>
-      <Label className="text-lavender-100">{label}</Label>
+      <Label className="text-macon-navy-100">{label}</Label>
 
       <div className="flex gap-3 items-center">
         {/* Color preview button */}
         <button
           type="button"
           onClick={() => setIsPickerOpen(!isPickerOpen)}
-          className="w-12 h-12 rounded-md border-2 border-navy-600 cursor-pointer transition-all hover:border-lavender-500 focus:outline-none focus:ring-2 focus:ring-lavender-500 focus:ring-offset-2 focus:ring-offset-navy-900"
+          className="w-12 h-12 rounded-md border-2 border-macon-navy-600 cursor-pointer transition-all hover:border-macon-navy-500 focus:outline-none focus:ring-2 focus:ring-macon-navy-500 focus:ring-offset-2 focus:ring-offset-navy-900"
           style={{ backgroundColor: color }}
           aria-label="Open color picker"
         />
@@ -105,8 +105,8 @@ export function ColorPicker({ label, value = '#7C3AED', onChange, className = ''
           value={inputValue}
           onChange={handleInputChange}
           onBlur={handleInputBlur}
-          placeholder="#7C3AED"
-          className="flex-1 bg-navy-900 border-navy-600 text-lavender-50 placeholder:text-navy-400 focus:border-lavender-500 focus:ring-lavender-500"
+          placeholder="#fb923c"
+          className="flex-1 bg-macon-navy-900 border-macon-navy-600 text-macon-navy-50 placeholder:text-macon-navy-400 focus:border-macon-navy-500 focus:ring-macon-navy-500"
           maxLength={7}
         />
       </div>
@@ -114,12 +114,12 @@ export function ColorPicker({ label, value = '#7C3AED', onChange, className = ''
       {/* Color picker popover */}
       {isPickerOpen && (
         <div className="relative">
-          <div className="absolute z-10 mt-2 p-4 bg-navy-800 border border-navy-600 rounded-lg shadow-xl">
+          <div className="absolute z-10 mt-2 p-4 bg-macon-navy-800 border border-macon-navy-600 rounded-lg shadow-xl">
             <HexColorPicker color={color} onChange={handlePickerChange} />
             <button
               type="button"
               onClick={() => setIsPickerOpen(false)}
-              className="mt-3 w-full px-4 py-2 text-sm bg-lavender-600 hover:bg-lavender-700 text-white rounded-md transition-colors"
+              className="mt-3 w-full px-4 py-2 text-sm bg-macon-orange hover:bg-macon-orange-dark text-white rounded-md transition-colors"
             >
               Done
             </button>
@@ -135,7 +135,7 @@ export function ColorPicker({ label, value = '#7C3AED', onChange, className = ''
 
       {/* Validation hint */}
       {inputValue && !isValidHex(normalizeHex(inputValue)) && (
-        <p className="text-sm text-red-400">Invalid hex color format (e.g., #7C3AED)</p>
+        <p className="text-sm text-red-400">Invalid hex color format (e.g., #fb923c)</p>
       )}
     </div>
   );

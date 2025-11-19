@@ -2,7 +2,7 @@
   "mcpServers": {
     "filesystem": {
       "command": "npx",
-      "args": ["-y", "@modelcontextprotocol/server-filesystem", "/Users/mikeyoung/CODING/Elope"]
+      "args": ["-y", "@modelcontextprotocol/server-filesystem", "/Users/mikeyoung/CODING/MAIS"]
     },
     "git": {
       "command": "npx",
@@ -17,8 +17,12 @@
       "args": [
         "-y",
         "@modelcontextprotocol/server-postgres",
-        "postgresql://localhost:5432/elope_dev"
+        "postgresql://localhost:5432/macon_dev"
       ]
+    },
+    "playwright": {
+      "command": "npx",
+      "args": ["-y", "@playwright/mcp@latest"]
     }
   }
 }

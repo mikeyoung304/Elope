@@ -23,42 +23,42 @@ export function TenantLogin({ onLogin, error, isLoading }: TenantLoginProps) {
   };
 
   return (
-    <Card className="max-w-md mx-auto bg-navy-800 border-navy-600">
+    <Card className="max-w-md mx-auto bg-macon-navy-800 border-macon-navy-600">
       <CardHeader>
-        <CardTitle className="text-center text-lavender-50 text-3xl">Tenant Login</CardTitle>
+        <CardTitle className="text-center text-macon-navy-50 text-3xl">Tenant Login</CardTitle>
       </CardHeader>
       <CardContent>
         {error && (
-          <div className="mb-6 p-3 bg-navy-700 border border-navy-600 text-lavender-100 rounded text-lg">
+          <div className="mb-6 p-3 bg-macon-navy-700 border border-macon-navy-600 text-macon-navy-100 rounded text-lg">
             {error}
           </div>
         )}
         <form onSubmit={handleSubmit} className="space-y-6">
           <div className="space-y-2">
-            <Label htmlFor="email" className="text-lavender-100 text-lg">Email</Label>
+            <Label htmlFor="email" className="text-macon-navy-100 text-lg">Email</Label>
             <Input
               id="email"
               type="email"
               value={values.email}
               onChange={(e) => handleChange('email', e.target.value)}
-              className="bg-navy-900 border-navy-600 text-lavender-50 placeholder:text-navy-400 focus:border-lavender-500 text-lg h-12"
+              className="bg-macon-navy-900 border-macon-navy-600 text-macon-navy-50 placeholder:text-macon-navy-400 focus:border-macon-navy-500 text-lg h-12"
               required
               disabled={isLoading}
             />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="password" className="text-lavender-100 text-lg">Password</Label>
+            <Label htmlFor="password" className="text-macon-navy-100 text-lg">Password</Label>
             <Input
               id="password"
               type="password"
               value={values.password}
               onChange={(e) => handleChange('password', e.target.value)}
-              className="bg-navy-900 border-navy-600 text-lavender-50 placeholder:text-navy-400 focus:border-lavender-500 text-lg h-12"
+              className="bg-macon-navy-900 border-macon-navy-600 text-macon-navy-50 placeholder:text-macon-navy-400 focus:border-macon-navy-500 text-lg h-12"
               required
               disabled={isLoading}
             />
           </div>
-          <Button type="submit" className="w-full bg-lavender-500 hover:bg-lavender-600 text-xl h-14" disabled={isLoading}>
+          <Button type="submit" className="w-full bg-macon-navy hover:bg-macon-navy-dark text-xl h-14" disabled={isLoading}>
             {isLoading ? "Logging in..." : "Login"}
           </Button>
         </form>

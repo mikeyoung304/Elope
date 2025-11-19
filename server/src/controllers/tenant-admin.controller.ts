@@ -62,6 +62,8 @@ interface BlackoutDto {
 interface BrandingDto {
   primaryColor?: string;
   secondaryColor?: string;
+  accentColor?: string;
+  backgroundColor?: string;
   fontFamily?: string;
   logo?: string;
 }
@@ -252,11 +254,15 @@ export class TenantAdminController {
       throw new NotFoundError(`Tenant not found`);
     }
 
+    // Colors come from dedicated database columns
+    // fontFamily and logo still come from branding JSON
     const branding = (tenant.branding as any) || {};
 
     return {
-      primaryColor: branding.primaryColor,
-      secondaryColor: branding.secondaryColor,
+      primaryColor: tenant.primaryColor,
+      secondaryColor: tenant.secondaryColor,
+      accentColor: tenant.accentColor,
+      backgroundColor: tenant.backgroundColor,
       fontFamily: branding.fontFamily,
       logo: branding.logo,
     };
@@ -274,23 +280,41 @@ export class TenantAdminController {
       throw new NotFoundError(`Tenant not found`);
     }
 
-    // Merge existing branding with updates
+    // Separate color fields from other branding fields
+    const { primaryColor, secondaryColor, accentColor, backgroundColor, fontFamily, ...otherBranding } = data;
+
+    // Update color fields at database column level
+    const colorUpdates: any = {};
+    if (primaryColor !== undefined) colorUpdates.primaryColor = primaryColor;
+    if (secondaryColor !== undefined) colorUpdates.secondaryColor = secondaryColor;
+    if (accentColor !== undefined) colorUpdates.accentColor = accentColor;
+    if (backgroundColor !== undefined) colorUpdates.backgroundColor = backgroundColor;
+
+    // Update non-color fields in branding JSON
     const currentBranding = (tenant.branding as any) || {};
-    const updatedBranding = {
+    const updatedBrandingJson = {
       ...currentBranding,
-      ...data,
+      ...(fontFamily !== undefined && { fontFamily }),
+      ...otherBranding,
     };
 
-    // Update tenant with new branding
+    // Apply both updates
     await this.tenantRepo.update(tenantId, {
-      branding: updatedBranding,
+      ...colorUpdates,
+      branding: updatedBrandingJson,
     });
 
+    // Return updated branding
+    const updatedTenant = await this.tenantRepo.findById(tenantId);
+    const finalBranding = (updatedTenant!.branding as any) || {};
+
     return {
-      primaryColor: updatedBranding.primaryColor,
-      secondaryColor: updatedBranding.secondaryColor,
-      fontFamily: updatedBranding.fontFamily,
-      logo: updatedBranding.logo,
+      primaryColor: updatedTenant!.primaryColor,
+      secondaryColor: updatedTenant!.secondaryColor,
+      accentColor: updatedTenant!.accentColor,
+      backgroundColor: updatedTenant!.backgroundColor,
+      fontFamily: finalBranding.fontFamily,
+      logo: finalBranding.logo,
     };
   }
 }

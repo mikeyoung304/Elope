@@ -40,22 +40,22 @@ export function Success() {
 
   return (
     <Container className="py-12 md:py-20">
-      <Card className="max-w-3xl mx-auto bg-navy-800 border-navy-600 shadow-lg">
+      <Card className="max-w-3xl mx-auto bg-macon-navy-800 border-macon-navy-600 shadow-lg">
         <CardHeader className="text-center space-y-4 pb-8">
           <div className="flex justify-center">
             <div
               className={cn(
-                "inline-flex items-center justify-center w-16 h-16 rounded-full transition-colors bg-navy-700"
+                "inline-flex items-center justify-center w-16 h-16 rounded-full transition-colors bg-macon-navy-700"
               )}
             >
               {showSuccessIcon ? (
-                <CheckCircle className="w-8 h-8 text-lavender-300" />
+                <CheckCircle className="w-8 h-8 text-macon-navy-300" />
               ) : (
-                <AlertCircle className="w-8 h-8 text-lavender-200" />
+                <AlertCircle className="w-8 h-8 text-macon-navy-200" />
               )}
             </div>
           </div>
-          <CardTitle className="font-heading text-4xl md:text-5xl text-lavender-50">
+          <CardTitle className="font-heading text-4xl md:text-5xl text-macon-navy-50">
             {bookingDetails ? "Booking Confirmed!" : isPaidOrConfirmed ? "Booking Confirmed!" : "Almost There!"}
           </CardTitle>
         </CardHeader>
@@ -76,7 +76,7 @@ export function Success() {
           <CardFooter className="justify-center pt-6">
             <Button
               asChild
-              className="bg-lavender-500 hover:bg-lavender-600 text-white text-xl h-14 px-8"
+              className="bg-macon-navy hover:bg-macon-navy-dark text-white text-xl h-14 px-8"
             >
               <Link to="/">Back to Home</Link>
             </Button>

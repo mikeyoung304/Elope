@@ -51,9 +51,16 @@ model Tenant {
   commissionPercent Decimal @default(10.0) @db.Decimal(5, 2) // Platform commission %
 
   // Branding Configuration for embeddable widget
-  // Structure: {primaryColor, secondaryColor, fontFamily, logo}
-  // Example: {"primaryColor": "#8B7355", "secondaryColor": "#D4A574", "fontFamily": "Inter", "logo": "https://..."}
-  branding Json @default("{}") // Widget branding settings
+  // Structure: {fontFamily, logo, etc.}
+  // Example: {"fontFamily": "Inter", "logo": "https://..."}
+  branding Json @default("{}") // Widget branding settings (non-color)
+
+  // Theme Colors - Dedicated fields for runtime CSS variable updates
+  // Defaults to Macon brand colors (rebuild-6.0 design system)
+  primaryColor    String @default("#1a365d") // Macon Navy - main brand color (buttons, headers)
+  secondaryColor  String @default("#fb923c") // Macon Orange - accent color (CTAs, highlights)
+  accentColor     String @default("#38b2ac") // Macon Teal - success/positive actions
+  backgroundColor String @default("#ffffff") // White - page background
 
   // Stripe Connect
   stripeAccountId String? @unique // Stripe Connected Account ID

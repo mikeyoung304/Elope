@@ -24,17 +24,17 @@ export function PhotoGrid({
 }: PhotoGridProps) {
   if (photos.length === 0) {
     return (
-      <div className="flex flex-col items-center justify-center py-12 px-4 border-2 border-dashed border-navy-600 rounded-lg">
-        <ImageIcon className="w-16 h-16 text-navy-500 mb-4" />
-        <p className="text-lg text-lavender-100 text-center mb-2">No photos yet</p>
-        <p className="text-base text-lavender-200 text-center mb-4">
+      <div className="flex flex-col items-center justify-center py-12 px-4 border-2 border-dashed border-macon-navy-600 rounded-lg">
+        <ImageIcon className="w-16 h-16 text-macon-navy-500 mb-4" />
+        <p className="text-lg text-macon-navy-100 text-center mb-2">No photos yet</p>
+        <p className="text-base text-macon-navy-200 text-center mb-4">
           Upload up to {maxPhotos} photos (max 5MB each)
         </p>
         <Button
           onClick={onTriggerUpload}
           disabled={isUploading}
           variant="outline"
-          className="border-navy-600 text-lavender-100 hover:bg-navy-700"
+          className="border-macon-navy-600 text-macon-navy-100 hover:bg-macon-navy-700"
         >
           <ImageIcon className="w-4 h-4 mr-2" />
           Choose Photo
@@ -49,10 +49,10 @@ export function PhotoGrid({
         {photos.map((photo, index) => (
           <div
             key={photo.filename}
-            className="relative group aspect-video bg-navy-700 border border-navy-600 rounded-lg overflow-hidden"
+            className="relative group aspect-video bg-macon-navy-700 border border-macon-navy-600 rounded-lg overflow-hidden"
           >
             {/* Photo order badge */}
-            <div className="absolute top-2 left-2 z-10 bg-navy-900/80 text-lavender-100 text-sm font-semibold px-2 py-1 rounded">
+            <div className="absolute top-2 left-2 z-10 bg-macon-navy-900/80 text-macon-navy-100 text-sm font-semibold px-2 py-1 rounded">
               #{index + 1}
             </div>
 
@@ -74,10 +74,10 @@ export function PhotoGrid({
 
             {/* Photo info overlay */}
             <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-navy-900/90 to-transparent p-3 opacity-0 group-hover:opacity-100 transition-opacity">
-              <p className="text-xs text-lavender-200 truncate">
+              <p className="text-xs text-macon-navy-200 truncate">
                 {photo.filename}
               </p>
-              <p className="text-xs text-lavender-300">
+              <p className="text-xs text-macon-navy-300">
                 {(photo.size / 1024).toFixed(1)} KB
               </p>
             </div>
@@ -87,7 +87,7 @@ export function PhotoGrid({
 
       {/* Upload hint */}
       {photos.length < maxPhotos && (
-        <p className="text-base text-lavender-200 mt-4">
+        <p className="text-base text-macon-navy-200 mt-4">
           You can upload {maxPhotos - photos.length} more {photos.length === maxPhotos - 1 ? 'photo' : 'photos'}
         </p>
       )}

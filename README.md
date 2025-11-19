@@ -1,4 +1,4 @@
-# Elope - Wedding Booking Platform
+# Macon AI Solutions - AI-Powered Tenant Management Platform
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.3-blue)](https://www.typescriptlang.org/)
@@ -7,37 +7,37 @@
 [![Test Coverage](https://img.shields.io/badge/coverage-76%25-yellow)](./TESTING.md)
 [![Build Status](https://img.shields.io/badge/build-passing-brightgreen)](./DEVELOPING.md)
 
-> A production-ready, stability-first wedding booking platform for micro-weddings and elopements.
+> A production-ready, AI-powered platform for effortless tenant management and property operations.
 
 ---
 
-## What is Elope?
+## What is Macon AI Solutions?
 
-**Elope** is a modern **multi-tenant SaaS wedding booking platform** designed specifically for small, intimate weddings and elopements. Built with simplicity and reliability at its core, Elope empowers up to 50 independent wedding businesses to manage their bookings, accept payments, and coordinate with customers seamlessly - all with complete data isolation and variable commission rates.
+**Macon AI Solutions** is a modern **multi-tenant SaaS platform** that uses AI to streamline tenant management, automate property operations, and enhance tenant satisfaction. Built with simplicity and reliability at its core, Macon AI empowers property managers to handle onboarding, communications, and operations seamlessly - all with complete data isolation and intelligent automation.
 
 ### Key Features
 
-- **Multi-Tenant Architecture** - Support up to 50 independent wedding businesses with complete data isolation
+- **Multi-Tenant Architecture** - Support multiple property management businesses with complete data isolation
 - **Tenant API Keys** - Secure authentication via X-Tenant-Key header (pk_live_slug_xxx format)
-- **Variable Commission Rates** - Per-tenant commission rates (10-15%) via Stripe Connect
+- **Variable Commission Rates** - Per-tenant commission rates via Stripe Connect
 - **Unified Authentication** - Role-based access control with Platform Admin and Tenant Admin roles
-- **Package Photo Upload** - Upload up to 5 photos per package with drag-and-drop UI
-- **Online Booking System** - Customers browse packages and book their wedding date in minutes
-- **Stripe Payment Integration** - Secure checkout with automatic booking confirmation
-- **Availability Management** - Real-time date availability with Google Calendar integration
+- **Property Management** - Full CRUD for properties, leases, and tenant profiles
+- **AI-Powered Automation** - Automated lease renewals, rent reminders, and tenant communications
+- **Stripe Payment Integration** - Secure rent collection with automatic payment processing
+- **Calendar Integration** - Real-time availability management with Google Calendar
 - **Admin Dashboards** - Separate Platform Admin and Tenant Admin dashboards with full CRUD operations
-- **Email Notifications** - Automatic booking confirmations via Postmark
-- **Double-Booking Prevention** - Database-level constraints and pessimistic locking
+- **Smart Notifications** - Automated tenant notifications and support ticket management
+- **Data Analytics** - Real-time occupancy tracking, payment monitoring, and tenant satisfaction metrics
 - **Webhook Reliability** - Idempotent webhook processing with automatic retries
 - **Security-First** - Login rate limiting, JWT validation, bcrypt hashing, encrypted secrets, structured security logging
 
 ### Target Users
 
-- **Platform Administrators** - Manage multiple tenant businesses on one platform
-- **Tenant Businesses** - Small wedding venues and elopement services
-- **Wedding Professionals** - Photographers, officiants, and coordinators
-- **Boutique Planners** - Independent wedding planners with unique packages
-- **Destination Coordinators** - Location-specific wedding services
+- **Platform Administrators** - Manage multiple property management businesses on one platform
+- **Property Management Companies** - Residential and commercial property managers
+- **Real Estate Professionals** - Landlords, leasing agents, and property coordinators
+- **Tenant Relations Teams** - Customer service and tenant satisfaction specialists
+- **Operations Managers** - Streamline day-to-day property operations
 
 ### Business Value
 

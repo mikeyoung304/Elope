@@ -101,7 +101,7 @@ export function RoleBasedNav({ variant = "sidebar" }: { variant?: "sidebar" | "h
             to={item.path}
             className={cn(
               "flex items-center gap-2 px-4 py-2 rounded-lg",
-              "text-lavender-100 hover:text-lavender-50 hover:bg-navy-700",
+              "text-macon-navy-100 hover:text-macon-navy-50 hover:bg-macon-navy-700",
               "transition-colors"
             )}
           >
@@ -122,17 +122,17 @@ export function RoleBasedNav({ variant = "sidebar" }: { variant?: "sidebar" | "h
           to={item.path}
           className={cn(
             "flex items-center gap-3 px-4 py-3 rounded-lg",
-            "text-lavender-100 hover:text-lavender-50 hover:bg-navy-700",
+            "text-macon-navy-100 hover:text-macon-navy-50 hover:bg-macon-navy-700",
             "transition-colors group"
           )}
         >
-          <div className="text-lavender-300 group-hover:text-lavender-50">
+          <div className="text-macon-navy-300 group-hover:text-macon-navy-50">
             {item.icon}
           </div>
           <div className="flex-1">
             <div className="font-medium">{item.label}</div>
             {item.description && (
-              <div className="text-sm text-lavender-300">{item.description}</div>
+              <div className="text-sm text-macon-navy-300">{item.description}</div>
             )}
           </div>
         </Link>

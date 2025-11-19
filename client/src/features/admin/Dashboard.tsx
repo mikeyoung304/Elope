@@ -137,12 +137,12 @@ export function Dashboard() {
     <div className="space-y-6">
       {/* Header */}
       <div className="flex justify-between items-center">
-        <h1 className="text-4xl font-bold text-lavender-50">Admin Dashboard</h1>
+        <h1 className="text-4xl font-bold text-macon-navy-50">Admin Dashboard</h1>
         <Button
           onClick={handleLogout}
           variant="outline"
           size="lg"
-          className="border-navy-600 text-lavender-100 hover:bg-navy-800 text-lg"
+          className="border-macon-navy-600 text-macon-navy-100 hover:bg-macon-navy-800 text-lg"
         >
           <LogOut className="w-5 h-5 mr-2" />
           Logout

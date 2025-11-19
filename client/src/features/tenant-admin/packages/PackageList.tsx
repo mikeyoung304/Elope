@@ -19,21 +19,21 @@ interface PackageListProps {
 export function PackageList({ packages, onEdit, onDelete }: PackageListProps) {
   if (packages.length === 0) {
     return (
-      <Card className="p-6 bg-navy-800 border-navy-600">
-        <h2 className="text-2xl font-semibold mb-4 text-lavender-50">Packages</h2>
-        <p className="text-lavender-100 text-lg">No packages yet. Create your first package above.</p>
+      <Card className="p-6 bg-macon-navy-800 border-macon-navy-600">
+        <h2 className="text-2xl font-semibold mb-4 text-macon-navy-50">Packages</h2>
+        <p className="text-macon-navy-100 text-lg">No packages yet. Create your first package above.</p>
       </Card>
     );
   }
 
   return (
-    <Card className="p-6 bg-navy-800 border-navy-600">
-      <h2 className="text-2xl font-semibold mb-4 text-lavender-50">Packages</h2>
+    <Card className="p-6 bg-macon-navy-800 border-macon-navy-600">
+      <h2 className="text-2xl font-semibold mb-4 text-macon-navy-50">Packages</h2>
       <div className="space-y-3">
         {packages.map((pkg) => (
           <div
             key={pkg.id}
-            className="flex items-center gap-4 p-4 bg-navy-700 border border-navy-600 rounded-lg"
+            className="flex items-center gap-4 p-4 bg-macon-navy-700 border border-macon-navy-600 rounded-lg"
           >
             {/* Photo Thumbnail */}
             <div className="relative flex-shrink-0">
@@ -42,26 +42,26 @@ export function PackageList({ packages, onEdit, onDelete }: PackageListProps) {
                   <img
                     src={(pkg as any).photos[0].url}
                     alt={`${pkg.title} preview`}
-                    className="w-24 h-24 object-cover rounded-lg border-2 border-navy-500"
+                    className="w-24 h-24 object-cover rounded-lg border-2 border-macon-navy-500"
                   />
                   {(pkg as any).photos.length > 1 && (
                     <Badge
-                      className="absolute -top-2 -right-2 bg-lavender-600 text-white border-navy-700"
+                      className="absolute -top-2 -right-2 bg-macon-orange text-white border-macon-navy-700"
                     >
                       {(pkg as any).photos.length}
                     </Badge>
                   )}
                 </div>
               ) : (
-                <div className="w-24 h-24 flex items-center justify-center bg-navy-600 border-2 border-navy-500 rounded-lg">
-                  <Image className="w-8 h-8 text-navy-400" />
+                <div className="w-24 h-24 flex items-center justify-center bg-macon-navy-600 border-2 border-macon-navy-500 rounded-lg">
+                  <Image className="w-8 h-8 text-macon-navy-400" />
                 </div>
               )}
             </div>
 
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-3">
-                <h3 className="text-xl font-semibold text-lavender-50">{pkg.title}</h3>
+                <h3 className="text-xl font-semibold text-macon-navy-50">{pkg.title}</h3>
                 <Badge
                   variant="outline"
                   className={(pkg as any).isActive !== false
@@ -71,9 +71,9 @@ export function PackageList({ packages, onEdit, onDelete }: PackageListProps) {
                   {(pkg as any).isActive !== false ? "Active" : "Inactive"}
                 </Badge>
               </div>
-              <p className="text-base text-lavender-200 mt-1">{pkg.description}</p>
-              <div className="flex gap-4 mt-2 text-base text-lavender-100">
-                <span className="font-medium text-lavender-300">
+              <p className="text-base text-macon-navy-200 mt-1">{pkg.description}</p>
+              <div className="flex gap-4 mt-2 text-base text-macon-navy-100">
+                <span className="font-medium text-macon-navy-300">
                   {formatCurrency(pkg.priceCents)}
                 </span>
                 {(pkg as any).minLeadDays && (
@@ -86,7 +86,7 @@ export function PackageList({ packages, onEdit, onDelete }: PackageListProps) {
                 onClick={() => onEdit(pkg)}
                 variant="outline"
                 size="sm"
-                className="border-navy-500 text-lavender-100 hover:bg-navy-600"
+                className="border-macon-navy-500 text-macon-navy-100 hover:bg-macon-navy-600"
               >
                 <Pencil className="w-4 h-4" />
               </Button>

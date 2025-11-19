@@ -13,9 +13,9 @@ interface BrandingPreviewProps {
  */
 export function BrandingPreview({ primaryColor, secondaryColor, fontFamily }: BrandingPreviewProps) {
   return (
-    <Card className="p-6 bg-navy-800 border-navy-600">
-      <h2 className="text-2xl font-semibold mb-4 text-lavender-50">Live Preview</h2>
-      <p className="text-base text-lavender-200 mb-6">
+    <Card className="p-6 bg-macon-navy-800 border-macon-navy-600">
+      <h2 className="text-2xl font-semibold mb-4 text-macon-navy-50">Live Preview</h2>
+      <p className="text-base text-macon-navy-200 mb-6">
         See how your branding will appear in the booking widget
       </p>
 
@@ -70,20 +70,20 @@ export function BrandingPreview({ primaryColor, secondaryColor, fontFamily }: Br
       {/* Color Reference */}
       <div className="mt-6 grid grid-cols-2 gap-4">
         <div>
-          <p className="text-sm text-lavender-200 mb-2">Primary Color</p>
+          <p className="text-sm text-macon-navy-200 mb-2">Primary Color</p>
           <div
-            className="h-12 rounded border-2 border-navy-600"
+            className="h-12 rounded border-2 border-macon-navy-600"
             style={{ backgroundColor: primaryColor }}
           />
-          <p className="text-xs text-lavender-100 mt-1 font-mono">{primaryColor}</p>
+          <p className="text-xs text-macon-navy-100 mt-1 font-mono">{primaryColor}</p>
         </div>
         <div>
-          <p className="text-sm text-lavender-200 mb-2">Secondary Color</p>
+          <p className="text-sm text-macon-navy-200 mb-2">Secondary Color</p>
           <div
-            className="h-12 rounded border-2 border-navy-600"
+            className="h-12 rounded border-2 border-macon-navy-600"
             style={{ backgroundColor: secondaryColor }}
           />
-          <p className="text-xs text-lavender-100 mt-1 font-mono">{secondaryColor}</p>
+          <p className="text-xs text-macon-navy-100 mt-1 font-mono">{secondaryColor}</p>
         </div>
       </div>
     </Card>

@@ -30,10 +30,10 @@ export function PhotoDeleteDialog({
 }: PhotoDeleteDialogProps) {
   return (
     <Dialog open={!!photo} onOpenChange={(open) => !open && onCancel()}>
-      <DialogContent className="bg-navy-800 border-navy-600">
+      <DialogContent className="bg-macon-navy-800 border-macon-navy-600">
         <DialogHeader>
-          <DialogTitle className="text-lavender-50">Delete Photo</DialogTitle>
-          <DialogDescription className="text-lavender-200">
+          <DialogTitle className="text-macon-navy-50">Delete Photo</DialogTitle>
+          <DialogDescription className="text-macon-navy-200">
             Are you sure you want to delete this photo? This action cannot be undone.
           </DialogDescription>
         </DialogHeader>
@@ -43,9 +43,9 @@ export function PhotoDeleteDialog({
             <img
               src={photo.url}
               alt="Photo to delete"
-              className="w-full h-48 object-cover rounded border border-navy-600"
+              className="w-full h-48 object-cover rounded border border-macon-navy-600"
             />
-            <p className="text-sm text-lavender-200 mt-2 truncate">
+            <p className="text-sm text-macon-navy-200 mt-2 truncate">
               {photo.filename}
             </p>
           </div>
@@ -56,7 +56,7 @@ export function PhotoDeleteDialog({
             onClick={onCancel}
             variant="outline"
             disabled={isDeleting}
-            className="border-navy-600 text-lavender-100 hover:bg-navy-700"
+            className="border-macon-navy-600 text-macon-navy-100 hover:bg-macon-navy-700"
           >
             Cancel
           </Button>

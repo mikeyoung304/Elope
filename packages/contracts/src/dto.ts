@@ -9,6 +9,7 @@ export const AddOnDtoSchema = z.object({
   id: z.string(),
   packageId: z.string(),
   title: z.string(),
+  description: z.string().optional(),
   priceCents: z.number().int(),
   photoUrl: z.string().url().optional(),
 });
@@ -115,6 +116,7 @@ export type PackageResponseDto = z.infer<typeof PackageResponseDtoSchema>;
 export const CreateAddOnDtoSchema = z.object({
   packageId: z.string().min(1),
   title: z.string().min(1),
+  description: z.string().optional(),
   priceCents: z.number().int().min(0),
   photoUrl: z.string().url().optional(),
 });
@@ -124,6 +126,7 @@ export type CreateAddOnDto = z.infer<typeof CreateAddOnDtoSchema>;
 export const UpdateAddOnDtoSchema = z.object({
   packageId: z.string().min(1).optional(),
   title: z.string().min(1).optional(),
+  description: z.string().optional(),
   priceCents: z.number().int().min(0).optional(),
   photoUrl: z.string().url().optional(),
 });
@@ -134,6 +137,8 @@ export type UpdateAddOnDto = z.infer<typeof UpdateAddOnDtoSchema>;
 export const TenantBrandingDtoSchema = z.object({
   primaryColor: z.string().optional(),
   secondaryColor: z.string().optional(),
+  accentColor: z.string().optional(),
+  backgroundColor: z.string().optional(),
   fontFamily: z.string().optional(),
   logo: z.string().url().optional(),
 });
@@ -144,6 +149,8 @@ export type TenantBrandingDto = z.infer<typeof TenantBrandingDtoSchema>;
 export const UpdateBrandingDtoSchema = z.object({
   primaryColor: z.string().regex(/^#[0-9A-Fa-f]{6}$/).optional(),
   secondaryColor: z.string().regex(/^#[0-9A-Fa-f]{6}$/).optional(),
+  accentColor: z.string().regex(/^#[0-9A-Fa-f]{6}$/).optional(),
+  backgroundColor: z.string().regex(/^#[0-9A-Fa-f]{6}$/).optional(),
   fontFamily: z.string().optional(),
 });
 
@@ -291,7 +298,7 @@ export const UpdateTenantDtoSchema = z.object({
   name: z.string().min(2).max(100).optional(),
   email: z.string().email().optional(),
   commissionPercent: z.number().min(0).max(100).optional(),
-  branding: z.record(z.any()).optional(), // JSON object
+  branding: z.record(z.string(), z.any()).optional(), // JSON object
   isActive: z.boolean().optional(),
   stripeAccountId: z.string().optional(),
   stripeOnboarded: z.boolean().optional(),

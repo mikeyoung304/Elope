@@ -71,23 +71,23 @@ export function PhotoUploader({
     <div className="space-y-4">
       {/* Success Message */}
       {successMessage && (
-        <div className="flex items-center gap-2 p-4 border border-lavender-600 bg-navy-700 rounded-lg">
-          <CheckCircle className="w-5 h-5 text-lavender-300 flex-shrink-0" />
-          <span className="text-lg font-medium text-lavender-100">{successMessage}</span>
+        <div className="flex items-center gap-2 p-4 border border-macon-navy-600 bg-macon-navy-700 rounded-lg">
+          <CheckCircle className="w-5 h-5 text-macon-navy-300 flex-shrink-0" />
+          <span className="text-lg font-medium text-macon-navy-100">{successMessage}</span>
         </div>
       )}
 
       {/* Error Message */}
       {error && (
-        <div className="flex items-center gap-2 p-4 border border-red-600 bg-navy-700 rounded-lg">
+        <div className="flex items-center gap-2 p-4 border border-red-600 bg-macon-navy-700 rounded-lg">
           <AlertCircle className="w-5 h-5 text-red-300 flex-shrink-0" />
-          <span className="text-base text-lavender-100">{error}</span>
+          <span className="text-base text-macon-navy-100">{error}</span>
         </div>
       )}
 
-      <Card className="p-6 bg-navy-800 border-navy-600">
+      <Card className="p-6 bg-macon-navy-800 border-macon-navy-600">
         <div className="flex items-center justify-between mb-4">
-          <h3 className="text-xl font-semibold text-lavender-50">
+          <h3 className="text-xl font-semibold text-macon-navy-50">
             Package Photos ({photos.length}/{MAX_PHOTOS})
           </h3>
 

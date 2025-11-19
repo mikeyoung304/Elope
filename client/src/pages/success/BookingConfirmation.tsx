@@ -30,17 +30,17 @@ export function BookingConfirmation({
   return (
     <div className="space-y-8">
       {/* Success Message */}
-      <div className="p-6 border border-navy-600 bg-navy-700 rounded-lg">
+      <div className="p-6 border border-macon-navy-600 bg-macon-navy-700 rounded-lg">
         <div className="flex items-start gap-3">
-          <CheckCircle className="w-5 h-5 text-lavender-300 mt-0.5" />
+          <CheckCircle className="w-5 h-5 text-macon-navy-300 mt-0.5" />
           <div>
-            <p className="text-lg font-medium text-lavender-50 mb-1">
+            <p className="text-lg font-medium text-macon-navy-50 mb-1">
               Payment Received!
             </p>
-            <p className="text-base text-lavender-100">
+            <p className="text-base text-macon-navy-100">
               Thank you for your booking. We'll send you a confirmation email
               shortly at{" "}
-              <span className="font-medium text-lavender-50">
+              <span className="font-medium text-macon-navy-50">
                 {booking.email}
               </span>
             </p>
@@ -51,60 +51,60 @@ export function BookingConfirmation({
       {/* Booking Information */}
       <div className="space-y-6">
         <div>
-          <h2 className="font-heading text-2xl font-semibold mb-4 text-lavender-50">
+          <h2 className="font-heading text-2xl font-semibold mb-4 text-macon-navy-50">
             Booking Details
           </h2>
           <div className="space-y-4">
             {/* Confirmation Number */}
-            <div className="flex items-start justify-between gap-4 pb-4 border-b border-navy-600">
-              <span className="text-base text-lavender-100">
+            <div className="flex items-start justify-between gap-4 pb-4 border-b border-macon-navy-600">
+              <span className="text-base text-macon-navy-100">
                 Confirmation Number
               </span>
-              <span className="text-base font-mono font-medium text-lavender-50 text-right">
+              <span className="text-base font-mono font-medium text-macon-navy-50 text-right">
                 {booking.id}
               </span>
             </div>
 
             {/* Couple Name */}
             <div className="flex items-start justify-between gap-4">
-              <div className="flex items-center gap-2 text-base text-lavender-100">
+              <div className="flex items-center gap-2 text-base text-macon-navy-100">
                 <Users className="w-5 h-5" />
                 <span>Couple Name</span>
               </div>
-              <span className="text-base font-medium text-lavender-50 text-right">
+              <span className="text-base font-medium text-macon-navy-50 text-right">
                 {booking.coupleName}
               </span>
             </div>
 
             {/* Email */}
             <div className="flex items-start justify-between gap-4">
-              <div className="flex items-center gap-2 text-base text-lavender-100">
+              <div className="flex items-center gap-2 text-base text-macon-navy-100">
                 <Mail className="w-5 h-5" />
                 <span>Email</span>
               </div>
-              <span className="text-base text-lavender-50 text-right">
+              <span className="text-base text-macon-navy-50 text-right">
                 {booking.email}
               </span>
             </div>
 
             {/* Event Date */}
             <div className="flex items-start justify-between gap-4">
-              <div className="flex items-center gap-2 text-base text-lavender-100">
+              <div className="flex items-center gap-2 text-base text-macon-navy-100">
                 <Calendar className="w-5 h-5" />
                 <span>Event Date</span>
               </div>
-              <span className="text-base font-medium text-lavender-50 text-right">
+              <span className="text-base font-medium text-macon-navy-50 text-right">
                 {formatEventDate(booking.eventDate)}
               </span>
             </div>
 
             {/* Package */}
             <div className="flex items-start justify-between gap-4">
-              <div className="flex items-center gap-2 text-base text-lavender-100">
+              <div className="flex items-center gap-2 text-base text-macon-navy-100">
                 <Package className="w-5 h-5" />
                 <span>Package</span>
               </div>
-              <span className="text-base font-medium text-lavender-50 text-right">
+              <span className="text-base font-medium text-macon-navy-50 text-right">
                 {packageData ? packageData.title : booking.packageId}
               </span>
             </div>
@@ -112,7 +112,7 @@ export function BookingConfirmation({
             {/* Add-ons */}
             {booking.addOnIds.length > 0 && (
               <div className="flex items-start justify-between gap-4">
-                <div className="flex items-center gap-2 text-base text-lavender-100">
+                <div className="flex items-center gap-2 text-base text-macon-navy-100">
                   <Plus className="w-5 h-5" />
                   <span>Add-ons</span>
                 </div>
@@ -122,7 +122,7 @@ export function BookingConfirmation({
                       (a) => a.id === addOnId
                     );
                     return (
-                      <span key={addOnId} className="text-base text-lavender-50">
+                      <span key={addOnId} className="text-base text-macon-navy-50">
                         {addOn ? addOn.title : addOnId}
                       </span>
                     );
@@ -133,21 +133,21 @@ export function BookingConfirmation({
 
             {/* Status */}
             <div className="flex items-start justify-between gap-4">
-              <span className="text-base text-lavender-100">Status</span>
+              <span className="text-base text-macon-navy-100">Status</span>
               <Badge
                 variant="outline"
-                className="text-lavender-200 border-navy-500 bg-navy-700 text-base"
+                className="text-macon-navy-200 border-macon-navy-500 bg-macon-navy-700 text-base"
               >
                 {booking.status}
               </Badge>
             </div>
 
             {/* Total */}
-            <div className="flex items-center justify-between gap-4 pt-4 border-t border-navy-600">
-              <span className="font-medium text-lavender-50 text-xl">
+            <div className="flex items-center justify-between gap-4 pt-4 border-t border-macon-navy-600">
+              <span className="font-medium text-macon-navy-50 text-xl">
                 Total Paid
               </span>
-              <span className="text-3xl font-heading font-semibold text-lavender-50">
+              <span className="text-3xl font-heading font-semibold text-macon-navy-50">
                 {formatCurrency(booking.totalCents)}
               </span>
             </div>

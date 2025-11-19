@@ -39,7 +39,7 @@ export function WidgetPackagePage({ packageSlug, onBack, onBookingComplete }: Pr
 
   if (isLoading) {
     return (
-      <div className="text-center py-12 text-lavender-100 text-xl">
+      <div className="text-center py-12 text-macon-navy-100 text-xl">
         Loading package...
       </div>
     );
@@ -47,7 +47,7 @@ export function WidgetPackagePage({ packageSlug, onBack, onBookingComplete }: Pr
 
   if (error || !packageData) {
     return (
-      <div className="text-center py-12 text-lavender-50 text-xl">
+      <div className="text-center py-12 text-macon-navy-50 text-xl">
         Package not found
       </div>
     );
@@ -104,14 +104,14 @@ export function WidgetPackagePage({ packageSlug, onBack, onBookingComplete }: Pr
       <Button
         variant="ghost"
         onClick={onBack}
-        className="mb-6 text-lavender-200 hover:text-lavender-50"
+        className="mb-6 text-macon-navy-200 hover:text-macon-navy-50"
       >
         ← Back to Packages
       </Button>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         <div className="lg:col-span-2 space-y-8">
-          <Card className="overflow-hidden bg-navy-800 border-navy-600">
+          <Card className="overflow-hidden bg-macon-navy-800 border-macon-navy-600">
             {packageData.photoUrl && (
               <div className="relative aspect-[16/9] overflow-hidden">
                 <img
@@ -122,24 +122,24 @@ export function WidgetPackagePage({ packageSlug, onBack, onBookingComplete }: Pr
               </div>
             )}
             <CardContent className="p-8">
-              <h1 className="font-heading text-5xl font-bold mb-4 text-lavender-50">
+              <h1 className="font-heading text-5xl font-bold mb-4 text-macon-navy-50">
                 {packageData.title}
               </h1>
-              <p className="text-lavender-100 mb-6 leading-relaxed text-xl">
+              <p className="text-macon-navy-100 mb-6 leading-relaxed text-xl">
                 {packageData.description}
               </p>
-              <div className="flex items-center gap-2 pt-4 border-t border-navy-600">
-                <span className="text-lg text-lavender-200">Base Price:</span>
-                <span className="text-4xl font-heading font-semibold text-lavender-300">
+              <div className="flex items-center gap-2 pt-4 border-t border-macon-navy-600">
+                <span className="text-lg text-macon-navy-200">Base Price:</span>
+                <span className="text-4xl font-heading font-semibold text-macon-navy-300">
                   {formatCurrency(packageData.priceCents)}
                 </span>
               </div>
             </CardContent>
           </Card>
 
-          <Card className="bg-navy-800 border-navy-600">
+          <Card className="bg-macon-navy-800 border-macon-navy-600">
             <CardHeader>
-              <CardTitle className="text-lavender-50 text-3xl">Select Date</CardTitle>
+              <CardTitle className="text-macon-navy-50 text-3xl">Select Date</CardTitle>
             </CardHeader>
             <CardContent>
               <DatePicker
@@ -149,14 +149,14 @@ export function WidgetPackagePage({ packageSlug, onBack, onBookingComplete }: Pr
             </CardContent>
           </Card>
 
-          <Card className="bg-navy-800 border-navy-600">
+          <Card className="bg-macon-navy-800 border-macon-navy-600">
             <CardHeader>
-              <CardTitle className="text-lavender-50 text-3xl">Your Details</CardTitle>
+              <CardTitle className="text-macon-navy-50 text-3xl">Your Details</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="space-y-6">
                 <div className="space-y-2">
-                  <Label htmlFor="coupleName" className="text-lavender-100 text-lg">Your Names</Label>
+                  <Label htmlFor="coupleName" className="text-macon-navy-100 text-lg">Your Names</Label>
                   <Input
                     id="coupleName"
                     type="text"
@@ -164,11 +164,11 @@ export function WidgetPackagePage({ packageSlug, onBack, onBookingComplete }: Pr
                     onChange={(e) => setCoupleName(e.target.value)}
                     placeholder="e.g., Sarah & Alex"
                     required
-                    className="bg-navy-900 border-navy-600 text-lavender-50 placeholder:text-navy-400 focus:border-lavender-500 focus:ring-lavender-500 text-lg h-12"
+                    className="bg-macon-navy-900 border-macon-navy-600 text-macon-navy-50 placeholder:text-macon-navy-400 focus:border-macon-navy-500 focus:ring-macon-navy-500 text-lg h-12"
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="email" className="text-lavender-100 text-lg">Email Address</Label>
+                  <Label htmlFor="email" className="text-macon-navy-100 text-lg">Email Address</Label>
                   <Input
                     id="email"
                     type="email"
@@ -176,7 +176,7 @@ export function WidgetPackagePage({ packageSlug, onBack, onBookingComplete }: Pr
                     onChange={(e) => setEmail(e.target.value)}
                     placeholder="your.email@example.com"
                     required
-                    className="bg-navy-900 border-navy-600 text-lavender-50 placeholder:text-navy-400 focus:border-lavender-500 focus:ring-lavender-500 text-lg h-12"
+                    className="bg-macon-navy-900 border-macon-navy-600 text-macon-navy-50 placeholder:text-macon-navy-400 focus:border-macon-navy-500 focus:ring-macon-navy-500 text-lg h-12"
                   />
                 </div>
               </div>
@@ -184,9 +184,9 @@ export function WidgetPackagePage({ packageSlug, onBack, onBookingComplete }: Pr
           </Card>
 
           {packageData.addOns && packageData.addOns.length > 0 && (
-            <Card className="bg-navy-800 border-navy-600">
+            <Card className="bg-macon-navy-800 border-macon-navy-600">
               <CardHeader>
-                <CardTitle className="text-lavender-50 text-3xl">Add-Ons</CardTitle>
+                <CardTitle className="text-macon-navy-50 text-3xl">Add-Ons</CardTitle>
               </CardHeader>
               <CardContent>
                 <AddOnList

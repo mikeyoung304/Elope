@@ -40,7 +40,7 @@ export function PhotoUploadButton({
       <Button
         onClick={triggerFileInput}
         disabled={isUploading || disabled}
-        className="bg-lavender-500 hover:bg-lavender-600 text-base h-10 px-4"
+        className="bg-macon-navy hover:bg-macon-navy-dark text-base h-10 px-4"
       >
         {isUploading ? (
           <>

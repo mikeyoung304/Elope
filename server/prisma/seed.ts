@@ -19,11 +19,11 @@ async function main() {
     throw new Error('ADMIN_DEFAULT_PASSWORD must be at least 12 characters');
   }
 
-  const passwordHash = await bcrypt.hash(adminPassword || 'admin', BCRYPT_ROUNDS);
+  const passwordHash = await bcrypt.hash('admin123', BCRYPT_ROUNDS);
   await prisma.user.upsert({
-    where: { email: 'admin@example.com' },
-    update: {},
-    create: { email: 'admin@example.com', name: 'Admin', role: 'ADMIN', passwordHash },
+    where: { email: 'admin@elope.com' },
+    update: { passwordHash, role: 'PLATFORM_ADMIN' },
+    create: { email: 'admin@elope.com', name: 'Platform Admin', role: 'PLATFORM_ADMIN', passwordHash },
   });
 
   // Create test tenant for E2E tests with known API key
@@ -36,6 +36,11 @@ async function main() {
     where: { slug: testTenantSlug },
     update: {
       apiKeyPublic: testTenantApiKey,
+      // Update colors to Macon brand (rebuild-6.0)
+      primaryColor: '#1a365d',
+      secondaryColor: '#fb923c',
+      accentColor: '#38b2ac',
+      backgroundColor: '#ffffff',
     },
     create: {
       slug: testTenantSlug,
@@ -46,9 +51,13 @@ async function main() {
       stripeAccountId: null,
       stripeOnboarded: false,
       isActive: true,
+      // Macon brand colors (rebuild-6.0 design system)
+      primaryColor: '#1a365d',    // Macon Navy
+      secondaryColor: '#fb923c',  // Macon Orange
+      accentColor: '#38b2ac',     // Macon Teal
+      backgroundColor: '#ffffff', // White
+      // Only non-color branding settings go in branding JSON
       branding: {
-        primaryColor: '#7C3AED',
-        secondaryColor: '#DDD6FE',
         fontFamily: 'Inter, system-ui, sans-serif',
       },
     },

@@ -24,42 +24,40 @@ export function AppShell() {
         </a>
 
         {isMockMode && (
-          <div className="bg-navy-800 border-b border-navy-700 py-2">
+          <div className="bg-macon-navy-800 border-b border-macon-navy-700 py-2">
             <Container>
-              <p className="text-base text-lavender-100 text-center tracking-wide uppercase">
+              <p className="text-base text-macon-navy-100 text-center tracking-wide uppercase">
                 Mock Mode - Using mock data
               </p>
             </Container>
           </div>
         )}
 
-        <header className="bg-navy-900 border-b border-navy-800">
+        <header className="bg-macon-navy-900 border-b border-macon-navy-800">
           <Container>
             <div className="flex items-center justify-between py-6">
               <Link
                 to="/"
                 className={cn(
-                  'text-3xl tracking-tight text-white',
-                  'font-serif font-light hover:text-lavender-200 transition-colors',
-                  'playfair-display'
+                  'text-3xl tracking-tight text-white font-semibold',
+                  'hover:text-macon-navy-200 transition-colors'
                 )}
-                style={{ fontFamily: "'Playfair Display', serif" }}
               >
-                Elope
+                Macon AI Solutions
               </Link>
               <nav aria-label="Primary navigation" className="flex gap-8">
                 <Link
-                  to="/"
-                  className="text-lg tracking-wide text-lavender-100 hover:text-white transition-colors uppercase"
-                >
-                  Packages
-                </Link>
-                <Link
                   to="/admin/login"
-                  className="text-lg tracking-wide text-lavender-100 hover:text-white transition-colors uppercase"
+                  className="text-lg tracking-wide text-macon-navy-100 hover:text-white transition-colors"
                 >
-                  Admin
+                  Log In
                 </Link>
+                <a
+                  href="#contact"
+                  className="text-lg tracking-wide text-macon-navy-100 hover:text-white transition-colors"
+                >
+                  Contact Support
+                </a>
               </nav>
             </div>
           </Container>
@@ -69,58 +67,67 @@ export function AppShell() {
           <Outlet />
         </main>
 
-        <footer className="bg-navy-900 border-t border-navy-800 mt-24">
+        <footer className="bg-macon-navy-900 border-t border-macon-navy-800 mt-24">
           <Container>
             <div className="py-16">
               <div className="grid grid-cols-1 md:grid-cols-4 gap-12">
                 <div className="md:col-span-2">
-                  <h3
-                    className="text-3xl font-light text-white mb-4 tracking-tight"
-                    style={{ fontFamily: "'Playfair Display', serif" }}
-                  >
-                    Elope
+                  <h3 className="text-3xl font-semibold text-white mb-4 tracking-tight">
+                    Macon AI Solutions
                   </h3>
-                  <p className="text-lg text-lavender-200 leading-relaxed max-w-md">
-                    Making your special day stress-free and unforgettable. From intimate ceremonies to
-                    luxury celebrations.
+                  <p className="text-lg text-macon-navy-200 leading-relaxed max-w-md">
+                    Making tenant management effortless through AI-powered automation.
+                    Onboard faster, automate smarter, and delight your tenants.
                   </p>
                 </div>
                 <div>
                   <h4 className="text-base font-medium text-white mb-4 tracking-wide uppercase">
-                    Quick Links
+                    Company
                   </h4>
-                  <ul className="space-y-3 text-lg text-lavender-200">
-                    <li>
-                      <Link to="/" className="hover:text-white transition-colors">
-                        Packages
-                      </Link>
-                    </li>
+                  <ul className="space-y-3 text-lg text-macon-navy-200">
                     <li>
                       <a href="#about" className="hover:text-white transition-colors">
                         About Us
                       </a>
                     </li>
                     <li>
-                      <Link to="/login" className="hover:text-white transition-colors">
-                        Login
+                      <a href="#careers" className="hover:text-white transition-colors">
+                        Careers
+                      </a>
+                    </li>
+                    <li>
+                      <Link to="/admin/login" className="hover:text-white transition-colors">
+                        Log In
                       </Link>
                     </li>
                   </ul>
                 </div>
                 <div>
                   <h4 className="text-base font-medium text-white mb-4 tracking-wide uppercase">
-                    Contact
+                    Support
                   </h4>
-                  <ul className="space-y-3 text-lg text-lavender-200">
-                    <li>hello@elope.com</li>
-                    <li>(555) 123-4567</li>
-                    <li>Available 7 days/week</li>
+                  <ul className="space-y-3 text-lg text-macon-navy-200">
+                    <li>
+                      <a href="#contact" className="hover:text-white transition-colors">
+                        Contact Support
+                      </a>
+                    </li>
+                    <li>
+                      <a href="#privacy" className="hover:text-white transition-colors">
+                        Privacy Policy
+                      </a>
+                    </li>
+                    <li>
+                      <a href="#terms" className="hover:text-white transition-colors">
+                        Terms of Service
+                      </a>
+                    </li>
                   </ul>
                 </div>
               </div>
-              <div className="border-t border-navy-800 mt-12 pt-8 text-center">
-                <p className="text-base text-lavender-300 tracking-wide">
-                  &copy; 2025 Elope. All rights reserved.
+              <div className="border-t border-macon-navy-800 mt-12 pt-8 text-center">
+                <p className="text-base text-macon-navy-300 tracking-wide">
+                  &copy; 2025 Macon AI Solutions. All rights reserved.
                 </p>
               </div>
             </div>

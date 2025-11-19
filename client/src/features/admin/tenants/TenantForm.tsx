@@ -191,29 +191,29 @@ export function TenantForm() {
   if (isLoading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
-        <div className="text-lavender-200">Loading...</div>
+        <div className="text-macon-navy-200">Loading...</div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-navy-950">
+    <div className="min-h-screen bg-macon-navy-950">
       <div className="container mx-auto px-4 py-8">
         {/* Header */}
         <div className="mb-8">
           <Button
             variant="ghost"
             onClick={() => navigate("/admin/dashboard")}
-            className="mb-4 text-lavender-200 hover:text-lavender-100"
+            className="mb-4 text-macon-navy-200 hover:text-macon-navy-100"
           >
             <ChevronLeft className="h-4 w-4 mr-2" />
             Back to Dashboard
           </Button>
 
-          <h1 className="text-3xl font-bold text-lavender-50">
+          <h1 className="text-3xl font-bold text-macon-navy-50">
             {isEditing ? "Edit Tenant" : "Add New Tenant"}
           </h1>
-          <p className="text-lavender-200 mt-2">
+          <p className="text-macon-navy-200 mt-2">
             {isEditing
               ? "Update tenant information and settings"
               : "Create a new tenant account for the platform"
@@ -222,9 +222,9 @@ export function TenantForm() {
         </div>
 
         {/* Form */}
-        <Card className="bg-navy-800 border-navy-600">
+        <Card className="bg-macon-navy-800 border-macon-navy-600">
           <CardHeader>
-            <CardTitle className="text-lavender-50">
+            <CardTitle className="text-macon-navy-50">
               Tenant Information
             </CardTitle>
           </CardHeader>
@@ -240,7 +240,7 @@ export function TenantForm() {
 
               {/* Business Name */}
               <div className="space-y-2">
-                <Label htmlFor="name" className="text-lavender-100">
+                <Label htmlFor="name" className="text-macon-navy-100">
                   Business Name *
                 </Label>
                 <Input
@@ -248,7 +248,7 @@ export function TenantForm() {
                   value={formData.name}
                   onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                   onBlur={generateSlug}
-                  className="bg-navy-900 border-navy-600 text-lavender-50"
+                  className="bg-macon-navy-900 border-macon-navy-600 text-macon-navy-50"
                   placeholder="e.g., Bella Weddings"
                   disabled={isSubmitting}
                 />
@@ -259,18 +259,18 @@ export function TenantForm() {
 
               {/* Slug */}
               <div className="space-y-2">
-                <Label htmlFor="slug" className="text-lavender-100">
+                <Label htmlFor="slug" className="text-macon-navy-100">
                   URL Slug *
                 </Label>
                 <Input
                   id="slug"
                   value={formData.slug}
                   onChange={(e) => setFormData({ ...formData, slug: e.target.value })}
-                  className="bg-navy-900 border-navy-600 text-lavender-50"
+                  className="bg-macon-navy-900 border-macon-navy-600 text-macon-navy-50"
                   placeholder="e.g., bella-weddings"
                   disabled={isSubmitting}
                 />
-                <p className="text-lavender-300 text-sm">
+                <p className="text-macon-navy-300 text-sm">
                   This will be used in URLs and API keys
                 </p>
                 {errors.slug && (
@@ -280,7 +280,7 @@ export function TenantForm() {
 
               {/* Email */}
               <div className="space-y-2">
-                <Label htmlFor="email" className="text-lavender-100">
+                <Label htmlFor="email" className="text-macon-navy-100">
                   Admin Email *
                 </Label>
                 <Input
@@ -288,7 +288,7 @@ export function TenantForm() {
                   type="email"
                   value={formData.email}
                   onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                  className="bg-navy-900 border-navy-600 text-lavender-50"
+                  className="bg-macon-navy-900 border-macon-navy-600 text-macon-navy-50"
                   placeholder="admin@bellaweddings.com"
                   disabled={isSubmitting}
                 />
@@ -299,7 +299,7 @@ export function TenantForm() {
 
               {/* Phone */}
               <div className="space-y-2">
-                <Label htmlFor="phone" className="text-lavender-100">
+                <Label htmlFor="phone" className="text-macon-navy-100">
                   Phone Number
                 </Label>
                 <Input
@@ -307,7 +307,7 @@ export function TenantForm() {
                   type="tel"
                   value={formData.phone}
                   onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                  className="bg-navy-900 border-navy-600 text-lavender-50"
+                  className="bg-macon-navy-900 border-macon-navy-600 text-macon-navy-50"
                   placeholder="(555) 123-4567"
                   disabled={isSubmitting}
                 />
@@ -315,7 +315,7 @@ export function TenantForm() {
 
               {/* Commission Rate */}
               <div className="space-y-2">
-                <Label htmlFor="commissionRate" className="text-lavender-100">
+                <Label htmlFor="commissionRate" className="text-macon-navy-100">
                   Commission Rate (%) *
                 </Label>
                 <select
@@ -323,7 +323,7 @@ export function TenantForm() {
                   value={formData.commissionRate.toString()}
                   onChange={(e) => setFormData({ ...formData, commissionRate: parseInt(e.target.value) })}
                   disabled={isSubmitting}
-                  className="w-full px-3 py-2 bg-navy-900 border border-navy-600 text-lavender-50 rounded-md focus:outline-none focus:ring-2 focus:ring-lavender-500"
+                  className="w-full px-3 py-2 bg-macon-navy-900 border border-macon-navy-600 text-macon-navy-50 rounded-md focus:outline-none focus:ring-2 focus:ring-macon-navy-500"
                 >
                   <option value="10">10%</option>
                   <option value="12">12%</option>
@@ -337,18 +337,18 @@ export function TenantForm() {
 
               {/* Stripe Account ID */}
               <div className="space-y-2">
-                <Label htmlFor="stripeAccountId" className="text-lavender-100">
+                <Label htmlFor="stripeAccountId" className="text-macon-navy-100">
                   Stripe Account ID
                 </Label>
                 <Input
                   id="stripeAccountId"
                   value={formData.stripeAccountId}
                   onChange={(e) => setFormData({ ...formData, stripeAccountId: e.target.value })}
-                  className="bg-navy-900 border-navy-600 text-lavender-50"
+                  className="bg-macon-navy-900 border-macon-navy-600 text-macon-navy-50"
                   placeholder="acct_1234567890"
                   disabled={isSubmitting}
                 />
-                <p className="text-lavender-300 text-sm">
+                <p className="text-macon-navy-300 text-sm">
                   Leave empty to set up later
                 </p>
               </div>
@@ -356,10 +356,10 @@ export function TenantForm() {
               {/* Active Status */}
               <div className="flex items-center justify-between">
                 <div className="space-y-1">
-                  <Label htmlFor="isActive" className="text-lavender-100">
+                  <Label htmlFor="isActive" className="text-macon-navy-100">
                     Active Status
                   </Label>
-                  <p className="text-sm text-lavender-300">
+                  <p className="text-sm text-macon-navy-300">
                     Active tenants can accept bookings
                   </p>
                 </div>
@@ -372,7 +372,7 @@ export function TenantForm() {
                     disabled={isSubmitting}
                     className="sr-only peer"
                   />
-                  <div className="w-11 h-6 bg-navy-700 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-lavender-300 dark:peer-focus:ring-lavender-800 rounded-full peer dark:bg-navy-700 peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-lavender-600"></div>
+                  <div className="w-11 h-6 bg-macon-navy-700 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-macon-navy-300 dark:peer-focus:ring-macon-navy-800 rounded-full peer dark:bg-macon-navy-700 peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-lavender-600"></div>
                 </label>
               </div>
 
@@ -382,7 +382,7 @@ export function TenantForm() {
                   type="button"
                   variant="outline"
                   onClick={() => navigate("/admin/dashboard")}
-                  className="flex-1 border-navy-600 text-lavender-200 hover:bg-navy-700"
+                  className="flex-1 border-macon-navy-600 text-macon-navy-200 hover:bg-macon-navy-700"
                   disabled={isSubmitting}
                 >
                   Cancel

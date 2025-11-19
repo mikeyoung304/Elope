@@ -1,4 +1,4 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { api } from "@/lib/api";
 import type {
   AddOnDto,
@@ -17,12 +17,29 @@ export function useAddOnManager({ onPackagesChange, showSuccess }: UseAddOnManag
   const [editingAddOnId, setEditingAddOnId] = useState<string | null>(null);
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [segments, setSegments] = useState<Array<{ id: string; name: string; active: boolean }>>([]);
 
   const [addOnForm, setAddOnForm] = useState<AddOnFormData>({
     title: "",
     priceCents: "",
     photoUrl: "",
+    segmentId: "",
   });
+
+  // Fetch segments
+  useEffect(() => {
+    const fetchSegments = async () => {
+      try {
+        const result = await api.tenantAdminGetSegments();
+        if (result.status === 200) {
+          setSegments(result.body);
+        }
+      } catch (err) {
+        // Silent fail - segments are optional
+      }
+    };
+    fetchSegments();
+  }, []);
 
   // Reset form
   const resetAddOnForm = useCallback(() => {
@@ -30,6 +47,7 @@ export function useAddOnManager({ onPackagesChange, showSuccess }: UseAddOnManag
       title: "",
       priceCents: "",
       photoUrl: "",
+      segmentId: "",
     });
     setError(null);
   }, []);
@@ -46,6 +64,7 @@ export function useAddOnManager({ onPackagesChange, showSuccess }: UseAddOnManag
       title: addOn.title,
       priceCents: addOn.priceCents.toString(),
       photoUrl: addOn.photoUrl || "",
+      segmentId: addOn.segmentId || "",
     });
     setEditingAddOnId(addOn.id);
     setIsAddingAddOn(addOn.packageId);
@@ -74,6 +93,7 @@ export function useAddOnManager({ onPackagesChange, showSuccess }: UseAddOnManag
           title: addOnForm.title,
           priceCents,
           photoUrl: addOnForm.photoUrl || undefined,
+          segmentId: addOnForm.segmentId || undefined,
         };
 
         const result = await api.adminUpdateAddOn({
@@ -96,6 +116,7 @@ export function useAddOnManager({ onPackagesChange, showSuccess }: UseAddOnManag
           title: addOnForm.title,
           priceCents,
           photoUrl: addOnForm.photoUrl || undefined,
+          segmentId: addOnForm.segmentId || undefined,
         };
 
         const result = await api.adminCreateAddOn({
@@ -156,6 +177,7 @@ export function useAddOnManager({ onPackagesChange, showSuccess }: UseAddOnManag
     isSaving,
     error,
     addOnForm,
+    segments,
 
     // Actions
     setAddOnForm,

@@ -93,14 +93,14 @@ export function SuccessContent({
     <div className="space-y-6">
       {/* Mock Mode Button */}
       {showMockButton && (
-        <div className="p-6 border border-navy-600 bg-navy-700 rounded-lg">
+        <div className="p-6 border border-macon-navy-600 bg-macon-navy-700 rounded-lg">
           <div className="flex items-start gap-3 mb-4">
-            <AlertCircle className="w-5 h-5 text-lavender-200 mt-0.5" />
+            <AlertCircle className="w-5 h-5 text-macon-navy-200 mt-0.5" />
             <div>
-              <p className="text-lg font-medium text-lavender-50 mb-1">
+              <p className="text-lg font-medium text-macon-navy-50 mb-1">
                 Mock Mode Active
               </p>
-              <p className="text-base text-lavender-100">
+              <p className="text-base text-macon-navy-100">
                 Click below to simulate payment completion
               </p>
             </div>
@@ -109,7 +109,7 @@ export function SuccessContent({
             onClick={handleMarkAsPaid}
             disabled={isSimulating}
             variant="outline"
-            className="w-full border-navy-600 text-lavender-100 hover:bg-navy-600 text-lg h-12"
+            className="w-full border-macon-navy-600 text-macon-navy-100 hover:bg-macon-navy-600 text-lg h-12"
             data-testid="mock-paid"
           >
             {isSimulating ? "Simulating..." : "Mark as Paid (mock)"}
@@ -119,14 +119,14 @@ export function SuccessContent({
 
       {/* Mock Mode Success Message */}
       {isPaid && isMockMode && !bookingDetails && (
-        <div className="p-6 border border-navy-600 bg-navy-700 rounded-lg">
+        <div className="p-6 border border-macon-navy-600 bg-macon-navy-700 rounded-lg">
           <div className="flex items-start gap-3">
-            <CheckCircle className="w-5 h-5 text-lavender-300 mt-0.5" />
+            <CheckCircle className="w-5 h-5 text-macon-navy-300 mt-0.5" />
             <div>
-              <p className="text-lg font-medium text-lavender-50 mb-1">
+              <p className="text-lg font-medium text-macon-navy-50 mb-1">
                 Payment simulation completed successfully!
               </p>
-              <p className="text-base text-lavender-100">
+              <p className="text-base text-macon-navy-100">
                 Your booking has been created in the system.
               </p>
             </div>
@@ -148,7 +148,7 @@ export function SuccessContent({
       {/* Pending Payment Message */}
       {!bookingDetails && !isLoading && !isPaid && (
         <div className="text-center py-8">
-          <p className="text-lavender-100 text-lg">
+          <p className="text-macon-navy-100 text-lg">
             Please complete the payment to confirm your booking.
           </p>
         </div>
@@ -157,7 +157,7 @@ export function SuccessContent({
       {/* Help Text */}
       {!isPaid && !showMockButton && !bookingDetails && (
         <div className="text-center pt-4">
-          <p className="text-base text-lavender-100">
+          <p className="text-base text-macon-navy-100">
             If you have any questions, please don't hesitate to contact us.
           </p>
         </div>
