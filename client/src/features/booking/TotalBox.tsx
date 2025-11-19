@@ -32,16 +32,16 @@ export function TotalBox({ total, packagePrice, packageName, selectedAddOns = []
 
   return (
     <div className="sticky top-4">
-      <Card className="bg-white border-gray-200 shadow-elevation-2">
-        <CardHeader className="border-b border-gray-100">
-          <CardTitle className="text-xl text-gray-900">Order Summary</CardTitle>
+      <Card className="bg-white border-neutral-200 shadow-elevation-2">
+        <CardHeader className="border-b border-neutral-100">
+          <CardTitle className="text-xl text-neutral-900">Order Summary</CardTitle>
         </CardHeader>
         <CardContent className="p-6 space-y-4">
           {/* Package base price */}
           {packageName && packagePriceCents > 0 && (
             <div className="flex justify-between items-center">
-              <span className="text-sm text-gray-600">{packageName}</span>
-              <span className="text-base font-semibold text-gray-900">
+              <span className="text-sm text-neutral-600">{packageName}</span>
+              <span className="text-base font-semibold text-neutral-900">
                 {formatCurrency(packagePriceCents)}
               </span>
             </div>
@@ -49,13 +49,13 @@ export function TotalBox({ total, packagePrice, packageName, selectedAddOns = []
 
           {/* Selected add-ons */}
           {selectedAddOns.length > 0 && (
-            <div className="space-y-2 pt-2 border-t border-gray-100">
-              <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide">
+            <div className="space-y-2 pt-2 border-t border-neutral-100">
+              <p className="text-xs font-semibold text-neutral-500 uppercase tracking-wide">
                 Add-Ons
               </p>
               {selectedAddOns.map((addOn) => (
                 <div key={addOn.id} className="flex justify-between items-center animate-in slide-in-from-top-2 duration-200">
-                  <span className="text-sm text-gray-600">{addOn.title}</span>
+                  <span className="text-sm text-neutral-600">{addOn.title}</span>
                   <span className="text-base font-semibold text-macon-orange">
                     +{formatCurrency(addOn.priceCents)}
                   </span>
@@ -65,24 +65,24 @@ export function TotalBox({ total, packagePrice, packageName, selectedAddOns = []
           )}
 
           {/* Subtotal */}
-          <div className="flex justify-between items-center pt-3 border-t border-gray-200">
-            <span className="text-sm font-medium text-gray-700">Subtotal</span>
-            <span className="text-lg font-semibold text-gray-900">
+          <div className="flex justify-between items-center pt-3 border-t border-neutral-200">
+            <span className="text-sm font-medium text-neutral-700">Subtotal</span>
+            <span className="text-lg font-semibold text-neutral-900">
               {formatCurrency(subtotalCents)}
             </span>
           </div>
 
           {/* Tax */}
           <div className="flex justify-between items-center">
-            <span className="text-sm text-gray-600">Tax (8%)</span>
-            <span className="text-base font-semibold text-gray-700">
+            <span className="text-sm text-neutral-600">Tax (8%)</span>
+            <span className="text-base font-semibold text-neutral-700">
               {formatCurrency(taxCents)}
             </span>
           </div>
 
           {/* Total */}
-          <div className="flex justify-between items-baseline pt-4 border-t-2 border-gray-300">
-            <span className="text-lg font-bold text-gray-900 uppercase tracking-wide">
+          <div className="flex justify-between items-baseline pt-4 border-t-2 border-neutral-300">
+            <span className="text-lg font-bold text-neutral-900 uppercase tracking-wide">
               Total
             </span>
             <span
@@ -94,7 +94,7 @@ export function TotalBox({ total, packagePrice, packageName, selectedAddOns = []
             </span>
           </div>
 
-          <p className="text-xs text-gray-500 pt-2 text-center">
+          <p className="text-xs text-neutral-500 pt-2 text-center">
             All-inclusive pricing
           </p>
         </CardContent>

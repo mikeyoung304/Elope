@@ -153,8 +153,8 @@ export function PlatformAdminDashboard() {
         {/* Header */}
         <div className="flex justify-between items-center">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900">System Overview</h1>
-            <p className="text-gray-600 mt-1">
+            <h1 className="text-3xl font-bold text-neutral-900">System Overview</h1>
+            <p className="text-neutral-600 mt-1">
               Manage all tenants and monitor platform-wide metrics
             </p>
           </div>
@@ -162,70 +162,70 @@ export function PlatformAdminDashboard() {
 
         {/* System Metrics */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
-          <Card className="p-6 border-gray-200 shadow-sm hover:shadow-md transition-shadow">
+          <Card className="p-6 border-neutral-200 shadow-sm hover:shadow-md transition-shadow">
             <div className="flex items-center gap-3 mb-2">
               <div className="p-2 bg-macon-navy-50 rounded">
                 <Building2 className="w-5 h-5 text-macon-navy-600" />
               </div>
-              <div className="text-sm font-medium text-gray-700">Total Tenants</div>
+              <div className="text-sm font-medium text-neutral-700">Total Tenants</div>
             </div>
-            <div className="text-3xl font-bold text-gray-900">{stats.totalTenants}</div>
-            <p className="text-sm text-gray-600 mt-1">{stats.activeTenants} active</p>
+            <div className="text-3xl font-bold text-neutral-900">{stats.totalTenants}</div>
+            <p className="text-sm text-neutral-600 mt-1">{stats.activeTenants} active</p>
           </Card>
 
-          <Card className="p-6 border-gray-200 shadow-sm hover:shadow-md transition-shadow">
+          <Card className="p-6 border-neutral-200 shadow-sm hover:shadow-md transition-shadow">
             <div className="flex items-center gap-3 mb-2">
               <div className="p-2 bg-macon-orange-50 rounded">
                 <Layers className="w-5 h-5 text-macon-orange-600" />
               </div>
-              <div className="text-sm font-medium text-gray-700">Business Segments</div>
+              <div className="text-sm font-medium text-neutral-700">Business Segments</div>
             </div>
-            <div className="text-3xl font-bold text-gray-900">{stats.totalSegments}</div>
-            <p className="text-sm text-gray-600 mt-1">{stats.activeSegments} active</p>
+            <div className="text-3xl font-bold text-neutral-900">{stats.totalSegments}</div>
+            <p className="text-sm text-neutral-600 mt-1">{stats.activeSegments} active</p>
           </Card>
 
-          <Card className="p-6 border-gray-200 shadow-sm hover:shadow-md transition-shadow">
+          <Card className="p-6 border-neutral-200 shadow-sm hover:shadow-md transition-shadow">
             <div className="flex items-center gap-3 mb-2">
-              <div className="p-2 bg-blue-50 rounded">
-                <Calendar className="w-5 h-5 text-blue-600" />
+              <div className="p-2 bg-macon-navy-50 rounded">
+                <Calendar className="w-5 h-5 text-macon-navy-600" />
               </div>
-              <div className="text-sm font-medium text-gray-700">Total Bookings</div>
+              <div className="text-sm font-medium text-neutral-700">Total Bookings</div>
             </div>
-            <div className="text-3xl font-bold text-gray-900">{stats.totalBookings}</div>
-            <p className="text-sm text-gray-600 mt-1">All tenants</p>
+            <div className="text-3xl font-bold text-neutral-900">{stats.totalBookings}</div>
+            <p className="text-sm text-neutral-600 mt-1">All tenants</p>
           </Card>
 
-          <Card className="p-6 border-gray-200 shadow-sm hover:shadow-md transition-shadow">
+          <Card className="p-6 border-neutral-200 shadow-sm hover:shadow-md transition-shadow">
             <div className="flex items-center gap-3 mb-2">
               <div className="p-2 bg-green-50 rounded">
                 <DollarSign className="w-5 h-5 text-green-600" />
               </div>
-              <div className="text-sm font-medium text-gray-700">Total Revenue</div>
+              <div className="text-sm font-medium text-neutral-700">Total Revenue</div>
             </div>
-            <div className="text-3xl font-bold text-gray-900">
+            <div className="text-3xl font-bold text-neutral-900">
               {formatCurrency(stats.totalRevenue)}
             </div>
-            <p className="text-sm text-gray-600 mt-1">All tenants</p>
+            <p className="text-sm text-neutral-600 mt-1">All tenants</p>
           </Card>
 
-          <Card className="p-6 border-gray-200 shadow-sm hover:shadow-md transition-shadow">
+          <Card className="p-6 border-neutral-200 shadow-sm hover:shadow-md transition-shadow">
             <div className="flex items-center gap-3 mb-2">
               <div className="p-2 bg-purple-50 rounded">
                 <DollarSign className="w-5 h-5 text-purple-600" />
               </div>
-              <div className="text-sm font-medium text-gray-700">Platform Commission</div>
+              <div className="text-sm font-medium text-neutral-700">Platform Commission</div>
             </div>
-            <div className="text-3xl font-bold text-gray-900">
+            <div className="text-3xl font-bold text-neutral-900">
               {formatCurrency(stats.platformCommission)}
             </div>
-            <p className="text-sm text-gray-600 mt-1">From all bookings</p>
+            <p className="text-sm text-neutral-600 mt-1">From all bookings</p>
           </Card>
         </div>
 
         {/* Tenants Management */}
-        <Card className="p-6 border-gray-200">
+        <Card className="p-6 border-neutral-200">
           <div className="flex justify-between items-center mb-6">
-            <h2 className="text-2xl font-semibold text-gray-900">All Tenants</h2>
+            <h2 className="text-2xl font-semibold text-neutral-900">All Tenants</h2>
             <Button
               className="bg-macon-navy hover:bg-macon-navy-dark"
               onClick={() => navigate("/admin/tenants/new")}
@@ -238,13 +238,13 @@ export function PlatformAdminDashboard() {
           {/* Search */}
           <div className="mb-6">
             <div className="relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-neutral-400" />
               <Input
                 type="search"
                 placeholder="Search tenants by name, slug, or email..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-10 border-gray-300 focus:border-macon-navy-500"
+                className="pl-10 border-neutral-300 focus:border-macon-navy-500"
               />
             </div>
           </div>
@@ -252,49 +252,49 @@ export function PlatformAdminDashboard() {
           {/* Tenants Table */}
           <Table>
             <TableHeader>
-              <TableRow className="border-gray-200 hover:bg-gray-50">
-                <TableHead className="text-gray-700 font-semibold">Tenant</TableHead>
-                <TableHead className="text-gray-700 font-semibold">Slug</TableHead>
-                <TableHead className="text-gray-700 font-semibold">Email</TableHead>
-                <TableHead className="text-gray-700 font-semibold">Packages</TableHead>
-                <TableHead className="text-gray-700 font-semibold">Bookings</TableHead>
-                <TableHead className="text-gray-700 font-semibold">Commission</TableHead>
-                <TableHead className="text-gray-700 font-semibold">Status</TableHead>
-                <TableHead className="text-gray-700 font-semibold">Actions</TableHead>
+              <TableRow className="border-neutral-200 hover:bg-neutral-50">
+                <TableHead className="text-neutral-700 font-semibold">Tenant</TableHead>
+                <TableHead className="text-neutral-700 font-semibold">Slug</TableHead>
+                <TableHead className="text-neutral-700 font-semibold">Email</TableHead>
+                <TableHead className="text-neutral-700 font-semibold">Packages</TableHead>
+                <TableHead className="text-neutral-700 font-semibold">Bookings</TableHead>
+                <TableHead className="text-neutral-700 font-semibold">Commission</TableHead>
+                <TableHead className="text-neutral-700 font-semibold">Status</TableHead>
+                <TableHead className="text-neutral-700 font-semibold">Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {isLoading ? (
-                <TableRow className="hover:bg-gray-50">
+                <TableRow className="hover:bg-neutral-50">
                   <TableCell colSpan={8} className="text-center py-8">
-                    <Loader2 className="w-6 h-6 animate-spin mx-auto text-gray-400" />
+                    <Loader2 className="w-6 h-6 animate-spin mx-auto text-neutral-400" />
                   </TableCell>
                 </TableRow>
               ) : filteredTenants.length === 0 ? (
-                <TableRow className="hover:bg-gray-50">
-                  <TableCell colSpan={8} className="text-center py-8 text-gray-600">
+                <TableRow className="hover:bg-neutral-50">
+                  <TableCell colSpan={8} className="text-center py-8 text-neutral-600">
                     {searchTerm ? "No tenants match your search" : "No tenants yet"}
                   </TableCell>
                 </TableRow>
               ) : (
                 filteredTenants.map((tenant) => (
-                  <TableRow key={tenant.id} className="border-gray-200 hover:bg-gray-50">
-                    <TableCell className="font-medium text-gray-900">
+                  <TableRow key={tenant.id} className="border-neutral-200 hover:bg-neutral-50">
+                    <TableCell className="font-medium text-neutral-900">
                       {tenant.name}
                     </TableCell>
-                    <TableCell className="text-gray-600">
+                    <TableCell className="text-neutral-600">
                       {tenant.slug}
                     </TableCell>
-                    <TableCell className="text-gray-600">
+                    <TableCell className="text-neutral-600">
                       {tenant.email || "—"}
                     </TableCell>
-                    <TableCell className="text-gray-600">
+                    <TableCell className="text-neutral-600">
                       {tenant._count?.packages || 0}
                     </TableCell>
-                    <TableCell className="text-gray-600">
+                    <TableCell className="text-neutral-600">
                       {tenant._count?.bookings || 0}
                     </TableCell>
-                    <TableCell className="text-gray-600">
+                    <TableCell className="text-neutral-600">
                       {tenant.commissionPercent}%
                     </TableCell>
                     <TableCell>
@@ -320,7 +320,7 @@ export function PlatformAdminDashboard() {
                         variant="outline"
                         size="sm"
                         onClick={() => navigate(`/admin/tenants/${tenant.id}`)}
-                        className="border-gray-300 text-gray-700 hover:bg-gray-50"
+                        className="border-neutral-300 text-neutral-700 hover:bg-neutral-50"
                       >
                         View Details
                       </Button>

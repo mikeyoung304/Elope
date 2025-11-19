@@ -9,7 +9,7 @@ export function CatalogGrid() {
 
   if (isLoading) {
     return (
-      <div className="text-center py-12 text-gray-700 text-xl">
+      <div className="text-center py-12 text-neutral-700 text-xl">
         Loading packages...
       </div>
     );
@@ -17,7 +17,7 @@ export function CatalogGrid() {
 
   if (error) {
     return (
-      <div className="text-center py-12 text-gray-900 text-xl">
+      <div className="text-center py-12 text-neutral-900 text-xl">
         Error loading packages: {error.message}
       </div>
     );
@@ -25,7 +25,7 @@ export function CatalogGrid() {
 
   if (!packages || packages.length === 0) {
     return (
-      <div className="text-center py-12 text-gray-700 text-xl">
+      <div className="text-center py-12 text-neutral-700 text-xl">
         No packages available
       </div>
     );
@@ -35,7 +35,7 @@ export function CatalogGrid() {
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
       {packages.map((pkg: PackageDto) => (
         <Link key={pkg.id} to={`/package/${pkg.slug}`}>
-          <Card className="overflow-hidden cursor-pointer h-full transition-all hover:shadow-elevation-2 bg-white border-gray-200 hover:border-gray-300 shadow-elevation-1">
+          <Card className="overflow-hidden cursor-pointer h-full transition-all hover:shadow-elevation-2 bg-white border-neutral-200 hover:border-neutral-300 shadow-elevation-1">
             {pkg.photoUrl && (
               <div className="relative aspect-[4/3] overflow-hidden">
                 <img
@@ -46,13 +46,13 @@ export function CatalogGrid() {
               </div>
             )}
             <CardContent className="p-6">
-              <h3 className="font-heading text-3xl font-semibold mb-3 text-gray-900">
+              <h3 className="font-heading text-3xl font-semibold mb-3 text-neutral-900">
                 {pkg.title}
               </h3>
-              <p className="text-gray-700 mb-4 line-clamp-2 text-lg leading-relaxed">
+              <p className="text-neutral-700 mb-4 line-clamp-2 text-lg leading-relaxed">
                 {pkg.description}
               </p>
-              <div className="flex justify-between items-center pt-2 border-t border-gray-200">
+              <div className="flex justify-between items-center pt-2 border-t border-neutral-200">
                 <span className="text-4xl font-heading font-semibold text-macon-navy">
                   {formatCurrency(pkg.priceCents)}
                 </span>

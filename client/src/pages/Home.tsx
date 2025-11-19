@@ -11,7 +11,7 @@ export function Home() {
   return (
     <>
       {/* Hero Section */}
-      <section className="relative bg-gradient-to-br from-macon-navy via-macon-navy to-gray-900 py-16 sm:py-20 md:py-28 lg:py-36 px-4 overflow-hidden">
+      <section className="relative bg-gradient-to-br from-macon-navy via-macon-navy to-neutral-900 py-16 sm:py-20 md:py-28 lg:py-36 px-4 overflow-hidden">
         {/* Background decorative elements */}
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_20%,rgba(255,107,53,0.1),transparent_50%)]"></div>
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_70%_80%,rgba(56,178,172,0.08),transparent_50%)]"></div>
@@ -68,21 +68,21 @@ export function Home() {
             <h2 className="font-heading text-5xl md:text-6xl lg:text-7xl font-bold mb-4 text-transparent bg-clip-text bg-gradient-to-r from-macon-navy via-macon-orange to-macon-teal">
               The Club Advantage
             </h2>
-            <p className="text-xl md:text-2xl text-gray-700 max-w-2xl mx-auto">
+            <p className="text-xl md:text-2xl text-neutral-700 max-w-2xl mx-auto">
               Three Pillars of Growth
             </p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8 mb-16">
-            <Card className="group bg-white border-2 border-gray-200 hover:border-macon-orange/50 shadow-elevation-1 hover:shadow-elevation-3 hover:-translate-y-1 transition-all duration-300">
+            <Card className="group bg-white border-2 border-neutral-200 hover:border-macon-orange/50 shadow-elevation-1 hover:shadow-elevation-3 hover:-translate-y-1 transition-all duration-300">
               <CardContent className="p-8">
                 <div className="mb-6 flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-br from-macon-orange/20 to-macon-orange/10 group-hover:from-macon-orange group-hover:to-macon-orange-700 transition-all duration-300 group-hover:scale-110 group-hover:rotate-3 shadow-sm">
                   <TrendingUp className="w-8 h-8 text-macon-orange group-hover:text-white transition-all duration-300" />
                 </div>
-                <h3 className="font-heading text-2xl md:text-3xl font-semibold mb-3 text-gray-900 group-hover:text-macon-navy transition-colors">
+                <h3 className="font-heading text-2xl md:text-3xl font-semibold mb-3 text-neutral-900 group-hover:text-macon-navy transition-colors">
                   Business Growth, Accelerated
                 </h3>
-                <p className="text-lg text-gray-600 leading-relaxed mb-4">
+                <p className="text-lg text-neutral-600 leading-relaxed mb-4">
                   Hands-on marketing, bespoke consulting, and sales-driven strategies powered by cutting-edge AI. We don't just give you tools—we execute alongside you.
                 </p>
                 <p className="text-base text-macon-orange font-semibold">
@@ -113,15 +113,15 @@ export function Home() {
               </CardContent>
             </Card>
 
-            <Card className="group bg-white border-2 border-gray-200 hover:border-macon-orange/50 shadow-elevation-1 hover:shadow-elevation-3 hover:-translate-y-1 transition-all duration-300">
+            <Card className="group bg-white border-2 border-neutral-200 hover:border-macon-orange/50 shadow-elevation-1 hover:shadow-elevation-3 hover:-translate-y-1 transition-all duration-300">
               <CardContent className="p-8">
                 <div className="mb-6 flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-br from-macon-orange/20 to-macon-orange/10 group-hover:from-macon-orange group-hover:to-macon-orange-700 transition-all duration-300 group-hover:scale-110 group-hover:rotate-3 shadow-sm">
                   <Building2 className="w-8 h-8 text-macon-orange group-hover:text-white transition-all duration-300" />
                 </div>
-                <h3 className="font-heading text-2xl md:text-3xl font-semibold mb-3 text-gray-900 group-hover:text-macon-navy transition-colors">
+                <h3 className="font-heading text-2xl md:text-3xl font-semibold mb-3 text-neutral-900 group-hover:text-macon-navy transition-colors">
                   Your Website, Your Way
                 </h3>
-                <p className="text-lg text-gray-600 leading-relaxed mb-4">
+                <p className="text-lg text-neutral-600 leading-relaxed mb-4">
                   Don't have a site? Need an upgrade? Our team designs, launches, and maintains your digital hub—no dev skills required. You focus on your business, we handle the tech.
                 </p>
                 <p className="text-base text-macon-orange font-semibold">
@@ -141,60 +141,60 @@ export function Home() {
               <h2 className="font-heading text-5xl md:text-6xl lg:text-7xl font-bold mb-6 text-transparent bg-clip-text bg-gradient-to-r from-macon-navy via-macon-orange to-macon-teal">
                 Who Is This For?
               </h2>
-              <p className="text-xl md:text-2xl text-gray-700 leading-relaxed max-w-3xl mx-auto">
+              <p className="text-xl md:text-2xl text-neutral-700 leading-relaxed max-w-3xl mx-auto">
                 Entrepreneurs, small business owners, and anyone ready to level up with AI and digital essentials. Whether you're launching, scaling, or pivoting—we're your growth partner.
               </p>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8">
-              <Card className="group bg-gray-50 border-l-4 border-l-macon-orange border-t border-r border-b border-gray-200/30 hover:shadow-elevation-2 transition-all">
+              <Card className="group bg-neutral-50 border-l-4 border-l-macon-orange border-t border-r border-b border-neutral-200/30 hover:shadow-elevation-2 transition-all">
                 <CardContent className="p-8">
                   <div className="mb-4 flex items-center justify-center w-12 h-12 rounded-full bg-macon-orange/10 group-hover:bg-macon-orange transition-colors">
                     <TrendingUp className="w-6 h-6 text-macon-orange group-hover:text-white transition-colors" />
                   </div>
-                  <h3 className="font-heading text-3xl md:text-4xl font-semibold mb-3 text-gray-900">
+                  <h3 className="font-heading text-3xl md:text-4xl font-semibold mb-3 text-neutral-900">
                     The Solopreneur
                   </h3>
-                  <p className="text-xl text-gray-700 leading-relaxed mb-4">
+                  <p className="text-xl text-neutral-700 leading-relaxed mb-4">
                     You're wearing all the hats (sales, marketing, ops) and drowning in admin.
                   </p>
-                  <p className="text-base text-gray-600">
+                  <p className="text-base text-neutral-600">
                     <strong>We handle:</strong> Scheduling, payments, website, marketing automation<br/>
                     <strong>You focus on:</strong> Delivering your service, closing deals
                   </p>
                 </CardContent>
               </Card>
 
-              <Card className="group bg-gray-50 border-l-4 border-l-macon-teal border-t border-r border-b border-gray-200/30 hover:shadow-elevation-2 transition-all">
+              <Card className="group bg-neutral-50 border-l-4 border-l-macon-teal border-t border-r border-b border-neutral-200/30 hover:shadow-elevation-2 transition-all">
                 <CardContent className="p-8">
                   <div className="mb-4 flex items-center justify-center w-12 h-12 rounded-full bg-macon-teal/10 group-hover:bg-macon-teal transition-colors">
                     <Building2 className="w-6 h-6 text-macon-teal group-hover:text-white transition-colors" />
                   </div>
-                  <h3 className="font-heading text-3xl md:text-4xl font-semibold mb-3 text-gray-900">
+                  <h3 className="font-heading text-3xl md:text-4xl font-semibold mb-3 text-neutral-900">
                     The Scaling Startup
                   </h3>
-                  <p className="text-xl text-gray-700 leading-relaxed mb-4">
+                  <p className="text-xl text-neutral-700 leading-relaxed mb-4">
                     You've proven the concept, now need systems to scale without chaos.
                   </p>
-                  <p className="text-base text-gray-600">
+                  <p className="text-base text-neutral-600">
                     <strong>We handle:</strong> Lead management, client onboarding, analytics, consulting<br/>
                     <strong>You focus on:</strong> Strategy, partnerships, growth
                   </p>
                 </CardContent>
               </Card>
 
-              <Card className="group bg-gray-50 border-l-4 border-l-macon-navy border-t border-r border-b border-gray-200/30 hover:shadow-elevation-2 transition-all">
+              <Card className="group bg-neutral-50 border-l-4 border-l-macon-navy border-t border-r border-b border-neutral-200/30 hover:shadow-elevation-2 transition-all">
                 <CardContent className="p-8">
                   <div className="mb-4 flex items-center justify-center w-12 h-12 rounded-full bg-macon-navy/10 group-hover:bg-macon-navy transition-colors">
                     <Zap className="w-6 h-6 text-macon-navy group-hover:text-white transition-colors" />
                   </div>
-                  <h3 className="font-heading text-3xl md:text-4xl font-semibold mb-3 text-gray-900">
+                  <h3 className="font-heading text-3xl md:text-4xl font-semibold mb-3 text-neutral-900">
                     The Pivot Artist
                   </h3>
-                  <p className="text-xl text-gray-700 leading-relaxed mb-4">
+                  <p className="text-xl text-neutral-700 leading-relaxed mb-4">
                     You're shifting your business model or launching a new offering.
                   </p>
-                  <p className="text-base text-gray-600">
+                  <p className="text-base text-neutral-600">
                     <strong>We handle:</strong> Website redesign, new booking flows, AI-powered marketing<br/>
                     <strong>You focus on:</strong> Testing, iterating, finding product-market fit
                   </p>
@@ -203,7 +203,7 @@ export function Home() {
             </div>
 
             <div className="text-center mt-12">
-              <p className="text-xl text-gray-700 mb-4">Not sure if you fit?</p>
+              <p className="text-xl text-neutral-700 mb-4">Not sure if you fit?</p>
               <Button variant="outline" size="lg" className="text-lg">
                 Chat with us →
               </Button>
@@ -219,13 +219,13 @@ export function Home() {
             <h2 className="font-heading text-5xl md:text-6xl lg:text-7xl font-bold mb-4 text-transparent bg-clip-text bg-gradient-to-r from-macon-navy via-macon-orange to-macon-teal">
               What Club Members Are Saying
             </h2>
-            <p className="text-xl md:text-2xl text-gray-700 max-w-2xl mx-auto">
+            <p className="text-xl md:text-2xl text-neutral-700 max-w-2xl mx-auto">
               Real businesses, real growth
             </p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8">
-            <Card className="bg-gray-50 border-gray-200/30 hover:shadow-elevation-2 transition-shadow relative">
+            <Card className="bg-neutral-50 border-neutral-200/30 hover:shadow-elevation-2 transition-shadow relative">
               <CardContent className="p-8">
                 <Quote className="w-12 h-12 text-macon-orange/30 mb-4" />
                 <div className="flex gap-1 mb-4">
@@ -235,17 +235,17 @@ export function Home() {
                   <Star className="w-5 h-5 text-macon-orange fill-macon-orange" />
                   <Star className="w-5 h-5 text-macon-orange fill-macon-orange" />
                 </div>
-                <p className="text-xl text-gray-700 mb-6 leading-relaxed italic">
+                <p className="text-xl text-neutral-700 mb-6 leading-relaxed italic">
                   "Macon AI is more than tech—they're my business upgrade. I went from manually texting appointment reminders to a fully automated booking system. My revenue is up 30% and I'm working fewer hours."
                 </p>
-                <div className="border-t border-gray-200/30 pt-4">
-                  <div className="font-semibold text-xl text-gray-900">Casey M.</div>
-                  <div className="text-lg text-gray-600">Salon Owner</div>
+                <div className="border-t border-neutral-200/30 pt-4">
+                  <div className="font-semibold text-xl text-neutral-900">Casey M.</div>
+                  <div className="text-lg text-neutral-600">Salon Owner</div>
                 </div>
               </CardContent>
             </Card>
 
-            <Card className="bg-gray-50 border-gray-200/30 hover:shadow-elevation-2 transition-shadow relative">
+            <Card className="bg-neutral-50 border-neutral-200/30 hover:shadow-elevation-2 transition-shadow relative">
               <CardContent className="p-8">
                 <Quote className="w-12 h-12 text-macon-orange/30 mb-4" />
                 <div className="flex gap-1 mb-4">
@@ -255,17 +255,17 @@ export function Home() {
                   <Star className="w-5 h-5 text-macon-orange fill-macon-orange" />
                   <Star className="w-5 h-5 text-macon-orange fill-macon-orange" />
                 </div>
-                <p className="text-xl text-gray-700 mb-6 leading-relaxed italic">
+                <p className="text-xl text-neutral-700 mb-6 leading-relaxed italic">
                   "I went from lost leads to booked solid in weeks. The AI strategist helped me position my services, built my website, and set up a booking flow that just works."
                 </p>
-                <div className="border-t border-gray-200/30 pt-4">
-                  <div className="font-semibold text-xl text-gray-900">Robin T.</div>
-                  <div className="text-lg text-gray-600">Consultant</div>
+                <div className="border-t border-neutral-200/30 pt-4">
+                  <div className="font-semibold text-xl text-neutral-900">Robin T.</div>
+                  <div className="text-lg text-neutral-600">Consultant</div>
                 </div>
               </CardContent>
             </Card>
 
-            <Card className="bg-gray-50 border-gray-200/30 hover:shadow-elevation-2 transition-shadow relative">
+            <Card className="bg-neutral-50 border-neutral-200/30 hover:shadow-elevation-2 transition-shadow relative">
               <CardContent className="p-8">
                 <Quote className="w-12 h-12 text-macon-orange/30 mb-4" />
                 <div className="flex gap-1 mb-4">
@@ -275,12 +275,12 @@ export function Home() {
                   <Star className="w-5 h-5 text-macon-orange fill-macon-orange" />
                   <Star className="w-5 h-5 text-macon-orange fill-macon-orange" />
                 </div>
-                <p className="text-xl text-gray-700 mb-6 leading-relaxed italic">
+                <p className="text-xl text-neutral-700 mb-6 leading-relaxed italic">
                   "I didn't have a website, hated tech, and was losing clients to competitors. Macon AI launched my site in 10 days and automated my scheduling. Now I look professional and my calendar is full."
                 </p>
-                <div className="border-t border-gray-200/30 pt-4">
-                  <div className="font-semibold text-xl text-gray-900">Alex K.</div>
-                  <div className="text-lg text-gray-600">Fitness Coach</div>
+                <div className="border-t border-neutral-200/30 pt-4">
+                  <div className="font-semibold text-xl text-neutral-900">Alex K.</div>
+                  <div className="text-lg text-neutral-600">Fitness Coach</div>
                 </div>
               </CardContent>
             </Card>
@@ -327,7 +327,7 @@ export function Home() {
               <h2 className="font-heading text-5xl md:text-6xl lg:text-7xl font-bold mb-6 text-transparent bg-clip-text bg-gradient-to-r from-macon-navy via-macon-orange to-macon-teal">
                 How It Works
               </h2>
-              <p className="text-xl md:text-2xl text-gray-700 leading-relaxed">
+              <p className="text-xl md:text-2xl text-neutral-700 leading-relaxed">
                 Join. Grow. Succeed.
               </p>
             </div>
@@ -336,39 +336,39 @@ export function Home() {
               {/* Connecting line */}
               <div className="absolute left-8 top-8 bottom-8 w-1 bg-gradient-to-b from-macon-orange via-macon-orange to-macon-teal hidden md:block"></div>
 
-              <div className="flex items-start gap-6 p-8 bg-white rounded-xl border-l-4 border-l-macon-orange border-t border-r border-b border-gray-200 hover:shadow-elevation-3 transition-all relative">
+              <div className="flex items-start gap-6 p-8 bg-white rounded-xl border-l-4 border-l-macon-orange border-t border-r border-b border-neutral-200 hover:shadow-elevation-3 transition-all relative">
                 <div className="flex-shrink-0 w-16 h-16 rounded-2xl bg-gradient-to-br from-macon-orange to-macon-orange-dark flex items-center justify-center text-white font-extrabold text-3xl shadow-lg relative z-10">
                   1
                 </div>
                 <div>
-                  <h3 className="text-3xl font-bold text-gray-900 mb-3">Apply & Onboard</h3>
-                  <p className="text-xl text-gray-700 leading-relaxed">Fill a short application (5 minutes), meet your dedicated AI strategist, and join exclusive member events. We'll assess your business goals and create your custom plan.</p>
+                  <h3 className="text-3xl font-bold text-neutral-900 mb-3">Apply & Onboard</h3>
+                  <p className="text-xl text-neutral-700 leading-relaxed">Fill a short application (5 minutes), meet your dedicated AI strategist, and join exclusive member events. We'll assess your business goals and create your custom plan.</p>
                   <div className="inline-block mt-3 px-4 py-2 bg-macon-orange/10 rounded-lg">
                     <p className="text-base text-macon-orange font-bold">Week 1</p>
                   </div>
                 </div>
               </div>
 
-              <div className="flex items-start gap-6 p-8 bg-white rounded-xl border-l-4 border-l-macon-orange border-t border-r border-b border-gray-200 hover:shadow-elevation-3 transition-all relative">
+              <div className="flex items-start gap-6 p-8 bg-white rounded-xl border-l-4 border-l-macon-orange border-t border-r border-b border-neutral-200 hover:shadow-elevation-3 transition-all relative">
                 <div className="flex-shrink-0 w-16 h-16 rounded-2xl bg-gradient-to-br from-macon-orange to-macon-orange-dark flex items-center justify-center text-white font-extrabold text-3xl shadow-lg relative z-10">
                   2
                 </div>
                 <div>
-                  <h3 className="text-3xl font-bold text-gray-900 mb-3">Tailored Plan</h3>
-                  <p className="text-xl text-gray-700 leading-relaxed">We assess your needs, then set up booking/scheduling, marketing automation, and consulting as you require. No one-size-fits-all—every business is unique.</p>
+                  <h3 className="text-3xl font-bold text-neutral-900 mb-3">Tailored Plan</h3>
+                  <p className="text-xl text-neutral-700 leading-relaxed">We assess your needs, then set up booking/scheduling, marketing automation, and consulting as you require. No one-size-fits-all—every business is unique.</p>
                   <div className="inline-block mt-3 px-4 py-2 bg-macon-orange/10 rounded-lg">
                     <p className="text-base text-macon-orange font-bold">Week 2-3</p>
                   </div>
                 </div>
               </div>
 
-              <div className="flex items-start gap-6 p-8 bg-white rounded-xl border-l-4 border-l-macon-teal border-t border-r border-b border-gray-200 hover:shadow-elevation-3 transition-all relative">
+              <div className="flex items-start gap-6 p-8 bg-white rounded-xl border-l-4 border-l-macon-teal border-t border-r border-b border-neutral-200 hover:shadow-elevation-3 transition-all relative">
                 <div className="flex-shrink-0 w-16 h-16 rounded-2xl bg-gradient-to-br from-macon-teal to-macon-teal-dark flex items-center justify-center text-white font-extrabold text-3xl shadow-lg relative z-10">
                   3
                 </div>
                 <div>
-                  <h3 className="text-3xl font-bold text-gray-900 mb-3">Revenue Partnership</h3>
-                  <p className="text-xl text-gray-700 leading-relaxed">We invest in your growth and take a small % of your sales—aligned incentives, shared success. You win, we win. No monthly fees eating into your profits.</p>
+                  <h3 className="text-3xl font-bold text-neutral-900 mb-3">Revenue Partnership</h3>
+                  <p className="text-xl text-neutral-700 leading-relaxed">We invest in your growth and take a small % of your sales—aligned incentives, shared success. You win, we win. No monthly fees eating into your profits.</p>
                   <div className="inline-block mt-3 px-4 py-2 bg-macon-teal/10 rounded-lg">
                     <p className="text-base text-macon-teal font-bold">Ongoing</p>
                   </div>
@@ -395,16 +395,16 @@ export function Home() {
               </h2>
             </div>
             <div className="prose prose-xl max-w-none">
-              <p className="text-xl text-gray-700 leading-relaxed mb-6">
+              <p className="text-xl text-neutral-700 leading-relaxed mb-6">
                 Macon AI Solutions believes business growth shouldn't require wearing all the hats. Our mission is to partner with entrepreneurs
                 and small business owners, providing AI-powered consulting, seamless scheduling, professional websites, and marketing automation—all
                 through a revenue-sharing model that aligns our success with yours.
               </p>
-              <p className="text-xl text-gray-700 leading-relaxed mb-6">
+              <p className="text-xl text-neutral-700 leading-relaxed mb-6">
                 Headquartered in Macon, Georgia, our team combines deep AI expertise with hands-on business experience. We understand the challenges
                 small business owners face because we've been there—juggling admin tasks, chasing leads, and struggling with tech.
               </p>
-              <p className="text-xl text-gray-700 leading-relaxed">
+              <p className="text-xl text-neutral-700 leading-relaxed">
                 That's why we built the Macon AI Club: a partnership where we invest in your growth, not just sell you software.
                 Want to know more? <a href="#team" className="text-macon-orange hover:text-macon-orange-dark underline">Learn about our team.</a>
               </p>
@@ -414,7 +414,7 @@ export function Home() {
       </section>
 
       {/* Final CTA Section */}
-      <section className="relative py-28 bg-gradient-to-br from-macon-navy via-gray-900 to-black text-white overflow-hidden">
+      <section className="relative py-28 bg-gradient-to-br from-macon-navy via-neutral-900 to-black text-white overflow-hidden">
         {/* Animated gradient orbs */}
         <div className="absolute top-0 left-1/4 w-96 h-96 bg-macon-orange/20 rounded-full blur-3xl animate-pulse"></div>
         <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-macon-teal/15 rounded-full blur-3xl animate-pulse" style={{animationDelay: '1s'}}></div>

@@ -9,7 +9,7 @@ const cardVariants = cva(
     variants: {
       colorScheme: {
         default: [
-          "bg-white text-gray-900",
+          "bg-white text-neutral-900",
           "shadow-elevation-2 hover:shadow-elevation-3",
           "border border-neutral-100/30",
           "backdrop-blur-xs",

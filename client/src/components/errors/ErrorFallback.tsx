@@ -18,15 +18,8 @@ export function ErrorFallback({ error, resetError }: Props) {
   const isDev = import.meta.env.DEV;
 
   return (
-    <div
-      style={{
-        padding: '2rem',
-        textAlign: 'center',
-        maxWidth: '600px',
-        margin: '2rem auto',
-      }}
-    >
-      <div style={{ marginBottom: '1.5rem' }}>
+    <div className="p-8 text-center max-w-2xl mx-auto my-8">
+      <div className="mb-6">
         <svg
           width="64"
           height="64"
@@ -36,7 +29,7 @@ export function ErrorFallback({ error, resetError }: Props) {
           strokeWidth="2"
           strokeLinecap="round"
           strokeLinejoin="round"
-          style={{ color: '#ef4444', margin: '0 auto' }}
+          className="text-danger-500 mx-auto"
         >
           <circle cx="12" cy="12" r="10"></circle>
           <line x1="12" y1="8" x2="12" y2="12"></line>
@@ -44,50 +37,25 @@ export function ErrorFallback({ error, resetError }: Props) {
         </svg>
       </div>
 
-      <h1 style={{ fontSize: '1.5rem', fontWeight: 'bold', marginBottom: '0.5rem' }}>
+      <h1 className="text-2xl font-bold mb-2">
         Something went wrong
       </h1>
 
-      <p style={{ color: '#6b7280', marginBottom: '1.5rem' }}>
+      <p className="text-neutral-500 mb-6">
         We're sorry for the inconvenience. Please try again.
       </p>
 
       {isDev && (
-        <details
-          style={{
-            marginTop: '1rem',
-            marginBottom: '1.5rem',
-            textAlign: 'left',
-            background: '#f9fafb',
-            padding: '1rem',
-            borderRadius: '0.5rem',
-            border: '1px solid #e5e7eb',
-          }}
-        >
-          <summary
-            style={{
-              cursor: 'pointer',
-              fontWeight: '600',
-              marginBottom: '0.5rem',
-              color: '#374151',
-            }}
-          >
+        <details className="mt-4 mb-6 text-left bg-neutral-50 p-4 rounded-lg border border-neutral-200">
+          <summary className="cursor-pointer font-semibold mb-2 text-neutral-700">
             Error details (development only)
           </summary>
-          <div style={{ marginTop: '0.5rem' }}>
-            <p style={{ fontWeight: '600', color: '#ef4444', marginBottom: '0.5rem' }}>
+          <div className="mt-2">
+            <p className="font-semibold text-danger-500 mb-2">
               {error.name}: {error.message}
             </p>
             {error.stack && (
-              <pre
-                style={{
-                  fontSize: '0.75rem',
-                  color: '#4b5563',
-                  overflow: 'auto',
-                  whiteSpace: 'pre-wrap',
-                  wordBreak: 'break-word',
-                }}
-              >
+              <pre className="text-xs text-neutral-600 overflow-auto whitespace-pre-wrap break-words">
                 {error.stack}
               </pre>
             )}
@@ -97,23 +65,7 @@ export function ErrorFallback({ error, resetError }: Props) {
 
       <button
         onClick={resetError}
-        style={{
-          padding: '0.75rem 1.5rem',
-          backgroundColor: '#3b82f6',
-          color: 'white',
-          border: 'none',
-          borderRadius: '0.5rem',
-          fontSize: '1rem',
-          fontWeight: '500',
-          cursor: 'pointer',
-          transition: 'background-color 0.2s',
-        }}
-        onMouseEnter={(e) => {
-          e.currentTarget.style.backgroundColor = '#2563eb';
-        }}
-        onMouseLeave={(e) => {
-          e.currentTarget.style.backgroundColor = '#3b82f6';
-        }}
+        className="px-6 py-3 bg-primary-500 text-white rounded-lg text-base font-medium cursor-pointer transition-colors hover:bg-primary-600 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2"
       >
         Try again
       </button>
@@ -126,20 +78,13 @@ export function ErrorFallback({ error, resetError }: Props) {
  */
 export function MinimalErrorFallback({ error, resetError }: Props) {
   return (
-    <div style={{ padding: '1rem', textAlign: 'center', background: '#fef2f2' }}>
-      <p style={{ color: '#991b1b', marginBottom: '0.5rem' }}>
+    <div className="p-4 text-center bg-danger-50">
+      <p className="text-danger-800 mb-2">
         An error occurred. Please try again.
       </p>
       <button
         onClick={resetError}
-        style={{
-          padding: '0.5rem 1rem',
-          backgroundColor: '#dc2626',
-          color: 'white',
-          border: 'none',
-          borderRadius: '0.25rem',
-          cursor: 'pointer',
-        }}
+        className="px-4 py-2 bg-danger-600 text-white border-none rounded cursor-pointer hover:bg-danger-700 focus:outline-none focus:ring-2 focus:ring-danger-500 focus:ring-offset-1 transition-colors"
       >
         Retry
       </button>

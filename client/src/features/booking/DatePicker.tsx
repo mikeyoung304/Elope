@@ -107,8 +107,8 @@ export function DatePicker({ selected, onSelect }: DatePickerProps) {
   return (
     <div>
       <div className="mb-6 flex items-start gap-2">
-        <Calendar className="h-5 w-5 mt-0.5 text-gray-600" />
-        <p className="text-lg text-gray-700">
+        <Calendar className="h-5 w-5 mt-0.5 text-neutral-600" />
+        <p className="text-lg text-neutral-700">
           Select a date for your ceremony. Unavailable dates are pre-loaded for your
           convenience.
         </p>
@@ -117,7 +117,7 @@ export function DatePicker({ selected, onSelect }: DatePickerProps) {
       {isLoading ? (
         <div className="flex items-center justify-center py-8">
           <Loader2 className="w-8 h-8 animate-spin text-macon-orange" />
-          <span className="ml-3 text-lg text-gray-700">Loading availability...</span>
+          <span className="ml-3 text-lg text-neutral-700">Loading availability...</span>
         </div>
       ) : (
         <>
@@ -127,23 +127,23 @@ export function DatePicker({ selected, onSelect }: DatePickerProps) {
             onSelect={handleDateSelect}
             disabled={[{ before: today }, ...unavailableDates]}
             className={cn(
-              "border border-gray-300 rounded-lg p-4 bg-gray-50",
+              "border border-neutral-300 rounded-lg p-4 bg-neutral-50",
               styles.datePicker
             )}
           />
 
           <div className="mt-6 flex flex-wrap items-center gap-4 text-base">
             <div className="flex items-center gap-2">
-              <div className="h-5 w-5 bg-macon-orange rounded border border-gray-300" />
-              <span className="text-gray-700">Selected</span>
+              <div className="h-5 w-5 bg-macon-orange rounded border border-neutral-300" />
+              <span className="text-neutral-700">Selected</span>
             </div>
             <div className="flex items-center gap-2">
-              <div className="h-5 w-5 bg-white rounded border border-gray-300" />
-              <span className="text-gray-700">Available</span>
+              <div className="h-5 w-5 bg-white rounded border border-neutral-300" />
+              <span className="text-neutral-700">Available</span>
             </div>
             <div className="flex items-center gap-2">
-              <div className="h-5 w-5 bg-gray-200 rounded border border-gray-300" />
-              <span className="text-gray-700">Unavailable</span>
+              <div className="h-5 w-5 bg-neutral-200 rounded border border-neutral-300" />
+              <span className="text-neutral-700">Unavailable</span>
             </div>
           </div>
         </>

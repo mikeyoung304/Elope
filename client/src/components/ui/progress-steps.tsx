@@ -28,9 +28,9 @@ export function ProgressSteps({ steps, currentStep, className }: ProgressStepsPr
                 <div
                   className={cn(
                     "relative flex items-center justify-center rounded-full transition-all duration-300",
-                    isCompleted && "w-10 h-10 bg-green-500 text-white",
+                    isCompleted && "w-10 h-10 bg-success-500 text-white",
                     isCurrent && "w-12 h-12 bg-macon-orange text-white animate-pulse",
-                    isFuture && "w-10 h-10 bg-gray-200 text-gray-400"
+                    isFuture && "w-10 h-10 bg-neutral-200 text-neutral-400"
                   )}
                 >
                   {isCompleted && (
@@ -54,9 +54,9 @@ export function ProgressSteps({ steps, currentStep, className }: ProgressStepsPr
                   <p
                     className={cn(
                       "text-sm font-semibold transition-colors",
-                      isCompleted && "text-green-600",
+                      isCompleted && "text-success-600",
                       isCurrent && "text-macon-orange",
-                      isFuture && "text-gray-400"
+                      isFuture && "text-neutral-400"
                     )}
                   >
                     {step.label}
@@ -65,9 +65,9 @@ export function ProgressSteps({ steps, currentStep, className }: ProgressStepsPr
                     <p
                       className={cn(
                         "text-xs mt-1 transition-colors",
-                        isCompleted && "text-green-500",
-                        isCurrent && "text-gray-600",
-                        isFuture && "text-gray-300"
+                        isCompleted && "text-success-500",
+                        isCurrent && "text-neutral-600",
+                        isFuture && "text-neutral-300"
                       )}
                     >
                       {step.description}
@@ -80,13 +80,13 @@ export function ProgressSteps({ steps, currentStep, className }: ProgressStepsPr
               {index < steps.length - 1 && (
                 <div className="flex-1 h-1 mx-4 relative">
                   {/* Background line */}
-                  <div className="absolute inset-0 bg-gray-200 rounded-full" />
+                  <div className="absolute inset-0 bg-neutral-200 rounded-full" />
 
                   {/* Progress line with gradient */}
                   <div
                     className={cn(
                       "absolute inset-0 rounded-full transition-all duration-500",
-                      isCompleted && "bg-gradient-to-r from-green-500 to-green-400 w-full",
+                      isCompleted && "bg-gradient-to-r from-success-500 to-success-400 w-full",
                       isCurrent && "bg-gradient-to-r from-macon-orange to-transparent w-1/2",
                       isFuture && "w-0"
                     )}
@@ -106,7 +106,7 @@ export function ProgressStepsCompact({ steps, currentStep, className }: Progress
   return (
     <div className={cn("w-full", className)}>
       {/* Progress bar */}
-      <div className="relative h-2 bg-gray-200 rounded-full overflow-hidden">
+      <div className="relative h-2 bg-neutral-200 rounded-full overflow-hidden">
         <div
           className="absolute inset-y-0 left-0 bg-gradient-to-r from-macon-orange to-macon-teal transition-all duration-500 ease-out"
           style={{ width: `${((currentStep + 1) / steps.length) * 100}%` }}
@@ -116,16 +116,16 @@ export function ProgressStepsCompact({ steps, currentStep, className }: Progress
       {/* Current step indicator */}
       <div className="mt-4 flex justify-between items-center">
         <div>
-          <p className="text-sm font-semibold text-gray-900">
+          <p className="text-sm font-semibold text-neutral-900">
             {steps[currentStep]?.label}
           </p>
           {steps[currentStep]?.description && (
-            <p className="text-xs text-gray-500 mt-1">
+            <p className="text-xs text-neutral-500 mt-1">
               {steps[currentStep].description}
             </p>
           )}
         </div>
-        <div className="text-xs font-medium text-gray-500">
+        <div className="text-xs font-medium text-neutral-500">
           Step {currentStep + 1} of {steps.length}
         </div>
       </div>

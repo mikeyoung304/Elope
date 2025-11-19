@@ -52,7 +52,7 @@ export function PackagePage() {
 
   if (isLoading) {
     return (
-      <div className="text-center py-12 text-gray-700 text-xl">
+      <div className="text-center py-12 text-neutral-700 text-xl">
         Loading package...
       </div>
     );
@@ -60,7 +60,7 @@ export function PackagePage() {
 
   if (error || !packageData) {
     return (
-      <div className="text-center py-12 text-gray-900 text-xl">
+      <div className="text-center py-12 text-neutral-900 text-xl">
         Package not found
       </div>
     );
@@ -128,7 +128,7 @@ export function PackagePage() {
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         <div className="lg:col-span-2 space-y-8">
-        <Card className="overflow-hidden bg-white border-gray-200 shadow-elevation-1">
+        <Card className="overflow-hidden bg-white border-neutral-200 shadow-elevation-1">
           {packageData.photoUrl && (
             <div className="relative aspect-[16/9] overflow-hidden">
               <img
@@ -139,14 +139,14 @@ export function PackagePage() {
             </div>
           )}
           <CardContent className="p-8">
-            <h1 className="font-heading text-5xl font-bold mb-4 text-gray-900">
+            <h1 className="font-heading text-5xl font-bold mb-4 text-neutral-900">
               {packageData.title}
             </h1>
-            <p className="text-gray-700 mb-6 leading-relaxed text-xl">
+            <p className="text-neutral-700 mb-6 leading-relaxed text-xl">
               {packageData.description}
             </p>
-            <div className="flex items-center gap-2 pt-4 border-t border-gray-200">
-              <span className="text-lg text-gray-600">Base Price:</span>
+            <div className="flex items-center gap-2 pt-4 border-t border-neutral-200">
+              <span className="text-lg text-neutral-600">Base Price:</span>
               <span className="text-4xl font-heading font-semibold text-macon-navy">
                 {formatCurrency(packageData.priceCents)}
               </span>
@@ -154,9 +154,9 @@ export function PackagePage() {
           </CardContent>
         </Card>
 
-        <Card className="bg-white border-gray-200 shadow-elevation-1">
+        <Card className="bg-white border-neutral-200 shadow-elevation-1">
           <CardHeader>
-            <CardTitle className="text-gray-900 text-3xl">Select Date</CardTitle>
+            <CardTitle className="text-neutral-900 text-3xl">Select Date</CardTitle>
           </CardHeader>
           <CardContent>
             <DatePicker
@@ -166,9 +166,9 @@ export function PackagePage() {
           </CardContent>
         </Card>
 
-        <Card className="bg-white border-gray-200 shadow-elevation-1">
+        <Card className="bg-white border-neutral-200 shadow-elevation-1">
           <CardHeader>
-            <CardTitle className="text-gray-900 text-3xl">Your Details</CardTitle>
+            <CardTitle className="text-neutral-900 text-3xl">Your Details</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="space-y-6">
@@ -205,9 +205,9 @@ export function PackagePage() {
         </Card>
 
         {packageData.addOns && packageData.addOns.length > 0 && (
-          <Card className="bg-white border-gray-200 shadow-elevation-1">
+          <Card className="bg-white border-neutral-200 shadow-elevation-1">
             <CardHeader>
-              <CardTitle className="text-gray-900 text-3xl">Add-Ons</CardTitle>
+              <CardTitle className="text-neutral-900 text-3xl">Add-Ons</CardTitle>
             </CardHeader>
             <CardContent>
               <AddOnList

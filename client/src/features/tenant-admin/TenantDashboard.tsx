@@ -131,9 +131,9 @@ export function TenantDashboard({ tenantInfo }: TenantDashboardProps) {
       <div className="max-w-7xl mx-auto space-y-6">
         {/* Header */}
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">Tenant Dashboard</h1>
+          <h1 className="text-3xl font-bold text-neutral-900">Tenant Dashboard</h1>
           {tenantInfo && (
-            <p className="text-gray-600 mt-1">
+            <p className="text-neutral-600 mt-1">
               {tenantInfo.name} ({tenantInfo.slug})
             </p>
           )}
@@ -141,51 +141,51 @@ export function TenantDashboard({ tenantInfo }: TenantDashboardProps) {
 
         {/* Metrics Cards */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-          <Card className="p-6 border-gray-200 shadow-sm hover:shadow-md transition-shadow">
+          <Card className="p-6 border-neutral-200 shadow-sm hover:shadow-md transition-shadow">
             <div className="flex items-center gap-3 mb-2">
               <div className="p-2 bg-macon-navy-50 rounded">
                 <Package className="w-5 h-5 text-macon-navy-600" />
               </div>
-              <div className="text-sm font-medium text-gray-700">Total Packages</div>
+              <div className="text-sm font-medium text-neutral-700">Total Packages</div>
             </div>
-            <div className="text-3xl font-bold text-gray-900">{packages.length}</div>
+            <div className="text-3xl font-bold text-neutral-900">{packages.length}</div>
           </Card>
 
-          <Card className="p-6 border-gray-200 shadow-sm hover:shadow-md transition-shadow">
+          <Card className="p-6 border-neutral-200 shadow-sm hover:shadow-md transition-shadow">
             <div className="flex items-center gap-3 mb-2">
               <div className="p-2 bg-macon-orange-50 rounded">
                 <XCircle className="w-5 h-5 text-macon-orange-600" />
               </div>
-              <div className="text-sm font-medium text-gray-700">Blackout Dates</div>
+              <div className="text-sm font-medium text-neutral-700">Blackout Dates</div>
             </div>
-            <div className="text-3xl font-bold text-gray-900">{blackouts.length}</div>
+            <div className="text-3xl font-bold text-neutral-900">{blackouts.length}</div>
           </Card>
 
-          <Card className="p-6 border-gray-200 shadow-sm hover:shadow-md transition-shadow">
+          <Card className="p-6 border-neutral-200 shadow-sm hover:shadow-md transition-shadow">
             <div className="flex items-center gap-3 mb-2">
-              <div className="p-2 bg-blue-50 rounded">
-                <Calendar className="w-5 h-5 text-blue-600" />
+              <div className="p-2 bg-macon-navy-50 rounded">
+                <Calendar className="w-5 h-5 text-macon-navy-600" />
               </div>
-              <div className="text-sm font-medium text-gray-700">Total Bookings</div>
+              <div className="text-sm font-medium text-neutral-700">Total Bookings</div>
             </div>
-            <div className="text-3xl font-bold text-gray-900">{bookings.length}</div>
+            <div className="text-3xl font-bold text-neutral-900">{bookings.length}</div>
           </Card>
 
-          <Card className="p-6 border-gray-200 shadow-sm hover:shadow-md transition-shadow">
+          <Card className="p-6 border-neutral-200 shadow-sm hover:shadow-md transition-shadow">
             <div className="flex items-center gap-3 mb-2">
-              <div className="p-2 bg-purple-50 rounded">
-                <Palette className="w-5 h-5 text-purple-600" />
+              <div className="p-2 bg-macon-orange-50 rounded">
+                <Palette className="w-5 h-5 text-macon-orange-600" />
               </div>
-              <div className="text-sm font-medium text-gray-700">Branding</div>
+              <div className="text-sm font-medium text-neutral-700">Branding</div>
             </div>
-            <div className="text-lg font-medium text-gray-600">
+            <div className="text-lg font-medium text-neutral-600">
               {branding ? "Configured" : "Not Set"}
             </div>
           </Card>
         </div>
 
         {/* Tabs */}
-        <div className="border-b border-gray-200">
+        <div className="border-b border-neutral-200">
           <nav className="flex -mb-px space-x-8">
             <button
               onClick={() => setActiveTab("packages")}
@@ -193,7 +193,7 @@ export function TenantDashboard({ tenantInfo }: TenantDashboardProps) {
                 "py-2 px-1 border-b-2 font-medium text-sm transition-colors",
                 activeTab === "packages"
                   ? "border-macon-navy-600 text-macon-navy-600"
-                  : "border-transparent text-gray-600 hover:text-gray-900 hover:border-gray-300"
+                  : "border-transparent text-neutral-600 hover:text-neutral-900 hover:border-neutral-300"
               )}
             >
               Packages
@@ -204,7 +204,7 @@ export function TenantDashboard({ tenantInfo }: TenantDashboardProps) {
                 "py-2 px-1 border-b-2 font-medium text-sm transition-colors",
                 activeTab === "blackouts"
                   ? "border-macon-navy-600 text-macon-navy-600"
-                  : "border-transparent text-gray-600 hover:text-gray-900 hover:border-gray-300"
+                  : "border-transparent text-neutral-600 hover:text-neutral-900 hover:border-neutral-300"
               )}
             >
               Blackouts
@@ -215,7 +215,7 @@ export function TenantDashboard({ tenantInfo }: TenantDashboardProps) {
                 "py-2 px-1 border-b-2 font-medium text-sm transition-colors",
                 activeTab === "bookings"
                   ? "border-macon-navy-600 text-macon-navy-600"
-                  : "border-transparent text-gray-600 hover:text-gray-900 hover:border-gray-300"
+                  : "border-transparent text-neutral-600 hover:text-neutral-900 hover:border-neutral-300"
               )}
             >
               Bookings
@@ -226,7 +226,7 @@ export function TenantDashboard({ tenantInfo }: TenantDashboardProps) {
                 "py-2 px-1 border-b-2 font-medium text-sm transition-colors",
                 activeTab === "branding"
                   ? "border-macon-navy-600 text-macon-navy-600"
-                  : "border-transparent text-gray-600 hover:text-gray-900 hover:border-gray-300"
+                  : "border-transparent text-neutral-600 hover:text-neutral-900 hover:border-neutral-300"
               )}
             >
               Branding

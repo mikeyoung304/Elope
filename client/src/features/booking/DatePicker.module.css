@@ -10,26 +10,26 @@
   height: 2.5rem;
   border-radius: 0.5rem;
   transition: all 200ms cubic-bezier(0.4, 0, 0.2, 1);
-  color: #4b5563; /* gray-600 */
+  color: var(--text-secondary);
 }
 
 .datePicker :global(.rdp-nav_button):hover {
-  background-color: #f3f4f6; /* gray-100 */
-  color: #1a365d; /* macon-navy */
+  background-color: var(--surface-tertiary);
+  color: var(--macon-navy);
 }
 
 /* Month caption */
 .datePicker :global(.rdp-caption_label) {
   font-size: 1.125rem;
   font-weight: 600;
-  color: #1f2937; /* gray-800 */
+  color: var(--text-primary);
 }
 
 /* Weekday headers */
 .datePicker :global(.rdp-head_cell) {
   font-size: 0.875rem;
   font-weight: 600;
-  color: #6b7280; /* gray-500 */
+  color: var(--text-tertiary);
   text-transform: uppercase;
   letter-spacing: 0.025em;
   padding: 0.5rem;
@@ -42,33 +42,33 @@
   border-radius: 0.5rem;
   font-size: 0.875rem;
   transition: all 200ms cubic-bezier(0.4, 0, 0.2, 1);
-  color: #374151; /* gray-700 */
+  color: var(--text-primary);
   margin: 0.125rem;
 }
 
 .datePicker :global(.rdp-day):hover:not(.rdp-day_disabled):not(.rdp-day_selected) {
-  background-color: #ccfbf1; /* teal-100 */
-  color: #0f766e; /* teal-700 */
+  background-color: var(--macon-teal-100);
+  color: var(--macon-teal-700);
   transform: scale(1.05);
 }
 
 /* Selected date - Orange (primary brand accent) */
 .datePicker :global(.rdp-day_selected) {
-  background-color: #fb923c !important; /* macon-orange */
+  background-color: var(--macon-orange) !important;
   color: white !important;
   font-weight: 600;
-  box-shadow: 0 4px 6px -1px rgba(251, 146, 60, 0.3);
+  box-shadow: var(--elevation-2);
 }
 
 .datePicker :global(.rdp-day_selected):hover {
-  background-color: #f97316 !important; /* macon-orange-hover */
+  background-color: var(--interactive-secondary-hover) !important;
   transform: scale(1.05);
 }
 
 /* Today's date - Navy ring */
 .datePicker :global(.rdp-day_today):not(.rdp-day_selected) {
   font-weight: 700;
-  color: #1a365d; /* macon-navy */
+  color: var(--macon-navy);
   position: relative;
 }
 
@@ -80,13 +80,13 @@
   transform: translateX(-50%);
   width: 0.25rem;
   height: 0.25rem;
-  background-color: #fb923c; /* macon-orange */
+  background-color: var(--macon-orange);
   border-radius: 9999px;
 }
 
 /* Disabled/unavailable dates - Red indication */
 .datePicker :global(.rdp-day_disabled) {
-  color: #d1d5db !important; /* gray-300 */
+  color: var(--border-color-strong) !important;
   text-decoration: line-through;
   cursor: not-allowed;
   position: relative;
@@ -99,26 +99,26 @@
   right: 0.25rem;
   width: 0.375rem;
   height: 0.375rem;
-  background-color: #ef4444; /* red-500 */
+  background-color: var(--semantic-error-500);
   border-radius: 9999px;
 }
 
 /* Outside month dates */
 .datePicker :global(.rdp-day_outside) {
-  color: #d1d5db; /* gray-300 */
+  color: var(--border-color-strong);
 }
 
 /* Range middle (if using range selection in future) */
 .datePicker :global(.rdp-day_range_middle) {
-  background-color: #fed7aa; /* orange-200 */
-  color: #9a3412; /* orange-800 */
+  background-color: var(--macon-orange-200);
+  color: var(--macon-orange-800);
 }
 
 /* Focus states - accessible keyboard navigation */
 .datePicker :global(.rdp-day):focus-visible {
-  outline: 2px solid #fb923c; /* macon-orange */
+  outline: 2px solid var(--macon-orange);
   outline-offset: 2px;
-  box-shadow: 0 0 0 3px rgba(251, 146, 60, 0.15);
+  box-shadow: var(--shadow-focus-secondary);
 }
 
 /* Table spacing */
@@ -145,29 +145,29 @@
 /* Week numbers (if enabled) */
 .datePicker :global(.rdp-weeknumber) {
   font-size: 0.75rem;
-  color: #9ca3af; /* gray-400 */
+  color: var(--text-quaternary);
   font-weight: 500;
 }
 
 /* Dropdown styling (if using dropdown months/years) */
 .datePicker :global(.rdp-dropdown) {
   padding: 0.5rem;
-  border: 1px solid #e5e7eb; /* gray-200 */
+  border: 1px solid var(--border-color-default);
   border-radius: 0.5rem;
   background-color: white;
   font-size: 0.875rem;
-  color: #374151; /* gray-700 */
+  color: var(--text-primary);
   transition: all 200ms;
 }
 
 .datePicker :global(.rdp-dropdown):hover {
-  border-color: #fb923c; /* macon-orange */
+  border-color: var(--macon-orange);
 }
 
 .datePicker :global(.rdp-dropdown):focus {
   outline: none;
-  border-color: #fb923c; /* macon-orange */
-  box-shadow: 0 0 0 3px rgba(251, 146, 60, 0.15);
+  border-color: var(--macon-orange);
+  box-shadow: var(--shadow-focus-secondary);
 }
 
 /* Loading state placeholder (custom) */

@@ -59,6 +59,14 @@ export default {
           600: '#d97706',
           700: '#b45309',
         },
+        success: {
+          50: '#f0fdf4',
+          100: '#dcfce7',
+          200: '#bbf7d0',
+          500: '#22c55e',
+          600: '#16a34a',
+          700: '#15803d',
+        },
         // Legacy Lavender/Purple palette (for tenant customization)
         lavender: {
           50: '#F5F6FA',
