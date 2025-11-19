@@ -2,8 +2,8 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { InputEnhanced } from "@/components/ui/input-enhanced";
+import { Mail, Lock } from "lucide-react";
 import { useForm } from "@/hooks/useForm";
 import { useAuth } from "../contexts/AuthContext";
 
@@ -86,38 +86,39 @@ export function Login() {
             </div>
           )}
           <form onSubmit={handleSubmit} className="space-y-6">
-            <div className="space-y-2">
-              <Label htmlFor="email" className="text-macon-navy-100 text-lg">Email</Label>
-              <Input
-                id="email"
-                type="email"
-                value={values.email}
-                onChange={(e) => handleChange('email', e.target.value)}
-                className="bg-macon-navy-900 border-macon-navy-600 text-macon-navy-50 placeholder:text-macon-navy-400 focus:border-macon-navy-500 text-lg h-12"
-                required
-                disabled={isLoading}
-                autoComplete="email"
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="password" className="text-macon-navy-100 text-lg">Password</Label>
-              <Input
-                id="password"
-                type="password"
-                value={values.password}
-                onChange={(e) => handleChange('password', e.target.value)}
-                className="bg-macon-navy-900 border-macon-navy-600 text-macon-navy-50 placeholder:text-macon-navy-400 focus:border-macon-navy-500 text-lg h-12"
-                required
-                disabled={isLoading}
-                autoComplete="current-password"
-              />
-            </div>
+            <InputEnhanced
+              id="email"
+              type="email"
+              value={values.email}
+              onChange={(e) => handleChange('email', e.target.value)}
+              label="Email"
+              floatingLabel
+              leftIcon={<Mail className="w-5 h-5" />}
+              className="bg-macon-navy-900 border-macon-navy-600 text-macon-navy-50 placeholder:text-macon-navy-400 focus:border-macon-navy-500"
+              required
+              disabled={isLoading}
+              autoComplete="email"
+            />
+            <InputEnhanced
+              id="password"
+              type="password"
+              value={values.password}
+              onChange={(e) => handleChange('password', e.target.value)}
+              label="Password"
+              floatingLabel
+              leftIcon={<Lock className="w-5 h-5" />}
+              className="bg-macon-navy-900 border-macon-navy-600 text-macon-navy-50 placeholder:text-macon-navy-400 focus:border-macon-navy-500"
+              required
+              disabled={isLoading}
+              autoComplete="current-password"
+            />
             <Button
               type="submit"
               className="w-full bg-macon-navy hover:bg-macon-navy-dark text-xl h-14"
-              disabled={isLoading}
+              isLoading={isLoading}
+              loadingText="Logging in..."
             >
-              {isLoading ? "Logging in..." : "Login"}
+              Login
             </Button>
           </form>
         </CardContent>
