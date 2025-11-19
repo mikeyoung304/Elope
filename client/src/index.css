@@ -1,3 +1,5 @@
+@import './styles/design-tokens.css';
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -13,7 +15,7 @@
   }
 
   body {
-    @apply bg-navy-900 text-lavender-50 font-body;
+    @apply bg-background text-foreground font-body;
     margin: 0;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
@@ -22,7 +24,7 @@
   }
 
   h1, h2, h3, h4, h5, h6 {
-    @apply font-heading font-bold text-lavender-50;
+    @apply font-heading font-bold text-foreground;
   }
 
   h1 {
