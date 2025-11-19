@@ -173,6 +173,8 @@ export function AddOnManager({
                   size="sm"
                   onClick={() => onEdit(addOn)}
                   className="text-macon-navy-300 hover:bg-macon-navy-700"
+                  aria-label={`Edit add-on: ${addOn.title}`}
+                  title="Edit add-on"
                 >
                   <Edit className="w-4 h-4" />
                 </Button>
@@ -181,6 +183,8 @@ export function AddOnManager({
                   size="sm"
                   onClick={() => onDelete(addOn.id)}
                   className="text-destructive hover:bg-destructive/10"
+                  aria-label={`Delete add-on: ${addOn.title}`}
+                  title="Delete add-on"
                 >
                   <Trash2 className="w-4 h-4" />
                 </Button>

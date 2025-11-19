@@ -93,6 +93,8 @@ export function PackageList({ packages, onEdit, onDelete }: PackageListProps) {
                 variant="outline"
                 size="sm"
                 className="border-macon-navy-500 text-macon-navy-100 hover:bg-macon-navy-600"
+                aria-label={`Edit package: ${pkg.title}`}
+                title="Edit package"
               >
                 <Pencil className="w-4 h-4" />
               </Button>
@@ -101,6 +103,8 @@ export function PackageList({ packages, onEdit, onDelete }: PackageListProps) {
                 variant="outline"
                 size="sm"
                 className="border-red-700 text-red-300 hover:bg-red-900/20"
+                aria-label={`Delete package: ${pkg.title}`}
+                title="Delete package"
               >
                 <Trash2 className="w-4 h-4" />
               </Button>

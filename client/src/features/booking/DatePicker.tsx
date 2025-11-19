@@ -2,6 +2,7 @@ import { useState, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { DayPicker } from "react-day-picker";
 import { Calendar, Loader2 } from "lucide-react";
+import { toast } from "sonner";
 import { toUtcMidnight } from "@elope/shared";
 import { api } from "../../lib/api";
 import { cn } from "@/lib/utils";
@@ -80,7 +81,10 @@ export function DatePicker({ selected, onSelect }: DatePickerProps) {
     );
 
     if (isUnavailable) {
-      alert(`Sorry, ${dateStr} is not available. Please choose another date.`);
+      toast.error("Date Unavailable", {
+        description: `Sorry, ${dateStr} is not available. Please choose another date.`,
+        duration: 5000,
+      });
       onSelect(undefined);
       return;
     }
@@ -94,7 +98,10 @@ export function DatePicker({ selected, onSelect }: DatePickerProps) {
       } else {
         // Add to local unavailable list
         setLocalUnavailable((prev) => [...prev, date]);
-        alert(`Sorry, ${dateStr} is not available. Please choose another date.`);
+        toast.error("Date Unavailable", {
+          description: `Sorry, ${dateStr} is not available. Please choose another date.`,
+          duration: 5000,
+        });
         onSelect(undefined);
       }
     } catch (error) {

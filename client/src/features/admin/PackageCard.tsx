@@ -57,6 +57,8 @@ export function PackageCard({
             size="sm"
             onClick={handleEdit}
             className="border-macon-navy-600 text-macon-navy-300 hover:bg-macon-navy-700"
+            aria-label={`Edit package: ${pkg.title}`}
+            title="Edit package"
           >
             <Edit className="w-4 h-4" />
           </Button>
@@ -67,6 +69,8 @@ export function PackageCard({
                 variant="outline"
                 size="sm"
                 className="border-macon-navy-600 text-destructive hover:bg-destructive/10"
+                aria-label={`Delete package: ${pkg.title}`}
+                title="Delete package"
               >
                 <Trash2 className="w-4 h-4" />
               </Button>
@@ -98,6 +102,8 @@ export function PackageCard({
         <button
           onClick={onToggleExpand}
           className="flex items-center gap-2 text-lg font-medium text-macon-navy-300 hover:text-macon-navy-200 transition-colors"
+          aria-label={isExpanded ? `Collapse add-ons for ${pkg.title}` : `Expand add-ons for ${pkg.title}`}
+          aria-expanded={isExpanded}
         >
           {isExpanded ? (
             <ChevronDown className="w-5 h-5" />

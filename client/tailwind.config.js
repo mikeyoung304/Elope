@@ -131,13 +131,13 @@ export default {
         body: ['Inter', 'system-ui', '-apple-system', 'sans-serif'],
       },
       fontSize: {
-        // Typography scale - ENHANCED for better readability
-        'hero': ['72px', { lineHeight: '1.15', fontWeight: '700' }],
-        'h1': ['60px', { lineHeight: '1.2', fontWeight: '700' }],
-        'h2': ['48px', { lineHeight: '1.25', fontWeight: '700' }],
-        'h3': ['32px', { lineHeight: '1.3', fontWeight: '700' }],
-        'subtitle': ['22px', { lineHeight: '1.5', fontWeight: '400' }],
-        'body': ['18px', { lineHeight: '1.6', fontWeight: '400' }],
+        // Typography scale - ENHANCED for better readability (rem units for accessibility)
+        'hero': ['4.5rem', { lineHeight: '1.15', fontWeight: '700' }],
+        'h1': ['3.75rem', { lineHeight: '1.2', fontWeight: '700' }],
+        'h2': ['3rem', { lineHeight: '1.25', fontWeight: '700' }],
+        'h3': ['2rem', { lineHeight: '1.3', fontWeight: '700' }],
+        'subtitle': ['1.375rem', { lineHeight: '1.5', fontWeight: '400' }],
+        'body': ['1.125rem', { lineHeight: '1.6', fontWeight: '400' }],
       },
       spacing: {
         '18': '4.5rem',

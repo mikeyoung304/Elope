@@ -9,7 +9,7 @@
  * - Logout functionality
  */
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Menu, X, LogOut, ChevronLeft, ChevronRight } from "lucide-react";
 import { RoleBasedNav } from "../components/navigation/RoleBasedNav";
@@ -34,6 +34,26 @@ export function AdminLayout({ children, breadcrumbs }: AdminLayoutProps) {
     navigate("/login");
   };
 
+  // Keyboard navigation: Escape key closes mobile menu
+  useEffect(() => {
+    const handleEscape = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && mobileMenuOpen) {
+        setMobileMenuOpen(false);
+      }
+    };
+
+    if (mobileMenuOpen) {
+      window.addEventListener('keydown', handleEscape);
+      // Prevent body scroll when menu is open
+      document.body.style.overflow = 'hidden';
+    }
+
+    return () => {
+      window.removeEventListener('keydown', handleEscape);
+      document.body.style.overflow = '';
+    };
+  }, [mobileMenuOpen]);
+
   if (!user) {
     return null;
   }
@@ -56,7 +76,8 @@ export function AdminLayout({ children, breadcrumbs }: AdminLayoutProps) {
             <button
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
               className="text-white hover:text-macon-orange-500 transition-colors"
-              aria-label="Toggle menu"
+              aria-label={mobileMenuOpen ? "Close menu" : "Open menu"}
+              aria-expanded={mobileMenuOpen}
             >
               {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
             </button>

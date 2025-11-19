@@ -60,6 +60,7 @@ export function PhotoGrid({
             <button
               onClick={() => onDeleteClick(photo)}
               className="absolute top-2 right-2 z-10 bg-red-600 hover:bg-red-700 text-white p-2 rounded opacity-0 group-hover:opacity-100 transition-opacity"
+              aria-label={`Delete photo ${index + 1}: ${photo.filename}`}
               title="Delete photo"
             >
               <Trash2 className="w-4 h-4" />

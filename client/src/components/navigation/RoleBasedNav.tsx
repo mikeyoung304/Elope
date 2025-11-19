@@ -3,7 +3,7 @@
  * Shows different navigation items based on user role
  */
 
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import { useAuth } from "../../contexts/AuthContext";
 import {
   Building2,
@@ -25,6 +25,7 @@ interface NavItem {
 
 export function RoleBasedNav({ variant = "sidebar" }: { variant?: "sidebar" | "horizontal" }) {
   const { user } = useAuth();
+  const location = useLocation();
 
   if (!user) {
     return null;
@@ -95,20 +96,25 @@ export function RoleBasedNav({ variant = "sidebar" }: { variant?: "sidebar" | "h
   if (variant === "horizontal") {
     return (
       <nav className="flex gap-6">
-        {navItems.map((item) => (
-          <Link
-            key={item.path}
-            to={item.path}
-            className={cn(
-              "flex items-center gap-2 px-4 py-2 rounded-lg",
-              "text-macon-navy-100 hover:text-macon-navy-50 hover:bg-macon-navy-700",
-              "transition-colors"
-            )}
-          >
-            {item.icon}
-            <span>{item.label}</span>
-          </Link>
-        ))}
+        {navItems.map((item) => {
+          const isActive = location.pathname === item.path;
+          return (
+            <Link
+              key={item.path}
+              to={item.path}
+              aria-current={isActive ? 'page' : undefined}
+              className={cn(
+                "flex items-center gap-2 px-4 py-2 rounded-lg",
+                "text-macon-navy-100 hover:text-macon-navy-50 hover:bg-macon-navy-700",
+                "transition-colors",
+                isActive && "bg-macon-navy-700 text-macon-navy-50 font-semibold"
+              )}
+            >
+              {item.icon}
+              <span>{item.label}</span>
+            </Link>
+          );
+        })}
       </nav>
     );
   }
@@ -116,27 +122,38 @@ export function RoleBasedNav({ variant = "sidebar" }: { variant?: "sidebar" | "h
   // Sidebar variant
   return (
     <nav className="space-y-2">
-      {navItems.map((item) => (
-        <Link
-          key={item.path}
-          to={item.path}
-          className={cn(
-            "flex items-center gap-3 px-4 py-3 rounded-lg",
-            "text-macon-navy-100 hover:text-macon-navy-50 hover:bg-macon-navy-700",
-            "transition-colors group"
-          )}
-        >
-          <div className="text-macon-navy-300 group-hover:text-macon-navy-50">
-            {item.icon}
-          </div>
-          <div className="flex-1">
-            <div className="font-medium">{item.label}</div>
-            {item.description && (
-              <div className="text-sm text-macon-navy-300">{item.description}</div>
+      {navItems.map((item) => {
+        const isActive = location.pathname === item.path;
+        return (
+          <Link
+            key={item.path}
+            to={item.path}
+            aria-current={isActive ? 'page' : undefined}
+            className={cn(
+              "flex items-center gap-3 px-4 py-3 rounded-lg",
+              "text-macon-navy-100 hover:text-macon-navy-50 hover:bg-macon-navy-700",
+              "transition-colors group",
+              isActive && "bg-macon-navy-700 text-macon-navy-50 border-l-4 border-macon-orange-500"
             )}
-          </div>
-        </Link>
-      ))}
+          >
+            <div className={cn(
+              "text-macon-navy-300 group-hover:text-macon-navy-50",
+              isActive && "text-macon-orange-500"
+            )}>
+              {item.icon}
+            </div>
+            <div className="flex-1">
+              <div className={cn(
+                "font-medium",
+                isActive && "font-semibold"
+              )}>{item.label}</div>
+              {item.description && (
+                <div className="text-sm text-macon-navy-300">{item.description}</div>
+              )}
+            </div>
+          </Link>
+        );
+      })}
     </nav>
   );
 }

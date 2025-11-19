@@ -208,6 +208,8 @@ export function BlackoutsManager({ blackouts, isLoading, onBlackoutsChange }: Bl
                       variant="outline"
                       size="sm"
                       className="border-red-700 text-red-300 hover:bg-red-900/20"
+                      aria-label={`Delete blackout date: ${new Date(blackout.date).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}`}
+                      title="Delete blackout date"
                     >
                       <Trash2 className="w-4 h-4" />
                     </Button>

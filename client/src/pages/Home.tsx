@@ -9,16 +9,16 @@ export function Home() {
   };
 
   return (
-    <>
+    <main>
       {/* Hero Section */}
-      <section className="relative bg-gradient-to-br from-macon-navy via-macon-navy to-neutral-900 py-16 sm:py-20 md:py-28 lg:py-36 px-4 overflow-hidden">
+      <section id="hero" aria-labelledby="hero-heading" className="relative bg-gradient-to-br from-macon-navy via-macon-navy to-neutral-900 py-16 sm:py-20 md:py-28 lg:py-36 px-4 overflow-hidden">
         {/* Background decorative elements */}
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_20%,rgba(255,107,53,0.1),transparent_50%)]"></div>
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_70%_80%,rgba(56,178,172,0.08),transparent_50%)]"></div>
 
         <Container className="relative z-10">
           <div className="max-w-5xl mx-auto text-center">
-            <h1 className="font-heading text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-extrabold mb-6 sm:mb-8 text-white leading-[1.1] tracking-tight drop-shadow-2xl">
+            <h1 id="hero-heading" className="font-heading text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-extrabold mb-6 sm:mb-8 text-white leading-[1.1] tracking-tight drop-shadow-2xl">
               Unlock Your Business Potential—Join the <span className="text-transparent bg-clip-text bg-gradient-to-r from-macon-orange via-macon-orange-light to-macon-teal">Macon AI Club</span>
             </h1>
             <p className="text-xl sm:text-2xl md:text-3xl text-white/90 mb-8 sm:mb-10 leading-relaxed max-w-4xl mx-auto font-light">
@@ -62,10 +62,10 @@ export function Home() {
       </section>
 
       {/* The Club Advantage - Three Pillars */}
-      <section id="features" className="py-16 md:py-24 bg-background">
+      <section id="features" aria-labelledby="features-heading" className="py-16 md:py-24 bg-background">
         <Container>
           <div className="text-center mb-12 md:mb-16">
-            <h2 className="font-heading text-5xl md:text-6xl lg:text-7xl font-bold mb-4 text-transparent bg-clip-text bg-gradient-to-r from-macon-navy via-macon-orange to-macon-teal">
+            <h2 id="features-heading" className="font-heading text-5xl md:text-6xl lg:text-7xl font-bold mb-4 text-transparent bg-clip-text bg-gradient-to-r from-macon-navy via-macon-orange to-macon-teal">
               The Club Advantage
             </h2>
             <p className="text-xl md:text-2xl text-neutral-700 max-w-2xl mx-auto">
@@ -134,11 +134,11 @@ export function Home() {
       </section>
 
       {/* Who Is This For? */}
-      <section className="py-16 md:py-24 bg-white">
+      <section id="target-audience" aria-labelledby="target-audience-heading" className="py-16 md:py-24 bg-white">
         <Container>
           <div className="max-w-4xl mx-auto">
             <div className="text-center mb-12 md:mb-16">
-              <h2 className="font-heading text-5xl md:text-6xl lg:text-7xl font-bold mb-6 text-transparent bg-clip-text bg-gradient-to-r from-macon-navy via-macon-orange to-macon-teal">
+              <h2 id="target-audience-heading" className="font-heading text-5xl md:text-6xl lg:text-7xl font-bold mb-6 text-transparent bg-clip-text bg-gradient-to-r from-macon-navy via-macon-orange to-macon-teal">
                 Who Is This For?
               </h2>
               <p className="text-xl md:text-2xl text-neutral-700 leading-relaxed max-w-3xl mx-auto">
@@ -213,10 +213,10 @@ export function Home() {
       </section>
 
       {/* Testimonials Section */}
-      <section className="py-16 md:py-24 bg-background">
+      <section id="testimonials" aria-labelledby="testimonials-heading" className="py-16 md:py-24 bg-background">
         <Container>
           <div className="text-center mb-12 md:mb-16">
-            <h2 className="font-heading text-5xl md:text-6xl lg:text-7xl font-bold mb-4 text-transparent bg-clip-text bg-gradient-to-r from-macon-navy via-macon-orange to-macon-teal">
+            <h2 id="testimonials-heading" className="font-heading text-5xl md:text-6xl lg:text-7xl font-bold mb-4 text-transparent bg-clip-text bg-gradient-to-r from-macon-navy via-macon-orange to-macon-teal">
               What Club Members Are Saying
             </h2>
             <p className="text-xl md:text-2xl text-neutral-700 max-w-2xl mx-auto">
@@ -225,77 +225,83 @@ export function Home() {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8">
-            <Card className="bg-neutral-50 border-neutral-200/30 hover:shadow-elevation-2 transition-shadow relative">
-              <CardContent className="p-8">
-                <Quote className="w-12 h-12 text-macon-orange/30 mb-4" />
-                <div className="flex gap-1 mb-4">
-                  <Star className="w-5 h-5 text-macon-orange fill-macon-orange" />
-                  <Star className="w-5 h-5 text-macon-orange fill-macon-orange" />
-                  <Star className="w-5 h-5 text-macon-orange fill-macon-orange" />
-                  <Star className="w-5 h-5 text-macon-orange fill-macon-orange" />
-                  <Star className="w-5 h-5 text-macon-orange fill-macon-orange" />
-                </div>
-                <p className="text-xl text-neutral-700 mb-6 leading-relaxed italic">
-                  "Macon AI is more than tech—they're my business upgrade. I went from manually texting appointment reminders to a fully automated booking system. My revenue is up 30% and I'm working fewer hours."
-                </p>
-                <div className="border-t border-neutral-200/30 pt-4">
-                  <div className="font-semibold text-xl text-neutral-900">Casey M.</div>
-                  <div className="text-lg text-neutral-600">Salon Owner</div>
-                </div>
-              </CardContent>
-            </Card>
+            <article>
+              <Card className="bg-neutral-50 border-neutral-200/30 hover:shadow-elevation-2 transition-shadow relative">
+                <CardContent className="p-8">
+                  <Quote className="w-12 h-12 text-macon-orange/30 mb-4" aria-hidden="true" />
+                  <div className="flex gap-1 mb-4" aria-label="5 out of 5 stars">
+                    <Star className="w-5 h-5 text-macon-orange fill-macon-orange" aria-hidden="true" />
+                    <Star className="w-5 h-5 text-macon-orange fill-macon-orange" aria-hidden="true" />
+                    <Star className="w-5 h-5 text-macon-orange fill-macon-orange" aria-hidden="true" />
+                    <Star className="w-5 h-5 text-macon-orange fill-macon-orange" aria-hidden="true" />
+                    <Star className="w-5 h-5 text-macon-orange fill-macon-orange" aria-hidden="true" />
+                  </div>
+                  <p className="text-xl text-neutral-700 mb-6 leading-relaxed italic">
+                    "Macon AI is more than tech—they're my business upgrade. I went from manually texting appointment reminders to a fully automated booking system. My revenue is up 30% and I'm working fewer hours."
+                  </p>
+                  <div className="border-t border-neutral-200/30 pt-4">
+                    <div className="font-semibold text-xl text-neutral-900">Casey M.</div>
+                    <div className="text-lg text-neutral-600">Salon Owner</div>
+                  </div>
+                </CardContent>
+              </Card>
+            </article>
 
-            <Card className="bg-neutral-50 border-neutral-200/30 hover:shadow-elevation-2 transition-shadow relative">
-              <CardContent className="p-8">
-                <Quote className="w-12 h-12 text-macon-orange/30 mb-4" />
-                <div className="flex gap-1 mb-4">
-                  <Star className="w-5 h-5 text-macon-orange fill-macon-orange" />
-                  <Star className="w-5 h-5 text-macon-orange fill-macon-orange" />
-                  <Star className="w-5 h-5 text-macon-orange fill-macon-orange" />
-                  <Star className="w-5 h-5 text-macon-orange fill-macon-orange" />
-                  <Star className="w-5 h-5 text-macon-orange fill-macon-orange" />
-                </div>
-                <p className="text-xl text-neutral-700 mb-6 leading-relaxed italic">
-                  "I went from lost leads to booked solid in weeks. The AI strategist helped me position my services, built my website, and set up a booking flow that just works."
-                </p>
-                <div className="border-t border-neutral-200/30 pt-4">
-                  <div className="font-semibold text-xl text-neutral-900">Robin T.</div>
-                  <div className="text-lg text-neutral-600">Consultant</div>
-                </div>
-              </CardContent>
-            </Card>
+            <article>
+              <Card className="bg-neutral-50 border-neutral-200/30 hover:shadow-elevation-2 transition-shadow relative">
+                <CardContent className="p-8">
+                  <Quote className="w-12 h-12 text-macon-orange/30 mb-4" aria-hidden="true" />
+                  <div className="flex gap-1 mb-4" aria-label="5 out of 5 stars">
+                    <Star className="w-5 h-5 text-macon-orange fill-macon-orange" aria-hidden="true" />
+                    <Star className="w-5 h-5 text-macon-orange fill-macon-orange" aria-hidden="true" />
+                    <Star className="w-5 h-5 text-macon-orange fill-macon-orange" aria-hidden="true" />
+                    <Star className="w-5 h-5 text-macon-orange fill-macon-orange" aria-hidden="true" />
+                    <Star className="w-5 h-5 text-macon-orange fill-macon-orange" aria-hidden="true" />
+                  </div>
+                  <p className="text-xl text-neutral-700 mb-6 leading-relaxed italic">
+                    "I went from lost leads to booked solid in weeks. The AI strategist helped me position my services, built my website, and set up a booking flow that just works."
+                  </p>
+                  <div className="border-t border-neutral-200/30 pt-4">
+                    <div className="font-semibold text-xl text-neutral-900">Robin T.</div>
+                    <div className="text-lg text-neutral-600">Consultant</div>
+                  </div>
+                </CardContent>
+              </Card>
+            </article>
 
-            <Card className="bg-neutral-50 border-neutral-200/30 hover:shadow-elevation-2 transition-shadow relative">
-              <CardContent className="p-8">
-                <Quote className="w-12 h-12 text-macon-orange/30 mb-4" />
-                <div className="flex gap-1 mb-4">
-                  <Star className="w-5 h-5 text-macon-orange fill-macon-orange" />
-                  <Star className="w-5 h-5 text-macon-orange fill-macon-orange" />
-                  <Star className="w-5 h-5 text-macon-orange fill-macon-orange" />
-                  <Star className="w-5 h-5 text-macon-orange fill-macon-orange" />
-                  <Star className="w-5 h-5 text-macon-orange fill-macon-orange" />
-                </div>
-                <p className="text-xl text-neutral-700 mb-6 leading-relaxed italic">
-                  "I didn't have a website, hated tech, and was losing clients to competitors. Macon AI launched my site in 10 days and automated my scheduling. Now I look professional and my calendar is full."
-                </p>
-                <div className="border-t border-neutral-200/30 pt-4">
-                  <div className="font-semibold text-xl text-neutral-900">Alex K.</div>
-                  <div className="text-lg text-neutral-600">Fitness Coach</div>
-                </div>
-              </CardContent>
-            </Card>
+            <article>
+              <Card className="bg-neutral-50 border-neutral-200/30 hover:shadow-elevation-2 transition-shadow relative">
+                <CardContent className="p-8">
+                  <Quote className="w-12 h-12 text-macon-orange/30 mb-4" aria-hidden="true" />
+                  <div className="flex gap-1 mb-4" aria-label="5 out of 5 stars">
+                    <Star className="w-5 h-5 text-macon-orange fill-macon-orange" aria-hidden="true" />
+                    <Star className="w-5 h-5 text-macon-orange fill-macon-orange" aria-hidden="true" />
+                    <Star className="w-5 h-5 text-macon-orange fill-macon-orange" aria-hidden="true" />
+                    <Star className="w-5 h-5 text-macon-orange fill-macon-orange" aria-hidden="true" />
+                    <Star className="w-5 h-5 text-macon-orange fill-macon-orange" aria-hidden="true" />
+                  </div>
+                  <p className="text-xl text-neutral-700 mb-6 leading-relaxed italic">
+                    "I didn't have a website, hated tech, and was losing clients to competitors. Macon AI launched my site in 10 days and automated my scheduling. Now I look professional and my calendar is full."
+                  </p>
+                  <div className="border-t border-neutral-200/30 pt-4">
+                    <div className="font-semibold text-xl text-neutral-900">Alex K.</div>
+                    <div className="text-lg text-neutral-600">Fitness Coach</div>
+                  </div>
+                </CardContent>
+              </Card>
+            </article>
           </div>
         </Container>
       </section>
 
       {/* Social Proof Bar */}
-      <section className="py-16 bg-gradient-to-r from-macon-navy via-macon-navy-light to-macon-navy border-y-4 border-macon-orange relative overflow-hidden">
+      <section id="social-proof" aria-labelledby="social-proof-heading" className="py-16 bg-gradient-to-r from-macon-navy via-macon-navy-light to-macon-navy border-y-4 border-macon-orange relative overflow-hidden">
         {/* Background decoration */}
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(255,107,53,0.08),transparent_70%)]"></div>
 
         <Container className="relative z-10">
           <div className="text-center">
-            <p className="text-2xl text-white/90 mb-10 font-semibold">Join businesses already growing with Macon AI</p>
+            <h2 id="social-proof-heading" className="text-2xl text-white/90 mb-10 font-semibold">Join businesses already growing with Macon AI</h2>
             <div className="flex justify-center items-stretch gap-6 flex-wrap max-w-4xl mx-auto">
               <div className="bg-white/10 backdrop-blur-md border-2 border-white/20 px-10 py-6 rounded-2xl hover:bg-white/15 transition-all flex-1 min-w-[200px]">
                 <div className="text-5xl font-extrabold text-white mb-1">50+</div>
@@ -320,11 +326,11 @@ export function Home() {
       </section>
 
       {/* How It Works - Club Membership Flow */}
-      <section id="how-it-works" className="py-16 md:py-24 bg-background">
+      <section id="how-it-works" aria-labelledby="how-it-works-heading" className="py-16 md:py-24 bg-background">
         <Container>
           <div className="max-w-4xl mx-auto">
             <div className="text-center mb-12 md:mb-16">
-              <h2 className="font-heading text-5xl md:text-6xl lg:text-7xl font-bold mb-6 text-transparent bg-clip-text bg-gradient-to-r from-macon-navy via-macon-orange to-macon-teal">
+              <h2 id="how-it-works-heading" className="font-heading text-5xl md:text-6xl lg:text-7xl font-bold mb-6 text-transparent bg-clip-text bg-gradient-to-r from-macon-navy via-macon-orange to-macon-teal">
                 How It Works
               </h2>
               <p className="text-xl md:text-2xl text-neutral-700 leading-relaxed">
@@ -386,11 +392,11 @@ export function Home() {
       </section>
 
       {/* About Us Section */}
-      <section className="py-16 md:py-24 bg-white">
+      <section id="about" aria-labelledby="about-heading" className="py-16 md:py-24 bg-white">
         <Container>
           <div className="max-w-4xl mx-auto">
             <div className="text-center mb-8">
-              <h2 className="font-heading text-5xl md:text-6xl lg:text-7xl font-bold mb-6 text-transparent bg-clip-text bg-gradient-to-r from-macon-navy via-macon-orange to-macon-teal">
+              <h2 id="about-heading" className="font-heading text-5xl md:text-6xl lg:text-7xl font-bold mb-6 text-transparent bg-clip-text bg-gradient-to-r from-macon-navy via-macon-orange to-macon-teal">
                 About Macon AI Solutions
               </h2>
             </div>
@@ -414,7 +420,7 @@ export function Home() {
       </section>
 
       {/* Final CTA Section */}
-      <section className="relative py-28 bg-gradient-to-br from-macon-navy via-neutral-900 to-black text-white overflow-hidden">
+      <section id="final-cta" aria-labelledby="final-cta-heading" className="relative py-28 bg-gradient-to-br from-macon-navy via-neutral-900 to-black text-white overflow-hidden">
         {/* Animated gradient orbs */}
         <div className="absolute top-0 left-1/4 w-96 h-96 bg-macon-orange/20 rounded-full blur-3xl animate-pulse"></div>
         <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-macon-teal/15 rounded-full blur-3xl animate-pulse" style={{animationDelay: '1s'}}></div>
@@ -423,7 +429,7 @@ export function Home() {
 
         <Container className="relative z-10">
           <div className="max-w-4xl mx-auto text-center">
-            <h2 className="font-heading text-5xl md:text-7xl lg:text-8xl font-extrabold mb-8 leading-tight text-white drop-shadow-2xl">
+            <h2 id="final-cta-heading" className="font-heading text-5xl md:text-7xl lg:text-8xl font-extrabold mb-8 leading-tight text-white drop-shadow-2xl">
               Ready to Unlock Your Growth?
             </h2>
             <p className="text-2xl md:text-3xl mb-12 text-white/90 leading-relaxed font-light max-w-3xl mx-auto">
@@ -451,6 +457,6 @@ export function Home() {
           </div>
         </Container>
       </section>
-    </>
+    </main>
   );
 }
