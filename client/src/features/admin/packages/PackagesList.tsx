@@ -1,7 +1,9 @@
 import { useState } from "react";
 import { Card } from "@/components/ui/card";
+import { EmptyState } from "@/components/ui/empty-state";
 import { PackageCard } from "../PackageCard";
 import { AddOnManager } from "../AddOnManager";
+import { Package } from "lucide-react";
 import type { PackageDto } from "@elope/contracts";
 import type { AddOnFormData } from "../types";
 
@@ -48,7 +50,12 @@ export function PackagesList({
     <Card className="p-6 bg-macon-navy-800 border-macon-navy-600">
       <h2 className="text-2xl font-semibold mb-4 text-macon-navy-50">Packages</h2>
       {packages.length === 0 ? (
-        <p className="text-macon-navy-100 text-lg">No packages yet. Create your first package above.</p>
+        <EmptyState
+          icon={Package}
+          title="No wedding packages yet"
+          description="Create your first package above to start accepting bookings"
+          className="py-8"
+        />
       ) : (
         <div className="space-y-3">
           {packages.map((pkg) => (

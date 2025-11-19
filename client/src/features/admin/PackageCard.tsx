@@ -2,6 +2,17 @@ import { useMemo, useCallback } from "react";
 import { Edit, Trash2, ChevronDown, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 import { formatCurrency } from "@/lib/utils";
 import type { PackageCardProps } from "./types";
 
@@ -49,14 +60,36 @@ export function PackageCard({
           >
             <Edit className="w-4 h-4" />
           </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={handleDelete}
-            className="border-macon-navy-600 text-destructive hover:bg-destructive/10"
-          >
-            <Trash2 className="w-4 h-4" />
-          </Button>
+
+          <AlertDialog>
+            <AlertDialogTrigger asChild>
+              <Button
+                variant="outline"
+                size="sm"
+                className="border-macon-navy-600 text-destructive hover:bg-destructive/10"
+              >
+                <Trash2 className="w-4 h-4" />
+              </Button>
+            </AlertDialogTrigger>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>Delete "{pkg.title}"?</AlertDialogTitle>
+                <AlertDialogDescription>
+                  This action cannot be undone. This will permanently delete the package
+                  and all {pkg.addOns.length} associated add-on{pkg.addOns.length !== 1 ? 's' : ''}.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                <AlertDialogAction
+                  onClick={handleDelete}
+                  className="bg-red-600 hover:bg-red-700"
+                >
+                  Delete Package
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
         </div>
       </div>
 

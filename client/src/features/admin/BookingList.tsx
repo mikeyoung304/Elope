@@ -1,8 +1,10 @@
 import { useMemo } from "react";
-import { Download, Loader2 } from "lucide-react";
+import { Download, Calendar } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { EmptyState } from "@/components/ui/empty-state";
+import { TableSkeleton } from "@/components/ui/skeleton";
 import {
   Table,
   TableBody,
@@ -51,14 +53,19 @@ export function BookingList({ bookings, isLoading, onExportCSV }: BookingListPro
         <TableBody>
           {isLoading ? (
             <TableRow className="hover:bg-macon-navy-700">
-              <TableCell colSpan={4} className="text-center py-8">
-                <Loader2 className="w-6 h-6 animate-spin mx-auto text-macon-navy-300" />
+              <TableCell colSpan={4} className="py-4">
+                <TableSkeleton rows={5} />
               </TableCell>
             </TableRow>
           ) : !hasBookings ? (
             <TableRow className="hover:bg-macon-navy-700">
-              <TableCell colSpan={4} className="text-center py-8 text-macon-navy-100 text-lg">
-                No bookings yet
+              <TableCell colSpan={4} className="py-0">
+                <EmptyState
+                  icon={Calendar}
+                  title="No bookings yet"
+                  description="Bookings will appear here once customers complete their purchases"
+                  className="py-12"
+                />
               </TableCell>
             </TableRow>
           ) : (

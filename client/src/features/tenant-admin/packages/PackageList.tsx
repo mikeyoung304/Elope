@@ -1,7 +1,8 @@
-import { Pencil, Trash2, Image } from "lucide-react";
+import { Pencil, Trash2, Image, Package } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { EmptyState } from "@/components/ui/empty-state";
 import { formatCurrency } from "@/lib/utils";
 import type { PackageDto } from "@elope/contracts";
 
@@ -21,7 +22,12 @@ export function PackageList({ packages, onEdit, onDelete }: PackageListProps) {
     return (
       <Card className="p-6 bg-macon-navy-800 border-macon-navy-600">
         <h2 className="text-2xl font-semibold mb-4 text-macon-navy-50">Packages</h2>
-        <p className="text-macon-navy-100 text-lg">No packages yet. Create your first package above.</p>
+        <EmptyState
+          icon={Package}
+          title="No wedding packages yet"
+          description="Create your first package above to start accepting bookings for your venue"
+          className="py-8"
+        />
       </Card>
     );
   }
