@@ -5,6 +5,7 @@
 
 import { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -160,7 +161,12 @@ export function TenantForm() {
 
         // If this is a new tenant, show the secret key
         if (!isEditing && result.secretKey) {
-          alert(`Tenant created successfully!\n\nIMPORTANT - Save this secret key:\n${result.secretKey}\n\nThis will only be shown once.`);
+          toast.success("Tenant created successfully!", {
+            description: `IMPORTANT - Save this secret key: ${result.secretKey}\n\nThis will only be shown once.`,
+            duration: 10000,
+          });
+        } else {
+          toast.success("Tenant updated successfully!");
         }
 
         navigate("/admin/dashboard");
@@ -190,8 +196,28 @@ export function TenantForm() {
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="text-macon-navy-200">Loading...</div>
+      <div className="min-h-screen bg-macon-navy-950">
+        <div className="container mx-auto px-4 py-8">
+          <div className="mb-8">
+            <Button
+              variant="ghost"
+              onClick={() => navigate("/admin/dashboard")}
+              className="mb-4 text-macon-navy-200 hover:text-macon-navy-100"
+            >
+              <ChevronLeft className="h-4 w-4 mr-2" />
+              Back to Dashboard
+            </Button>
+            <h1 className="text-3xl font-bold text-macon-navy-50">Edit Tenant</h1>
+          </div>
+          <Card className="bg-macon-navy-800 border-macon-navy-600">
+            <CardHeader>
+              <CardTitle className="text-macon-navy-50">Tenant Information</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <FormSkeleton fields={7} />
+            </CardContent>
+          </Card>
+        </div>
       </div>
     );
   }

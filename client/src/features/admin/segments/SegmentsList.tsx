@@ -89,7 +89,7 @@ export function SegmentsList({
                   <div className="flex gap-2">
                     <Button
                       variant="outline"
-                      size="sm"
+                      size="default"
                       onClick={() => onEdit(segment)}
                       className="border-macon-navy-600 text-macon-navy-200 hover:bg-macon-navy-700"
                     >
@@ -98,7 +98,7 @@ export function SegmentsList({
                     </Button>
                     <Button
                       variant="ghost"
-                      size="sm"
+                      size="default"
                       onClick={() => onDelete(segment.id)}
                       className="text-destructive hover:bg-macon-navy-700"
                     >

@@ -152,7 +152,7 @@ export function AdminLayout({ children, breadcrumbs }: AdminLayoutProps) {
                 <Button
                   onClick={handleLogout}
                   variant="outline"
-                  size="sm"
+                  size="default"
                   className="w-full border-macon-navy-600 text-macon-navy-100 hover:bg-macon-navy-700 hover:text-white"
                 >
                   <LogOut className="w-4 h-4 mr-2" />

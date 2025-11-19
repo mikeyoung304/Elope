@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { toast } from "sonner";
 import { AlertCircle, CheckCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { api, baseUrl } from "@/lib/api";
@@ -43,7 +44,9 @@ export function SuccessContent({
       // Get checkout data from localStorage
       const lastCheckoutStr = localStorage.getItem("lastCheckout");
       if (!lastCheckoutStr) {
-        alert("No checkout data found. Please try booking again.");
+        toast.error("No checkout data found", {
+          description: "Please try booking again.",
+        });
         return;
       }
 
@@ -79,11 +82,15 @@ export function SuccessContent({
           onBookingCreated(result.bookingId);
         }
       } else {
-        alert("Failed to simulate payment. Please try again.");
+        toast.error("Failed to simulate payment", {
+          description: "Please try again or contact support.",
+        });
       }
     } catch (err) {
       console.error("Simulation error:", err);
-      alert("An error occurred during simulation. Please try again.");
+      toast.error("An error occurred during simulation", {
+        description: "Please try again or contact support.",
+      });
     } finally {
       setIsSimulating(false);
     }

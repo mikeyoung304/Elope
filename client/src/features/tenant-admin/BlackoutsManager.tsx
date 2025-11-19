@@ -1,4 +1,5 @@
 import { useState, useCallback } from "react";
+import { toast } from "sonner";
 import { Plus, Trash2, CheckCircle, Loader2 } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -61,11 +62,15 @@ export function BlackoutsManager({ blackouts, isLoading, onBlackoutsChange }: Bl
         showSuccess("Blackout date added successfully");
         onBlackoutsChange();
       } else {
-        alert("Failed to create blackout date");
+        toast.error("Failed to create blackout date", {
+          description: "Please try again or contact support.",
+        });
       }
     } catch (error) {
       console.error("Failed to create blackout:", error);
-      alert("An error occurred while creating the blackout date");
+      toast.error("An error occurred while creating the blackout date", {
+        description: "Please try again or contact support.",
+      });
     } finally {
       setIsAdding(false);
     }
@@ -86,11 +91,15 @@ export function BlackoutsManager({ blackouts, isLoading, onBlackoutsChange }: Bl
         showSuccess("Blackout date deleted successfully");
         onBlackoutsChange();
       } else {
-        alert("Failed to delete blackout date");
+        toast.error("Failed to delete blackout date", {
+          description: "Please try again or contact support.",
+        });
       }
     } catch (error) {
       console.error("Failed to delete blackout:", error);
-      alert("An error occurred while deleting the blackout date");
+      toast.error("An error occurred while deleting the blackout date", {
+        description: "Please try again or contact support.",
+      });
     }
   }, [showSuccess, onBlackoutsChange]);
 

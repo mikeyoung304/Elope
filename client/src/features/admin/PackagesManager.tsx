@@ -1,4 +1,5 @@
 import { useState, useCallback, useRef, useEffect } from "react";
+import { toast } from "sonner";
 import { Plus, CheckCircle } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -199,11 +200,15 @@ export function PackagesManager({ packages, onPackagesChange }: PackagesManagerP
         showSuccess("Package deleted successfully");
         onPackagesChange();
       } else {
-        alert("Failed to delete package");
+        toast.error("Failed to delete package", {
+          description: "Please try again or contact support.",
+        });
       }
     } catch (err) {
       console.error("Failed to delete package:", err);
-      alert("An error occurred while deleting the package");
+      toast.error("An error occurred while deleting the package", {
+        description: "Please try again or contact support.",
+      });
     }
   }, [showSuccess, onPackagesChange]);
 
@@ -313,11 +318,15 @@ export function PackagesManager({ packages, onPackagesChange }: PackagesManagerP
         showSuccess("Add-on deleted successfully");
         onPackagesChange();
       } else {
-        alert("Failed to delete add-on");
+        toast.error("Failed to delete add-on", {
+          description: "Please try again or contact support.",
+        });
       }
     } catch (err) {
       console.error("Failed to delete add-on:", err);
-      alert("An error occurred while deleting the add-on");
+      toast.error("An error occurred while deleting the add-on", {
+        description: "Please try again or contact support.",
+      });
     }
   }, [showSuccess, onPackagesChange]);
 

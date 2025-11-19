@@ -1,5 +1,6 @@
 import { useState, useMemo } from "react";
 import { useParams } from "react-router-dom";
+import { toast } from "sonner";
 import { toUtcMidnight } from "@elope/shared";
 import { usePackage } from "./hooks";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -100,12 +101,16 @@ export function PackagePage() {
         window.location.href = response.body.checkoutUrl;
       } else {
         setIsCheckingOut(false);
-        alert('Failed to create checkout session. Please try again.');
+        toast.error('Failed to create checkout session', {
+          description: 'Please try again or contact support.',
+        });
       }
     } catch (error) {
       setIsCheckingOut(false);
       console.error('Checkout error:', error);
-      alert('An error occurred during checkout. Please try again.');
+      toast.error('An error occurred during checkout', {
+        description: 'Please try again or contact support.',
+      });
     }
   };
 

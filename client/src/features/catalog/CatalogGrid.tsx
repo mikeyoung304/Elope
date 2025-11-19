@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom";
 import { Card, CardContent } from "@/components/ui/card";
+import { PackageCardSkeleton } from "@/components/ui/skeleton";
 import { usePackages } from "./hooks";
 import type { PackageDto } from "@elope/contracts";
 import { formatCurrency } from "@/lib/utils";
@@ -9,8 +10,10 @@ export function CatalogGrid() {
 
   if (isLoading) {
     return (
-      <div className="text-center py-12 text-neutral-700 text-xl">
-        Loading packages...
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+        <PackageCardSkeleton />
+        <PackageCardSkeleton />
+        <PackageCardSkeleton />
       </div>
     );
   }

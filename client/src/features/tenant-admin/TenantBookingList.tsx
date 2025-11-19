@@ -147,7 +147,7 @@ export function TenantBookingList({ bookings, isLoading }: TenantBookingListProp
                 setStatusFilter("all");
               }}
               variant="outline"
-              size="sm"
+              size="default"
               className="border-macon-navy-600 text-macon-navy-100 hover:bg-macon-navy-700"
             >
               Clear Filters
