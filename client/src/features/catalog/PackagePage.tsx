@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useParams } from "react-router-dom";
 import { toUtcMidnight } from "@elope/shared";
 import { usePackage } from "./hooks";
@@ -9,6 +9,7 @@ import { Input } from "@/components/ui/input";
 import { DatePicker } from "../booking/DatePicker";
 import { AddOnList } from "../booking/AddOnList";
 import { TotalBox } from "../booking/TotalBox";
+import { ProgressSteps } from "@/components/ui/progress-steps";
 import { useBookingTotal } from "../booking/hooks";
 import { api } from "../../lib/api";
 import { formatCurrency } from "@/lib/utils";
@@ -26,9 +27,31 @@ export function PackagePage() {
   const packageData = pkg;
   const total = useBookingTotal(packageData?.priceCents || 0, packageData?.addOns || [], selectedAddOns);
 
+  // Progress steps for booking flow
+  const bookingSteps = useMemo(() => [
+    { label: "Package", description: "Choose your package" },
+    { label: "Date", description: "Select ceremony date" },
+    { label: "Extras", description: "Add-ons & details" },
+    { label: "Checkout", description: "Complete booking" }
+  ], []);
+
+  // Determine current step based on completion
+  const currentStep = useMemo(() => {
+    if (!packageData) return 0;
+    if (!selectedDate) return 1;
+    if (!coupleName.trim() || !email.trim()) return 2;
+    return 3;
+  }, [packageData, selectedDate, coupleName, email]);
+
+  // Get selected add-on objects for TotalBox
+  const selectedAddOnObjects = useMemo(() => {
+    if (!packageData?.addOns) return [];
+    return packageData.addOns.filter(addOn => selectedAddOns.has(addOn.id));
+  }, [packageData, selectedAddOns]);
+
   if (isLoading) {
     return (
-      <div className="text-center py-12 text-lavender-100 text-xl">
+      <div className="text-center py-12 text-gray-700 text-xl">
         Loading package...
       </div>
     );
@@ -36,7 +59,7 @@ export function PackagePage() {
 
   if (error || !packageData) {
     return (
-      <div className="text-center py-12 text-lavender-50 text-xl">
+      <div className="text-center py-12 text-gray-900 text-xl">
         Package not found
       </div>
     );
@@ -95,9 +118,13 @@ export function PackagePage() {
   };
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-      <div className="lg:col-span-2 space-y-8">
-        <Card className="overflow-hidden bg-navy-800 border-navy-600">
+    <div className="space-y-8">
+      {/* Progress Steps */}
+      <ProgressSteps steps={bookingSteps} currentStep={currentStep} />
+
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <div className="lg:col-span-2 space-y-8">
+        <Card className="overflow-hidden bg-white border-gray-200 shadow-elevation-1">
           {packageData.photoUrl && (
             <div className="relative aspect-[16/9] overflow-hidden">
               <img
@@ -108,24 +135,24 @@ export function PackagePage() {
             </div>
           )}
           <CardContent className="p-8">
-            <h1 className="font-heading text-5xl font-bold mb-4 text-lavender-50">
+            <h1 className="font-heading text-5xl font-bold mb-4 text-gray-900">
               {packageData.title}
             </h1>
-            <p className="text-lavender-100 mb-6 leading-relaxed text-xl">
+            <p className="text-gray-700 mb-6 leading-relaxed text-xl">
               {packageData.description}
             </p>
-            <div className="flex items-center gap-2 pt-4 border-t border-navy-600">
-              <span className="text-lg text-lavender-200">Base Price:</span>
-              <span className="text-4xl font-heading font-semibold text-lavender-300">
+            <div className="flex items-center gap-2 pt-4 border-t border-gray-200">
+              <span className="text-lg text-gray-600">Base Price:</span>
+              <span className="text-4xl font-heading font-semibold text-macon-navy">
                 {formatCurrency(packageData.priceCents)}
               </span>
             </div>
           </CardContent>
         </Card>
 
-        <Card className="bg-navy-800 border-navy-600">
+        <Card className="bg-white border-gray-200 shadow-elevation-1">
           <CardHeader>
-            <CardTitle className="text-lavender-50 text-3xl">Select Date</CardTitle>
+            <CardTitle className="text-gray-900 text-3xl">Select Date</CardTitle>
           </CardHeader>
           <CardContent>
             <DatePicker
@@ -135,14 +162,14 @@ export function PackagePage() {
           </CardContent>
         </Card>
 
-        <Card className="bg-navy-800 border-navy-600">
+        <Card className="bg-white border-gray-200 shadow-elevation-1">
           <CardHeader>
-            <CardTitle className="text-lavender-50 text-3xl">Your Details</CardTitle>
+            <CardTitle className="text-gray-900 text-3xl">Your Details</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="space-y-6">
               <div className="space-y-2">
-                <Label htmlFor="coupleName" className="text-lavender-100 text-lg">Your Names</Label>
+                <Label htmlFor="coupleName" className="text-gray-700 text-lg">Your Names</Label>
                 <Input
                   id="coupleName"
                   type="text"
@@ -150,11 +177,11 @@ export function PackagePage() {
                   onChange={(e) => setCoupleName(e.target.value)}
                   placeholder="e.g., Sarah & Alex"
                   required
-                  className="bg-navy-900 border-navy-600 text-lavender-50 placeholder:text-navy-400 focus:border-lavender-500 focus:ring-lavender-500 text-lg h-12"
+                  className="bg-white border-gray-300 text-gray-900 placeholder:text-gray-400 focus:border-macon-orange focus:ring-macon-orange text-lg h-12"
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="email" className="text-lavender-100 text-lg">Email Address</Label>
+                <Label htmlFor="email" className="text-gray-700 text-lg">Email Address</Label>
                 <Input
                   id="email"
                   type="email"
@@ -162,7 +189,7 @@ export function PackagePage() {
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="your.email@example.com"
                   required
-                  className="bg-navy-900 border-navy-600 text-lavender-50 placeholder:text-navy-400 focus:border-lavender-500 focus:ring-lavender-500 text-lg h-12"
+                  className="bg-white border-gray-300 text-gray-900 placeholder:text-gray-400 focus:border-macon-orange focus:ring-macon-orange text-lg h-12"
                 />
               </div>
             </div>
@@ -170,9 +197,9 @@ export function PackagePage() {
         </Card>
 
         {packageData.addOns && packageData.addOns.length > 0 && (
-          <Card className="bg-navy-800 border-navy-600">
+          <Card className="bg-white border-gray-200 shadow-elevation-1">
             <CardHeader>
-              <CardTitle className="text-lavender-50 text-3xl">Add-Ons</CardTitle>
+              <CardTitle className="text-gray-900 text-3xl">Add-Ons</CardTitle>
             </CardHeader>
             <CardContent>
               <AddOnList
@@ -185,22 +212,28 @@ export function PackagePage() {
         )}
       </div>
 
-      <div className="lg:col-span-1">
-        <div className="sticky top-4 space-y-4">
-          <TotalBox total={total} />
-          <Button
-            onClick={handleCheckout}
-            disabled={!selectedDate || !coupleName.trim() || !email.trim()}
-            className="w-full text-xl h-14"
-            size="lg"
-            data-testid="checkout"
-          >
-            {!selectedDate
-              ? "Select a date"
-              : !coupleName.trim() || !email.trim()
-              ? "Enter your details"
-              : "Proceed to Checkout"}
-          </Button>
+        <div className="lg:col-span-1">
+          <div className="space-y-4">
+            <TotalBox
+              total={total}
+              packagePrice={packageData?.priceCents}
+              packageName={packageData?.title}
+              selectedAddOns={selectedAddOnObjects}
+            />
+            <Button
+              onClick={handleCheckout}
+              disabled={!selectedDate || !coupleName.trim() || !email.trim()}
+              className="w-full text-xl h-14"
+              size="lg"
+              data-testid="checkout"
+            >
+              {!selectedDate
+                ? "Select a date"
+                : !coupleName.trim() || !email.trim()
+                ? "Enter your details"
+                : "Proceed to Checkout"}
+            </Button>
+          </div>
         </div>
       </div>
     </div>

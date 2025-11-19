@@ -7,6 +7,7 @@ import { api } from "../../lib/api";
 import { cn } from "@/lib/utils";
 import { queryKeys, queryOptions } from "@/lib/queryClient";
 import "react-day-picker/style.css";
+import styles from "./DatePicker.module.css";
 
 interface DatePickerProps {
   selected: Date | undefined;
@@ -106,8 +107,8 @@ export function DatePicker({ selected, onSelect }: DatePickerProps) {
   return (
     <div>
       <div className="mb-6 flex items-start gap-2">
-        <Calendar className="h-5 w-5 mt-0.5 text-lavender-200" />
-        <p className="text-lg text-lavender-100">
+        <Calendar className="h-5 w-5 mt-0.5 text-gray-600" />
+        <p className="text-lg text-gray-700">
           Select a date for your ceremony. Unavailable dates are pre-loaded for your
           convenience.
         </p>
@@ -115,8 +116,8 @@ export function DatePicker({ selected, onSelect }: DatePickerProps) {
 
       {isLoading ? (
         <div className="flex items-center justify-center py-8">
-          <Loader2 className="w-8 h-8 animate-spin text-lavender-300" />
-          <span className="ml-3 text-lg text-lavender-100">Loading availability...</span>
+          <Loader2 className="w-8 h-8 animate-spin text-macon-orange" />
+          <span className="ml-3 text-lg text-gray-700">Loading availability...</span>
         </div>
       ) : (
         <>
@@ -126,28 +127,23 @@ export function DatePicker({ selected, onSelect }: DatePickerProps) {
             onSelect={handleDateSelect}
             disabled={[{ before: today }, ...unavailableDates]}
             className={cn(
-              "border border-navy-600 rounded-lg p-4 bg-navy-900",
-              "rdp-root"
+              "border border-gray-300 rounded-lg p-4 bg-gray-50",
+              styles.datePicker
             )}
-            modifiersClassNames={{
-              selected: "bg-lavender-500 text-white font-medium hover:bg-lavender-600",
-              disabled: "text-navy-500 cursor-not-allowed line-through",
-              today: "font-semibold text-lavender-100",
-            }}
           />
 
           <div className="mt-6 flex flex-wrap items-center gap-4 text-base">
             <div className="flex items-center gap-2">
-              <div className="h-5 w-5 bg-lavender-500 rounded border border-navy-600" />
-              <span className="text-lavender-100">Selected</span>
+              <div className="h-5 w-5 bg-macon-orange rounded border border-gray-300" />
+              <span className="text-gray-700">Selected</span>
             </div>
             <div className="flex items-center gap-2">
-              <div className="h-5 w-5 bg-navy-700 rounded border border-navy-600" />
-              <span className="text-lavender-100">Available</span>
+              <div className="h-5 w-5 bg-white rounded border border-gray-300" />
+              <span className="text-gray-700">Available</span>
             </div>
             <div className="flex items-center gap-2">
-              <div className="h-5 w-5 bg-navy-800 rounded border border-navy-600" />
-              <span className="text-lavender-100">Unavailable</span>
+              <div className="h-5 w-5 bg-gray-200 rounded border border-gray-300" />
+              <span className="text-gray-700">Unavailable</span>
             </div>
           </div>
         </>
