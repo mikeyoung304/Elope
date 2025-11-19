@@ -1,6 +1,6 @@
 # Architecture Decision Records (ADRs)
 
-This document contains all major architectural decisions made during the development of the Elope wedding booking platform. Each ADR follows a standard format: Context, Decision, Consequences, and Alternatives Considered.
+This document contains all major architectural decisions made during the development of the MAIS wedding booking platform. Each ADR follows a standard format: Context, Decision, Consequences, and Alternatives Considered.
 
 ---
 
@@ -351,7 +351,7 @@ We have decided to **rewrite git history** to remove all exposed secrets using `
 
 ```bash
 # 1. Backup repository
-git clone --mirror . ../elope-backup
+git clone --mirror . ../mais-backup
 
 # 2. Install git-filter-repo
 pip install git-filter-repo
@@ -451,7 +451,7 @@ git push --force --tags origin
 
 **Rollback Plan:**
 If history rewrite causes critical issues:
-1. Restore from backup: `git clone ../elope-backup/.git .`
+1. Restore from backup: `git clone ../mais-backup/.git .`
 2. Force push backup to remote
 3. Notify team to re-clone again
 4. Investigate what went wrong

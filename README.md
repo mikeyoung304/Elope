@@ -1,67 +1,77 @@
-# Macon AI Solutions - AI-Powered Tenant Management Platform
+# Macon AI Solutions - Business Growth Club Platform
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
-[![TypeScript](https://img.shields.io/badge/TypeScript-5.3-blue)](https://www.typescriptlang.org/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.7-blue)](https://www.typescriptlang.org/)
 [![Node.js](https://img.shields.io/badge/Node.js-20+-green)](https://nodejs.org/)
 [![PostgreSQL](https://img.shields.io/badge/PostgreSQL-15-blue)](https://www.postgresql.org/)
 [![Test Coverage](https://img.shields.io/badge/coverage-76%25-yellow)](./TESTING.md)
 [![Build Status](https://img.shields.io/badge/build-passing-brightgreen)](./DEVELOPING.md)
 
-> A production-ready, AI-powered platform for effortless tenant management and property operations.
+> Your all-in-one partner for AI consulting, booking, scheduling, website builds, and business growth through revenue-sharing partnerships.
 
 ---
 
 ## What is Macon AI Solutions?
 
-**Macon AI Solutions** is a modern **multi-tenant SaaS platform** that uses AI to streamline tenant management, automate property operations, and enhance tenant satisfaction. Built with simplicity and reliability at its core, Macon AI empowers property managers to handle onboarding, communications, and operations seamlessly - all with complete data isolation and intelligent automation.
+**Macon AI Solutions** is a **business growth club** that partners with entrepreneurs and small business owners through a revenue-sharing model. We provide AI consulting, seamless scheduling and booking systems, professional websites, and marketing automation—all aligned with your success through shared incentives.
 
-### Key Features
+### The Club Model
 
-- **Multi-Tenant Architecture** - Support multiple property management businesses with complete data isolation
-- **Tenant API Keys** - Secure authentication via X-Tenant-Key header (pk_live_slug_xxx format)
-- **Variable Commission Rates** - Per-tenant commission rates via Stripe Connect
-- **Unified Authentication** - Role-based access control with Platform Admin and Tenant Admin roles
-- **Property Management** - Full CRUD for properties, leases, and tenant profiles
-- **AI-Powered Automation** - Automated lease renewals, rent reminders, and tenant communications
-- **Stripe Payment Integration** - Secure rent collection with automatic payment processing
-- **Calendar Integration** - Real-time availability management with Google Calendar
-- **Admin Dashboards** - Separate Platform Admin and Tenant Admin dashboards with full CRUD operations
-- **Smart Notifications** - Automated tenant notifications and support ticket management
-- **Data Analytics** - Real-time occupancy tracking, payment monitoring, and tenant satisfaction metrics
-- **Webhook Reliability** - Idempotent webhook processing with automatic retries
-- **Security-First** - Login rate limiting, JWT validation, bcrypt hashing, encrypted secrets, structured security logging
+Unlike traditional SaaS subscriptions, the Macon AI Club operates on a **revenue-sharing partnership**:
 
-### Target Users
+- **Small base fee + % of sales** - We only earn when you earn
+- **Dedicated AI strategist** - Your personal business growth partner
+- **Done-for-you services** - We handle the tech, you focus on your business
+- **Application-based membership** - Curated community of growth-focused businesses
 
-- **Platform Administrators** - Manage multiple property management businesses on one platform
-- **Property Management Companies** - Residential and commercial property managers
-- **Real Estate Professionals** - Landlords, leasing agents, and property coordinators
-- **Tenant Relations Teams** - Customer service and tenant satisfaction specialists
-- **Operations Managers** - Streamline day-to-day property operations
+### Three Pillars of Growth
+
+**1. Business Growth, Accelerated**
+- Hands-on marketing and bespoke consulting
+- Sales-driven strategies powered by cutting-edge AI
+- We execute alongside you, not just provide tools
+
+**2. Seamless Scheduling & Bookings**
+- Effortless appointment and payment management
+- Client flow automation tailored to your brand
+- Save 60+ hours/month, never lose a lead
+
+**3. Your Website, Your Way**
+- Professional website design, launch, and maintenance
+- No dev skills required—we handle the tech
+- Digital presence that converts visitors to customers
+
+### Target Members
+
+- **The Solopreneur** - Wearing all the hats and drowning in admin
+- **The Scaling Startup** - Proven concept, needs systems to scale
+- **The Pivot Artist** - Shifting business models or launching new offerings
+- **Service Professionals** - Coaches, consultants, salon owners, fitness trainers
+- **Small Business Owners** - Ready to level up with AI and digital essentials
 
 ### Business Value
 
-- **Reduce Manual Work**: Automate booking confirmations and calendar management
-- **Increase Conversions**: Streamlined checkout process reduces booking abandonment
-- **Prevent Errors**: Bulletproof double-booking prevention protects your reputation
-- **Scale Confidently**: Built with production-grade architecture from day one
-- **Easy Integration**: Embeddable widget installs on any website with 3 lines of code
+- **Aligned Incentives**: We invest in your growth through revenue-sharing
+- **Lower Barrier**: No large upfront costs or monthly fees eating profits
+- **Partnership Approach**: Dedicated team working on your success
+- **Comprehensive Support**: Tech, marketing, booking, and consulting in one place
+- **Scalable Growth**: Systems that grow with your business
 
-### Multi-Tenant Self-Service Status
+### Member Platform Features
 
 **Current Maturity: Phase 5.1 In Progress (6.5/10)**
 
-Tenant admins currently have self-service access to:
+Club members currently have self-service access to:
 
-- ✅ **Visual Branding** - Logo, colors, fonts (95% complete)
-- ✅ **Package Management** - Full CRUD for service packages (100% complete)
+- ✅ **Visual Branding** - Logo, colors, fonts for their digital presence (95% complete)
+- ✅ **Service Package Management** - Full CRUD for offerings and pricing (100% complete)
 - ✅ **Package Photos Backend** - Photo upload API complete, UI pending (50% complete) **NEW**
-- ✅ **Availability Control** - Blackout date management (95% complete)
-- ✅ **Admin Dashboard** - Secure 4-tab interface (100% complete)
+- ✅ **Availability Control** - Blackout date and scheduling management (95% complete)
+- ✅ **Member Dashboard** - Secure admin interface for business management (100% complete)
 - ⚠️ **Package Photos Frontend** - Drag-and-drop UI in development (0% complete)
-- ❌ **Add-On Management** - Not yet available to tenants (0% complete)
-- ❌ **Content Customization** - No copy/messaging control (0% complete)
-- ❌ **Email Templates** - Generic platform emails only (0% complete)
+- ❌ **Add-On Management** - Upsells and extras configuration (0% complete)
+- ❌ **Content Customization** - Copy and messaging control (0% complete)
+- ❌ **Email Templates** - Custom client communication templates (0% complete)
 
 **Latest Updates:**
 
@@ -88,7 +98,7 @@ Tenant admins currently have self-service access to:
 
 ## Agent-Powered Platform (2025 Transformation)
 
-Starting Sprint 2 (January 2025), Elope is evolving into an **agent-powered, config-driven platform** that enables AI agents to collaborate with human admins in managing tenant configurations.
+Starting Sprint 2 (January 2025), MAIS is evolving into an **agent-powered, config-driven platform** that enables AI agents to collaborate with human admins in managing tenant configurations.
 
 ### What's Changing
 
@@ -205,7 +215,7 @@ Embedded widgets automatically fetch configuration at runtime:
 
 ## Architecture Philosophy
 
-Elope is built as a **multi-tenant modular monolith** with clear boundaries and production-ready patterns:
+MAIS is built as a **multi-tenant modular monolith** with clear boundaries and production-ready patterns:
 
 - **Simplicity over novelty**: One backend + one frontend; shared types
 - **Multi-tenant by design**: Complete data isolation via row-level tenantId scoping
@@ -225,7 +235,7 @@ Learn more: [ARCHITECTURE.md](./ARCHITECTURE.md) | [MULTI_TENANT_IMPLEMENTATION_
 
 - **Runtime**: Node.js 20+
 - **Framework**: Express 4 (HTTP server)
-- **Language**: TypeScript 5.3 (strict mode)
+- **Language**: TypeScript 5.7 (strict mode)
 - **Database**: PostgreSQL 15 (via Supabase)
 - **ORM**: Prisma 6 (type-safe queries, migrations)
 - **API Contract**: ts-rest + Zod (type-safe API)
@@ -239,7 +249,7 @@ Learn more: [ARCHITECTURE.md](./ARCHITECTURE.md) | [MULTI_TENANT_IMPLEMENTATION_
 
 - **Framework**: React 18
 - **Build Tool**: Vite 6
-- **Language**: TypeScript 5.3
+- **Language**: TypeScript 5.7
 - **Styling**: Tailwind CSS 3
 - **UI Components**: Radix UI (accessible primitives)
 - **State Management**: TanStack Query (server state)
@@ -249,7 +259,7 @@ Learn more: [ARCHITECTURE.md](./ARCHITECTURE.md) | [MULTI_TENANT_IMPLEMENTATION_
 ### Infrastructure
 
 - **Database Hosting**: Supabase (PostgreSQL + connection pooling)
-- **Monorepo**: npm workspaces (not pnpm)
+- **Monorepo**: pnpm workspaces
 - **Process Manager**: systemd / PM2 / Docker
 - **Deployment**: Docker containers (recommended)
 
@@ -258,7 +268,7 @@ Learn more: [ARCHITECTURE.md](./ARCHITECTURE.md) | [MULTI_TENANT_IMPLEMENTATION_
 ## Project Structure
 
 ```
-elope/
+mais/
 ├── server/               # Backend API application
 │   ├── src/
 │   │   ├── routes/      # HTTP route handlers (Express + ts-rest)
@@ -375,8 +385,8 @@ For now, see the development guide: [DEVELOPING.md](./DEVELOPING.md)
 
 ```bash
 # 1. Clone the repository
-git clone https://github.com/yourusername/elope.git
-cd elope
+git clone https://github.com/yourusername/mais.git
+cd mais
 
 # 2. Install dependencies
 npm install
@@ -721,14 +731,14 @@ Before deploying to production:
 
 ```bash
 # Build Docker image
-docker build -t elope/api:latest -f server/Dockerfile .
+docker build -t mais/api:latest -f server/Dockerfile .
 
 # Run with environment variables
 docker run -d \
-  --name elope-api \
+  --name mais-api \
   --env-file server/.env.production \
   -p 3001:3001 \
-  elope/api:latest
+  mais/api:latest
 
 # Check health
 curl http://localhost:3001/health
@@ -767,7 +777,7 @@ MIT License - see [LICENSE](./LICENSE) file for details.
 
 ## Support
 
-- **Issues**: [GitHub Issues](https://github.com/yourusername/elope/issues)
+- **Issues**: [GitHub Issues](https://github.com/yourusername/mais/issues)
 - **Documentation**: All docs in this repository
 - **Questions**: Open a discussion in GitHub Discussions
 
@@ -787,4 +797,4 @@ Built with modern, production-ready tools:
 
 ---
 
-**Made with care for small businesses managing intimate weddings and elopements.**
+**Made with care for entrepreneurs and small business owners ready to unlock their growth potential.**

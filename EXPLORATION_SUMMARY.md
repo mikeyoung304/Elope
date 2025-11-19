@@ -1,8 +1,8 @@
-# Elope Codebase Exploration - Executive Summary
+# MAIS Codebase Exploration - Executive Summary
 
-## What is Elope?
+## What is MAIS?
 
-Elope is a **production-ready multi-tenant wedding/elopement booking platform** that enables independent wedding service providers to offer customizable online booking experiences. Think of it as the SaaS infrastructure that allows venues, photographers, and planners to embed booking widgets on their websites.
+MAIS is a **production-ready multi-tenant wedding/elopement booking platform** that enables independent wedding service providers to offer customizable online booking experiences. Think of it as the SaaS infrastructure that allows venues, photographers, and planners to embed booking widgets on their websites.
 
 ## Key Strengths
 
@@ -261,7 +261,7 @@ npm run dev:all
 
 ## Documentation Structure
 
-Elope uses the **Diátaxis framework** for documentation organization:
+MAIS uses the **Diátaxis framework** for documentation organization:
 - **Tutorials:** Learning-focused, step-by-step guides
 - **How-To Guides:** Task-focused, problem-solving instructions
 - **Reference:** Technical specifications and APIs

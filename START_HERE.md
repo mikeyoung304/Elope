@@ -1,4 +1,4 @@
-# 📍 START HERE - Elope Platform Documentation Index
+# 📍 START HERE - MAIS Platform Documentation Index
 
 **Last Updated**: 2025-11-14
 **Status**: Ready for launch automation

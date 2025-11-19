@@ -1,8 +1,8 @@
-# Elope Design System - Apple-Quality Implementation
+# MAIS Design System - Apple-Quality Implementation
 
 ## Executive Summary
 
-A comprehensive design token system has been created for the Elope wedding platform, following Apple Human Interface Guidelines with 249 design tokens covering all aspects of the visual design system.
+A comprehensive design token system has been created for the MAIS wedding platform, following Apple Human Interface Guidelines with 249 design tokens covering all aspects of the visual design system.
 
 **Location**: `/client/src/styles/design-tokens.css`
 
@@ -527,7 +527,7 @@ Dark mode automatically adjusts:
 
 ## Integration with Existing System
 
-The design token system is fully integrated with the existing Elope codebase:
+The design token system is fully integrated with the existing MAIS codebase:
 
 1. **Imported in index.css**: `@import './styles/design-tokens.css';`
 2. **Tailwind Compatible**: All tokens can be used alongside Tailwind utilities
@@ -620,6 +620,6 @@ Legacy tokens remain available during migration period.
 
 ---
 
-**Maintained by**: Elope Platform Design Team
+**Maintained by**: MAIS Platform Design Team
 **Last Updated**: November 16, 2025
 **Next Review**: December 2025

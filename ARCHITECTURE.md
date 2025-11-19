@@ -2,11 +2,11 @@
 
 ## Overview
 
-Elope is a **modular monolith**: one API process with clear service boundaries, a thin HTTP layer, and vendor integrations behind adapters. The front‑end consumes a generated client from the contracts package. Internal events decouple modules without microservices.
+MAIS is a **modular monolith**: one API process with clear service boundaries, a thin HTTP layer, and vendor integrations behind adapters. The front‑end consumes a generated client from the contracts package. Internal events decouple modules without microservices.
 
 ## Config-Driven Architecture (2025 Platform Transformation)
 
-Starting Sprint 2 (January 2025), Elope is transitioning to a **config-driven, agent-powered platform** that enables both human admins and AI agents to manage tenant configurations through versioned, auditable changes.
+Starting Sprint 2 (January 2025), MAIS is transitioning to a **config-driven, agent-powered platform** that enables both human admins and AI agents to manage tenant configurations through versioned, auditable changes.
 
 ### Core Principles
 

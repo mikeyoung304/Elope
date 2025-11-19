@@ -421,7 +421,7 @@ Platform Admin Nav               Tenant Admin Nav
 ## File Organization
 
 ```
-elope/
+mais/
 ├── client/
 │   ├── src/
 │   │   ├── contexts/

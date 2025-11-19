@@ -1,8 +1,8 @@
-# Elope Codebase - Comprehensive Architecture Exploration
+# MAIS Codebase - Comprehensive Architecture Exploration
 
 ## Executive Summary
 
-Elope is a sophisticated **multi-tenant wedding/elopement booking platform** built as a modular monolith using modern web technologies. The system enables independent wedding service providers (venues, photographers, planners) to offer customizable booking experiences through embeddable widgets, admin dashboards, and Stripe Connect payment processing.
+MAIS is a sophisticated **multi-tenant wedding/elopement booking platform** built as a modular monolith using modern web technologies. The system enables independent wedding service providers (venues, photographers, planners) to offer customizable booking experiences through embeddable widgets, admin dashboards, and Stripe Connect payment processing.
 
 **Stack Overview:**
 - **Backend:** Node.js/Express with TypeScript, Prisma ORM, PostgreSQL
@@ -20,7 +20,7 @@ Elope is a sophisticated **multi-tenant wedding/elopement booking platform** bui
 ### Workspace Structure (Monorepo)
 
 ```
-Elope/
+MAIS/
 ├── server/                 # Express API application
 │   ├── src/
 │   │   ├── app.ts         # Express setup & middleware
@@ -988,11 +988,11 @@ export class WebhooksController {
 
 **Parent Window** (customer's website):
 ```html
-<div id="elope-booking-widget"></div>
+<div id="mais-booking-widget"></div>
 <script src="https://widget.mais.com/widget.js"></script>
 <script>
-  ElopeWidget.init({
-    containerId: 'elope-booking-widget',
+  MAISWidget.init({
+    containerId: 'mais-booking-widget',
     tenantKey: 'pk_live_tenant_xyz',
     mode: 'embedded'  // or 'modal'
   });
@@ -1021,7 +1021,7 @@ class WidgetMessenger {
   // Security: Always validates target origin
   private sendToParent(type: string, data: Record<string, unknown>) {
     window.parent.postMessage(
-      { source: 'elope-widget', type, ...data },
+      { source: 'mais-widget', type, ...data },
       this.parentOrigin  // Never '*' in production
     );
   }

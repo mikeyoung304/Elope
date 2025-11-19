@@ -79,7 +79,7 @@ Install PostgreSQL 14+. Options:
    ```
    This creates:
    - Admin user: `admin@example.com` / password: `admin`
-   - 3 wedding packages (Classic, Garden, Luxury) with 4 add-ons
+   - 3 service packages (Basic, Professional, Premium) with 4 add-ons
    - Sample blackout date (Dec 25, 2025)
 
 5. **Start API in real mode:**

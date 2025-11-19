@@ -1,6 +1,6 @@
-# Contributing to Elope
+# Contributing to MAIS
 
-Thank you for your interest in contributing to Elope! This guide will help you get started with development and explain our contribution process.
+Thank you for your interest in contributing to MAIS! This guide will help you get started with development and explain our contribution process.
 
 ## Table of Contents
 
@@ -44,8 +44,8 @@ Before you begin, ensure you have the following installed:
 1. **Clone the repository**
 
    ```bash
-   git clone https://github.com/yourusername/elope.git
-   cd elope
+   git clone https://github.com/yourusername/mais.git
+   cd mais
    ```
 
 2. **Install dependencies**
@@ -72,12 +72,12 @@ Before you begin, ensure you have the following installed:
 
    For local PostgreSQL:
    ```bash
-   createdb elope_dev
+   createdb mais_dev
    ```
 
    Update `DATABASE_URL` in `server/.env`:
    ```bash
-   DATABASE_URL="postgresql://username:password@localhost:5432/elope_dev?schema=public"
+   DATABASE_URL="postgresql://username:password@localhost:5432/mais_dev?schema=public"
    ```
 
    See [SUPABASE.md](./docs/setup/SUPABASE.md) for cloud database setup or [DEVELOPING.md](./DEVELOPING.md) for more details.
@@ -98,8 +98,8 @@ Before you begin, ensure you have the following installed:
 
    This creates:
    - Admin user: `admin@example.com` / password from `ADMIN_DEFAULT_PASSWORD` in `.env`
-   - 3 wedding packages (Classic, Garden, Luxury)
-   - 4 add-ons (Photography, Videography, Flowers, Catering)
+   - 3 service packages (Basic, Professional, Premium)
+   - 4 add-ons (examples for service businesses)
    - Sample blackout date (Dec 25, 2025)
 
 7. **Start development servers**
@@ -141,10 +141,10 @@ cd server && npm exec prisma migrate status
 
 ## Project Structure
 
-Elope is a **modular monolith** using npm workspaces with clear separation of concerns.
+MAIS is a **modular monolith** using npm workspaces with clear separation of concerns.
 
 ```
-elope/
+mais/
 ├── server/                         # Express 4 API (Node.js)
 │   ├── src/
 │   │   ├── routes/                 # HTTP route handlers (@ts-rest)
@@ -646,4 +646,4 @@ When requesting a feature, include:
 
 ## Thank You!
 
-Thank you for contributing to Elope! Your efforts help make this project better for everyone.
+Thank you for contributing to MAIS! Your efforts help make this project better for everyone.

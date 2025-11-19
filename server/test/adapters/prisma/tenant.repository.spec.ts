@@ -7,6 +7,7 @@ import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { PrismaTenantRepository } from '../../../src/adapters/prisma/tenant.repository';
 import { createMockPrismaClient, type MockPrismaClient } from '../../mocks/prisma.mock';
 import { buildTenant, sampleTenant } from '../../fixtures/tenants';
+import { Prisma } from '../../../src/generated/prisma';
 
 describe('PrismaTenantRepository', () => {
   let repository: PrismaTenantRepository;
@@ -91,12 +92,12 @@ describe('PrismaTenantRepository', () => {
       const originalTenant = buildTenant({
         id: 'tenant_123',
         name: 'Original Name',
-        commissionPercent: new (await import('../../../generated/prisma')).Prisma.Decimal(10.0),
+        commissionPercent: new Prisma.Decimal(10.0),
       });
       const updatedTenant = {
         ...originalTenant,
         name: 'Updated Name',
-        commissionPercent: new (await import('../../../generated/prisma')).Prisma.Decimal(15.0),
+        commissionPercent: new Prisma.Decimal(15.0),
       };
       mockPrisma.tenant.update.mockResolvedValue(updatedTenant);
 

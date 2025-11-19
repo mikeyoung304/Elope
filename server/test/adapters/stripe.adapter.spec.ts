@@ -13,22 +13,24 @@ import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { StripePaymentAdapter } from '../../src/adapters/stripe.adapter';
 import type Stripe from 'stripe';
 
-// Mock Stripe SDK
-vi.mock('stripe', () => {
-  const MockStripe = vi.fn().mockImplementation(() => ({
-    checkout: {
-      sessions: {
-        create: vi.fn(),
-      },
-    },
-    refunds: {
+// Create mock Stripe instance
+const mockStripeInstance = {
+  checkout: {
+    sessions: {
       create: vi.fn(),
     },
-    webhooks: {
-      constructEvent: vi.fn(),
-    },
-  }));
+  },
+  refunds: {
+    create: vi.fn(),
+  },
+  webhooks: {
+    constructEvent: vi.fn(),
+  },
+};
 
+// Mock Stripe SDK
+vi.mock('stripe', () => {
+  const MockStripe = vi.fn(() => mockStripeInstance);
   return {
     default: MockStripe,
   };
@@ -39,10 +41,10 @@ describe('StripePaymentAdapter', () => {
   let mockStripe: any;
 
   beforeEach(() => {
-    // Import Stripe and get the mock constructor
-    const Stripe = require('stripe').default;
+    // Reset all mocks before each test
+    vi.clearAllMocks();
 
-    // Create the adapter (which will call the Stripe constructor)
+    // Create the adapter (which will use the mocked Stripe)
     adapter = new StripePaymentAdapter({
       secretKey: 'sk_test_fake',
       webhookSecret: 'whsec_test_fake',
@@ -50,8 +52,8 @@ describe('StripePaymentAdapter', () => {
       cancelUrl: 'https://example.com/cancel',
     });
 
-    // Get the mock Stripe instance from the last call to the constructor
-    mockStripe = Stripe.mock.results[Stripe.mock.calls.length - 1].value;
+    // Use the mock Stripe instance
+    mockStripe = mockStripeInstance;
   });
 
   describe('createCheckoutSession', () => {

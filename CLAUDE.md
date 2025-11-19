@@ -1,0 +1,444 @@
+# CLAUDE.md
+
+This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+
+## Project Overview
+
+MAIS (Macon AI Solutions) is a business growth club platform that partners with entrepreneurs and small business owners through revenue-sharing partnerships. Built as a multi-tenant modular monolith with Express + React, featuring complete data isolation, config-driven architecture, and mock-first development. The platform provides AI consulting, seamless booking/scheduling, professional websites, and marketing automation.
+
+**Tech Stack:**
+- Backend: Express 4, TypeScript 5.7 (strict), Prisma 6, PostgreSQL
+- Frontend: React 18, Vite 6, TailwindCSS, Radix UI, TanStack Query
+- API: ts-rest + Zod for type-safe contracts
+- Testing: Vitest (unit/integration), Playwright (E2E)
+
+**Current Status:**
+- Sprint 6 complete (60% test pass rate, 0% variance)
+- Phase 5.1 backend complete (package photo uploads)
+- Multi-tenant architecture: 75% complete
+- Current branch: `uifiddlin` (UI improvements in progress)
+
+## Monorepo Structure
+
+This is an npm workspace monorepo. Key points:
+- **Root commands** run across all workspaces: `npm run typecheck`
+- **Workspace-specific:** `npm run --workspace=server test`
+- **Shared packages:** `@macon/contracts` and `@macon/shared` are internal
+- **Import pattern:** `import { contract } from '@macon/contracts'`
+- **Building:** Run `npm run build` at root to build all packages
+
+## Essential Commands
+
+### Development
+```bash
+npm run dev:api                    # Start API server (mock mode default)
+npm run dev:client                 # Start React client (Vite)
+npm run dev:all                    # API + client + Stripe webhooks
+
+# Environment modes
+ADAPTERS_PRESET=mock npm run dev:api   # In-memory, no external services
+ADAPTERS_PRESET=real npm run dev:api   # PostgreSQL, Stripe, Postmark, GCal
+```
+
+### Testing
+```bash
+npm test                           # Run all server tests
+npm run test:unit                  # Unit tests only
+npm run test:integration           # Integration tests (requires DB)
+npm run test:watch                 # Watch mode
+npm run test:coverage              # With coverage report
+npm run test:e2e                   # Playwright E2E (requires API + client running)
+npm run test:e2e:ui                # Interactive E2E mode
+```
+
+### Database (Prisma)
+```bash
+cd server
+npm exec prisma studio             # Visual DB browser
+npm exec prisma generate           # Regenerate Prisma Client after schema changes
+npm exec prisma migrate dev --name migration_name  # Create new migration
+npm exec prisma migrate deploy     # Apply migrations (production)
+npm exec prisma db seed            # Seed database with test data
+npm run create-tenant              # Create new club member with API keys
+```
+
+### Code Quality
+```bash
+npm run typecheck                  # TypeScript validation (all workspaces)
+npm run lint                       # ESLint
+npm run format                     # Prettier auto-fix
+npm run format:check               # Prettier check only
+npm run doctor                     # Environment health check
+```
+
+### Single Test Execution
+```bash
+# Run specific test file
+npm test -- test/services/booking.service.test.ts
+
+# Run tests matching pattern
+npm test -- --grep "double-booking"
+
+# Run single E2E test
+npm run test:e2e -- e2e/tests/booking-mock.spec.ts
+```
+
+## File Naming Conventions
+
+- **Routes:** `*.routes.ts` (e.g., `packages.routes.ts`)
+- **Services:** `*.service.ts` (e.g., `booking.service.ts`)
+- **Adapters:** `*.adapter.ts` or `*.repository.ts`
+- **Tests:** `*.test.ts` or `*.spec.ts`
+- **Contracts:** Match route names in `packages/contracts/`
+- **Components:** PascalCase (e.g., `BookingForm.tsx`)
+- **Utilities:** camelCase (e.g., `formatMoney.ts`)
+
+## Architecture Patterns
+
+### Multi-Tenant Data Isolation
+
+**CRITICAL:** All database queries MUST be scoped by `tenantId` to prevent data leakage.
+
+```typescript
+// ✅ CORRECT - Tenant-scoped
+const packages = await prisma.package.findMany({
+  where: { tenantId, active: true }
+});
+
+// ❌ WRONG - Returns data from all tenants (security vulnerability)
+const packages = await prisma.package.findMany({
+  where: { active: true }
+});
+```
+
+**Tenant Resolution Flow:**
+1. Client sends `X-Tenant-Key` header (format: `pk_live_{slug}_{random}`)
+2. Tenant middleware validates key and resolves tenant
+3. Middleware injects `tenantId` into `req.tenantId`
+4. All subsequent queries use `req.tenantId` for filtering
+
+**Key Files:**
+- `server/src/middleware/tenant.ts` - Tenant resolution middleware
+- `server/src/lib/ports.ts` - Repository interfaces (all require tenantId)
+
+### Layered Architecture
+
+```
+routes/          → HTTP handlers (thin, validation only)
+  ↓
+services/        → Business logic (catalog, booking, availability)
+  ↓
+adapters/        → External integrations (prisma, stripe, postmark)
+  ↓
+ports.ts         → Repository/provider interfaces
+```
+
+**Dependency Injection:** All wiring happens in `server/src/di.ts` based on `ADAPTERS_PRESET` (mock vs real).
+
+**Mock-First Development:** Build features with in-memory adapters (`adapters/mock/`), then swap to real providers. All services depend on interfaces, not implementations.
+
+### Type-Safe API Contracts
+
+All API endpoints defined in `packages/contracts/` using Zod + ts-rest:
+
+```typescript
+// Define contract
+export const getPackages = {
+  method: 'GET',
+  path: '/packages',
+  responses: {
+    200: z.array(PackageSchema),
+  },
+};
+
+// Backend implements contract
+const packagesRouter = tsRestExpress(contract.getPackages, async (req) => {
+  const packages = await catalogService.getActivePackages(req.tenantId);
+  return { status: 200, body: packages };
+});
+
+// Frontend gets type-safe client
+const packages = await apiClient.getPackages();
+```
+
+**Rule:** Never define response types in routes or client. Always import from contracts.
+
+### Double-Booking Prevention
+
+Three-layer defense (see DECISIONS.md ADR-001):
+
+1. **Database constraint:** `@@unique([tenantId, date])` on Booking model
+2. **Pessimistic locking:** `SELECT FOR UPDATE` in transactions
+3. **Graceful errors:** Catch unique violation, return clear error
+
+```typescript
+// Wrap availability check + booking creation in transaction
+await prisma.$transaction(async (tx) => {
+  // Lock the date row
+  const existing = await tx.$queryRaw`
+    SELECT id FROM bookings WHERE tenantId = ${tenantId} AND date = ${date} FOR UPDATE
+  `;
+  if (existing.length > 0) throw new BookingConflictError(date);
+
+  // Create booking within same transaction
+  await tx.booking.create({ data: { tenantId, date, ... } });
+});
+```
+
+**Key Files:**
+- `server/src/services/booking.service.ts` - Transaction wrapper
+- `server/src/services/availability.service.ts` - Lock-aware availability
+
+### Webhook Idempotency
+
+Stripe webhooks use database-based deduplication (see DECISIONS.md ADR-002):
+
+```typescript
+// Store webhook event with unique eventId
+await prisma.webhookEvent.create({
+  data: {
+    eventId: event.id,        // Unique constraint prevents duplicates
+    eventType: event.type,
+    payload: event,
+    status: 'pending',
+  }
+});
+
+// Process only if not already processed
+if (event.status === 'processed') {
+  return; // Idempotent - safe to retry
+}
+```
+
+**Key Files:**
+- `server/src/routes/webhooks.routes.ts` - Webhook handler
+- `server/prisma/schema.prisma` - WebhookEvent model
+
+### Cache Isolation
+
+Application cache keys MUST include `tenantId`:
+
+```typescript
+// ✅ CORRECT - Tenant-scoped cache key
+const key = `catalog:${tenantId}:packages`;
+
+// ❌ WRONG - Leaks data between tenants
+const key = 'catalog:packages';
+```
+
+**Note:** HTTP-level cache middleware was removed (security vulnerability). Only use `CacheService` for application-level caching.
+
+## Development Workflow
+
+### When Adding Multi-Tenant Features
+
+1. **Tenant Scoping:** All queries filter by `tenantId`
+2. **Ownership Verification:** Verify tenant owns resource before mutations
+3. **JWT Authentication:** Use `res.locals.tenantAuth.tenantId` from middleware
+4. **Consistent Patterns:** Follow existing tenant-admin route patterns
+5. **Cache Keys:** Include `tenantId` in all cache keys
+
+### When Modifying Database Schema
+
+1. Edit `server/prisma/schema.prisma`
+2. Run `npm exec prisma migrate dev --name descriptive_name`
+3. Update seed script if needed (`server/prisma/seed.ts`)
+4. Run `npm exec prisma generate` to regenerate client
+5. Update repository implementations in `server/src/adapters/prisma/`
+
+### Test Strategy
+
+- **Unit tests:** Pure services with mock repositories (no HTTP/network)
+- **Integration tests:** Database-backed, use test isolation patterns
+- **E2E tests:** Playwright, mock mode for speed
+- **Coverage target:** 70% (current: 60% pass rate, 0% variance)
+
+**Integration Test Pattern:**
+```typescript
+// Use helper for tenant isolation
+import { createTestTenant } from '../helpers/test-tenant';
+
+test('should create booking', async () => {
+  const { tenantId, cleanup } = await createTestTenant();
+  try {
+    // Test with isolated tenant
+    await bookingService.create({ tenantId, ... });
+  } finally {
+    await cleanup();
+  }
+});
+```
+
+## Critical Security Rules
+
+1. **Never skip tenant validation:** All queries must filter by `tenantId`
+2. **Encrypt tenant secrets:** Use `TENANT_SECRETS_ENCRYPTION_KEY` for sensitive data
+3. **Validate API keys:** Check format `pk_live_{slug}_{random}` or `sk_live_{slug}_{random}`
+4. **No cross-tenant queries:** Repository methods require `tenantId` parameter
+5. **Rate limit auth endpoints:** Login protected at 5 attempts/15min/IP
+
+## Environment Setup
+
+Required secrets (generate with `openssl rand -hex 32`):
+- `JWT_SECRET` - JWT signing key
+- `TENANT_SECRETS_ENCRYPTION_KEY` - Encrypt tenant-specific secrets
+
+Database (required for real mode):
+- `DATABASE_URL` - Supabase or local PostgreSQL
+- `DIRECT_URL` - Same as DATABASE_URL (for migrations)
+
+Optional (graceful fallbacks in real mode):
+- `POSTMARK_SERVER_TOKEN` - Email (falls back to file-sink in `tmp/emails/`)
+- `GOOGLE_CALENDAR_ID` - Calendar (falls back to mock calendar)
+- `STRIPE_SECRET_KEY` - Payments (required for real mode)
+- `STRIPE_WEBHOOK_SECRET` - Webhook validation (required for real mode)
+
+## Key Documentation
+
+- **ARCHITECTURE.md** - System design, multi-tenant patterns, config-driven pivot
+- **DEVELOPING.md** - Development workflow, commands, database setup
+- **TESTING.md** - Test strategy, running tests, E2E setup
+- **DECISIONS.md** - Architectural Decision Records (ADRs)
+- **docs/multi-tenant/MULTI_TENANT_IMPLEMENTATION_GUIDE.md** - Multi-tenant patterns
+- **docs/security/SECRET_ROTATION_GUIDE.md** - Secret rotation procedures
+
+## Code Patterns to Follow
+
+### Error Handling Pattern
+```typescript
+// Service throws domain error
+throw new BookingConflictError(date);
+
+// Route catches and maps to HTTP
+try {
+  await bookingService.create(data);
+} catch (error) {
+  if (error instanceof BookingConflictError) {
+    return { status: 409, body: { error: error.message } };
+  }
+  throw error; // Let error middleware handle unknown errors
+}
+```
+
+### Repository Pattern with TenantId
+```typescript
+// All repository methods require tenantId as first parameter
+interface CatalogRepository {
+  getPackages(tenantId: string): Promise<Package[]>;
+  getPackageBySlug(tenantId: string, slug: string): Promise<Package>;
+}
+```
+
+### Service Constructor Pattern
+```typescript
+export class BookingService {
+  constructor(
+    private readonly bookingRepo: BookingRepository,
+    private readonly paymentProvider: PaymentProvider,
+    private readonly eventEmitter: EventEmitter
+  ) {}
+}
+```
+
+## Common Pitfalls
+
+1. **Forgetting tenant scoping:** Always filter by `tenantId` in queries
+2. **Cache key collisions:** Include `tenantId` in all cache keys
+3. **Skipping transaction locks:** Use pessimistic locking for booking creation
+4. **Webhook replay attacks:** Check idempotency before processing
+5. **Type safety bypass:** Never use `as any` - fix the types instead
+6. **Missing error handling:** Services should throw domain errors, routes catch and map to HTTP
+7. **Direct Prisma usage in routes:** Always go through services/repositories
+8. **Hardcoded values:** Use config or environment variables
+
+## Quick Start Checklist
+
+When starting work on this codebase:
+1. Check environment: `npm run doctor`
+2. Start in mock mode first: `ADAPTERS_PRESET=mock npm run dev:api`
+3. Verify tenant isolation in all queries
+4. Run tests before committing: `npm test`
+5. Use contracts for all API changes
+
+## Project Structure
+
+```
+server/                     # Express API (port 3001)
+├── src/
+│   ├── routes/            # HTTP handlers (@ts-rest/express)
+│   ├── services/          # Business logic
+│   ├── adapters/          # External integrations
+│   │   ├── prisma/        # Database repositories
+│   │   ├── mock/          # In-memory implementations
+│   │   └── *.adapter.ts   # Stripe, Postmark, GCal
+│   ├── middleware/        # Auth, tenant, error handling
+│   ├── lib/
+│   │   ├── core/         # Config, logger, events
+│   │   ├── ports.ts      # Repository interfaces
+│   │   └── entities.ts   # Domain models
+│   └── di.ts             # Dependency injection container
+│
+client/                    # React app (port 5173)
+├── src/
+│   ├── features/         # Feature modules
+│   ├── pages/           # Route components
+│   ├── ui/              # Shared components
+│   └── lib/             # API client, utilities
+│
+packages/
+├── contracts/           # API contracts (Zod + ts-rest)
+└── shared/             # Shared utilities
+```
+
+## Current Sprint Goals
+
+**Sprint 6 Status:** Complete (60% test pass rate, 0% variance)
+- Fixed connection pool poisoning
+- Eliminated catalog test failures
+- Re-enabled 22 tests (infrastructure-only fixes)
+
+**Sprint 7 Goals:** Target 70% pass rate (73/104 tests)
+- Fix test logic issues (slug update, concurrent creation)
+- Resolve data contamination patterns
+- Address complex transaction issues
+
+**Phase 5.1:** Package photo upload backend complete, frontend UI in progress
+
+## Troubleshooting Guide
+
+### Common Issues
+
+**Port already in use:**
+```bash
+lsof -i :3001  # Find process using port
+kill -9 <PID>  # Kill the process
+```
+
+**Database connection errors:**
+```bash
+# Check if PostgreSQL is running
+psql $DATABASE_URL -c "SELECT 1;"
+
+# Reset database if corrupted
+cd server && npm exec prisma migrate reset
+```
+
+**Test failures after schema change:**
+```bash
+cd server
+npm exec prisma generate  # Regenerate Prisma Client
+npm exec prisma migrate dev  # Apply migrations
+```
+
+**Stripe webhook not working:**
+```bash
+stripe listen --forward-to localhost:3001/v1/webhooks/stripe
+# Copy the webhook secret to .env
+```
+
+**Mock vs Real mode issues:**
+```bash
+# Explicitly set mode
+export ADAPTERS_PRESET=mock  # or 'real'
+npm run dev:api
+```

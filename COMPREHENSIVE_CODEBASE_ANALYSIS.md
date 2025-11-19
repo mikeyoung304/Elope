@@ -1,8 +1,8 @@
-# Elope Codebase - Comprehensive Architecture Analysis
+# MAIS Codebase - Comprehensive Architecture Analysis
 
 ## Executive Summary
 
-**Elope** is a production-ready, multi-tenant SaaS wedding booking platform built with modern web technologies and cloud-native architecture patterns. The application supports up to 50 independent wedding businesses with complete data isolation, variable commission rates, and secure payment processing.
+**MAIS** is a production-ready, multi-tenant SaaS wedding booking platform built with modern web technologies and cloud-native architecture patterns. The application supports up to 50 independent wedding businesses with complete data isolation, variable commission rates, and secure payment processing.
 
 **Key Stats:**
 - **Total TypeScript/TSX Files:** 274
@@ -19,7 +19,7 @@
 ### Frontend Stack
 **Framework:** React 18.3
 **Build Tool:** Vite 6.0
-**Language:** TypeScript 5.3
+**Language:** TypeScript 5.7
 **Styling:** Tailwind CSS 3.4 + PostCSS
 **UI Components:** 
   - Radix UI (accessible component library)
@@ -45,7 +45,7 @@
 
 ### Backend Stack
 **Framework:** Express.js 4.21
-**Language:** TypeScript 5.3
+**Language:** TypeScript 5.7
 **Database:** PostgreSQL 16 with Prisma ORM 6.17
 **Database Connection:** Supabase support with connection pooling
 
@@ -69,13 +69,13 @@
 **API Server Port:** 3001
 
 ### Shared Packages
-**@elope/contracts** (274 lines of API definition)
+**@mais/contracts** (274 lines of API definition)
 - ts-rest based API contract definitions
 - Zod schemas for request/response DTOs
 - Shared type definitions across frontend and backend
 - Minimal dependencies (only @ts-rest/core, zod)
 
-**@elope/shared**
+**@mais/shared**
 - Shared utilities and helpers
 - No external dependencies
 
@@ -1042,10 +1042,10 @@ GET /ready     - Readiness check (verifies required env vars)
 ### Monorepo Management
 **Workspaces:** npm workspaces
 **Packages:**
-- client (@elope/web)
-- server (@elope/api)
-- packages/contracts (@elope/contracts)
-- packages/shared (@elope/shared)
+- client (@mais/web)
+- server (@mais/api)
+- packages/contracts (@mais/contracts)
+- packages/shared (@mais/shared)
 
 **Workspace Scripts:**
 ```bash
@@ -1072,5 +1072,5 @@ npm run <script> --workspaces          # Run in all workspaces
 
 ## Summary
 
-**Elope** is a well-architected, production-ready SaaS platform built with modern JavaScript/TypeScript technologies. The multi-tenant architecture provides complete data isolation while the comprehensive testing strategy (76% coverage) ensures reliability. The codebase follows strict TypeScript and code quality standards, with clear separation of concerns and extensible design patterns. The platform is designed to handle complex wedding booking workflows while maintaining security, performance, and scalability.
+**MAIS** is a well-architected, production-ready SaaS platform built with modern JavaScript/TypeScript technologies. The multi-tenant architecture provides complete data isolation while the comprehensive testing strategy (76% coverage) ensures reliability. The codebase follows strict TypeScript and code quality standards, with clear separation of concerns and extensible design patterns. The platform is designed to handle complex wedding booking workflows while maintaining security, performance, and scalability.
 

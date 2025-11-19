@@ -1,6 +1,6 @@
-# Elope UI/UX Improvement - Execution Brief
+# MAIS UI/UX Improvement - Execution Brief
 
-**Project**: Elope Wedding Booking Platform UI/UX Transformation
+**Project**: MAIS Wedding Booking Platform UI/UX Transformation
 **Goal**: Increase UI maturity from 6.5/10 to 9/10
 **Timeline**: 8-12 weeks (5 sprints)
 **Full Plan**: See `UI_UX_IMPROVEMENT_PLAN.md` in project root
@@ -307,7 +307,7 @@ Reference: client/src/styles/design-tokens.css for color values."
 ### Example Opening Message:
 
 ```
-I need to execute the Elope UI/UX improvement plan.
+I need to execute the MAIS UI/UX improvement plan.
 Let's start with Phase 1. Please read UI_UX_EXECUTION_BRIEF.md
 and UI_UX_IMPROVEMENT_PLAN.md, then begin with Phase 1, Task 1:
 Theme Strategy Documentation. Use subagents optimally.
