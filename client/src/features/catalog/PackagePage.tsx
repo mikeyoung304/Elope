@@ -4,8 +4,8 @@ import { toUtcMidnight } from "@elope/shared";
 import { usePackage } from "./hooks";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Label } from "@/components/ui/label";
-import { Input } from "@/components/ui/input";
+import { InputEnhanced } from "@/components/ui/input-enhanced";
+import { Mail, Users } from "lucide-react";
 import { DatePicker } from "../booking/DatePicker";
 import { AddOnList } from "../booking/AddOnList";
 import { TotalBox } from "../booking/TotalBox";
@@ -23,6 +23,7 @@ export function PackagePage() {
   const [selectedAddOns, setSelectedAddOns] = useState<Set<string>>(new Set());
   const [coupleName, setCoupleName] = useState('');
   const [email, setEmail] = useState('');
+  const [isCheckingOut, setIsCheckingOut] = useState(false);
 
   const packageData = pkg;
   const total = useBookingTotal(packageData?.priceCents || 0, packageData?.addOns || [], selectedAddOns);
@@ -68,6 +69,7 @@ export function PackagePage() {
   const handleCheckout = async () => {
     if (!selectedDate || !packageData || !coupleName.trim() || !email.trim()) return;
 
+    setIsCheckingOut(true);
     try {
       // Format date as YYYY-MM-DD using toUtcMidnight
       const eventDate = toUtcMidnight(selectedDate);
@@ -97,9 +99,11 @@ export function PackagePage() {
         // Redirect to Stripe checkout
         window.location.href = response.body.checkoutUrl;
       } else {
+        setIsCheckingOut(false);
         alert('Failed to create checkout session. Please try again.');
       }
     } catch (error) {
+      setIsCheckingOut(false);
       console.error('Checkout error:', error);
       alert('An error occurred during checkout. Please try again.');
     }
@@ -168,30 +172,34 @@ export function PackagePage() {
           </CardHeader>
           <CardContent>
             <div className="space-y-6">
-              <div className="space-y-2">
-                <Label htmlFor="coupleName" className="text-gray-700 text-lg">Your Names</Label>
-                <Input
-                  id="coupleName"
-                  type="text"
-                  value={coupleName}
-                  onChange={(e) => setCoupleName(e.target.value)}
-                  placeholder="e.g., Sarah & Alex"
-                  required
-                  className="bg-white border-gray-300 text-gray-900 placeholder:text-gray-400 focus:border-macon-orange focus:ring-macon-orange text-lg h-12"
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="email" className="text-gray-700 text-lg">Email Address</Label>
-                <Input
-                  id="email"
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder="your.email@example.com"
-                  required
-                  className="bg-white border-gray-300 text-gray-900 placeholder:text-gray-400 focus:border-macon-orange focus:ring-macon-orange text-lg h-12"
-                />
-              </div>
+              <InputEnhanced
+                id="coupleName"
+                type="text"
+                value={coupleName}
+                onChange={(e) => setCoupleName(e.target.value)}
+                placeholder="e.g., Sarah & Alex"
+                label="Your Names"
+                floatingLabel
+                leftIcon={<Users className="w-5 h-5" />}
+                clearable
+                onClear={() => setCoupleName('')}
+                required
+                disabled={isCheckingOut}
+              />
+              <InputEnhanced
+                id="email"
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="your.email@example.com"
+                label="Email Address"
+                floatingLabel
+                leftIcon={<Mail className="w-5 h-5" />}
+                clearable
+                onClear={() => setEmail('')}
+                required
+                disabled={isCheckingOut}
+              />
             </div>
           </CardContent>
         </Card>
@@ -223,6 +231,8 @@ export function PackagePage() {
             <Button
               onClick={handleCheckout}
               disabled={!selectedDate || !coupleName.trim() || !email.trim()}
+              isLoading={isCheckingOut}
+              loadingText="Creating checkout session..."
               className="w-full text-xl h-14"
               size="lg"
               data-testid="checkout"
