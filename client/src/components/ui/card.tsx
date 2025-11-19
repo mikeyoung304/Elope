@@ -1,20 +1,72 @@
 import * as React from "react"
+import { cva, type VariantProps } from "class-variance-authority"
 
 import { cn } from "@/lib/utils"
 
-const Card = React.forwardRef<
-  HTMLDivElement,
-  React.HTMLAttributes<HTMLDivElement>
->(({ className, ...props }, ref) => (
-  <div
-    ref={ref}
-    className={cn(
-      "rounded-lg border border-border bg-background shadow-subtle transition-shadow hover:shadow-elegant",
-      className
-    )}
-    {...props}
-  />
-))
+const cardVariants = cva(
+  "rounded-xl transition-all duration-300 ease-smooth relative overflow-hidden",
+  {
+    variants: {
+      colorScheme: {
+        default: [
+          "bg-white text-gray-900",
+          "shadow-elevation-2 hover:shadow-elevation-3",
+          "border border-neutral-100/30",
+          "backdrop-blur-xs",
+          "before:absolute before:inset-0 before:bg-gradient-to-br before:from-white/80 before:to-transparent before:pointer-events-none",
+          "hover:-translate-y-0.5",
+        ],
+        navy: [
+          "bg-gradient-navy text-white",
+          "shadow-elevation-2 hover:shadow-elevation-3",
+          "border border-macon-navy-dark",
+          "hover:-translate-y-0.5",
+        ],
+        orange: [
+          "bg-gradient-orange text-white",
+          "shadow-elevation-2 hover:shadow-elevation-3",
+          "border border-macon-orange-dark",
+          "hover:-translate-y-0.5",
+        ],
+        teal: [
+          "bg-gradient-teal text-white",
+          "shadow-elevation-2 hover:shadow-elevation-3",
+          "border border-macon-teal-dark",
+          "hover:-translate-y-0.5",
+        ],
+        purple: [
+          "bg-gradient-to-br from-macon-navy to-macon-navy-dark text-white",
+          "shadow-elevation-2 hover:shadow-elevation-3",
+          "border border-macon-navy-dark",
+          "hover:-translate-y-0.5",
+        ],
+        sage: [
+          "bg-gradient-to-br from-macon-teal to-macon-teal-dark text-white",
+          "shadow-elevation-2 hover:shadow-elevation-3",
+          "border border-macon-teal-dark",
+          "hover:-translate-y-0.5",
+        ],
+      },
+    },
+    defaultVariants: {
+      colorScheme: "default",
+    },
+  }
+)
+
+export interface CardProps
+  extends React.HTMLAttributes<HTMLDivElement>,
+    VariantProps<typeof cardVariants> {}
+
+const Card = React.forwardRef<HTMLDivElement, CardProps>(
+  ({ className, colorScheme, ...props }, ref) => (
+    <div
+      ref={ref}
+      className={cn(cardVariants({ colorScheme }), className)}
+      {...props}
+    />
+  )
+)
 Card.displayName = "Card"
 
 const CardHeader = React.forwardRef<
@@ -23,7 +75,7 @@ const CardHeader = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <div
     ref={ref}
-    className={cn("flex flex-col space-y-1.5 p-6", className)}
+    className={cn("flex flex-col space-y-2 p-6 pb-4", className)}
     {...props}
   />
 ))
@@ -36,7 +88,7 @@ const CardTitle = React.forwardRef<
   <h3
     ref={ref}
     className={cn(
-      "font-heading text-3xl font-semibold leading-none tracking-tight",
+      "text-2xl font-semibold leading-none tracking-tight",
       className
     )}
     {...props}
@@ -50,7 +102,7 @@ const CardDescription = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <p
     ref={ref}
-    className={cn("text-lg text-muted-foreground", className)}
+    className={cn("text-sm opacity-90", className)}
     {...props}
   />
 ))
@@ -70,7 +122,7 @@ const CardFooter = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <div
     ref={ref}
-    className={cn("flex items-center p-6 pt-0", className)}
+    className={cn("flex items-center p-6 pt-4 border-t border-neutral-100/50", className)}
     {...props}
   />
 ))
