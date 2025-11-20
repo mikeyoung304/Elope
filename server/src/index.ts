@@ -8,13 +8,21 @@ import { initSentry } from './lib/errors/sentry';
 import { createApp } from './app';
 import { registerGracefulShutdown } from './lib/shutdown';
 import { buildContainer } from './di';
+import { validateEnv } from './config/env.schema';
+import { verifyDatabaseConnection, closeSupabaseConnections } from './config/database';
 
 async function main(): Promise<void> {
   const startTime = Date.now();
 
   try {
+    // Validate environment variables first (fail-fast)
+    validateEnv();
+
     const config = loadConfig();
     logger.info('Configuration loaded');
+
+    // Verify Supabase database connection
+    await verifyDatabaseConnection();
 
     // Initialize Sentry error tracking (optional - gracefully degrades if no DSN)
     initSentry();
@@ -43,6 +51,7 @@ async function main(): Promise<void> {
       onShutdown: async () => {
         // Custom cleanup: close event emitters, flush logs, etc.
         logger.info('Running custom shutdown tasks');
+        await closeSupabaseConnections();
       },
     });
   } catch (error) {
