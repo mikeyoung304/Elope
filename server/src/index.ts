@@ -6,8 +6,12 @@ import { loadConfig } from './lib/core/config';
 import { logger } from './lib/core/logger';
 import { initSentry } from './lib/errors/sentry';
 import { createApp } from './app';
+import { registerGracefulShutdown } from './lib/shutdown';
+import { buildContainer } from './di';
 
 async function main(): Promise<void> {
+  const startTime = Date.now();
+
   try {
     const config = loadConfig();
     logger.info('Configuration loaded');
@@ -15,20 +19,31 @@ async function main(): Promise<void> {
     // Initialize Sentry error tracking (optional - gracefully degrades if no DSN)
     initSentry();
 
-    const app = createApp(config);
+    // Build DI container (creates Prisma client in real mode)
+    const container = buildContainer(config);
+
+    // Create Express app with health checks
+    const app = createApp(config, container, startTime);
 
     const server = app.listen(config.API_PORT, () => {
       logger.info(`🚀 API listening on :${config.API_PORT}`);
       logger.info(`📝 ADAPTERS_PRESET: ${config.ADAPTERS_PRESET}`);
       logger.info(`🔒 CORS_ORIGIN: ${config.CORS_ORIGIN}`);
+      logger.info(`✅ Health checks: /health/live, /health/ready`);
     });
 
-    // Graceful shutdown
-    process.on('SIGTERM', () => {
-      logger.info('SIGTERM signal received: closing HTTP server');
-      server.close(() => {
-        logger.info('HTTP server closed');
-      });
+    // Set server timeouts
+    server.keepAliveTimeout = 65000; // > ALB idle timeout (60s)
+    server.headersTimeout = 66000; // > keepAliveTimeout
+
+    // Register graceful shutdown handlers
+    registerGracefulShutdown({
+      server,
+      prisma: container.prisma,
+      onShutdown: async () => {
+        // Custom cleanup: close event emitters, flush logs, etc.
+        logger.info('Running custom shutdown tasks');
+      },
     });
   } catch (error) {
     console.error('Failed to start server:', error);

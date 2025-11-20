@@ -1,0 +1,616 @@
+name: Deploy to Production
+
+on:
+  push:
+    branches:
+      - main
+    tags:
+      - 'v*.*.*'
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Target environment'
+        required: true
+        default: 'production'
+        type: choice
+        options:
+          - production
+      skip_tests:
+        description: 'Skip tests (emergency hotfix only)'
+        required: false
+        default: 'false'
+        type: choice
+        options:
+          - 'false'
+          - 'true'
+      run_migrations:
+        description: 'Run database migrations'
+        required: true
+        default: 'true'
+        type: choice
+        options:
+          - 'true'
+          - 'false'
+
+# Prevent concurrent production deployments
+concurrency:
+  group: deploy-production
+  cancel-in-progress: false
+
+env:
+  NODE_VERSION: '20'
+  PRODUCTION_API_URL: ${{ secrets.PRODUCTION_API_URL }}
+  PRODUCTION_CLIENT_URL: ${{ secrets.PRODUCTION_CLIENT_URL }}
+
+jobs:
+  # Job 1: Pre-deployment validation
+  pre-deployment-checks:
+    name: Pre-Deployment Validation
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Verify version tag (if applicable)
+        if: startsWith(github.ref, 'refs/tags/')
+        run: |
+          TAG=${GITHUB_REF#refs/tags/}
+          echo "Deploying version: $TAG"
+
+          # Verify tag format (v1.2.3)
+          if ! [[ $TAG =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            echo "❌ Invalid version tag format: $TAG"
+            echo "Expected format: v1.2.3"
+            exit 1
+          fi
+
+          echo "✅ Valid version tag: $TAG"
+
+      - name: Check for breaking changes
+        run: |
+          echo "🔍 Checking for breaking changes in commit messages..."
+
+          # Get commits since last tag
+          LAST_TAG=$(git describe --tags --abbrev=0 HEAD^ 2>/dev/null || echo "")
+
+          if [ -z "$LAST_TAG" ]; then
+            echo "No previous tag found, skipping breaking change check"
+            exit 0
+          fi
+
+          BREAKING_CHANGES=$(git log $LAST_TAG..HEAD --grep="BREAKING CHANGE" --oneline || echo "")
+
+          if [ -n "$BREAKING_CHANGES" ]; then
+            echo "⚠️  WARNING: Breaking changes detected!"
+            echo "$BREAKING_CHANGES"
+            echo "Ensure migration strategy is in place"
+          else
+            echo "✅ No breaking changes detected"
+          fi
+
+  # Job 2: Comprehensive testing
+  test-before-deploy:
+    name: Comprehensive Pre-Deployment Tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    needs: [pre-deployment-checks]
+    if: github.event.inputs.skip_tests != 'true'
+
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: mais_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run linting
+        run: npm run lint
+
+      - name: Run type checking
+        run: npm run typecheck
+
+      - name: Generate Prisma Client
+        run: npm run --workspace=server prisma:generate
+
+      - name: Run database migrations
+        run: npx prisma migrate deploy --schema=./server/prisma/schema.prisma
+        env:
+          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/mais_test?connection_limit=10&pool_timeout=20
+
+      - name: Run unit tests with coverage
+        run: npm run test:unit -- --coverage
+        env:
+          NODE_ENV: test
+
+      - name: Run integration tests with coverage
+        run: npm run test:integration -- --coverage
+        env:
+          NODE_ENV: test
+          DATABASE_URL_TEST: postgresql://postgres:postgres@localhost:5432/mais_test?connection_limit=10&pool_timeout=20
+          JWT_SECRET: test-jwt-secret-production
+          TENANT_SECRETS_ENCRYPTION_KEY: 0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef
+
+      - name: Install Playwright browsers
+        run: npx playwright install --with-deps chromium
+
+      - name: Build contracts package
+        run: npm run build --workspace=packages/contracts
+
+      - name: Run E2E tests
+        run: npm run test:e2e
+        env:
+          CI: true
+
+      - name: Upload coverage reports
+        uses: codecov/codecov-action@v4
+        with:
+          files: ./server/coverage/lcov.info
+          flags: production-pre-deploy
+          fail_ci_if_error: true
+        env:
+          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
+
+  # Job 3: Build for production
+  build-production:
+    name: Build Production Artifacts
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    needs: [test-before-deploy]
+    if: always() && (needs.test-before-deploy.result == 'success' || needs.test-before-deploy.result == 'skipped')
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build all packages
+        run: npm run build --workspaces --if-present
+        env:
+          NODE_ENV: production
+
+      - name: Upload server build
+        uses: actions/upload-artifact@v4
+        with:
+          name: server-build-production
+          path: ./server/dist/
+          retention-days: 30
+
+      - name: Upload client build
+        uses: actions/upload-artifact@v4
+        with:
+          name: client-build-production
+          path: ./client/dist/
+          retention-days: 30
+
+      - name: Upload contracts build
+        uses: actions/upload-artifact@v4
+        with:
+          name: contracts-build-production
+          path: ./packages/contracts/dist/
+          retention-days: 30
+
+  # Job 4: Database migration with approval
+  migrate-database-production:
+    name: Run Database Migrations (Production)
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    needs: [build-production]
+    if: github.event.inputs.run_migrations != 'false'
+    environment:
+      name: production-migrations
+      url: ${{ env.PRODUCTION_API_URL }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Generate Prisma Client
+        run: npm run --workspace=server prisma:generate
+
+      - name: Verify database connection
+        run: |
+          cd server
+          npx prisma db execute --stdin < /dev/null
+        env:
+          DATABASE_URL: ${{ secrets.PRODUCTION_DATABASE_URL }}
+
+      - name: Check migration status
+        id: migration-status
+        run: |
+          cd server
+          MIGRATION_STATUS=$(npx prisma migrate status --schema=./prisma/schema.prisma 2>&1 || echo "error")
+
+          echo "status<<EOF" >> $GITHUB_OUTPUT
+          echo "$MIGRATION_STATUS" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+
+          if echo "$MIGRATION_STATUS" | grep -q "No pending migrations"; then
+            echo "has_pending=false" >> $GITHUB_OUTPUT
+          else
+            echo "has_pending=true" >> $GITHUB_OUTPUT
+          fi
+        env:
+          DATABASE_URL: ${{ secrets.PRODUCTION_DATABASE_URL }}
+
+      - name: Display migration status
+        run: |
+          echo "📊 Migration Status:"
+          echo "${{ steps.migration-status.outputs.status }}"
+
+          if [ "${{ steps.migration-status.outputs.has_pending }}" == "true" ]; then
+            echo "⚠️  Pending migrations found - will apply"
+          else
+            echo "✅ No pending migrations"
+          fi
+
+      - name: Create pre-migration snapshot notification
+        if: steps.migration-status.outputs.has_pending == 'true'
+        run: |
+          echo "📸 IMPORTANT: Verify database backup before proceeding"
+          echo "Supabase automatic backups: https://supabase.com/dashboard/project/${{ secrets.SUPABASE_PROJECT_ID }}/settings/backups"
+          echo "Consider creating a manual backup for this deployment"
+
+      - name: Run database migrations
+        if: steps.migration-status.outputs.has_pending == 'true'
+        run: npx prisma migrate deploy --schema=./server/prisma/schema.prisma
+        env:
+          DATABASE_URL: ${{ secrets.PRODUCTION_DATABASE_URL }}
+          DIRECT_URL: ${{ secrets.PRODUCTION_DIRECT_URL }}
+
+      - name: Verify migrations applied
+        run: |
+          cd server
+          npx prisma migrate status --schema=./prisma/schema.prisma
+        env:
+          DATABASE_URL: ${{ secrets.PRODUCTION_DATABASE_URL }}
+
+  # Job 5: Deploy API to Render (Production)
+  deploy-api-production:
+    name: Deploy API to Production (Render)
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    needs: [migrate-database-production]
+    if: always() && (needs.migrate-database-production.result == 'success' || needs.migrate-database-production.result == 'skipped')
+    environment:
+      name: production
+      url: ${{ env.PRODUCTION_API_URL }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Download server build
+        uses: actions/download-artifact@v4
+        with:
+          name: server-build-production
+          path: ./server/dist/
+
+      - name: Trigger Render deployment (API)
+        id: deploy-api
+        run: |
+          RESPONSE=$(curl -X POST "${{ secrets.RENDER_PRODUCTION_API_DEPLOY_HOOK }}" \
+            -H "Content-Type: application/json" \
+            -d '{
+              "clearCache": "do_not_clear"
+            }')
+
+          echo "response=$RESPONSE" >> $GITHUB_OUTPUT
+          echo "Deployment triggered at $(date)"
+
+      - name: Wait for deployment to stabilize
+        run: |
+          echo "⏳ Waiting for Render deployment to complete..."
+          sleep 45
+
+      - name: Health check with retries
+        run: |
+          echo "🏥 Running health checks..."
+
+          MAX_ATTEMPTS=30
+          ATTEMPT=0
+          SUCCESS=false
+
+          while [ $ATTEMPT -lt $MAX_ATTEMPTS ]; do
+            ATTEMPT=$((ATTEMPT + 1))
+
+            if curl -f -s "${{ env.PRODUCTION_API_URL }}/health" > /dev/null; then
+              echo "✅ API is healthy (attempt $ATTEMPT/$MAX_ATTEMPTS)"
+              SUCCESS=true
+              break
+            fi
+
+            echo "Attempt $ATTEMPT/$MAX_ATTEMPTS: API not ready yet..."
+            sleep 10
+          done
+
+          if [ "$SUCCESS" = false ]; then
+            echo "❌ API health check failed after $MAX_ATTEMPTS attempts"
+            echo "Rolling back deployment..."
+            exit 1
+          fi
+
+      - name: Run production smoke tests
+        run: |
+          echo "🧪 Running production smoke tests..."
+
+          # Test health endpoint
+          HEALTH_RESPONSE=$(curl -f -s "${{ env.PRODUCTION_API_URL }}/health")
+          echo "Health check response: $HEALTH_RESPONSE"
+
+          # Test API versioning
+          curl -f -s "${{ env.PRODUCTION_API_URL }}/v1/packages" > /dev/null || {
+            echo "❌ API packages endpoint failed"
+            exit 1
+          }
+
+          echo "✅ Production smoke tests passed"
+
+  # Job 6: Deploy Client to Vercel (Production)
+  deploy-client-production:
+    name: Deploy Client to Production (Vercel)
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    needs: [deploy-api-production]
+    environment:
+      name: production
+      url: ${{ env.PRODUCTION_CLIENT_URL }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Download client build
+        uses: actions/download-artifact@v4
+        with:
+          name: client-build-production
+          path: ./client/dist/
+
+      - name: Deploy to Vercel (Production)
+        uses: amondnet/vercel-action@v25
+        id: vercel-deploy
+        with:
+          vercel-token: ${{ secrets.VERCEL_TOKEN }}
+          vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
+          vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}
+          vercel-args: '--prod --env VITE_API_URL=${{ env.PRODUCTION_API_URL }}'
+          working-directory: ./client
+          alias-domains: |
+            mais.app
+            www.mais.app
+
+      - name: Wait for Vercel deployment
+        run: |
+          echo "⏳ Waiting for Vercel deployment to propagate..."
+          sleep 20
+
+      - name: Verify client deployment
+        run: |
+          echo "🔍 Verifying client is accessible..."
+
+          MAX_ATTEMPTS=20
+          ATTEMPT=0
+          SUCCESS=false
+
+          while [ $ATTEMPT -lt $MAX_ATTEMPTS ]; do
+            ATTEMPT=$((ATTEMPT + 1))
+
+            if curl -f -s "${{ env.PRODUCTION_CLIENT_URL }}" > /dev/null; then
+              echo "✅ Client is accessible (attempt $ATTEMPT/$MAX_ATTEMPTS)"
+              SUCCESS=true
+              break
+            fi
+
+            echo "Attempt $ATTEMPT/$MAX_ATTEMPTS: Client not ready yet..."
+            sleep 5
+          done
+
+          if [ "$SUCCESS" = false ]; then
+            echo "❌ Client verification failed after $MAX_ATTEMPTS attempts"
+            exit 1
+          fi
+
+  # Job 7: Post-deployment validation
+  post-deployment-validation:
+    name: Post-Deployment Validation
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    needs: [deploy-client-production]
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Playwright browsers
+        run: npx playwright install --with-deps chromium
+
+      - name: Run E2E tests against production
+        run: npx playwright test
+        env:
+          CI: true
+          BASE_URL: ${{ env.PRODUCTION_CLIENT_URL }}
+          API_URL: ${{ env.PRODUCTION_API_URL }}
+
+      - name: Upload E2E test results
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: e2e-production-results
+          path: |
+            playwright-report/
+            test-results/
+          retention-days: 30
+
+      - name: Create rollback instructions
+        if: failure()
+        run: |
+          cat > ROLLBACK_INSTRUCTIONS.md << 'EOF'
+          # Production Deployment Rollback Instructions
+
+          ## Immediate Actions
+
+          1. **Rollback Render API deployment:**
+             ```bash
+             # Go to Render dashboard
+             # Navigate to: https://dashboard.render.com
+             # Select the MAIS API service
+             # Click "Rollback" to previous deployment
+             ```
+
+          2. **Rollback Vercel client deployment:**
+             ```bash
+             # Use Vercel CLI or dashboard
+             vercel rollback ${{ env.PRODUCTION_CLIENT_URL }}
+             ```
+
+          3. **Rollback database migrations (if needed):**
+             ```bash
+             # Connect to production database
+             # Review migration history
+             npx prisma migrate resolve --rolled-back <migration_name>
+             ```
+
+          ## Verification
+
+          - API health: ${{ env.PRODUCTION_API_URL }}/health
+          - Client: ${{ env.PRODUCTION_CLIENT_URL }}
+
+          ## Logs
+
+          - View workflow run: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          EOF
+
+      - name: Upload rollback instructions
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: rollback-instructions
+          path: ROLLBACK_INSTRUCTIONS.md
+
+  # Summary job
+  deployment-complete:
+    name: Production Deployment Complete
+    runs-on: ubuntu-latest
+    needs: [deploy-api-production, deploy-client-production, post-deployment-validation]
+    if: always()
+
+    steps:
+      - name: Check deployment status
+        id: check-status
+        run: |
+          if [ "${{ needs.deploy-api-production.result }}" != "success" ] || \
+             [ "${{ needs.deploy-client-production.result }}" != "success" ]; then
+            echo "status=failed" >> $GITHUB_OUTPUT
+            echo "❌ Production deployment failed"
+            exit 1
+          fi
+
+          if [ "${{ needs.post-deployment-validation.result }}" != "success" ]; then
+            echo "status=partial" >> $GITHUB_OUTPUT
+            echo "⚠️  Deployment succeeded but validation failed"
+            echo "URGENT: Review post-deployment test results"
+          else
+            echo "status=success" >> $GITHUB_OUTPUT
+            echo "✅ Production deployment completed successfully!"
+          fi
+
+      - name: Create GitHub Release (on tag)
+        if: startsWith(github.ref, 'refs/tags/') && steps.check-status.outputs.status == 'success'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const tag = context.ref.replace('refs/tags/', '');
+            const release = await github.rest.repos.createRelease({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              tag_name: tag,
+              name: `Release ${tag}`,
+              body: `## Production Deployment\n\n✅ Successfully deployed to production\n\n- API: ${{ env.PRODUCTION_API_URL }}\n- Client: ${{ env.PRODUCTION_CLIENT_URL }}\n- Deployment time: ${new Date().toISOString()}`,
+              draft: false,
+              prerelease: false
+            });
+
+      - name: Notify team (Slack/Discord)
+        if: always()
+        run: |
+          STATUS="${{ steps.check-status.outputs.status }}"
+
+          if [ "$STATUS" = "success" ]; then
+            EMOJI="🚀"
+            MESSAGE="Production deployment completed successfully!"
+          elif [ "$STATUS" = "partial" ]; then
+            EMOJI="⚠️"
+            MESSAGE="Production deployed but validation failed - investigate immediately"
+          else
+            EMOJI="❌"
+            MESSAGE="Production deployment failed - review logs"
+          fi
+
+          echo "$EMOJI $MESSAGE"
+          echo "Production URL: ${{ env.PRODUCTION_CLIENT_URL }}"
+          echo "API URL: ${{ env.PRODUCTION_API_URL }}"
+
+          # Add Slack/Discord webhook integration here
+          # curl -X POST ${{ secrets.SLACK_WEBHOOK_URL }} -d "{"text": "$MESSAGE"}"
+
+      - name: Record deployment
+        uses: actions/github-script@v7
+        with:
+          script: |
+            await github.rest.repos.createDeployment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              ref: context.sha,
+              environment: 'production',
+              description: 'Production deployment via GitHub Actions',
+              auto_merge: false,
+              required_contexts: []
+            });

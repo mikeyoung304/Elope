@@ -10,7 +10,7 @@ import { randomUUID } from 'crypto';
 import swaggerUi from 'swagger-ui-express';
 import type { Config } from './lib/core/config';
 import { logger } from './lib/core/logger';
-import { buildContainer } from './di';
+import type { Container } from './di';
 import { createV1Router } from './routes/index';
 import { errorHandler, notFoundHandler } from './middleware/error-handler';
 import { requestLogger } from './middleware/request-logger';
@@ -18,8 +18,13 @@ import { skipIfHealth, adminLimiter } from './middleware/rateLimiter';
 import { openApiSpec } from './api-docs';
 import { uploadService } from './services/upload.service';
 import { sentryRequestHandler, sentryErrorHandler } from './lib/errors/sentry';
+import { registerHealthRoutes } from './routes/health.routes';
 
-export function createApp(config: Config): express.Application {
+export function createApp(
+  config: Config,
+  container: Container,
+  startTime: number
+): express.Application {
   const app = express();
 
   // Sentry request tracking (MUST be first)
@@ -92,44 +97,11 @@ export function createApp(config: Config): express.Application {
   app.use('/uploads/packages', express.static(packagePhotoUploadDir));
   logger.info({ uploadDir: packagePhotoUploadDir }, 'Serving package photos from static directory');
 
-  // Health check endpoint
-  app.get('/health', (_req, res) => {
-    res.json({ ok: true });
-  });
-
-  // Readiness check endpoint
-  app.get('/ready', (_req, res): void => {
-    const mode = config.ADAPTERS_PRESET;
-
-    if (mode === 'mock') {
-      res.json({ ok: true, mode: 'mock' });
-      return;
-    }
-
-    // Real mode: verify required env vars are present
-    const requiredKeys = [
-      'DATABASE_URL',
-      'STRIPE_SECRET_KEY',
-      'STRIPE_WEBHOOK_SECRET',
-      'POSTMARK_SERVER_TOKEN',
-      'POSTMARK_FROM_EMAIL',
-      'GOOGLE_CALENDAR_ID',
-      'GOOGLE_SERVICE_ACCOUNT_JSON_BASE64',
-    ] as const;
-
-    const missing: string[] = [];
-    for (const key of requiredKeys) {
-      if (!config[key]) {
-        missing.push(key);
-      }
-    }
-
-    if (missing.length > 0) {
-      res.status(503).json({ ok: false, missing });
-      return;
-    }
-
-    res.json({ ok: true, mode: 'real' });
+  // Register health check routes (BEFORE all other routes)
+  registerHealthRoutes(app, {
+    prisma: container.prisma,
+    config,
+    startTime,
   });
 
   // API Documentation endpoints
@@ -156,8 +128,7 @@ export function createApp(config: Config): express.Application {
     })
   );
 
-  // Mount v1 router
-  const container = buildContainer(config);
+  // Mount v1 router (container passed as parameter now)
   createV1Router(container.controllers, container.services.identity, app, {
     catalog: container.services.catalog,
     booking: container.services.booking,

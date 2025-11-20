@@ -1,0 +1,362 @@
+name: Deploy to Staging
+
+on:
+  push:
+    branches:
+      - develop
+  workflow_dispatch:
+    inputs:
+      skip_tests:
+        description: 'Skip tests (emergency deploy only)'
+        required: false
+        default: 'false'
+        type: choice
+        options:
+          - 'false'
+          - 'true'
+
+# Prevent concurrent staging deployments
+concurrency:
+  group: deploy-staging
+  cancel-in-progress: false
+
+env:
+  NODE_VERSION: '20'
+  STAGING_API_URL: ${{ secrets.STAGING_API_URL }}
+  STAGING_CLIENT_URL: ${{ secrets.STAGING_CLIENT_URL }}
+
+jobs:
+  # Job 1: Run tests (unless skipped)
+  test-before-deploy:
+    name: Pre-Deployment Tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    if: github.event.inputs.skip_tests != 'true'
+
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: mais_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run linting
+        run: npm run lint
+
+      - name: Run type checking
+        run: npm run typecheck
+
+      - name: Generate Prisma Client
+        run: npm run --workspace=server prisma:generate
+
+      - name: Run database migrations
+        run: npx prisma migrate deploy --schema=./server/prisma/schema.prisma
+        env:
+          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/mais_test?connection_limit=10&pool_timeout=20
+
+      - name: Run unit tests
+        run: npm run test:unit
+        env:
+          NODE_ENV: test
+
+      - name: Run integration tests
+        run: npm run test:integration
+        env:
+          NODE_ENV: test
+          DATABASE_URL_TEST: postgresql://postgres:postgres@localhost:5432/mais_test?connection_limit=10&pool_timeout=20
+          JWT_SECRET: test-jwt-secret-staging
+          TENANT_SECRETS_ENCRYPTION_KEY: 0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef
+
+  # Job 2: Build application
+  build:
+    name: Build Application
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    needs: [test-before-deploy]
+    if: always() && (needs.test-before-deploy.result == 'success' || needs.test-before-deploy.result == 'skipped')
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build all packages
+        run: npm run build --workspaces --if-present
+
+      - name: Upload server build
+        uses: actions/upload-artifact@v4
+        with:
+          name: server-build-staging
+          path: ./server/dist/
+          retention-days: 7
+
+      - name: Upload client build
+        uses: actions/upload-artifact@v4
+        with:
+          name: client-build-staging
+          path: ./client/dist/
+          retention-days: 7
+
+  # Job 3: Run database migrations on staging
+  migrate-database:
+    name: Run Database Migrations (Staging)
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    needs: [build]
+    environment:
+      name: staging
+      url: ${{ env.STAGING_API_URL }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Generate Prisma Client
+        run: npm run --workspace=server prisma:generate
+
+      - name: Backup database (pre-migration)
+        run: |
+          echo "🔄 Database backup should be handled by your database provider (Supabase)"
+          echo "Verify backups at: https://supabase.com/dashboard/project/${{ secrets.SUPABASE_PROJECT_ID }}/settings/backups"
+
+      - name: Run database migrations
+        run: npx prisma migrate deploy --schema=./server/prisma/schema.prisma
+        env:
+          DATABASE_URL: ${{ secrets.STAGING_DATABASE_URL }}
+          DIRECT_URL: ${{ secrets.STAGING_DIRECT_URL }}
+
+      - name: Verify migrations
+        run: |
+          cd server
+          npx prisma db execute --stdin < /dev/null
+        env:
+          DATABASE_URL: ${{ secrets.STAGING_DATABASE_URL }}
+
+  # Job 4: Deploy API to Render (Staging)
+  deploy-api:
+    name: Deploy API to Render (Staging)
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    needs: [migrate-database]
+    environment:
+      name: staging
+      url: ${{ env.STAGING_API_URL }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Download server build
+        uses: actions/download-artifact@v4
+        with:
+          name: server-build-staging
+          path: ./server/dist/
+
+      - name: Trigger Render deployment (API)
+        run: |
+          curl -X POST "${{ secrets.RENDER_STAGING_API_DEPLOY_HOOK }}" \
+            -H "Content-Type: application/json" \
+            -d '{
+              "clearCache": "do_not_clear"
+            }'
+
+      - name: Wait for deployment to complete
+        run: |
+          echo "⏳ Waiting for Render deployment to complete..."
+          sleep 30
+
+          # Poll health endpoint
+          for i in {1..20}; do
+            if curl -f -s "${{ env.STAGING_API_URL }}/health" > /dev/null; then
+              echo "✅ API is healthy"
+              exit 0
+            fi
+            echo "Attempt $i/20: API not ready yet..."
+            sleep 10
+          done
+
+          echo "❌ API health check failed after 20 attempts"
+          exit 1
+
+      - name: Run smoke tests
+        run: |
+          echo "🧪 Running smoke tests against staging API..."
+
+          # Test health endpoint
+          curl -f "${{ env.STAGING_API_URL }}/health" || exit 1
+
+          # Test API versioning
+          curl -f "${{ env.STAGING_API_URL }}/v1/packages" || exit 1
+
+          echo "✅ Smoke tests passed"
+
+  # Job 5: Deploy Client to Vercel (Staging)
+  deploy-client:
+    name: Deploy Client to Vercel (Staging)
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    needs: [deploy-api]
+    environment:
+      name: staging
+      url: ${{ env.STAGING_CLIENT_URL }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Download client build
+        uses: actions/download-artifact@v4
+        with:
+          name: client-build-staging
+          path: ./client/dist/
+
+      - name: Deploy to Vercel (Staging)
+        uses: amondnet/vercel-action@v25
+        with:
+          vercel-token: ${{ secrets.VERCEL_TOKEN }}
+          vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
+          vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}
+          vercel-args: '--prod --env VITE_API_URL=${{ env.STAGING_API_URL }}'
+          working-directory: ./client
+          alias-domains: |
+            staging.mais.app
+
+      - name: Wait for deployment
+        run: |
+          echo "⏳ Waiting for Vercel deployment to complete..."
+          sleep 15
+
+      - name: Run client smoke tests
+        run: |
+          echo "🧪 Running client smoke tests..."
+
+          # Test client is accessible
+          curl -f "${{ env.STAGING_CLIENT_URL }}" || exit 1
+
+          echo "✅ Client smoke tests passed"
+
+  # Job 6: Run E2E tests against staging
+  e2e-staging:
+    name: E2E Tests (Staging Environment)
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    needs: [deploy-client]
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Playwright browsers
+        run: npx playwright install --with-deps chromium
+
+      - name: Run E2E tests against staging
+        run: npx playwright test
+        env:
+          CI: true
+          BASE_URL: ${{ env.STAGING_CLIENT_URL }}
+          API_URL: ${{ env.STAGING_API_URL }}
+
+      - name: Upload E2E test results
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: e2e-staging-results
+          path: |
+            playwright-report/
+            test-results/
+          retention-days: 7
+
+  # Summary job
+  deployment-complete:
+    name: Staging Deployment Complete
+    runs-on: ubuntu-latest
+    needs: [deploy-api, deploy-client, e2e-staging]
+    if: always()
+
+    steps:
+      - name: Check deployment status
+        run: |
+          if [ "${{ needs.deploy-api.result }}" != "success" ] || \
+             [ "${{ needs.deploy-client.result }}" != "success" ]; then
+            echo "❌ Deployment failed"
+            exit 1
+          fi
+
+          if [ "${{ needs.e2e-staging.result }}" != "success" ]; then
+            echo "⚠️  Deployment succeeded but E2E tests failed"
+            echo "Review E2E test results and consider rolling back"
+          else
+            echo "✅ Staging deployment completed successfully!"
+          fi
+
+      - name: Notify team (Slack/Discord)
+        if: always()
+        run: |
+          # Add notification integration here
+          echo "📢 Deployment notification would be sent here"
+          echo "Status: ${{ needs.deploy-api.result }} / ${{ needs.deploy-client.result }}"
+          echo "Staging URL: ${{ env.STAGING_CLIENT_URL }}"
+
+      - name: Create deployment record
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const deploymentStatus = '${{ needs.deploy-api.result }}' === 'success' &&
+                                    '${{ needs.deploy-client.result }}' === 'success' ?
+                                    'success' : 'failure';
+
+            await github.rest.repos.createDeployment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              ref: context.sha,
+              environment: 'staging',
+              auto_merge: false,
+              required_contexts: []
+            });

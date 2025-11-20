@@ -1,0 +1,500 @@
+name: Database Maintenance
+
+on:
+  workflow_dispatch:
+    inputs:
+      action:
+        description: 'Maintenance action to perform'
+        required: true
+        type: choice
+        options:
+          - 'validate-migrations'
+          - 'generate-migration'
+          - 'rollback-migration'
+          - 'seed-staging'
+          - 'backup-production'
+      environment:
+        description: 'Target environment'
+        required: true
+        type: choice
+        options:
+          - 'staging'
+          - 'production'
+      migration_name:
+        description: 'Migration name (for generate/rollback actions)'
+        required: false
+        type: string
+
+jobs:
+  validate-migrations:
+    name: Validate Database Migrations
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    if: github.event.inputs.action == 'validate-migrations'
+
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: mais_validation
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Validate Prisma schema
+        run: |
+          cd server
+          npx prisma validate --schema=./prisma/schema.prisma
+
+      - name: Test migrations on fresh database
+        run: |
+          cd server
+          npx prisma migrate deploy --schema=./prisma/schema.prisma
+        env:
+          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/mais_validation
+
+      - name: Check migration status
+        run: |
+          cd server
+          npx prisma migrate status --schema=./prisma/schema.prisma
+        env:
+          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/mais_validation
+
+      - name: Generate and verify Prisma Client
+        run: npm run --workspace=server prisma:generate
+
+      - name: Test database queries
+        run: |
+          cd server
+          npx prisma db execute --stdin < /dev/null
+        env:
+          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/mais_validation
+
+      - name: Migration validation summary
+        run: |
+          echo "✅ All migration validations passed"
+          echo "- Schema validation: Passed"
+          echo "- Migration deployment: Passed"
+          echo "- Client generation: Passed"
+          echo "- Database connectivity: Passed"
+
+  generate-migration:
+    name: Generate Database Migration
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    if: github.event.inputs.action == 'generate-migration'
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Validate migration name
+        run: |
+          if [ -z "${{ github.event.inputs.migration_name }}" ]; then
+            echo "❌ Migration name is required"
+            exit 1
+          fi
+
+          # Validate format (alphanumeric, underscore, hyphen only)
+          if ! [[ "${{ github.event.inputs.migration_name }}" =~ ^[a-zA-Z0-9_-]+$ ]]; then
+            echo "❌ Invalid migration name format"
+            echo "Use only letters, numbers, underscores, and hyphens"
+            exit 1
+          fi
+
+          echo "✅ Migration name is valid: ${{ github.event.inputs.migration_name }}"
+
+      - name: Create migration instructions
+        run: |
+          cat > MIGRATION_INSTRUCTIONS.md << 'EOF'
+          # Database Migration Generation
+
+          ## Migration Name
+          `${{ github.event.inputs.migration_name }}`
+
+          ## Steps to Generate Migration Locally
+
+          1. **Make schema changes:**
+             ```bash
+             # Edit server/prisma/schema.prisma
+             # Add your model/field changes
+             ```
+
+          2. **Generate migration:**
+             ```bash
+             cd server
+             npm exec prisma migrate dev --name ${{ github.event.inputs.migration_name }}
+             ```
+
+          3. **Review generated migration:**
+             ```bash
+             # Check server/prisma/migrations/[timestamp]_${{ github.event.inputs.migration_name }}/migration.sql
+             # Verify SQL statements are correct
+             ```
+
+          4. **Test migration:**
+             ```bash
+             # Run integration tests
+             npm run test:integration
+             ```
+
+          5. **Commit migration files:**
+             ```bash
+             git add server/prisma/migrations/
+             git add server/prisma/schema.prisma
+             git commit -m "feat(db): add migration ${{ github.event.inputs.migration_name }}"
+             git push
+             ```
+
+          ## Deployment
+
+          - **Staging:** Automatic on merge to `develop` branch
+          - **Production:** Requires approval in deployment workflow
+
+          ## Rollback Plan
+
+          If migration fails:
+          ```bash
+          cd server
+          npx prisma migrate resolve --rolled-back [migration_name]
+          ```
+
+          ## Notes
+
+          - Always test migrations locally before pushing
+          - Ensure backward compatibility when possible
+          - Document breaking changes in commit message
+          - Consider data migration scripts for complex changes
+          EOF
+
+      - name: Upload migration instructions
+        uses: actions/upload-artifact@v4
+        with:
+          name: migration-instructions
+          path: MIGRATION_INSTRUCTIONS.md
+
+      - name: Comment with instructions
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const instructions = fs.readFileSync('MIGRATION_INSTRUCTIONS.md', 'utf8');
+
+            await github.rest.repos.createCommitComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              commit_sha: context.sha,
+              body: instructions
+            });
+
+  seed-staging:
+    name: Seed Staging Database
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    if: github.event.inputs.action == 'seed-staging' && github.event.inputs.environment == 'staging'
+    environment:
+      name: staging
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Generate Prisma Client
+        run: npm run --workspace=server prisma:generate
+
+      - name: Verify database connection
+        run: |
+          cd server
+          npx prisma db execute --stdin < /dev/null
+        env:
+          DATABASE_URL: ${{ secrets.STAGING_DATABASE_URL }}
+
+      - name: Run database seed
+        run: npm run --workspace=server db:seed
+        env:
+          DATABASE_URL: ${{ secrets.STAGING_DATABASE_URL }}
+          NODE_ENV: development
+
+      - name: Verify seeded data
+        run: |
+          cd server
+          echo "SELECT COUNT(*) as tenant_count FROM \"Tenant\";" | \
+            npx prisma db execute --stdin
+        env:
+          DATABASE_URL: ${{ secrets.STAGING_DATABASE_URL }}
+
+      - name: Seed summary
+        run: |
+          echo "✅ Staging database seeded successfully"
+          echo "Environment: Staging"
+          echo "Timestamp: $(date -u +"%Y-%m-%d %H:%M:%S UTC")"
+
+  backup-production:
+    name: Backup Production Database
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    if: github.event.inputs.action == 'backup-production' && github.event.inputs.environment == 'production'
+    environment:
+      name: production
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Verify Supabase backup configuration
+        run: |
+          echo "📊 Production Database Backup"
+          echo "=============================="
+          echo ""
+          echo "Supabase provides automatic daily backups."
+          echo "To verify backup status:"
+          echo ""
+          echo "1. Visit: https://supabase.com/dashboard/project/${{ secrets.SUPABASE_PROJECT_ID }}/settings/backups"
+          echo "2. Verify backup schedule is enabled"
+          echo "3. Check last backup timestamp"
+          echo ""
+          echo "⚠️  For immediate backup before critical operations:"
+          echo "   - Use Supabase dashboard to trigger manual backup"
+          echo "   - Or use Supabase CLI: supabase db dump"
+
+      - name: Create backup instructions
+        run: |
+          cat > BACKUP_INSTRUCTIONS.md << 'EOF'
+          # Production Database Backup Instructions
+
+          ## Automatic Backups
+
+          Supabase provides automatic daily backups:
+          - **Frequency:** Daily
+          - **Retention:** 7 days (free tier), 30+ days (paid tiers)
+          - **Location:** https://supabase.com/dashboard/project/${{ secrets.SUPABASE_PROJECT_ID }}/settings/backups
+
+          ## Manual Backup (Before Critical Operations)
+
+          ### Option 1: Supabase Dashboard
+          1. Navigate to: https://supabase.com/dashboard/project/${{ secrets.SUPABASE_PROJECT_ID }}/settings/backups
+          2. Click "Create backup now"
+          3. Wait for completion (check backup list)
+
+          ### Option 2: Supabase CLI
+          ```bash
+          # Install Supabase CLI
+          npm install -g supabase
+
+          # Login
+          supabase login
+
+          # Create backup
+          supabase db dump --db-url "${{ secrets.PRODUCTION_DATABASE_URL }}" > backup_$(date +%Y%m%d_%H%M%S).sql
+          ```
+
+          ### Option 3: pg_dump (Direct)
+          ```bash
+          pg_dump "${{ secrets.PRODUCTION_DATABASE_URL }}" > backup_$(date +%Y%m%d_%H%M%S).sql
+          ```
+
+          ## Restore from Backup
+
+          ### Supabase Dashboard
+          1. Go to backups page
+          2. Select backup to restore
+          3. Click "Restore" and confirm
+
+          ### CLI Restore
+          ```bash
+          psql "${{ secrets.PRODUCTION_DATABASE_URL }}" < backup_file.sql
+          ```
+
+          ## Backup Verification
+
+          After creating a backup, verify:
+          - Backup file size is reasonable
+          - Backup contains expected tables
+          - Test restore on staging environment
+
+          ## Emergency Contacts
+
+          - Supabase Support: https://supabase.com/support
+          - Database Admin: [Add contact info]
+          EOF
+
+      - name: Upload backup instructions
+        uses: actions/upload-artifact@v4
+        with:
+          name: backup-instructions
+          path: BACKUP_INSTRUCTIONS.md
+
+      - name: Notify team
+        run: |
+          echo "📢 Backup instructions have been generated"
+          echo "Download the artifact for detailed backup procedures"
+
+  rollback-migration:
+    name: Rollback Database Migration
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    if: github.event.inputs.action == 'rollback-migration'
+    environment:
+      name: ${{ github.event.inputs.environment }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Validate migration name
+        run: |
+          if [ -z "${{ github.event.inputs.migration_name }}" ]; then
+            echo "❌ Migration name is required for rollback"
+            exit 1
+          fi
+
+      - name: Check migration status
+        run: |
+          cd server
+          npx prisma migrate status --schema=./prisma/schema.prisma
+        env:
+          DATABASE_URL: ${{ secrets[format('{0}_DATABASE_URL', github.event.inputs.environment)] }}
+
+      - name: Create rollback instructions
+        run: |
+          cat > ROLLBACK_INSTRUCTIONS.md << 'EOF'
+          # Database Migration Rollback
+
+          ## Migration to Rollback
+          `${{ github.event.inputs.migration_name }}`
+
+          ## Environment
+          ${{ github.event.inputs.environment }}
+
+          ## ⚠️  CRITICAL WARNING
+
+          **Database rollbacks are risky operations!**
+
+          Before proceeding:
+          1. **Create database backup** (see backup workflow)
+          2. **Notify team members** of potential downtime
+          3. **Verify rollback SQL** is safe to execute
+          4. **Test rollback** on staging first if possible
+
+          ## Rollback Steps
+
+          ### Step 1: Mark Migration as Rolled Back
+          ```bash
+          cd server
+          npx prisma migrate resolve --rolled-back ${{ github.event.inputs.migration_name }}
+          ```
+
+          ### Step 2: Manually Revert Schema Changes
+          ```bash
+          # Edit server/prisma/schema.prisma
+          # Manually revert changes introduced by the migration
+          ```
+
+          ### Step 3: Create Reverse Migration
+          ```bash
+          # Option A: Prisma will detect schema changes
+          npm exec prisma migrate dev --name rollback_${{ github.event.inputs.migration_name }}
+
+          # Option B: Write manual SQL to reverse changes
+          # Create migration file in server/prisma/migrations/
+          ```
+
+          ### Step 4: Deploy Reverse Migration
+          ```bash
+          npx prisma migrate deploy
+          ```
+
+          ### Step 5: Verify Application
+          ```bash
+          # Run integration tests
+          npm run test:integration
+
+          # Check application health
+          curl ${{ github.event.inputs.environment == 'staging' && secrets.STAGING_API_URL || secrets.PRODUCTION_API_URL }}/health
+          ```
+
+          ## Alternative: Database Restore
+
+          If migration caused data corruption:
+          ```bash
+          # Restore from Supabase backup
+          # See backup workflow for instructions
+          ```
+
+          ## Post-Rollback
+
+          - [ ] Verify application is functional
+          - [ ] Run full test suite
+          - [ ] Monitor error logs for 24 hours
+          - [ ] Document root cause and prevention
+          - [ ] Update migration documentation
+
+          ## Need Help?
+
+          - Review Prisma docs: https://www.prisma.io/docs/guides/migrate/production-troubleshooting
+          - Supabase support: https://supabase.com/support
+          EOF
+
+      - name: Upload rollback instructions
+        uses: actions/upload-artifact@v4
+        with:
+          name: rollback-instructions-${{ github.event.inputs.environment }}
+          path: ROLLBACK_INSTRUCTIONS.md
+
+      - name: Require manual confirmation
+        run: |
+          echo "⚠️  ROLLBACK REQUIRES MANUAL EXECUTION"
+          echo ""
+          echo "This workflow provides instructions only."
+          echo "Download the rollback instructions artifact and follow carefully."
+          echo ""
+          echo "DO NOT proceed without:"
+          echo "1. Database backup"
+          echo "2. Team notification"
+          echo "3. Rollback plan review"

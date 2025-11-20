@@ -65,6 +65,7 @@ export interface Container {
     audit: AuditService;
     segment: SegmentService;
   };
+  prisma?: PrismaClient; // Export Prisma instance for shutdown
 }
 
 export function buildContainer(config: Config): Container {
@@ -148,7 +149,7 @@ export function buildContainer(config: Config): Container {
       segment: segmentService,
     };
 
-    return { controllers, services };
+    return { controllers, services, prisma: undefined };
   }
 
   // Real adapters mode
@@ -306,5 +307,5 @@ export function buildContainer(config: Config): Container {
     segment: segmentService,
   };
 
-  return { controllers, services };
+  return { controllers, services, prisma };
 }

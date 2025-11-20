@@ -1,0 +1,58 @@
+name: Dependency Cache Warmup
+
+# This workflow pre-builds and caches dependencies to speed up other workflows
+# Runs on schedule and can be triggered manually
+
+on:
+  schedule:
+    # Run daily at 2 AM UTC to refresh caches
+    - cron: '0 2 * * *'
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+      - develop
+    paths:
+      - 'package-lock.json'
+      - '**/package-lock.json'
+      - 'package.json'
+      - '**/package.json'
+
+jobs:
+  warmup-cache:
+    name: Warmup Dependencies Cache
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    strategy:
+      matrix:
+        node-version: ['20']
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Generate Prisma Client
+        run: npm run --workspace=server prisma:generate
+
+      - name: Install Playwright browsers
+        run: npx playwright install --with-deps chromium
+
+      - name: Build all packages
+        run: npm run build --workspaces --if-present
+
+      - name: Cache summary
+        run: |
+          echo "✅ Cache warmed for Node.js ${{ matrix.node-version }}"
+          echo "📦 Dependencies installed: $(npm list --depth=0 | wc -l) packages"
+          echo "🎭 Playwright browsers: chromium"
+          echo "🏗️  Built packages: server, client, contracts, shared"

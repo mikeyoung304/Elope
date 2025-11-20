@@ -1,0 +1,42 @@
+# Node modules (rebuilt in container)
+node_modules
+npm-debug.log*
+package-lock.json
+
+# Build outputs
+dist
+build
+coverage
+.turbo
+
+# Environment files
+.env*
+!.env.example
+
+# Git
+.git
+.gitignore
+
+# IDE
+.vscode
+.idea
+*.swp
+
+# Testing
+test-results
+playwright-report
+coverage
+
+# Temp files
+tmp
+.tmp
+*.log
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Documentation (not needed in runtime)
+*.md
+docs/
+screenshots/
