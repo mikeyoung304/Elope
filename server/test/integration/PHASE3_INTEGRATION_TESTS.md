@@ -72,7 +72,7 @@ Booking test data fixtures:
 1. ✅ Full cancellation: 100% refund + commission reversal
    - Processes full refund
    - Validates 100% commission reversal
-   - Updates booking status to CANCELLED
+   - Updates booking status to CANCELED
    - Verifies platform/tenant refund split
 
 2. ✅ Partial cancellation: 50% refund + proportional commission
@@ -83,7 +83,7 @@ Booking test data fixtures:
 3. ✅ Late cancellation: No refund allowed
    - Tests booking past cancellation deadline
    - Validates no refund processed
-   - Allows status change to CANCELLED without refund
+   - Allows status change to CANCELED without refund
 
 **Commission Reversal (2 tests)**
 4. ✅ Commission refund calculated correctly

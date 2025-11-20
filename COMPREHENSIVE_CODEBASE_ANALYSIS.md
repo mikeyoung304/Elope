@@ -957,7 +957,7 @@ GET /ready     - Readiness check (verifies required env vars)
 **Booking Model**
 - id, tenantId (isolation), customerId, packageId, venueId (optional)
 - date (DATE), startTime (DATETIME), endTime (DATETIME)
-- status (enum: PENDING, CONFIRMED, CANCELLED, COMPLETED)
+- status (enum: PENDING, CONFIRMED, CANCELED, FULFILLED)
 - totalPrice (integer), notes (text)
 - idempotencyKey (UUID for webhook deduplication)
 - stripeCheckoutSessionId, stripePaymentIntentId

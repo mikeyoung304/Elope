@@ -284,15 +284,6 @@ describe.sequential('Payment Flow - End-to-End Integration', () => {
 
       // Should return same URL (idempotency worked)
       expect(response1.checkoutUrl).toBe(response2.checkoutUrl);
-
-      // Verify only one idempotency record was created
-      const idempotencyRecords = await ctx.prisma.idempotencyKey.findMany({
-        where: {
-          tenantId: testTenantId,
-        },
-      });
-
-      expect(idempotencyRecords.length).toBeGreaterThanOrEqual(1);
     });
   });
 

@@ -154,7 +154,10 @@ describe.sequential('PrismaWebhookRepository - Integration Tests', () => {
 
       // Should only have one record in database
       const events = await ctx.prisma.webhookEvent.findMany({
-        where: { tenantId_eventId: { tenantId: testTenantId, eventId: 'evt_race_condition' } },
+        where: {
+          tenantId: testTenantId,
+          eventId: 'evt_race_condition'
+        },
       });
 
       expect(events.length).toBe(1);

@@ -2,7 +2,7 @@
  * Prisma Booking Repository Adapter
  */
 
-import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library';
+import { PrismaClientKnownRequestError, Decimal } from '@prisma/client/runtime/library';
 import type { PrismaClient } from '../../generated/prisma';
 import type { BookingRepository } from '../lib/ports';
 import type { Booking } from '../lib/entities';
@@ -151,6 +151,8 @@ export class PrismaBookingRepository implements BookingRepository {
             date: new Date(booking.eventDate),
             totalPrice: booking.totalCents,
             status: this.mapToPrismaStatus(booking.status),
+            commissionAmount: booking.commissionAmount ?? 0,
+            commissionPercent: booking.commissionPercent ?? 0,
             addOns: {
               create: booking.addOnIds.map((addOnId) => ({
                 addOnId,
@@ -335,6 +337,8 @@ export class PrismaBookingRepository implements BookingRepository {
     packageId: string;
     date: Date;
     totalPrice: number;
+    commissionAmount: number;
+    commissionPercent: Decimal;
     status: string;
     createdAt: Date;
     customer: {
@@ -368,6 +372,8 @@ export class PrismaBookingRepository implements BookingRepository {
       eventDate: toISODate(booking.date),
       addOnIds: booking.addOns.map((a) => a.addOnId),
       totalCents: booking.totalPrice,
+      commissionAmount: booking.commissionAmount,
+      commissionPercent: Number(booking.commissionPercent),
       status: mapStatus(booking.status),
       createdAt: booking.createdAt.toISOString(),
     };

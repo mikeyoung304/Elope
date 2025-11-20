@@ -135,12 +135,12 @@ describe.sequential('Cancellation & Refund Flow Integration', () => {
       // Update booking status (in real app, this would be in a service method)
       await ctx.prisma.booking.update({
         where: { id: booking.id },
-        data: { status: 'CANCELLED' },
+        data: { status: 'CANCELED' },
       });
 
       // Verify cancellation
       const cancelledBooking = await bookingRepo.findById(testTenantId, booking.id);
-      expect(cancelledBooking?.status).toBe('CANCELLED');
+      expect(cancelledBooking?.status).toBe('CANCELED');
 
       // In Stripe Connect, application fee is automatically reversed
       // Platform refunds: $300 (commission)
@@ -223,12 +223,12 @@ describe.sequential('Cancellation & Refund Flow Integration', () => {
       // Booking can still be cancelled, but no money returned
       await ctx.prisma.booking.update({
         where: { id: booking.id },
-        data: { status: 'CANCELLED' },
+        data: { status: 'CANCELED' },
       });
 
       // Verify status updated but no refund processed
       const cancelledBooking = await bookingRepo.findById(testTenantId, booking.id);
-      expect(cancelledBooking?.status).toBe('CANCELLED');
+      expect(cancelledBooking?.status).toBe('CANCELED');
       expect(cancelledBooking?.totalCents).toBe(booking.totalCents); // Original amount unchanged
     });
   });
