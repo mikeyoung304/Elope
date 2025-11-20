@@ -32,8 +32,8 @@ interface BrandingEditorProps {
 
 export function BrandingEditor({ branding, isLoading, onBrandingChange }: BrandingEditorProps) {
   const [primaryColor, setPrimaryColor] = useState("#1a365d");
-  const [secondaryColor, setSecondaryColor] = useState("#fb923c");
-  const [accentColor, setAccentColor] = useState("#38b2ac");
+  const [secondaryColor, setSecondaryColor] = useState("#d97706");
+  const [accentColor, setAccentColor] = useState("#0d9488");
   const [backgroundColor, setBackgroundColor] = useState("#ffffff");
   const [fontFamily, setFontFamily] = useState("Inter");
   const [logoUrl, setLogoUrl] = useState("");
@@ -69,11 +69,11 @@ export function BrandingEditor({ branding, isLoading, onBrandingChange }: Brandi
       return;
     }
     if (!hexColorRegex.test(secondaryColor)) {
-      setError("Secondary color must be a valid hex color (e.g., #fb923c)");
+      setError("Secondary color must be a valid hex color (e.g., #d97706)");
       return;
     }
     if (!hexColorRegex.test(accentColor)) {
-      setError("Accent color must be a valid hex color (e.g., #38b2ac)");
+      setError("Accent color must be a valid hex color (e.g., #0d9488)");
       return;
     }
     if (!hexColorRegex.test(backgroundColor)) {
@@ -84,14 +84,13 @@ export function BrandingEditor({ branding, isLoading, onBrandingChange }: Brandi
     setIsSaving(true);
 
     try {
-      const result = await (api as any).tenantUpdateBranding({
+      const result = await api.tenantAdminUpdateBranding({
         body: {
           primaryColor,
           secondaryColor,
           accentColor,
           backgroundColor,
           fontFamily,
-          logoUrl: logoUrl || undefined,
         },
       });
 
@@ -148,7 +147,10 @@ export function BrandingEditor({ branding, isLoading, onBrandingChange }: Brandi
           <BrandingPreview
             primaryColor={primaryColor}
             secondaryColor={secondaryColor}
+            accentColor={accentColor}
+            backgroundColor={backgroundColor}
             fontFamily={fontFamily}
+            logoUrl={logoUrl}
           />
         </div>
       )}

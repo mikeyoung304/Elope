@@ -100,7 +100,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
         setTenantId(tid);
 
         // Also set token in API client for tenant routes
-        (api as any).setTenantToken(activeUser.token);
+        api.setTenantToken(activeUser.token);
       }
     } else {
       setUser(null);
@@ -190,7 +190,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
       if (targetRole === 'TENANT_ADMIN' && userData.role === 'TENANT_ADMIN') {
         setTenantId(userData.tenantId);
         // Also set token in API client for tenant routes
-        (api as any).setTenantToken(authToken);
+        api.setTenantToken(authToken);
       }
     } catch (error) {
       throw error;
@@ -209,7 +209,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
     clearAllTokens();
 
     // Clear tenant token from API client
-    (api as any).logoutTenant();
+    api.logoutTenant();
 
     // Clear state
     setUser(null);

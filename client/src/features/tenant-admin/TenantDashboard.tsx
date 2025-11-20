@@ -68,8 +68,7 @@ export function TenantDashboard({ tenantInfo }: TenantDashboardProps) {
   const loadPackages = useCallback(async () => {
     setIsLoading(true);
     try {
-      // Agent 2 will create this endpoint
-      const result = await (api as any).tenantGetPackages();
+      const result = await api.tenantAdminGetPackages();
       if (result.status === 200) {
         setPackages(result.body);
       }
@@ -83,7 +82,7 @@ export function TenantDashboard({ tenantInfo }: TenantDashboardProps) {
   const loadBlackouts = useCallback(async () => {
     setIsLoading(true);
     try {
-      const result = await (api as any).tenantGetBlackouts();
+      const result = await api.tenantAdminGetBlackouts();
       if (result.status === 200) {
         setBlackouts(result.body);
       }
@@ -97,7 +96,7 @@ export function TenantDashboard({ tenantInfo }: TenantDashboardProps) {
   const loadBookings = useCallback(async () => {
     setIsLoading(true);
     try {
-      const result = await (api as any).tenantGetBookings();
+      const result = await api.tenantAdminGetBookings();
       if (result.status === 200) {
         setBookings(result.body);
       }
@@ -111,7 +110,7 @@ export function TenantDashboard({ tenantInfo }: TenantDashboardProps) {
   const loadBranding = useCallback(async () => {
     setIsLoading(true);
     try {
-      const result = await (api as any).tenantGetBranding();
+      const result = await api.tenantAdminGetBranding();
       if (result.status === 200) {
         setBranding(result.body);
       }

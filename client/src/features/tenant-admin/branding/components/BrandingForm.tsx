@@ -1,9 +1,10 @@
-import { Save, Loader2, AlertCircle, Image, Palette, HelpCircle } from "lucide-react";
+import { Save, Loader2, AlertCircle, Palette, HelpCircle } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { InputEnhanced } from "@/components/ui/input-enhanced";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Label } from "@/components/ui/label";
+import { LogoUploadButton } from "./LogoUploadButton";
 
 const FONT_OPTIONS = [
   { value: "Inter", label: "Inter (Sans-serif)" },
@@ -59,7 +60,7 @@ export function BrandingForm({
         <h2 className="text-2xl font-semibold mb-4 text-macon-navy-50">Customize Branding</h2>
 
         {error && (
-          <div className="flex items-center gap-2 p-4 mb-4 border border-macon-navy-600 bg-macon-navy-700 rounded-lg">
+          <div role="alert" className="flex items-center gap-2 p-4 mb-4 border border-macon-navy-600 bg-macon-navy-700 rounded-lg">
             <AlertCircle className="w-5 h-5 text-macon-navy-200" />
             <span className="text-base text-macon-navy-100">{error}</span>
           </div>
@@ -123,7 +124,7 @@ export function BrandingForm({
                 type="text"
                 value={secondaryColor}
                 onChange={(e) => onSecondaryColorChange(e.target.value)}
-                placeholder="#fb923c"
+                placeholder="#d97706"
                 leftIcon={<Palette className="w-5 h-5" />}
                 className="bg-macon-navy-900 border-macon-navy-600 text-macon-navy-50 placeholder:text-macon-navy-400 focus:border-macon-navy-500"
                 disabled={isSaving}
@@ -159,7 +160,7 @@ export function BrandingForm({
                 type="text"
                 value={accentColor}
                 onChange={(e) => onAccentColorChange(e.target.value)}
-                placeholder="#38b2ac"
+                placeholder="#0d9488"
                 leftIcon={<Palette className="w-5 h-5" />}
                 className="bg-macon-navy-900 border-macon-navy-600 text-macon-navy-50 placeholder:text-macon-navy-400 focus:border-macon-navy-500"
                 disabled={isSaving}
@@ -231,32 +232,28 @@ export function BrandingForm({
           <p className="text-base text-macon-navy-200">Typography for your booking widget</p>
         </div>
 
-          {/* Logo URL */}
+          {/* Logo Upload */}
           <div className="space-y-2">
             <div className="flex items-center gap-2">
-              <Label htmlFor="logoUrl" className="text-macon-navy-100 text-lg">
-                Logo URL (Optional)
+              <Label className="text-macon-navy-100 text-lg">
+                Logo (Optional)
               </Label>
               <Tooltip>
                 <TooltipTrigger asChild>
                   <HelpCircle className="w-4 h-4 text-macon-navy-400 cursor-help" />
                 </TooltipTrigger>
                 <TooltipContent>
-                  <p>URL to your logo image (PNG, JPG, or SVG format recommended)</p>
+                  <p>Upload your logo image (PNG, JPG, SVG, or WebP format, max 2MB)</p>
                 </TooltipContent>
               </Tooltip>
             </div>
-            <InputEnhanced
-              id="logoUrl"
-              type="url"
-              value={logoUrl}
-              onChange={(e) => onLogoUrlChange(e.target.value)}
-              placeholder="https://example.com/logo.png"
-              leftIcon={<Image className="w-5 h-5" />}
-              clearable
-              onClear={() => onLogoUrlChange('')}
-              helperText="Enter a public URL to your logo image"
-              className="bg-macon-navy-900 border-macon-navy-600 text-macon-navy-50 placeholder:text-macon-navy-400 focus:border-macon-navy-500"
+            <LogoUploadButton
+              currentLogoUrl={logoUrl}
+              onUploadSuccess={(url) => onLogoUrlChange(url)}
+              onUploadError={(errorMsg) => {
+                // Error will be shown in the component itself
+                console.error("Logo upload error:", errorMsg);
+              }}
               disabled={isSaving}
             />
           </div>

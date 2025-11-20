@@ -31,7 +31,7 @@ export function AddOnManager({
           </h5>
 
           {error && (
-            <div className="flex items-center gap-2 p-3 border border-macon-navy-600 bg-macon-navy-700 rounded">
+            <div role="alert" className="flex items-center gap-2 p-3 border border-macon-navy-600 bg-macon-navy-700 rounded">
               <AlertCircle className="w-4 h-4 text-macon-navy-200" />
               <span className="text-base text-macon-navy-100">{error}</span>
             </div>

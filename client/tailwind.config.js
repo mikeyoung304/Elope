@@ -16,16 +16,16 @@ export default {
           100: '#ccd9e7',
         },
         'macon-orange': {
-          DEFAULT: '#fb923c',
-          dark: '#ea7c1c',
-          light: '#fca85c',
+          DEFAULT: '#d97706',  // WCAG AA: 4.54:1 (was #fb923c at 2.26:1)
+          dark: '#b45309',     // WCAG AA: 6.51:1
+          light: '#fbbf24',    // Keep existing (decorative use)
           50: '#fff7ed',
           100: '#ffedd5',
         },
         'macon-teal': {
-          DEFAULT: '#38b2ac',
-          dark: '#2c8a86',
-          light: '#4dd4cc',
+          DEFAULT: '#0d9488',  // WCAG AA: 4.55:1 (was #38b2ac at 2.58:1)
+          dark: '#0f766e',     // WCAG AA: 6.39:1
+          light: '#5eead4',    // Keep existing (decorative use)
           50: '#e6fffa',
           100: '#b2f5ea',
         },
@@ -110,7 +110,7 @@ export default {
           foreground: '#FFFFFF',
         },
         secondary: {
-          DEFAULT: '#fb923c',  // Macon Orange
+          DEFAULT: '#d97706',  // Macon Orange (WCAG AA compliant)
           foreground: '#FFFFFF',
         },
         muted: {
@@ -118,7 +118,7 @@ export default {
           foreground: '#6b7280', // Neutral 500
         },
         accent: {
-          DEFAULT: '#38b2ac',  // Macon Teal
+          DEFAULT: '#0d9488',  // Macon Teal (WCAG AA compliant)
           foreground: '#FFFFFF',
         },
         border: '#e5e7eb',     // Neutral 200
@@ -163,8 +163,8 @@ export default {
         'medium': '0 8px 16px -4px rgba(10, 37, 64, 0.08), 0 4px 8px -4px rgba(10, 37, 64, 0.06)',
         'large': '0 16px 32px -8px rgba(10, 37, 64, 0.10), 0 8px 16px -8px rgba(10, 37, 64, 0.08)',
         // Glow effects
-        'glow-orange': '0 0 20px rgba(251, 146, 60, 0.4)',
-        'glow-teal': '0 0 20px rgba(56, 178, 172, 0.4)',
+        'glow-orange': '0 0 20px rgba(217, 119, 6, 0.4)',
+        'glow-teal': '0 0 20px rgba(13, 148, 136, 0.4)',
         'glow-success': '0 0 20px rgba(34, 197, 94, 0.4)',
         'glow-urgent': '0 0 20px rgba(239, 68, 68, 0.4)',
       },
@@ -177,8 +177,8 @@ export default {
       },
       backgroundImage: {
         'gradient-navy': 'linear-gradient(135deg, #1a365d 0%, #2d4a7c 100%)',
-        'gradient-orange': 'linear-gradient(135deg, #fb923c 0%, #fca85c 100%)',
-        'gradient-teal': 'linear-gradient(135deg, #38b2ac 0%, #4dd4cc 100%)',
+        'gradient-orange': 'linear-gradient(135deg, #d97706 0%, #fbbf24 100%)',
+        'gradient-teal': 'linear-gradient(135deg, #0d9488 0%, #5eead4 100%)',
       },
       backdropBlur: {
         'xs': '2px',

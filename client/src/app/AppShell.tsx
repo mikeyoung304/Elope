@@ -1,12 +1,15 @@
 /**
  * AppShell with minimal aesthetic design
- * Features: Skip link, ARIA landmarks, focus management, clean typography
+ * Features: Skip link, ARIA landmarks, focus management, clean typography, mobile menu
  */
 
 import { Outlet, Link } from 'react-router-dom';
+import { Menu } from 'lucide-react';
 import { Container } from '@/ui/Container';
 import { cn } from '@/lib/utils';
 import { AuthProvider } from '@/contexts/AuthContext';
+import { Logo } from '@/components/brand/Logo';
+import { Sheet, SheetContent, SheetTrigger, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 import '@/styles/a11y.css';
 
 const appMode = import.meta.env.VITE_APP_MODE;
@@ -36,18 +39,22 @@ export function AppShell() {
         <header className="bg-macon-navy-900 border-b border-macon-navy-800">
           <Container>
             <div className="flex items-center justify-between py-6">
-              <Link
-                to="/"
-                className={cn(
-                  'text-3xl tracking-tight text-white font-semibold',
-                  'hover:text-macon-navy-200 transition-colors'
-                )}
-              >
-                Macon AI Solutions
-              </Link>
-              <nav aria-label="Primary navigation" className="flex gap-8">
+              <div className="flex items-center gap-4">
+                <Logo size="sm" linkTo="/" />
                 <Link
-                  to="/admin/login"
+                  to="/"
+                  className={cn(
+                    'text-3xl tracking-tight text-white font-semibold',
+                    'hover:text-macon-navy-200 transition-colors'
+                  )}
+                >
+                  Macon AI Solutions
+                </Link>
+              </div>
+              {/* Desktop Navigation */}
+              <nav aria-label="Primary navigation" className="hidden md:flex gap-8">
+                <Link
+                  to="/login"
                   className="text-lg tracking-wide text-macon-navy-100 hover:text-white transition-colors"
                 >
                   Log In
@@ -59,6 +66,45 @@ export function AppShell() {
                   Contact Support
                 </a>
               </nav>
+
+              {/* Mobile Menu */}
+              <Sheet>
+                <SheetTrigger className="md:hidden p-2 text-macon-navy-100 hover:text-white transition-colors">
+                  <Menu className="w-6 h-6" />
+                  <span className="sr-only">Open menu</span>
+                </SheetTrigger>
+                <SheetContent side="right">
+                  <SheetHeader>
+                    <SheetTitle className="text-macon-navy text-left">Menu</SheetTitle>
+                  </SheetHeader>
+                  <nav className="flex flex-col gap-6 mt-8">
+                    <Link
+                      to="/"
+                      className="text-xl text-neutral-900 hover:text-macon-orange transition-colors font-medium"
+                    >
+                      Home
+                    </Link>
+                    <Link
+                      to="/login"
+                      className="text-xl text-neutral-900 hover:text-macon-orange transition-colors font-medium"
+                    >
+                      Log In
+                    </Link>
+                    <a
+                      href="#about"
+                      className="text-xl text-neutral-900 hover:text-macon-orange transition-colors font-medium"
+                    >
+                      About
+                    </a>
+                    <a
+                      href="#contact"
+                      className="text-xl text-neutral-900 hover:text-macon-orange transition-colors font-medium"
+                    >
+                      Contact Support
+                    </a>
+                  </nav>
+                </SheetContent>
+              </Sheet>
             </div>
           </Container>
         </header>
@@ -96,7 +142,7 @@ export function AppShell() {
                       </a>
                     </li>
                     <li>
-                      <Link to="/admin/login" className="hover:text-white transition-colors">
+                      <Link to="/login" className="hover:text-white transition-colors">
                         Log In
                       </Link>
                     </li>

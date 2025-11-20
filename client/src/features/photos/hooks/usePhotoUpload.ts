@@ -126,7 +126,7 @@ export function usePhotoUpload({
       }
 
       // Upload to API
-      const response = await fetch(`${baseUrl}/v1/tenant/admin/packages/${packageId}/photos`, {
+      const response = await fetch(`${baseUrl}/v1/tenant-admin/packages/${packageId}/photos`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -178,7 +178,7 @@ export function usePhotoUpload({
       }
 
       const response = await fetch(
-        `${baseUrl}/v1/tenant/admin/packages/${packageId}/photos/${photo.filename}`,
+        `${baseUrl}/v1/tenant-admin/packages/${packageId}/photos/${photo.filename}`,
         {
           method: 'DELETE',
           headers: {

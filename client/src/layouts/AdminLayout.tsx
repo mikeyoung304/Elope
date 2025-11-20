@@ -15,6 +15,7 @@ import { Menu, X, LogOut, ChevronLeft, ChevronRight } from "lucide-react";
 import { RoleBasedNav } from "../components/navigation/RoleBasedNav";
 import { Badge } from "../components/ui/badge";
 import { Button } from "../components/ui/button";
+import { Logo } from "../components/brand/Logo";
 import { useAuth } from "../contexts/AuthContext";
 import { cn } from "../lib/utils";
 
@@ -66,9 +67,7 @@ export function AdminLayout({ children, breadcrumbs }: AdminLayoutProps) {
       {/* Mobile Header */}
       <div className="lg:hidden fixed top-0 left-0 right-0 z-50 bg-macon-navy-900 border-b border-macon-navy-700">
         <div className="flex items-center justify-between px-4 py-3">
-          <Link to="/" className="flex items-center gap-2">
-            <span className="text-xl font-bold text-white">Macon</span>
-          </Link>
+          <Logo size="sm" linkTo="/" className="max-w-[80px]" />
           <div className="flex items-center gap-3">
             <Badge variant={roleVariant} className="text-xs">
               {roleLabel}
@@ -107,10 +106,10 @@ export function AdminLayout({ children, breadcrumbs }: AdminLayoutProps) {
         <div className="flex flex-col h-full">
           {/* Desktop Logo & Toggle */}
           <div className="hidden lg:flex items-center justify-between px-4 py-5 border-b border-macon-navy-700">
-            {!sidebarCollapsed && (
-              <Link to="/" className="flex items-center gap-2">
-                <span className="text-xl font-bold text-white">Macon</span>
-              </Link>
+            {!sidebarCollapsed ? (
+              <Logo size="sm" linkTo="/" className="max-w-[100px]" />
+            ) : (
+              <Logo size="sm" linkTo="/" className="max-w-[50px] mx-auto" />
             )}
             <button
               onClick={() => setSidebarCollapsed(!sidebarCollapsed)}

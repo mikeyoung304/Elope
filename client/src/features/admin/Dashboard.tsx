@@ -122,7 +122,7 @@ export function Dashboard() {
 
   const handleLogout = useCallback(() => {
     localStorage.removeItem("adminToken");
-    navigate("/admin/login");
+    navigate("/login");
   }, [navigate]);
 
   // Calculate metrics with useMemo

@@ -43,7 +43,7 @@ export function usePackageManager(onPackagesChange: () => void) {
     }
 
     try {
-      const result = await (api as any).tenantDeletePackage({
+      const result = await api.tenantAdminDeletePackage({
         params: { id: packageId },
         body: undefined,
       });

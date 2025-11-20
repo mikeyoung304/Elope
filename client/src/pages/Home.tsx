@@ -28,7 +28,7 @@ export function Home() {
               <Button
                 onClick={scrollToFeatures}
                 size="lg"
-                className="bg-macon-orange hover:bg-macon-orange-dark text-white font-bold text-xl px-12 py-7 shadow-2xl hover:shadow-[0_0_40px_rgba(255,107,53,0.6)] min-w-[300px] min-h-[64px] transition-all duration-300 hover:-translate-y-1 hover:scale-105 rounded-xl"
+                className="bg-macon-orange hover:bg-macon-orange-dark text-white font-bold text-xl px-12 py-7 shadow-2xl hover:shadow-[0_0_40px_rgba(255,107,53,0.6)] w-full sm:w-auto sm:min-w-[300px] min-h-[64px] transition-all duration-300 hover:-translate-y-1 hover:scale-105 rounded-xl"
               >
                 Apply to Join the Club
               </Button>
@@ -204,7 +204,12 @@ export function Home() {
 
             <div className="text-center mt-12">
               <p className="text-xl text-neutral-700 mb-4">Not sure if you fit?</p>
-              <Button variant="outline" size="lg" className="text-lg">
+              <Button
+                variant="outline"
+                size="lg"
+                className="text-lg"
+                onClick={() => window.location.href = 'mailto:support@maconai.com?subject=Inquiry about Macon AI Club'}
+              >
                 Chat with us →
               </Button>
             </div>
@@ -383,7 +388,12 @@ export function Home() {
             </div>
 
             <div className="text-center mt-12">
-              <Button variant="secondary" size="lg" className="text-xl">
+              <Button
+                variant="secondary"
+                size="lg"
+                className="text-xl"
+                onClick={() => window.location.href = 'mailto:support@maconai.com?subject=Application to Join Macon AI Club'}
+              >
                 Apply to Join
               </Button>
             </div>
@@ -436,7 +446,10 @@ export function Home() {
               Apply to join the Macon AI Club and get a dedicated team working on your success—not just another tool collecting dust.
             </p>
             <div className="flex flex-col sm:flex-row gap-6 justify-center items-center mb-12">
-              <Button className="bg-macon-orange hover:bg-macon-orange-dark text-white font-extrabold text-2xl px-16 py-8 shadow-[0_0_60px_rgba(255,107,53,0.5)] hover:shadow-[0_0_80px_rgba(255,107,53,0.7)] hover:scale-110 min-w-[340px] rounded-2xl transition-all duration-300 border-4 border-macon-orange-light">
+              <Button
+                className="bg-macon-orange hover:bg-macon-orange-dark text-white font-extrabold text-2xl px-16 py-8 shadow-[0_0_60px_rgba(255,107,53,0.5)] hover:shadow-[0_0_80px_rgba(255,107,53,0.7)] hover:scale-110 w-full sm:w-auto sm:min-w-[340px] rounded-2xl transition-all duration-300 border-4 border-macon-orange-light"
+                onClick={() => window.location.href = 'mailto:support@maconai.com?subject=Application to Join Macon AI Club'}
+              >
                 Apply to Join the Club
               </Button>
             </div>

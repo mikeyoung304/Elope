@@ -10,7 +10,7 @@ export function Admin() {
     // Check for admin token, redirect to login if not present
     const token = localStorage.getItem("adminToken");
     if (!token) {
-      navigate("/admin/login");
+      navigate("/login");
     }
   }, [navigate]);
 

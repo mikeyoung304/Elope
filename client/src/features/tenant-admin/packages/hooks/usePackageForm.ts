@@ -79,16 +79,18 @@ export function usePackageForm({ onSuccess, onPackagesChange }: UsePackageFormPr
     setIsSaving(true);
 
     try {
+      // Generate slug from title (lowercase, replace spaces with hyphens)
+      const slug = form.title.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
+
       const data = {
+        slug,
         title: form.title,
         description: form.description,
         priceCents: parseInt(form.priceCents, 10),
-        minLeadDays: parseInt(form.minLeadDays, 10),
-        isActive: form.isActive,
       };
 
       if (editingPackageId) {
-        const result = await (api as any).tenantUpdatePackage({
+        const result = await api.tenantAdminUpdatePackage({
           params: { id: editingPackageId },
           body: data,
         });
@@ -103,11 +105,11 @@ export function usePackageForm({ onSuccess, onPackagesChange }: UsePackageFormPr
           return false;
         }
       } else {
-        const result = await (api as any).tenantCreatePackage({
+        const result = await api.tenantAdminCreatePackage({
           body: data,
         });
 
-        if (result.status === 200) {
+        if (result.status === 201) {
           onSuccess("Package created successfully");
           resetForm();
           onPackagesChange();

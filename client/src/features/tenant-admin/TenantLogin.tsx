@@ -29,7 +29,7 @@ export function TenantLogin({ onLogin, error, isLoading }: TenantLoginProps) {
       </CardHeader>
       <CardContent>
         {error && (
-          <div className="mb-6 p-3 bg-macon-navy-700 border border-macon-navy-600 text-macon-navy-100 rounded text-lg">
+          <div role="alert" className="mb-6 p-3 bg-macon-navy-700 border border-macon-navy-600 text-macon-navy-100 rounded text-lg">
             {error}
           </div>
         )}

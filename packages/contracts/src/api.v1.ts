@@ -17,6 +17,12 @@ import {
   UpdateAddOnDtoSchema,
   AddOnDtoSchema,
   TenantBrandingDtoSchema,
+  UpdateBrandingDtoSchema,
+  LogoUploadResponseDtoSchema,
+  BlackoutDtoSchema,
+  CreateBlackoutDtoSchema,
+  PackagePhotoDtoSchema,
+  PackageWithPhotosDtoSchema,
   TenantDtoSchema,
   SegmentDtoSchema,
   CreateSegmentDtoSchema,
@@ -135,6 +141,171 @@ export const Contracts = c.router({
       }),
     },
     summary: 'Tenant admin login',
+  },
+
+  // ============================================================================
+  // Tenant Admin Branding Endpoints
+  // ============================================================================
+
+  tenantAdminUploadLogo: {
+    method: 'POST',
+    path: '/v1/tenant-admin/logo',
+    body: z.any(), // Multipart form data (file upload)
+    responses: {
+      200: LogoUploadResponseDtoSchema,
+    },
+    summary: 'Upload logo for tenant (requires tenant admin authentication)',
+  },
+
+  tenantAdminGetBranding: {
+    method: 'GET',
+    path: '/v1/tenant-admin/branding',
+    responses: {
+      200: TenantBrandingDtoSchema,
+    },
+    summary: 'Get tenant branding configuration (requires tenant admin authentication)',
+  },
+
+  tenantAdminUpdateBranding: {
+    method: 'PUT',
+    path: '/v1/tenant-admin/branding',
+    body: UpdateBrandingDtoSchema,
+    responses: {
+      200: TenantBrandingDtoSchema,
+    },
+    summary: 'Update tenant branding (requires tenant admin authentication)',
+  },
+
+  // ============================================================================
+  // Tenant Admin Package Endpoints
+  // ============================================================================
+
+  tenantAdminGetPackages: {
+    method: 'GET',
+    path: '/v1/tenant-admin/packages',
+    responses: {
+      200: z.array(PackageWithPhotosDtoSchema),
+    },
+    summary: 'Get all packages for tenant (requires tenant admin authentication)',
+  },
+
+  tenantAdminCreatePackage: {
+    method: 'POST',
+    path: '/v1/tenant-admin/packages',
+    body: CreatePackageDtoSchema,
+    responses: {
+      201: PackageResponseDtoSchema,
+    },
+    summary: 'Create new package (requires tenant admin authentication)',
+  },
+
+  tenantAdminUpdatePackage: {
+    method: 'PUT',
+    path: '/v1/tenant-admin/packages/:id',
+    pathParams: z.object({
+      id: z.string(),
+    }),
+    body: UpdatePackageDtoSchema,
+    responses: {
+      200: PackageResponseDtoSchema,
+    },
+    summary: 'Update package (requires tenant admin authentication)',
+  },
+
+  tenantAdminDeletePackage: {
+    method: 'DELETE',
+    path: '/v1/tenant-admin/packages/:id',
+    pathParams: z.object({
+      id: z.string(),
+    }),
+    body: z.undefined(),
+    responses: {
+      204: z.void(),
+    },
+    summary: 'Delete package (requires tenant admin authentication)',
+  },
+
+  tenantAdminUploadPackagePhoto: {
+    method: 'POST',
+    path: '/v1/tenant-admin/packages/:id/photos',
+    pathParams: z.object({
+      id: z.string(),
+    }),
+    body: z.any(), // Multipart form data (file upload)
+    responses: {
+      201: PackagePhotoDtoSchema,
+    },
+    summary: 'Upload photo for package (requires tenant admin authentication)',
+  },
+
+  tenantAdminDeletePackagePhoto: {
+    method: 'DELETE',
+    path: '/v1/tenant-admin/packages/:id/photos/:filename',
+    pathParams: z.object({
+      id: z.string(),
+      filename: z.string(),
+    }),
+    body: z.undefined(),
+    responses: {
+      204: z.void(),
+    },
+    summary: 'Delete package photo (requires tenant admin authentication)',
+  },
+
+  // ============================================================================
+  // Tenant Admin Blackout Endpoints
+  // ============================================================================
+
+  tenantAdminGetBlackouts: {
+    method: 'GET',
+    path: '/v1/tenant-admin/blackouts',
+    responses: {
+      200: z.array(BlackoutDtoSchema),
+    },
+    summary: 'Get all blackout dates for tenant (requires tenant admin authentication)',
+  },
+
+  tenantAdminCreateBlackout: {
+    method: 'POST',
+    path: '/v1/tenant-admin/blackouts',
+    body: CreateBlackoutDtoSchema,
+    responses: {
+      201: z.object({
+        ok: z.literal(true),
+      }),
+    },
+    summary: 'Create blackout date (requires tenant admin authentication)',
+  },
+
+  tenantAdminDeleteBlackout: {
+    method: 'DELETE',
+    path: '/v1/tenant-admin/blackouts/:id',
+    pathParams: z.object({
+      id: z.string(),
+    }),
+    body: z.undefined(),
+    responses: {
+      204: z.void(),
+    },
+    summary: 'Delete blackout date (requires tenant admin authentication)',
+  },
+
+  // ============================================================================
+  // Tenant Admin Booking Endpoints
+  // ============================================================================
+
+  tenantAdminGetBookings: {
+    method: 'GET',
+    path: '/v1/tenant-admin/bookings',
+    query: z.object({
+      status: z.enum(['PAID', 'REFUNDED', 'CANCELED']).optional(),
+      startDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional(),
+      endDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional(),
+    }).optional(),
+    responses: {
+      200: z.array(BookingDtoSchema),
+    },
+    summary: 'Get all bookings for tenant with optional filters (requires tenant admin authentication)',
   },
 
   // Platform admin endpoints (authentication required - documented)

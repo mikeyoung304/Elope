@@ -8,6 +8,7 @@ import { Router, Request, Response, NextFunction } from 'express';
 import multer from 'multer';
 import { z } from 'zod';
 import { ZodError } from 'zod';
+import { UpdateBrandingDtoSchema } from '@macon/contracts';
 import { uploadService } from '../services/upload.service';
 import { logger } from '../lib/core/logger';
 import type { PrismaTenantRepository } from '../adapters/prisma/tenant.repository';
@@ -137,14 +138,8 @@ export class TenantAdminController {
       }
       const tenantId = tenantAuth.tenantId;
 
-      // Validate request body
-      const UpdateBrandingSchema = z.object({
-        primaryColor: z.string().regex(/^#[0-9A-Fa-f]{6}$/).optional(),
-        secondaryColor: z.string().regex(/^#[0-9A-Fa-f]{6}$/).optional(),
-        fontFamily: z.string().optional(),
-      });
-
-      const validation = UpdateBrandingSchema.safeParse(req.body);
+      // Validate request body using proper DTO schema (includes all 4 colors)
+      const validation = UpdateBrandingDtoSchema.safeParse(req.body);
       if (!validation.success) {
         res.status(400).json({
           error: 'Validation failed',
@@ -177,6 +172,8 @@ export class TenantAdminController {
       res.status(200).json({
         primaryColor: updatedBranding.primaryColor,
         secondaryColor: updatedBranding.secondaryColor,
+        accentColor: updatedBranding.accentColor,
+        backgroundColor: updatedBranding.backgroundColor,
         fontFamily: updatedBranding.fontFamily,
         logo: updatedBranding.logo,
       });
@@ -215,6 +212,8 @@ export class TenantAdminController {
       res.status(200).json({
         primaryColor: branding.primaryColor,
         secondaryColor: branding.secondaryColor,
+        accentColor: branding.accentColor,
+        backgroundColor: branding.backgroundColor,
         fontFamily: branding.fontFamily,
         logo: branding.logo,
       });

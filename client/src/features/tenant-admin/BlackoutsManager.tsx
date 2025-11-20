@@ -49,14 +49,14 @@ export function BlackoutsManager({ blackouts, isLoading, onBlackoutsChange }: Bl
     setIsAdding(true);
 
     try {
-      const result = await (api as any).tenantCreateBlackout({
+      const result = await api.tenantAdminCreateBlackout({
         body: {
           date: newBlackoutDate,
           reason: newBlackoutReason || undefined,
         },
       });
 
-      if (result.status === 200 || result.status === 201) {
+      if (result.status === 201) {
         setNewBlackoutDate("");
         setNewBlackoutReason("");
         showSuccess("Blackout date added successfully");
@@ -82,12 +82,12 @@ export function BlackoutsManager({ blackouts, isLoading, onBlackoutsChange }: Bl
     }
 
     try {
-      const result = await (api as any).tenantDeleteBlackout({
+      const result = await api.tenantAdminDeleteBlackout({
         params: { id: blackoutId },
         body: undefined,
       });
 
-      if (result.status === 204 || result.status === 200) {
+      if (result.status === 204) {
         showSuccess("Blackout date deleted successfully");
         onBlackoutsChange();
       } else {

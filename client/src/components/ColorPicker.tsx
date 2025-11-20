@@ -33,7 +33,7 @@ function normalizeHex(color: string): string {
   return `#${normalized}`.toUpperCase();
 }
 
-export function ColorPicker({ label, value = '#fb923c', onChange, className = '' }: ColorPickerProps) {
+export function ColorPicker({ label, value = '#d97706', onChange, className = '' }: ColorPickerProps) {
   const [color, setColor] = useState(value);
   const [inputValue, setInputValue] = useState(value);
   const [isPickerOpen, setIsPickerOpen] = useState(false);
@@ -105,7 +105,7 @@ export function ColorPicker({ label, value = '#fb923c', onChange, className = ''
           value={inputValue}
           onChange={handleInputChange}
           onBlur={handleInputBlur}
-          placeholder="#fb923c"
+          placeholder="#d97706"
           className="flex-1 bg-macon-navy-900 border-macon-navy-600 text-macon-navy-50 placeholder:text-macon-navy-400 focus:border-macon-navy-500 focus:ring-macon-navy-500"
           maxLength={7}
         />
@@ -135,7 +135,7 @@ export function ColorPicker({ label, value = '#fb923c', onChange, className = ''
 
       {/* Validation hint */}
       {inputValue && !isValidHex(normalizeHex(inputValue)) && (
-        <p className="text-sm text-red-400">Invalid hex color format (e.g., #fb923c)</p>
+        <p className="text-sm text-red-400">Invalid hex color format (e.g., #d97706)</p>
       )}
     </div>
   );

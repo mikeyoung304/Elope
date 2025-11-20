@@ -98,20 +98,20 @@ export function PlatformAdminDashboard() {
     setIsLoading(true);
     try {
       // Load all tenants (Platform admin can see all)
-      const tenantsResult = await (api as any).platformGetAllTenants();
+      const tenantsResult = await api.platformGetAllTenants();
       if (tenantsResult.status === 200) {
         setTenants(tenantsResult.body);
       }
 
       // Load system-wide statistics
-      const statsResult = await (api as any).platformGetStats();
+      const statsResult = await api.platformGetStats();
       if (statsResult.status === 200) {
         setStats(statsResult.body);
       }
 
       // Fetch segments count across all tenants
       try {
-        const segmentsResult = await (api as any).tenantAdminGetSegments();
+        const segmentsResult = await api.tenantAdminGetSegments();
         if (segmentsResult.status === 200) {
           const segments = segmentsResult.body as SegmentDto[];
           const segmentCount = segments.length;

@@ -1,9 +1,10 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { InputEnhanced } from "@/components/ui/input-enhanced";
-import { Mail, Lock } from "lucide-react";
+import { Logo } from "@/components/brand/Logo";
+import { Mail, Lock, ArrowLeft } from "lucide-react";
 import { useForm } from "@/hooks/useForm";
 import { useAuth } from "../contexts/AuthContext";
 
@@ -71,18 +72,48 @@ export function Login() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center px-4">
-      <Card className="max-w-md mx-auto bg-macon-navy-800 border-macon-navy-600">
-        <CardHeader>
-          <CardTitle className="text-center text-macon-navy-50 text-3xl">Login</CardTitle>
-          <p className="text-center text-macon-navy-200 text-sm mt-2">
-            Platform Admin or Tenant Admin
-          </p>
-        </CardHeader>
-        <CardContent>
+    <div className="min-h-screen flex items-center justify-center px-4 relative">
+      <Link
+        to="/"
+        className="absolute top-8 left-8 inline-flex items-center gap-2 text-macon-navy hover:text-macon-navy-dark transition-colors group"
+      >
+        <ArrowLeft className="w-5 h-5 group-hover:-translate-x-1 transition-transform" />
+        <span className="text-lg font-medium">Back to Home</span>
+      </Link>
+      <div className="max-w-md w-full">
+        {/* Logo centered above card */}
+        <div className="flex justify-center mb-8">
+          <Logo size="lg" linkTo="/" />
+        </div>
+
+        <Card className="mx-auto bg-macon-navy-800 border-macon-navy-600">
+          <CardHeader>
+            <CardTitle className="text-center text-macon-navy-50 text-3xl">Login</CardTitle>
+            <p className="text-center text-macon-navy-200 text-sm mt-2">
+              Platform Admin or Tenant Admin
+            </p>
+          </CardHeader>
+          <CardContent>
           {error && (
-            <div className="mb-6 p-3 bg-macon-navy-700 border border-red-500 text-red-100 rounded text-lg">
-              {error}
+            <div role="alert" className="mb-6 p-4 bg-macon-navy-700 border border-red-500 text-red-100 rounded">
+              <p className="text-lg mb-3">{error}</p>
+              <div className="space-y-2 pt-3 border-t border-red-500/30">
+                <p className="text-sm text-red-200 font-medium">Need help?</p>
+                <div className="flex flex-col gap-2">
+                  <a
+                    href="mailto:support@maconai.com"
+                    className="text-sm text-red-100 underline hover:text-white transition-colors inline-flex items-center gap-1"
+                  >
+                    Contact support
+                  </a>
+                  <Link
+                    to="/"
+                    className="text-sm text-red-100 underline hover:text-white transition-colors inline-flex items-center gap-1"
+                  >
+                    Back to homepage
+                  </Link>
+                </div>
+              </div>
             </div>
           )}
           <form onSubmit={handleSubmit} className="space-y-6">
@@ -122,7 +153,8 @@ export function Login() {
             </Button>
           </form>
         </CardContent>
-      </Card>
+        </Card>
+      </div>
     </div>
   );
 }

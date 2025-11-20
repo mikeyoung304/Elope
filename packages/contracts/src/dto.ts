@@ -166,6 +166,45 @@ export const LogoUploadResponseDtoSchema = z.object({
 
 export type LogoUploadResponseDto = z.infer<typeof LogoUploadResponseDtoSchema>;
 
+// Blackout Date DTOs
+export const BlackoutDtoSchema = z.object({
+  id: z.string(),
+  date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
+  reason: z.string().optional(),
+});
+
+export type BlackoutDto = z.infer<typeof BlackoutDtoSchema>;
+
+export const CreateBlackoutDtoSchema = z.object({
+  date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
+  reason: z.string().optional(),
+});
+
+export type CreateBlackoutDto = z.infer<typeof CreateBlackoutDtoSchema>;
+
+// Package Photo DTOs
+export const PackagePhotoDtoSchema = z.object({
+  url: z.string().url(),
+  filename: z.string(),
+  size: z.number(),
+  order: z.number().int(),
+});
+
+export type PackagePhotoDto = z.infer<typeof PackagePhotoDtoSchema>;
+
+// Package with Photos DTO (for tenant admin)
+export const PackageWithPhotosDtoSchema = z.object({
+  id: z.string(),
+  slug: z.string(),
+  title: z.string(),
+  description: z.string(),
+  priceCents: z.number().int(),
+  photoUrl: z.string().url().optional(),
+  photos: z.array(PackagePhotoDtoSchema).optional(),
+});
+
+export type PackageWithPhotosDto = z.infer<typeof PackageWithPhotosDtoSchema>;
+
 // Stripe Connect DTOs
 export const StripeConnectDtoSchema = z.object({
   accountId: z.string(),

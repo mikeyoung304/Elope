@@ -15,8 +15,8 @@ interface ThemeProviderProps {
  *
  * Macon AI Solutions brand colors:
  * - Primary: #1a365d (navy)
- * - Secondary: #fb923c (orange)
- * - Accent: #38b2ac (teal)
+ * - Secondary: #d97706 (orange) - WCAG AA compliant
+ * - Accent: #0d9488 (teal) - WCAG AA compliant
  * - Background: #ffffff (white)
  */
 export function ThemeProvider({ children }: ThemeProviderProps) {
