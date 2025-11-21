@@ -1,4 +1,5 @@
-import { Loader2, AlertCircle } from "lucide-react";
+import { Loader2, AlertCircle, ArrowLeft } from "lucide-react";
+import { useState, useEffect } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -6,7 +7,8 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { formatCurrency } from "@/lib/utils";
-import type { PackageFormProps } from "./types";
+import { useUnsavedChanges } from "@/hooks/useUnsavedChanges";
+import type { PackageFormProps, PackageFormData } from "./types";
 
 export function PackageForm({
   packageForm,
@@ -22,11 +24,47 @@ export function PackageForm({
     return /^[a-z0-9-]+$/.test(slug);
   };
 
+  // Track initial form state for unsaved changes detection
+  const [initialForm, setInitialForm] = useState<PackageFormData>(packageForm);
+
+  // Calculate if form has unsaved changes
+  const isDirty = JSON.stringify(packageForm) !== JSON.stringify(initialForm);
+
+  // Enable unsaved changes warning
+  useUnsavedChanges({
+    isDirty,
+    message: "You have unsaved package changes. Leave anyway?",
+    enabled: true
+  });
+
+  // Update initial form when editing a different package or after successful save
+  useEffect(() => {
+    setInitialForm(packageForm);
+  }, [editingPackageId]);
+
+  // Reset initial form after successful save (when isSaving goes from true to false with no error)
+  useEffect(() => {
+    if (!isSaving && !error) {
+      setInitialForm(packageForm);
+    }
+  }, [isSaving, error, packageForm]);
+
   return (
-    <Card className="p-6 bg-macon-navy-800 border-macon-navy-600">
-      <h2 className="text-2xl font-semibold mb-4 text-macon-navy-50">
-        {editingPackageId ? "Edit Package" : "Create New Package"}
-      </h2>
+    <>
+      {/* Back button */}
+      <Button
+        variant="ghost"
+        onClick={onCancel}
+        className="mb-4 min-h-[44px]"
+      >
+        <ArrowLeft className="w-4 h-4 mr-2" />
+        Back
+      </Button>
+
+      <Card className="p-6 bg-macon-navy-800 border-macon-navy-600">
+        <h2 className="text-2xl font-semibold mb-4 text-macon-navy-50">
+          {editingPackageId ? "Edit Package" : "Create New Package"}
+        </h2>
 
       {error && (
         <div role="alert" className="flex items-center gap-2 p-4 mb-4 border border-macon-navy-600 bg-macon-navy-700 rounded-lg">
@@ -191,5 +229,6 @@ export function PackageForm({
         </div>
       </form>
     </Card>
+    </>
   );
 }

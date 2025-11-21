@@ -1,4 +1,4 @@
-import { Loader2, AlertCircle, CheckCircle } from "lucide-react";
+import { Loader2, AlertCircle, CheckCircle, ArrowLeft } from "lucide-react";
 import { useState, useEffect } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -7,6 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { ErrorSummary, type FormError } from "@/components/ui/ErrorSummary";
 import { formatCurrency } from "@/lib/utils";
+import { useUnsavedChanges } from "@/hooks/useUnsavedChanges";
 import type { PackageFormData } from "./hooks/usePackageForm";
 
 interface PackageFormProps {
@@ -36,6 +37,19 @@ export function PackageForm({
   const [validationErrors, setValidationErrors] = useState<FormError[]>([]);
   const [showSuccess, setShowSuccess] = useState(false);
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
+
+  // Track initial form state for unsaved changes detection
+  const [initialForm, setInitialForm] = useState<PackageFormData>(form);
+
+  // Calculate if form has unsaved changes
+  const isDirty = JSON.stringify(form) !== JSON.stringify(initialForm);
+
+  // Enable unsaved changes warning
+  useUnsavedChanges({
+    isDirty,
+    message: "You have unsaved package changes. Leave anyway?",
+    enabled: true
+  });
 
   // Validate form on blur
   const validateField = (field: keyof PackageFormData, value: string | boolean) => {
@@ -118,16 +132,34 @@ export function PackageForm({
   useEffect(() => {
     if (!isSaving && !error && validationErrors.length === 0) {
       setShowSuccess(true);
+      // Reset initial form to current form after successful save (clear dirty state)
+      setInitialForm(form);
       const timer = setTimeout(() => setShowSuccess(false), 5000);
       return () => clearTimeout(timer);
     }
-  }, [isSaving, error, validationErrors.length]);
+  }, [isSaving, error, validationErrors.length, form]);
+
+  // Update initial form when editing a different package
+  useEffect(() => {
+    setInitialForm(form);
+  }, [editingPackageId]);
 
   return (
-    <Card className="p-6 bg-macon-navy-800 border-macon-navy-600">
-      <h2 className="text-2xl font-semibold mb-4 text-macon-navy-50">
-        {editingPackageId ? "Edit Package" : "Create New Package"}
-      </h2>
+    <>
+      {/* Back button */}
+      <Button
+        variant="ghost"
+        onClick={onCancel}
+        className="mb-4 min-h-[44px]"
+      >
+        <ArrowLeft className="w-4 h-4 mr-2" />
+        Back
+      </Button>
+
+      <Card className="p-6 bg-macon-navy-800 border-macon-navy-600">
+        <h2 className="text-2xl font-semibold mb-4 text-macon-navy-50">
+          {editingPackageId ? "Edit Package" : "Create New Package"}
+        </h2>
 
       {/* Success Message */}
       {showSuccess && (
@@ -315,5 +347,6 @@ export function PackageForm({
         </div>
       </form>
     </Card>
+    </>
   );
 }

@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
+import { useUnsavedChanges } from "@/hooks/useUnsavedChanges";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -48,6 +49,16 @@ export function BlackoutsManager({ blackouts, isLoading, onBlackoutsChange }: Bl
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [blackoutToDelete, setBlackoutToDelete] = useState<BlackoutDto | null>(null);
+
+  // Track if form has unsaved changes
+  const isDirty = newBlackoutDate.trim() !== "" || newBlackoutReason.trim() !== "";
+
+  // Enable unsaved changes warning
+  useUnsavedChanges({
+    isDirty,
+    message: "You have unsaved blackout date information. Leave anyway?",
+    enabled: true
+  });
 
   const showSuccess = useCallback((message: string) => {
     setSuccessMessage(message);
