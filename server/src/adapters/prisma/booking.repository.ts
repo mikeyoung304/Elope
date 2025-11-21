@@ -13,9 +13,57 @@ import { toISODate } from '../lib/date-utils';
 // Transaction configuration for booking creation
 const BOOKING_TRANSACTION_TIMEOUT_MS = 5000;  // 5 seconds
 const BOOKING_ISOLATION_LEVEL = 'Serializable' as const;
+const MAX_TRANSACTION_RETRIES = 3;  // Retry up to 3 times on deadlock
+const RETRY_DELAY_MS = 100;  // Base delay between retries
 
 export class PrismaBookingRepository implements BookingRepository {
   constructor(private readonly prisma: PrismaClient) {}
+
+  /**
+   * Helper: Retry transaction on serialization failures (deadlocks/write conflicts)
+   * Implements exponential backoff for concurrent transaction conflicts
+   */
+  private async retryTransaction<T>(
+    operation: () => Promise<T>,
+    context: string
+  ): Promise<T> {
+    let lastError: any;
+
+    for (let attempt = 1; attempt <= MAX_TRANSACTION_RETRIES; attempt++) {
+      try {
+        return await operation();
+      } catch (error) {
+        lastError = error;
+
+        // Check if this is a retryable serialization failure
+        const isRetryable =
+          error instanceof PrismaClientKnownRequestError &&
+          (error.code === 'P2034' || // Transaction conflict
+           error.message.includes('write conflict') ||
+           error.message.includes('deadlock'));
+
+        // If not retryable or last attempt, throw immediately
+        if (!isRetryable || attempt === MAX_TRANSACTION_RETRIES) {
+          throw error;
+        }
+
+        // Exponential backoff: 100ms, 200ms, 400ms
+        const delay = RETRY_DELAY_MS * Math.pow(2, attempt - 1);
+        logger.warn({
+          context,
+          attempt,
+          maxRetries: MAX_TRANSACTION_RETRIES,
+          delayMs: delay,
+          error: error.message
+        }, 'Transaction conflict, retrying...');
+
+        await new Promise(resolve => setTimeout(resolve, delay));
+      }
+    }
+
+    // Should never reach here, but TypeScript needs this
+    throw lastError;
+  }
 
   /**
    * Creates a new booking with advanced race condition protection
@@ -66,8 +114,9 @@ export class PrismaBookingRepository implements BookingRepository {
    * ```
    */
   async create(tenantId: string, booking: Booking): Promise<Booking> {
-    try {
-      return await this.prisma.$transaction(async (tx) => {
+    return this.retryTransaction(async () => {
+      try {
+        return await this.prisma.$transaction(async (tx) => {
         // Lock the date to prevent concurrent bookings for this tenant
         const lockQuery = `
           SELECT 1 FROM "Booking"
@@ -176,17 +225,18 @@ export class PrismaBookingRepository implements BookingRepository {
         timeout: BOOKING_TRANSACTION_TIMEOUT_MS,
         isolationLevel: BOOKING_ISOLATION_LEVEL as any,
       });
-    } catch (error) {
-      // Handle unique constraint violation on eventDate
-      if (error instanceof PrismaClientKnownRequestError && error.code === 'P2002') {
-        throw new BookingConflictError(booking.eventDate);
-      }
-      // Re-throw our custom errors
-      if (error instanceof BookingLockTimeoutError || error instanceof BookingConflictError) {
+      } catch (error) {
+        // Handle unique constraint violation on eventDate
+        if (error instanceof PrismaClientKnownRequestError && error.code === 'P2002') {
+          throw new BookingConflictError(booking.eventDate);
+        }
+        // Re-throw our custom errors
+        if (error instanceof BookingLockTimeoutError || error instanceof BookingConflictError) {
+          throw error;
+        }
         throw error;
       }
-      throw error;
-    }
+    }, `create-booking-${tenantId}-${booking.eventDate}`);
   }
 
   /**
