@@ -54,6 +54,12 @@ export function AppShell() {
               {/* Desktop Navigation */}
               <nav aria-label="Primary navigation" className="hidden md:flex gap-8">
                 <Link
+                  to="/packages"
+                  className="text-lg tracking-wide text-macon-navy-100 hover:text-white transition-colors"
+                >
+                  Browse Packages
+                </Link>
+                <Link
                   to="/login"
                   className="text-lg tracking-wide text-macon-navy-100 hover:text-white transition-colors"
                 >
@@ -83,6 +89,12 @@ export function AppShell() {
                       className="text-xl text-neutral-900 hover:text-macon-orange transition-colors font-medium"
                     >
                       Home
+                    </Link>
+                    <Link
+                      to="/packages"
+                      className="text-xl text-neutral-900 hover:text-macon-orange transition-colors font-medium"
+                    >
+                      Browse Packages
                     </Link>
                     <Link
                       to="/login"

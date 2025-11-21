@@ -1,3 +1,4 @@
+import { Link } from "react-router-dom";
 import { Container } from "@/ui/Container";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -26,11 +27,11 @@ export function Home() {
             </p>
             <div className="flex flex-col sm:flex-row gap-4 sm:gap-6 justify-center items-center">
               <Button
-                onClick={scrollToFeatures}
+                asChild
                 size="lg"
                 className="bg-macon-orange hover:bg-macon-orange-dark text-white font-bold text-xl px-12 py-7 shadow-2xl hover:shadow-[0_0_40px_rgba(255,107,53,0.6)] w-full sm:w-auto sm:min-w-[300px] min-h-[64px] transition-all duration-300 hover:-translate-y-1 hover:scale-105 rounded-xl"
               >
-                Apply to Join the Club
+                <Link to="/packages">Browse Packages</Link>
               </Button>
               <Button
                 variant="outline"
@@ -392,9 +393,9 @@ export function Home() {
                 variant="secondary"
                 size="lg"
                 className="text-xl"
-                onClick={() => window.location.href = 'mailto:support@maconai.com?subject=Application to Join Macon AI Club'}
+                asChild
               >
-                Apply to Join
+                <Link to="/packages">Browse Our Packages</Link>
               </Button>
             </div>
           </div>
@@ -448,9 +449,9 @@ export function Home() {
             <div className="flex flex-col sm:flex-row gap-6 justify-center items-center mb-12">
               <Button
                 className="bg-macon-orange hover:bg-macon-orange-dark text-white font-extrabold text-2xl px-16 py-8 shadow-[0_0_60px_rgba(255,107,53,0.5)] hover:shadow-[0_0_80px_rgba(255,107,53,0.7)] hover:scale-110 w-full sm:w-auto sm:min-w-[340px] rounded-2xl transition-all duration-300 border-4 border-macon-orange-light"
-                onClick={() => window.location.href = 'mailto:support@maconai.com?subject=Application to Join Macon AI Club'}
+                asChild
               >
-                Apply to Join the Club
+                <Link to="/packages">Browse Our Packages</Link>
               </Button>
             </div>
             <div className="flex flex-wrap justify-center gap-6">
