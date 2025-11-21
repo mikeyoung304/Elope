@@ -5,6 +5,9 @@
 import type { Config } from './lib/core/config';
 import { InProcessEventEmitter } from './lib/core/events';
 import { CacheService } from './lib/cache';
+import type { CacheServicePort } from './lib/ports';
+import { RedisCacheAdapter } from './adapters/redis/cache.adapter';
+import { InMemoryCacheAdapter } from './adapters/mock/cache.adapter';
 import { CatalogService } from './services/catalog.service';
 import { AvailabilityService } from './services/availability.service';
 import { BookingService } from './services/booking.service';
@@ -65,15 +68,26 @@ export interface Container {
     audit: AuditService;
     segment: SegmentService;
   };
+  cacheAdapter: CacheServicePort; // Export cache adapter for health checks
   prisma?: PrismaClient; // Export Prisma instance for shutdown
 }
 
 export function buildContainer(config: Config): Container {
   const eventEmitter = new InProcessEventEmitter();
 
-  // Initialize cache service (15 minute default TTL)
-  const cacheService = new CacheService(900);
-  logger.info('✅ Cache service initialized with 900s TTL');
+  // Initialize legacy cache service (backward compatibility)
+  // TODO: Remove once all services migrated to CacheServicePort
+  const legacyCacheService = new CacheService(900);
+
+  // Initialize new cache adapter (Redis for real mode, in-memory for mock)
+  let cacheAdapter: CacheServicePort;
+  if (config.ADAPTERS_PRESET === 'real' && process.env.REDIS_URL) {
+    logger.info('🔴 Using Redis cache adapter');
+    cacheAdapter = new RedisCacheAdapter(process.env.REDIS_URL);
+  } else {
+    logger.info('🧪 Using in-memory cache adapter');
+    cacheAdapter = new InMemoryCacheAdapter();
+  }
 
   if (config.ADAPTERS_PRESET === 'mock') {
     logger.info('🧪 Using MOCK adapters');
@@ -94,7 +108,7 @@ export function buildContainer(config: Config): Container {
     const idempotencyService = new IdempotencyService(mockPrisma);
 
     // Build domain services with caching and audit logging
-    const catalogService = new CatalogService(adapters.catalogRepo, cacheService, auditService);
+    const catalogService = new CatalogService(adapters.catalogRepo, legacyCacheService, auditService);
     const availabilityService = new AvailabilityService(
       adapters.calendarProvider,
       adapters.blackoutRepo,
@@ -123,7 +137,7 @@ export function buildContainer(config: Config): Container {
 
     // Create SegmentService with mock Prisma segment repo
     const segmentRepo = new PrismaSegmentRepository(mockPrisma);
-    const segmentService = new SegmentService(segmentRepo, cacheService);
+    const segmentService = new SegmentService(segmentRepo, legacyCacheService);
 
     const controllers = {
       packages: new PackagesController(catalogService),
@@ -149,7 +163,7 @@ export function buildContainer(config: Config): Container {
       segment: segmentService,
     };
 
-    return { controllers, services, prisma: undefined };
+    return { controllers, services, cacheAdapter, prisma: undefined };
   }
 
   // Real adapters mode
@@ -237,7 +251,7 @@ export function buildContainer(config: Config): Container {
   const idempotencyService = new IdempotencyService(prisma);
 
   // Build domain services with caching and audit logging
-  const catalogService = new CatalogService(catalogRepo, cacheService, auditService);
+  const catalogService = new CatalogService(catalogRepo, legacyCacheService, auditService);
   const availabilityService = new AvailabilityService(
     calendarProvider,
     blackoutRepo,
@@ -258,7 +272,7 @@ export function buildContainer(config: Config): Container {
   const tenantAuthService = new TenantAuthService(tenantRepo, config.JWT_SECRET);
 
   // Create SegmentService with real Prisma segment repo
-  const segmentService = new SegmentService(segmentRepo, cacheService);
+  const segmentService = new SegmentService(segmentRepo, legacyCacheService);
 
   // Subscribe to BookingPaid events to send confirmation emails
   eventEmitter.subscribe<{
@@ -307,5 +321,5 @@ export function buildContainer(config: Config): Container {
     segment: segmentService,
   };
 
-  return { controllers, services, prisma };
+  return { controllers, services, cacheAdapter, prisma };
 }

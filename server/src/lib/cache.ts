@@ -1,6 +1,10 @@
 /**
- * Application-level caching service
- * Used to cache expensive database queries and computed results
+ * Application-level caching service (Legacy/Deprecated)
+ *
+ * DEPRECATED: Use CacheServicePort adapters instead (RedisCacheAdapter or InMemoryCacheAdapter)
+ * This class is kept for backward compatibility with existing code during migration.
+ *
+ * New code should use the async CacheServicePort interface from ports.ts
  */
 
 import NodeCache from 'node-cache';

@@ -105,6 +105,8 @@ model Customer {
   @@unique([tenantId, email]) // Composite unique: email unique per tenant, not globally
   @@index([tenantId])
   @@index([email])
+  @@index([createdAt]) // Query recent customers (performance optimization)
+  @@index([tenantId, createdAt]) // Query recent customers by tenant (performance optimization)
 }
 
 model Venue {
@@ -203,6 +205,7 @@ model Package {
   @@index([slug])
   @@index([segmentId]) // Query packages by segment
   @@index([segmentId, grouping]) // Query packages by segment and grouping
+  @@index([segmentId, active]) // Query active packages by segment (performance optimization)
 }
 
 model AddOn {

@@ -19,6 +19,8 @@ import { openApiSpec } from './api-docs';
 import { uploadService } from './services/upload.service';
 import { sentryRequestHandler, sentryErrorHandler } from './lib/errors/sentry';
 import { registerHealthRoutes } from './routes/health.routes';
+import { sanitizeInput } from './middleware/sanitize';
+import { cspViolationsRouter } from './routes/csp-violations.routes';
 
 export function createApp(
   config: Config,
@@ -30,8 +32,57 @@ export function createApp(
   // Sentry request tracking (MUST be first)
   app.use(sentryRequestHandler());
 
-  // Security middleware
-  app.use(helmet());
+  // Security middleware with custom CSP
+  app.use(
+    helmet({
+      contentSecurityPolicy: {
+        directives: {
+          defaultSrc: ["'self'"],
+          scriptSrc: [
+            "'self'",
+            "'unsafe-inline'", // TODO: Replace with nonce in Phase 3 if needed
+            "https://js.stripe.com",
+          ],
+          styleSrc: [
+            "'self'",
+            "'unsafe-inline'", // Required for Tailwind CSS
+          ],
+          imgSrc: [
+            "'self'",
+            "data:",
+            "https:", // Allow HTTPS images (package photos, logos)
+            "blob:",
+          ],
+          connectSrc: [
+            "'self'",
+            "https://api.stripe.com",
+            "https://uploads.stripe.com",
+          ],
+          frameSrc: [
+            "https://js.stripe.com",
+            "https://hooks.stripe.com",
+          ],
+          fontSrc: ["'self'", "data:"],
+          objectSrc: ["'none'"],
+          mediaSrc: ["'self'"],
+          manifestSrc: ["'self'"],
+          workerSrc: ["'self'", "blob:"],
+          formAction: ["'self'"],
+          frameAncestors: ["'none'"], // Prevent clickjacking
+          baseUri: ["'self'"],
+          reportUri: "/v1/csp-violations", // CSP violation reporting
+        },
+      },
+      hsts: {
+        maxAge: 31536000, // 1 year
+        includeSubDomains: true,
+        preload: true,
+      },
+      referrerPolicy: {
+        policy: "strict-origin-when-cross-origin",
+      },
+    })
+  );
 
   // CORS - Multi-origin support for widget embedding
   app.use(
@@ -88,6 +139,15 @@ export function createApp(
   // Request ID + logging middleware (for non-webhook routes)
   app.use(requestLogger);
 
+  // Apply input sanitization globally (except webhooks which need raw body)
+  app.use((req, res, next) => {
+    // Skip sanitization for webhook endpoints (need raw body)
+    if (req.path.startsWith('/v1/webhooks')) {
+      return next();
+    }
+    sanitizeInput()(req, res, next);
+  });
+
   // Serve uploaded files (static)
   const logoUploadDir = uploadService.getLogoUploadDir();
   app.use('/uploads/logos', express.static(logoUploadDir));
@@ -97,12 +157,20 @@ export function createApp(
   app.use('/uploads/packages', express.static(packagePhotoUploadDir));
   logger.info({ uploadDir: packagePhotoUploadDir }, 'Serving package photos from static directory');
 
+  // Serve public files (security.txt, etc.)
+  const publicDir = path.join(__dirname, '..', 'public');
+  app.use('/.well-known', express.static(path.join(publicDir, '.well-known')));
+  logger.info({ publicDir }, 'Serving public files from static directory');
+
   // Register health check routes (BEFORE all other routes)
   registerHealthRoutes(app, {
     prisma: container.prisma,
     config,
     startTime,
   });
+
+  // Register CSP violation reporting endpoint
+  app.use('/v1', cspViolationsRouter);
 
   // API Documentation endpoints
   // Serve OpenAPI spec as JSON

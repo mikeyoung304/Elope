@@ -256,3 +256,61 @@ export interface UpdateAddOnInput {
   priceCents?: number;
   photoUrl?: string;
 }
+
+// ============================================================================
+// Cache Service Port
+// ============================================================================
+
+/**
+ * Cache Service Port
+ *
+ * Provides key-value caching with TTL support.
+ * Implementations: Redis (production), In-Memory (development/fallback)
+ *
+ * CRITICAL: All cache keys MUST include tenantId to prevent cross-tenant data leakage
+ * Example: `catalog:${tenantId}:packages` NOT `catalog:packages`
+ */
+export interface CacheServicePort {
+  /**
+   * Get value by key
+   * Returns null if key doesn't exist or is expired
+   */
+  get<T>(key: string): Promise<T | null>;
+
+  /**
+   * Set value with optional TTL (time-to-live in seconds)
+   * @param key - Cache key (must include tenantId for multi-tenant safety)
+   * @param value - Value to cache (will be JSON serialized)
+   * @param ttlSeconds - Optional TTL override (defaults to service default)
+   */
+  set(key: string, value: any, ttlSeconds?: number): Promise<void>;
+
+  /**
+   * Delete single key
+   */
+  del(key: string): Promise<void>;
+
+  /**
+   * Delete all keys matching pattern (e.g., "catalog:tenant_123:*")
+   * Uses SCAN for Redis (production-safe), regex for in-memory
+   */
+  flush(pattern: string): Promise<void>;
+
+  /**
+   * Check if cache is available (health check)
+   * Returns false if cache is down or unreachable
+   */
+  isConnected(): Promise<boolean>;
+
+  /**
+   * Get cache statistics for monitoring
+   * Returns cache hit/miss rates and key count
+   */
+  getStats?(): Promise<{
+    hits: number;
+    misses: number;
+    keys: number;
+    totalRequests: number;
+    hitRate: string;
+  }>;
+}

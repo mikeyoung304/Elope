@@ -352,7 +352,9 @@ describe.sequential('PrismaWebhookRepository - Integration Tests', () => {
         });
       }
 
-      const events = await ctx.prisma.webhookEvent.findMany();
+      const events = await ctx.prisma.webhookEvent.findMany({
+        where: { tenantId: testTenantId }
+      });
       expect(events.length).toBe(4);
 
       const types = events.map(e => e.eventType).sort();

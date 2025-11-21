@@ -23,6 +23,7 @@ import {
   calculateRefundCommission,
 } from '../fixtures/bookings';
 import type { Booking } from '../../src/lib/entities';
+import { withDatabaseRetry } from '../helpers/retry';
 
 describe.sequential('Cancellation & Refund Flow Integration', () => {
   const ctx = setupCompleteIntegrationTest('cancellation-flow');
@@ -336,60 +337,64 @@ describe.sequential('Cancellation & Refund Flow Integration', () => {
 
   describe('Edge Cases', () => {
     it('should handle refund with add-ons and calculate proportional commission', async () => {
-      // Create add-ons
-      const addOn1 = await catalogRepo.createAddOn(testTenantId, {
-        ...ctx.factories.addOn.create({ priceCents: 30000 }),
-        packageId: testPackageId,
+      await withDatabaseRetry(async () => {
+        // Create add-ons
+        const addOn1 = await catalogRepo.createAddOn(testTenantId, {
+          ...ctx.factories.addOn.create({ priceCents: 30000 }),
+          packageId: testPackageId,
+        });
+        const addOn2 = await catalogRepo.createAddOn(testTenantId, {
+          ...ctx.factories.addOn.create({ priceCents: 20000 }),
+          packageId: testPackageId,
+        });
+
+        // Create booking with add-ons
+        const bookingFixture = BookingScenarios.withAddOns([addOn1.id, addOn2.id]);
+        const booking = await bookingRepo.create(testTenantId, {
+          ...bookingFixture,
+          packageId: testPackageId,
+        });
+
+        // Total: $2,500 + $300 + $200 = $3,000
+        expect(booking.totalCents).toBe(300000);
+        expect(booking.commissionAmount).toBe(36000); // 12% of $3,000
+
+        // Refund 50%
+        const refundAmount = 150000; // $1,500
+        const commissionRefund = commissionService.calculateRefundCommission(
+          booking.commissionAmount || 0,
+          refundAmount,
+          booking.totalCents
+        );
+
+        // 50% refund → 50% commission reversal
+        expect(commissionRefund).toBe(18000); // $180 (50% of $360)
       });
-      const addOn2 = await catalogRepo.createAddOn(testTenantId, {
-        ...ctx.factories.addOn.create({ priceCents: 20000 }),
-        packageId: testPackageId,
-      });
-
-      // Create booking with add-ons
-      const bookingFixture = BookingScenarios.withAddOns([addOn1.id, addOn2.id]);
-      const booking = await bookingRepo.create(testTenantId, {
-        ...bookingFixture,
-        packageId: testPackageId,
-      });
-
-      // Total: $2,500 + $300 + $200 = $3,000
-      expect(booking.totalCents).toBe(300000);
-      expect(booking.commissionAmount).toBe(36000); // 12% of $3,000
-
-      // Refund 50%
-      const refundAmount = 150000; // $1,500
-      const commissionRefund = commissionService.calculateRefundCommission(
-        booking.commissionAmount || 0,
-        refundAmount,
-        booking.totalCents
-      );
-
-      // 50% refund → 50% commission reversal
-      expect(commissionRefund).toBe(18000); // $180 (50% of $360)
     });
 
     it('should handle rounding in commission refund calculations', async () => {
-      // Create booking with odd amount
-      const booking = await bookingRepo.create(testTenantId, {
-        ...BookingScenarios.standard(),
-        packageId: testPackageId,
-        totalCents: 123456, // $1,234.56
-        commissionAmount: 14815, // 12% = $148.15 (rounded up)
+      await withDatabaseRetry(async () => {
+        // Create booking with odd amount
+        const booking = await bookingRepo.create(testTenantId, {
+          ...BookingScenarios.standard(),
+          packageId: testPackageId,
+          totalCents: 123456, // $1,234.56
+          commissionAmount: 14815, // 12% = $148.15 (rounded up)
+        });
+
+        // Partial refund: $617.28 (50%)
+        const refundAmount = 61728;
+        const commissionRefund = commissionService.calculateRefundCommission(
+          booking.commissionAmount || 0,
+          refundAmount,
+          booking.totalCents
+        );
+
+        // Should round UP to protect platform revenue
+        const expectedRefund = Math.ceil((booking.commissionAmount || 0) * 0.5);
+        expect(commissionRefund).toBe(expectedRefund);
+        expect(commissionRefund).toBe(7408); // $74.08 (rounded up from $74.075)
       });
-
-      // Partial refund: $617.28 (50%)
-      const refundAmount = 61728;
-      const commissionRefund = commissionService.calculateRefundCommission(
-        booking.commissionAmount || 0,
-        refundAmount,
-        booking.totalCents
-      );
-
-      // Should round UP to protect platform revenue
-      const expectedRefund = Math.ceil((booking.commissionAmount || 0) * 0.5);
-      expect(commissionRefund).toBe(expectedRefund);
-      expect(commissionRefund).toBe(7408); // $74.08 (rounded up from $74.075)
     });
   });
 });
