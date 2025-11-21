@@ -90,7 +90,7 @@ describe('Tenant Resolution Middleware - CRITICAL SECURITY', () => {
         isActive: true,
       };
 
-      req.headers = { 'x-tenant-key': 'pk_live_bellaweddings_a3f8c9d2e1b4f7g8' };
+      req.headers = { 'x-tenant-key': 'pk_live_bellaweddings_a3f8c9d2e1b4f7a8' };
       (mockPrisma.tenant!.findUnique as any).mockResolvedValue(mockTenant);
 
       await tenantMiddleware(req as TenantRequest, res as Response, next);
@@ -331,7 +331,7 @@ describe('Tenant Resolution Middleware - CRITICAL SECURITY', () => {
 
   describe('🚫 Failure Cases - Tenant Not Found', () => {
     it('should reject valid format but non-existent tenant', async () => {
-      req.headers = { 'x-tenant-key': 'pk_live_nonexistent_a3f8c9d2e1b4f7g8' };
+      req.headers = { 'x-tenant-key': 'pk_live_nonexistent_a3f8c9d2e1b4f7a8' };
       (mockPrisma.tenant!.findUnique as any).mockResolvedValue(null);
 
       await tenantMiddleware(req as TenantRequest, res as Response, next);
@@ -383,7 +383,7 @@ describe('Tenant Resolution Middleware - CRITICAL SECURITY', () => {
         isActive: false, // CRITICAL: Inactive
       };
 
-      req.headers = { 'x-tenant-key': 'pk_live_disabledcompany_a3f8c9d2e1b4f7g8' };
+      req.headers = { 'x-tenant-key': 'pk_live_disabledcompany_a3f8c9d2e1b4f7a8' };
       (mockPrisma.tenant!.findUnique as any).mockResolvedValue(inactiveTenant);
 
       await tenantMiddleware(req as TenantRequest, res as Response, next);
@@ -431,7 +431,7 @@ describe('Tenant Resolution Middleware - CRITICAL SECURITY', () => {
 
   describe('💥 Error Handling - Database Errors', () => {
     it('should handle database connection error gracefully', async () => {
-      req.headers = { 'x-tenant-key': 'pk_live_testbiz_a3f8c9d2e1b4f7g8' };
+      req.headers = { 'x-tenant-key': 'pk_live_testbiz_a3f8c9d2e1b4f7a8' };
       (mockPrisma.tenant!.findUnique as any).mockRejectedValue(
         new Error('Database connection failed')
       );
@@ -452,7 +452,7 @@ describe('Tenant Resolution Middleware - CRITICAL SECURITY', () => {
     });
 
     it('should handle Prisma query timeout', async () => {
-      req.headers = { 'x-tenant-key': 'pk_live_testbiz_a3f8c9d2e1b4f7g8' };
+      req.headers = { 'x-tenant-key': 'pk_live_testbiz_a3f8c9d2e1b4f7a8' };
       (mockPrisma.tenant!.findUnique as any).mockRejectedValue(
         new Error('Query timeout')
       );
@@ -468,7 +468,7 @@ describe('Tenant Resolution Middleware - CRITICAL SECURITY', () => {
     });
 
     it('should handle unexpected errors without exposing details', async () => {
-      req.headers = { 'x-tenant-key': 'pk_live_testbiz_a3f8c9d2e1b4f7g8' };
+      req.headers = { 'x-tenant-key': 'pk_live_testbiz_a3f8c9d2e1b4f7a8' };
       (mockPrisma.tenant!.findUnique as any).mockRejectedValue(
         new Error('Unexpected internal error with sensitive data')
       );
@@ -521,7 +521,7 @@ describe('Tenant Resolution Middleware - CRITICAL SECURITY', () => {
     });
 
     it('should use parameterized query (verify Prisma usage)', async () => {
-      const validKey = 'pk_live_testbiz_a3f8c9d2e1b4f7g8';
+      const validKey = 'pk_live_testbiz_a3f8c9d2e1b4f7a8';
       req.headers = { 'x-tenant-key': validKey };
 
       const mockTenant = {
@@ -563,7 +563,7 @@ describe('Tenant Resolution Middleware - CRITICAL SECURITY', () => {
       };
 
       // Express normalizes headers to lowercase
-      req.headers = { 'x-tenant-key': 'pk_live_testbiz_a3f8c9d2e1b4f7g8' };
+      req.headers = { 'x-tenant-key': 'pk_live_testbiz_a3f8c9d2e1b4f7a8' };
       (mockPrisma.tenant!.findUnique as any).mockResolvedValue(mockTenant);
 
       await tenantMiddleware(req as TenantRequest, res as Response, next);
