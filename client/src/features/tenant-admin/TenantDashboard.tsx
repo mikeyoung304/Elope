@@ -139,7 +139,7 @@ export function TenantDashboard({ tenantInfo }: TenantDashboardProps) {
         </div>
 
         {/* Metrics Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
           <Card className="p-6 border-neutral-200 shadow-sm hover:shadow-md transition-shadow">
             <div className="flex items-center gap-3 mb-2">
               <div className="p-2 bg-macon-navy-50 rounded">
@@ -189,7 +189,7 @@ export function TenantDashboard({ tenantInfo }: TenantDashboardProps) {
             <button
               onClick={() => setActiveTab("packages")}
               className={cn(
-                "py-2 px-1 border-b-2 font-medium text-sm transition-colors",
+                "py-4 px-1 border-b-2 font-medium text-sm transition-colors min-h-[44px]",
                 activeTab === "packages"
                   ? "border-macon-navy-600 text-macon-navy-600"
                   : "border-transparent text-neutral-600 hover:text-neutral-900 hover:border-neutral-300"
@@ -200,7 +200,7 @@ export function TenantDashboard({ tenantInfo }: TenantDashboardProps) {
             <button
               onClick={() => setActiveTab("blackouts")}
               className={cn(
-                "py-2 px-1 border-b-2 font-medium text-sm transition-colors",
+                "py-4 px-1 border-b-2 font-medium text-sm transition-colors min-h-[44px]",
                 activeTab === "blackouts"
                   ? "border-macon-navy-600 text-macon-navy-600"
                   : "border-transparent text-neutral-600 hover:text-neutral-900 hover:border-neutral-300"
@@ -211,7 +211,7 @@ export function TenantDashboard({ tenantInfo }: TenantDashboardProps) {
             <button
               onClick={() => setActiveTab("bookings")}
               className={cn(
-                "py-2 px-1 border-b-2 font-medium text-sm transition-colors",
+                "py-4 px-1 border-b-2 font-medium text-sm transition-colors min-h-[44px]",
                 activeTab === "bookings"
                   ? "border-macon-navy-600 text-macon-navy-600"
                   : "border-transparent text-neutral-600 hover:text-neutral-900 hover:border-neutral-300"
@@ -222,7 +222,7 @@ export function TenantDashboard({ tenantInfo }: TenantDashboardProps) {
             <button
               onClick={() => setActiveTab("branding")}
               className={cn(
-                "py-2 px-1 border-b-2 font-medium text-sm transition-colors",
+                "py-4 px-1 border-b-2 font-medium text-sm transition-colors min-h-[44px]",
                 activeTab === "branding"
                   ? "border-macon-navy-600 text-macon-navy-600"
                   : "border-transparent text-neutral-600 hover:text-neutral-900 hover:border-neutral-300"

@@ -1,7 +1,8 @@
-import { FormEvent } from "react";
+import { FormEvent, useState } from "react";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { InputEnhanced } from "@/components/ui/input-enhanced";
+import { ErrorSummary, type FormError } from "@/components/ui/ErrorSummary";
 import { Mail, Lock } from "lucide-react";
 import { useForm } from "@/hooks/useForm";
 
@@ -16,9 +17,36 @@ export function TenantLogin({ onLogin, error, isLoading }: TenantLoginProps) {
     email: "",
     password: ""
   });
+  const [validationErrors, setValidationErrors] = useState<FormError[]>([]);
+
+  const validateForm = (): FormError[] => {
+    const errors: FormError[] = [];
+
+    if (!values.email) {
+      errors.push({ field: 'email', message: 'Email is required' });
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(values.email)) {
+      errors.push({ field: 'email', message: 'Please enter a valid email address' });
+    }
+
+    if (!values.password) {
+      errors.push({ field: 'password', message: 'Password is required' });
+    } else if (values.password.length < 6) {
+      errors.push({ field: 'password', message: 'Password must be at least 6 characters' });
+    }
+
+    return errors;
+  };
 
   const handleSubmit = (e: FormEvent) => {
     e.preventDefault();
+    setValidationErrors([]);
+
+    const errors = validateForm();
+    if (errors.length > 0) {
+      setValidationErrors(errors);
+      return;
+    }
+
     onLogin(values.email, values.password);
   };
 
@@ -28,6 +56,13 @@ export function TenantLogin({ onLogin, error, isLoading }: TenantLoginProps) {
         <CardTitle className="text-center text-macon-navy-50 text-3xl">Tenant Login</CardTitle>
       </CardHeader>
       <CardContent>
+        {/* Validation Errors */}
+        <ErrorSummary
+          errors={validationErrors}
+          onDismiss={() => setValidationErrors([])}
+        />
+
+        {/* Server Error */}
         {error && (
           <div role="alert" className="mb-6 p-3 bg-macon-navy-700 border border-macon-navy-600 text-macon-navy-100 rounded text-lg">
             {error}

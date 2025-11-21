@@ -27,7 +27,7 @@ export function TabNavigation({ activeTab, onTabChange }: TabNavigationProps) {
             key={tab.value}
             onClick={() => onTabChange(tab.value)}
             className={cn(
-              "py-2 px-1 border-b-2 font-medium text-lg transition-colors",
+              "py-4 px-1 border-b-2 font-medium text-lg transition-colors min-h-[44px]",
               activeTab === tab.value
                 ? "border-macon-navy-500 text-macon-navy-300"
                 : "border-transparent text-macon-navy-100 hover:text-macon-navy-300 hover:border-macon-navy-500"

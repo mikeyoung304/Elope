@@ -10,7 +10,7 @@ export function CatalogGrid() {
 
   if (isLoading) {
     return (
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
         <PackageCardSkeleton />
         <PackageCardSkeleton />
         <PackageCardSkeleton />
@@ -35,7 +35,7 @@ export function CatalogGrid() {
   }
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
       {packages.map((pkg: PackageDto) => (
         <Link key={pkg.id} to={`/package/${pkg.slug}`}>
           <Card className="overflow-hidden cursor-pointer h-full transition-all hover:shadow-elevation-2 bg-white border-neutral-200 hover:border-neutral-300 shadow-elevation-1">
@@ -45,6 +45,7 @@ export function CatalogGrid() {
                   src={pkg.photoUrl}
                   alt={pkg.title}
                   className="w-full h-full object-cover"
+                  loading="lazy"
                 />
               </div>
             )}

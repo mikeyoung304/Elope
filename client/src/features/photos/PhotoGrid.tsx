@@ -71,6 +71,7 @@ export function PhotoGrid({
               src={photo.url}
               alt={`Package photo ${index + 1}`}
               className="w-full h-full object-cover transition-transform group-hover:scale-105"
+              loading="lazy"
             />
 
             {/* Photo info overlay */}

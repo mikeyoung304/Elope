@@ -140,6 +140,7 @@ export function PackagePage() {
                 src={packageData.photoUrl}
                 alt={packageData.title}
                 className="w-full h-full object-cover"
+                loading="lazy"
               />
             </div>
           )}

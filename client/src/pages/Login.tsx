@@ -4,6 +4,7 @@ import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { InputEnhanced } from "@/components/ui/input-enhanced";
 import { Logo } from "@/components/brand/Logo";
+import { ErrorSummary, type FormError } from "@/components/ui/ErrorSummary";
 import { Mail, Lock, ArrowLeft } from "lucide-react";
 import { useForm } from "@/hooks/useForm";
 import { useAuth } from "../contexts/AuthContext";
@@ -18,6 +19,7 @@ export function Login() {
   const { login, isAuthenticated, role } = useAuth();
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [validationErrors, setValidationErrors] = useState<FormError[]>([]);
 
   // Auto-fill for local development/demo - admin by default
   const { values, handleChange } = useForm({
@@ -39,6 +41,27 @@ export function Login() {
   }, [isAuthenticated, role, navigate]);
 
   /**
+   * Validate form before submission
+   */
+  const validateForm = (): FormError[] => {
+    const errors: FormError[] = [];
+
+    if (!values.email) {
+      errors.push({ field: 'email', message: 'Email is required' });
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(values.email)) {
+      errors.push({ field: 'email', message: 'Please enter a valid email address' });
+    }
+
+    if (!values.password) {
+      errors.push({ field: 'password', message: 'Password is required' });
+    } else if (values.password.length < 6) {
+      errors.push({ field: 'password', message: 'Password must be at least 6 characters' });
+    }
+
+    return errors;
+  };
+
+  /**
    * Attempt login
    * Tries admin login first, then falls back to tenant login
    * Routes user based on successful authentication type
@@ -46,6 +69,15 @@ export function Login() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
+    setValidationErrors([]);
+
+    // Validate form
+    const errors = validateForm();
+    if (errors.length > 0) {
+      setValidationErrors(errors);
+      return;
+    }
+
     setIsLoading(true);
 
     try {
@@ -94,6 +126,13 @@ export function Login() {
             </p>
           </CardHeader>
           <CardContent>
+          {/* Validation Errors */}
+          <ErrorSummary
+            errors={validationErrors}
+            onDismiss={() => setValidationErrors([])}
+          />
+
+          {/* Server Error */}
           {error && (
             <div role="alert" className="mb-6 p-4 bg-macon-navy-700 border border-red-500 text-red-100 rounded">
               <p className="text-lg mb-3">{error}</p>

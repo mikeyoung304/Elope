@@ -22,7 +22,7 @@ export function DashboardMetrics({
   blackoutsCount,
 }: DashboardMetricsProps) {
   return (
-    <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
       <Card className="p-6 bg-macon-navy-800 border-macon-navy-600">
         <div className="flex items-center gap-3 mb-2">
           <div className="p-2 bg-macon-navy-700 rounded">

@@ -165,7 +165,7 @@ export function PlatformAdminDashboard() {
 
         {/* System Metrics */}
         {isLoading ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
             <MetricCardSkeleton />
             <MetricCardSkeleton />
             <MetricCardSkeleton />
@@ -173,7 +173,7 @@ export function PlatformAdminDashboard() {
             <MetricCardSkeleton />
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
             <Card className="p-6 border-neutral-200 shadow-sm hover:shadow-md transition-shadow">
               <div className="flex items-center gap-3 mb-2">
                 <div className="p-2 bg-macon-navy-50 rounded">

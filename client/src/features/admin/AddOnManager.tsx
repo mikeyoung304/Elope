@@ -38,7 +38,7 @@ export function AddOnManager({
           )}
 
           <form onSubmit={onSubmit} className="space-y-3">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
               <div className="space-y-2">
                 <Label htmlFor="addOnTitle" className="text-base text-macon-navy-100">
                   Title <span className="text-destructive">*</span>

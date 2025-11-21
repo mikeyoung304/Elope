@@ -1,8 +1,18 @@
 import { useState, useCallback, useRef, useEffect } from "react";
 import { toast } from "sonner";
-import { Plus, CheckCircle } from "lucide-react";
+import { Plus, CheckCircle, AlertTriangle, Trash2 } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { api } from "../../lib/api";
 import type {
   PackageDto,
@@ -31,6 +41,10 @@ export function PackagesManager({ packages, onPackagesChange }: PackagesManagerP
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
+  const [deletePackageDialogOpen, setDeletePackageDialogOpen] = useState(false);
+  const [packageToDelete, setPackageToDelete] = useState<{ id: string; title: string } | null>(null);
+  const [deleteAddOnDialogOpen, setDeleteAddOnDialogOpen] = useState(false);
+  const [addOnToDelete, setAddOnToDelete] = useState<{ id: string; title: string } | null>(null);
 
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
 
@@ -185,20 +199,25 @@ export function PackagesManager({ packages, onPackagesChange }: PackagesManagerP
     }
   }, [packageForm, editingPackageId, showSuccess, resetPackageForm, onPackagesChange]);
 
-  const handleDeletePackage = useCallback(async (packageId: string) => {
-    if (!window.confirm("Are you sure you want to delete this package? This action cannot be undone.")) {
-      return;
-    }
+  const handleDeletePackageClick = useCallback((packageId: string, packageTitle: string) => {
+    setPackageToDelete({ id: packageId, title: packageTitle });
+    setDeletePackageDialogOpen(true);
+  }, []);
+
+  const confirmDeletePackage = useCallback(async () => {
+    if (!packageToDelete) return;
 
     try {
       const result = await api.adminDeletePackage({
-        params: { id: packageId },
+        params: { id: packageToDelete.id },
         body: undefined,
       });
 
       if (result.status === 204) {
         showSuccess("Package deleted successfully");
         onPackagesChange();
+        setDeletePackageDialogOpen(false);
+        setPackageToDelete(null);
       } else {
         toast.error("Failed to delete package", {
           description: "Please try again or contact support.",
@@ -210,7 +229,12 @@ export function PackagesManager({ packages, onPackagesChange }: PackagesManagerP
         description: "Please try again or contact support.",
       });
     }
-  }, [showSuccess, onPackagesChange]);
+  }, [packageToDelete, showSuccess, onPackagesChange]);
+
+  const cancelDeletePackage = useCallback(() => {
+    setDeletePackageDialogOpen(false);
+    setPackageToDelete(null);
+  }, []);
 
   const handleCancelPackageForm = useCallback(() => {
     setIsCreatingPackage(false);

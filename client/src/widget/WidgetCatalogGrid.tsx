@@ -43,7 +43,7 @@ export function WidgetCatalogGrid({ onPackageClick }: Props) {
   }
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
       {packages.map((pkg: PackageDto) => (
         <div
           key={pkg.id}
@@ -65,6 +65,7 @@ export function WidgetCatalogGrid({ onPackageClick }: Props) {
                   src={pkg.photoUrl}
                   alt={pkg.title}
                   className="w-full h-full object-cover"
+                  loading="lazy"
                 />
               </div>
             )}

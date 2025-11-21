@@ -1,11 +1,21 @@
 import { useState, useCallback } from "react";
 import { toast } from "sonner";
-import { Plus, Trash2, CheckCircle, Loader2 } from "lucide-react";
+import { Plus, Trash2, CheckCircle, Loader2, AlertTriangle } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import {
   Table,
   TableBody,
@@ -36,6 +46,8 @@ export function BlackoutsManager({ blackouts, isLoading, onBlackoutsChange }: Bl
   const [newBlackoutReason, setNewBlackoutReason] = useState("");
   const [isAdding, setIsAdding] = useState(false);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [blackoutToDelete, setBlackoutToDelete] = useState<BlackoutDto | null>(null);
 
   const showSuccess = useCallback((message: string) => {
     setSuccessMessage(message);
@@ -76,20 +88,25 @@ export function BlackoutsManager({ blackouts, isLoading, onBlackoutsChange }: Bl
     }
   }, [newBlackoutDate, newBlackoutReason, showSuccess, onBlackoutsChange]);
 
-  const handleDeleteBlackout = useCallback(async (blackoutId: string) => {
-    if (!window.confirm("Are you sure you want to delete this blackout date?")) {
-      return;
-    }
+  const handleDeleteClick = useCallback((blackout: BlackoutDto) => {
+    setBlackoutToDelete(blackout);
+    setDeleteDialogOpen(true);
+  }, []);
+
+  const confirmDelete = useCallback(async () => {
+    if (!blackoutToDelete) return;
 
     try {
       const result = await api.tenantAdminDeleteBlackout({
-        params: { id: blackoutId },
+        params: { id: blackoutToDelete.id },
         body: undefined,
       });
 
       if (result.status === 204) {
         showSuccess("Blackout date deleted successfully");
         onBlackoutsChange();
+        setDeleteDialogOpen(false);
+        setBlackoutToDelete(null);
       } else {
         toast.error("Failed to delete blackout date", {
           description: "Please try again or contact support.",
@@ -101,7 +118,12 @@ export function BlackoutsManager({ blackouts, isLoading, onBlackoutsChange }: Bl
         description: "Please try again or contact support.",
       });
     }
-  }, [showSuccess, onBlackoutsChange]);
+  }, [blackoutToDelete, showSuccess, onBlackoutsChange]);
+
+  const cancelDelete = useCallback(() => {
+    setDeleteDialogOpen(false);
+    setBlackoutToDelete(null);
+  }, []);
 
   // Sort blackouts by date (most recent first)
   const sortedBlackouts = [...blackouts].sort((a, b) =>
@@ -213,7 +235,7 @@ export function BlackoutsManager({ blackouts, isLoading, onBlackoutsChange }: Bl
                   </TableCell>
                   <TableCell>
                     <Button
-                      onClick={() => handleDeleteBlackout(blackout.id)}
+                      onClick={() => handleDeleteClick(blackout)}
                       variant="outline"
                       size="sm"
                       className="border-red-700 text-red-300 hover:bg-red-900/20"
@@ -229,6 +251,55 @@ export function BlackoutsManager({ blackouts, isLoading, onBlackoutsChange }: Bl
           </TableBody>
         </Table>
       </Card>
+
+      {/* Delete Confirmation Dialog */}
+      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <AlertDialogContent className="bg-white dark:bg-macon-navy-800 border-macon-navy-600">
+          <AlertDialogHeader>
+            <div className="flex items-center gap-3 mb-2">
+              <div className="p-2 bg-danger-100 rounded-full">
+                <AlertTriangle className="w-6 h-6 text-danger-700" />
+              </div>
+              <AlertDialogTitle className="text-2xl">Delete Blackout Date?</AlertDialogTitle>
+            </div>
+            <AlertDialogDescription className="text-base text-macon-navy-600 dark:text-macon-navy-300">
+              Are you sure you want to delete the blackout date for{' '}
+              <strong className="font-semibold text-macon-navy-900 dark:text-macon-navy-50">
+                {blackoutToDelete && new Date(blackoutToDelete.date).toLocaleDateString('en-US', {
+                  year: 'numeric',
+                  month: 'long',
+                  day: 'numeric'
+                })}
+              </strong>
+              {blackoutToDelete?.reason && ` (${blackoutToDelete.reason})`}?
+            </AlertDialogDescription>
+            <div className="mt-3 p-3 bg-danger-50 dark:bg-danger-900/20 border border-danger-200 dark:border-danger-800 rounded-lg">
+              <p className="text-sm text-danger-800 dark:text-danger-300 font-medium">
+                ⚠️ This action cannot be undone
+              </p>
+              <ul className="mt-2 text-sm text-danger-700 dark:text-danger-400 space-y-1 list-disc list-inside">
+                <li>This date will become available for bookings again</li>
+                <li>The blackout will be permanently removed</li>
+              </ul>
+            </div>
+          </AlertDialogHeader>
+          <AlertDialogFooter className="gap-2">
+            <AlertDialogCancel
+              onClick={cancelDelete}
+              className="bg-macon-navy-100 hover:bg-macon-navy-200 text-macon-navy-900 border-macon-navy-300"
+            >
+              Cancel
+            </AlertDialogCancel>
+            <AlertDialogAction
+              onClick={confirmDelete}
+              className="bg-danger-600 hover:bg-danger-700 text-white focus:ring-danger-600"
+            >
+              <Trash2 className="w-4 h-4 mr-2" />
+              Delete Blackout
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

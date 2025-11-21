@@ -116,7 +116,7 @@ export function AppShell() {
         <footer className="bg-macon-navy-900 border-t border-macon-navy-800 mt-24">
           <Container>
             <div className="py-16">
-              <div className="grid grid-cols-1 md:grid-cols-4 gap-12">
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-12">
                 <div className="md:col-span-2">
                   <h3 className="text-3xl font-semibold text-white mb-4 tracking-tight">
                     Macon AI Solutions
