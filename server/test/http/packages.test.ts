@@ -8,6 +8,7 @@ import request from 'supertest';
 import type { Express } from 'express';
 import { createApp } from '../../src/app';
 import { loadConfig } from '../../src/lib/core/config';
+import { buildContainer } from '../../src/di';
 import { PrismaClient } from '../../src/generated/prisma';
 
 describe('GET /v1/packages', () => {
@@ -41,7 +42,9 @@ describe('GET /v1/packages', () => {
     await prisma.$disconnect();
 
     const config = loadConfig();
-    app = createApp({ ...config, ADAPTERS_PRESET: 'mock' });
+    const container = buildContainer({ ...config, ADAPTERS_PRESET: 'mock' });
+    const startTime = Date.now();
+    app = createApp(config, container, startTime);
   });
 
   it('returns packages list with contract shape', async () => {
@@ -104,7 +107,9 @@ describe('GET /v1/packages/:slug', () => {
     await prisma.$disconnect();
 
     const config = loadConfig();
-    app = createApp({ ...config, ADAPTERS_PRESET: 'mock' });
+    const container = buildContainer({ ...config, ADAPTERS_PRESET: 'mock' });
+    const startTime = Date.now();
+    app = createApp(config, container, startTime);
   });
 
   it('returns single package by slug', async () => {
