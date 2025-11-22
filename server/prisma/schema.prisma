@@ -82,6 +82,7 @@ model Tenant {
   packages         Package[]
   addOns           AddOn[]
   bookings         Booking[]
+  payments         Payment[] // Tenant-scoped payments
   blackoutDates    BlackoutDate[]
   webhookEvents    WebhookEvent[]
   configChangeLogs ConfigChangeLog[] // Audit trail for config changes
@@ -310,18 +311,24 @@ model BookingAddOn {
 
 model Payment {
   id          String        @id @default(cuid())
+  tenantId    String
   bookingId   String
   amount      Int
   currency    String        @default("USD")
   status      PaymentStatus @default(PENDING)
   processor   String
-  processorId String?       @unique
+  processorId String?
   createdAt   DateTime      @default(now())
+
+  tenant      Tenant        @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   booking     Booking       @relation(fields: [bookingId], references: [id], onDelete: Cascade)
 
+  @@unique([tenantId, processorId])
+  @@index([tenantId])
+  @@index([tenantId, status])
+  @@index([tenantId, createdAt])
   @@index([bookingId])
   @@index([processorId])
-  @@index([status])
 }
 
 enum PaymentStatus {
