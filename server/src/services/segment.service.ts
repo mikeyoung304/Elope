@@ -6,6 +6,12 @@
 import type { Segment } from '../generated/prisma';
 import { NotFoundError, ValidationError } from '../lib/errors';
 import type { CacheService } from '../lib/cache';
+import {
+  cachedOperation,
+  buildCacheKey,
+  invalidateCacheKeys,
+  getSegmentInvalidationKeys,
+} from '../lib/cache-helpers';
 import type { PrismaSegmentRepository, CreateSegmentInput, UpdateSegmentInput } from '../adapters/prisma/segment.repository';
 
 export interface SegmentWithRelations extends Segment {
@@ -35,22 +41,15 @@ export class SegmentService {
    * @returns Array of segments ordered by sortOrder
    */
   async getSegments(tenantId: string, onlyActive = true): Promise<Segment[]> {
-    // CRITICAL: Cache key includes tenantId to prevent cross-tenant data leaks
-    const cacheKey = `segments:${tenantId}:${onlyActive ? 'active' : 'all'}`;
-
-    // Try cache first
-    const cached = this.cache?.get<Segment[]>(cacheKey);
-    if (cached) {
-      return cached;
-    }
-
-    // Cache miss - fetch from repository with tenant isolation
-    const segments = await this.repository.findByTenant(tenantId, onlyActive);
-
-    // Cache for 15 minutes (900 seconds)
-    this.cache?.set(cacheKey, segments, 900);
-
-    return segments;
+    return cachedOperation(
+      this.cache,
+      {
+        prefix: 'segments',
+        keyParts: [tenantId, onlyActive ? 'active' : 'all'],
+        ttl: 900, // 15 minutes
+      },
+      () => this.repository.findByTenant(tenantId, onlyActive)
+    );
   }
 
   /**
@@ -292,16 +291,6 @@ export class SegmentService {
    * @param slug - Optional specific segment slug to invalidate
    */
   private invalidateSegmentCache(tenantId: string, slug?: string): void {
-    if (!this.cache) return;
-
-    // Invalidate list caches
-    this.cache.del(`segments:${tenantId}:active`);
-    this.cache.del(`segments:${tenantId}:all`);
-
-    // Invalidate specific segment cache if slug provided
-    if (slug) {
-      this.cache.del(`segments:${tenantId}:slug:${slug}`);
-      this.cache.del(`segments:${tenantId}:slug:${slug}:with-relations`);
-    }
+    invalidateCacheKeys(this.cache, getSegmentInvalidationKeys(tenantId, slug));
   }
 }

@@ -12,6 +12,13 @@ import type {
 import type { Package, AddOn } from '../lib/entities';
 import { NotFoundError, ValidationError } from '../lib/errors';
 import type { CacheService } from '../lib/cache';
+import {
+  cachedOperation,
+  buildCacheKey,
+  invalidateCacheKeys,
+  getCatalogInvalidationKeys,
+  getSegmentCatalogInvalidationKeys,
+} from '../lib/cache-helpers';
 import { validatePrice, validateRequiredFields } from '../lib/validation';
 import type { AuditService } from './audit.service';
 
@@ -55,22 +62,15 @@ export class CatalogService {
    * ```
    */
   async getAllPackages(tenantId: string): Promise<PackageWithAddOns[]> {
-    // CRITICAL: Cache key includes tenantId to prevent cross-tenant data leaks
-    const cacheKey = `catalog:${tenantId}:all-packages`;
-
-    // Try cache first
-    const cached = this.cache?.get<PackageWithAddOns[]>(cacheKey);
-    if (cached) {
-      return cached;
-    }
-
-    // Cache miss - fetch from repository with tenant isolation
-    const packages = await this.repository.getAllPackagesWithAddOns(tenantId);
-
-    // Cache for 15 minutes (900 seconds)
-    this.cache?.set(cacheKey, packages, 900);
-
-    return packages;
+    return cachedOperation(
+      this.cache,
+      {
+        prefix: 'catalog',
+        keyParts: [tenantId, 'all-packages'],
+        ttl: 900, // 15 minutes
+      },
+      () => this.repository.getAllPackagesWithAddOns(tenantId)
+    );
   }
 
   /**
@@ -94,27 +94,22 @@ export class CatalogService {
    * ```
    */
   async getPackageBySlug(tenantId: string, slug: string): Promise<PackageWithAddOns> {
-    // CRITICAL: Cache key includes tenantId
-    const cacheKey = `catalog:${tenantId}:package:${slug}`;
-
-    // Try cache first
-    const cached = this.cache?.get<PackageWithAddOns>(cacheKey);
-    if (cached) {
-      return cached;
-    }
-
-    // Cache miss - fetch from repository with tenant isolation
-    const pkg = await this.repository.getPackageBySlug(tenantId, slug);
-    if (!pkg) {
-      throw new NotFoundError(`Package with slug "${slug}" not found`);
-    }
-    const addOns = await this.repository.getAddOnsByPackageId(tenantId, pkg.id);
-    const result = { ...pkg, addOns };
-
-    // Cache for 15 minutes
-    this.cache?.set(cacheKey, result, 900);
-
-    return result;
+    return cachedOperation(
+      this.cache,
+      {
+        prefix: 'catalog',
+        keyParts: [tenantId, 'package', slug],
+        ttl: 900, // 15 minutes
+      },
+      async () => {
+        const pkg = await this.repository.getPackageBySlug(tenantId, slug);
+        if (!pkg) {
+          throw new NotFoundError(`Package with slug "${slug}" not found`);
+        }
+        const addOns = await this.repository.getAddOnsByPackageId(tenantId, pkg.id);
+        return { ...pkg, addOns };
+      }
+    );
   }
 
   /**
@@ -463,9 +458,7 @@ export class CatalogService {
    * @param tenantId - Tenant whose cache should be invalidated
    */
   private invalidateCatalogCache(tenantId: string): void {
-    this.cache?.del(`catalog:${tenantId}:all-packages`);
-    // Note: We invalidate all-packages but individual package caches are
-    // invalidated on a case-by-case basis when we know the slug
+    invalidateCacheKeys(this.cache, getCatalogInvalidationKeys(tenantId));
   }
 
   /**
@@ -475,7 +468,7 @@ export class CatalogService {
    * @param slug - Package slug
    */
   private invalidatePackageCache(tenantId: string, slug: string): void {
-    this.cache?.del(`catalog:${tenantId}:package:${slug}`);
+    invalidateCacheKeys(this.cache, getCatalogInvalidationKeys(tenantId, slug));
   }
 
   /**
@@ -490,11 +483,6 @@ export class CatalogService {
    * @private
    */
   private invalidateSegmentCatalogCache(tenantId: string, segmentId: string): void {
-    if (!this.cache) return;
-
-    // Invalidate all segment-scoped caches
-    this.cache.del(`catalog:${tenantId}:segment:${segmentId}:packages`);
-    this.cache.del(`catalog:${tenantId}:segment:${segmentId}:packages-with-addons`);
-    this.cache.del(`catalog:${tenantId}:segment:${segmentId}:addons`);
+    invalidateCacheKeys(this.cache, getSegmentCatalogInvalidationKeys(tenantId, segmentId));
   }
 }
