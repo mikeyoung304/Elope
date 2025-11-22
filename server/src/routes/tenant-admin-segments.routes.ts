@@ -13,7 +13,7 @@ import {
   segmentIdSchema,
 } from '../validation/segment.schemas';
 import { logger } from '../lib/core/logger';
-import { NotFoundError, ValidationError } from '../lib/core/errors';
+import { NotFoundError, ValidationError } from '../lib/errors';
 
 /**
  * Create tenant admin segment routes

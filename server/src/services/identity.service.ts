@@ -5,7 +5,7 @@
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import type { UserRepository, TokenPayload } from '../lib/ports';
-import { UnauthorizedError } from '../lib/core/errors';
+import { UnauthorizedError } from '../lib/errors';
 
 export class IdentityService {
   constructor(

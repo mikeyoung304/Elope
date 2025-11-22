@@ -61,6 +61,26 @@ export class BookingExpiredError extends BookingError {
 }
 
 /**
+ * Booking conflict - date is already booked
+ */
+export class BookingConflictError extends AppError {
+  constructor(date: string) {
+    super(`Date ${date} is already booked`, 'BOOKING_CONFLICT', 409, true);
+    this.name = 'BookingConflictError';
+  }
+}
+
+/**
+ * Booking lock timeout - could not acquire lock on booking date
+ */
+export class BookingLockTimeoutError extends BookingError {
+  constructor(date: string) {
+    super(`Could not acquire lock on booking date (timeout): ${date}`, 'BOOKING_LOCK_TIMEOUT');
+    this.name = 'BookingLockTimeoutError';
+  }
+}
+
+/**
  * Payment-specific errors
  */
 export class PaymentError extends AppError {
@@ -250,5 +270,29 @@ export class InsufficientPermissionsError extends AuthError {
   constructor(message: string = 'Insufficient permissions') {
     super(message, 'INSUFFICIENT_PERMISSIONS', 403);
     this.name = 'InsufficientPermissionsError';
+  }
+}
+
+// ============================================================================
+// Webhook Errors
+// ============================================================================
+
+/**
+ * Webhook validation error
+ */
+export class WebhookValidationError extends AppError {
+  constructor(message: string) {
+    super(`Webhook validation failed: ${message}`, 'WEBHOOK_VALIDATION_ERROR', 422, true);
+    this.name = 'WebhookValidationError';
+  }
+}
+
+/**
+ * Webhook processing error
+ */
+export class WebhookProcessingError extends AppError {
+  constructor(message: string) {
+    super(`Webhook processing failed: ${message}`, 'WEBHOOK_PROCESSING_ERROR', 500, true);
+    this.name = 'WebhookProcessingError';
   }
 }

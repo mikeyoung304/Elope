@@ -4,7 +4,7 @@
  */
 
 import type { Segment } from '../generated/prisma';
-import { NotFoundError, ValidationError } from '../lib/core/errors';
+import { NotFoundError, ValidationError } from '../lib/errors';
 import type { CacheService } from '../lib/cache';
 import type { PrismaSegmentRepository, CreateSegmentInput, UpdateSegmentInput } from '../adapters/prisma/segment.repository';
 

@@ -14,7 +14,7 @@ import { Router, Request, Response, NextFunction } from 'express';
 import { PrismaClient } from '../../generated/prisma';
 import { PrismaTenantRepository } from '../../adapters/prisma/tenant.repository';
 import { apiKeyService } from '../../lib/api-key.service';
-import { ValidationError, NotFoundError } from '../../lib/core/errors';
+import { ValidationError, NotFoundError } from '../../lib/errors';
 
 const router = Router();
 const prisma = new PrismaClient();

@@ -12,7 +12,7 @@ import type {
   PackagePhoto,
 } from '../lib/ports';
 import type { Package, AddOn } from '../lib/entities';
-import { DomainError } from '../lib/core/errors';
+import { DomainError } from '../lib/errors';
 import type { PrismaJson } from '../types/prisma-json';
 
 export class PrismaCatalogRepository implements CatalogRepository {

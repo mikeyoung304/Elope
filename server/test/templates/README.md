@@ -214,7 +214,7 @@ npm test -- --watch my-service.spec.ts
 ```typescript
 import { describe, it, expect, beforeEach } from 'vitest';
 import { BookingService } from '../src/services/booking.service';
-import { NotFoundError, ValidationError } from '../src/lib/core/errors';
+import { NotFoundError, ValidationError } from '../src/lib/errors';
 import { FakeBookingRepository, buildBooking } from './helpers/fakes';
 
 describe('BookingService', () => {

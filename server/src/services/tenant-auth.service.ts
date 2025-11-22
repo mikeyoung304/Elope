@@ -7,7 +7,7 @@ import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import type { PrismaTenantRepository } from '../adapters/prisma/tenant.repository';
 import type { TenantTokenPayload } from '../lib/ports';
-import { UnauthorizedError } from '../lib/core/errors';
+import { UnauthorizedError } from '../lib/errors';
 
 export class TenantAuthService {
   constructor(

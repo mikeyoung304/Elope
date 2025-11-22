@@ -9,6 +9,7 @@
 
 export {
   AppError,
+  DomainError, // Legacy alias for backward compatibility
   DatabaseError,
   ExternalServiceError,
   ConfigurationError,
@@ -53,6 +54,8 @@ export {
   InvalidStateTransitionError,
   BookingAlreadyConfirmedError,
   BookingExpiredError,
+  BookingConflictError,
+  BookingLockTimeoutError,
   PaymentError,
   PaymentAlreadyProcessedError,
   PaymentFailedError,
@@ -71,6 +74,8 @@ export {
   TokenExpiredError,
   InvalidTokenError,
   InsufficientPermissionsError,
+  WebhookValidationError,
+  WebhookProcessingError,
 } from './business';
 
 // ============================================================================
@@ -105,17 +110,8 @@ export {
   isSuccessResponse,
 } from './api-errors';
 
-// ============================================================================
-// Error Handler Middleware
-// ============================================================================
-
-export {
-  type ErrorResponse,
-  formatErrorResponse,
-  enhancedErrorMiddleware,
-  asyncHandler,
-  isOperationalError as isOperationalErrorUtil,
-} from './error-handler';
+// Note: Error handler middleware moved to middleware/error-handler.ts
+// These exports were previously in error-handler.ts but are no longer needed here
 
 // ============================================================================
 // Request Context

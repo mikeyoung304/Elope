@@ -6,7 +6,7 @@ import { describe, it, expect, beforeEach } from 'vitest';
 import bcrypt from 'bcryptjs';
 import { IdentityService } from '../src/services/identity.service';
 import { FakeUserRepository, buildUser } from './helpers/fakes';
-import { UnauthorizedError } from '../src/lib/core/errors';
+import { UnauthorizedError } from '../src/lib/errors';
 
 describe('IdentityService', () => {
   let service: IdentityService;

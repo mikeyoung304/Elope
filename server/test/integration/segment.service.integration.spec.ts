@@ -7,7 +7,7 @@ import { describe, it, expect, beforeAll, afterEach, afterAll } from 'vitest';
 import { setupCompleteIntegrationTest } from '../helpers/integration-setup';
 import { PrismaSegmentRepository } from '../../src/adapters/prisma/segment.repository';
 import { SegmentService } from '../../src/services/segment.service';
-import { ValidationError, NotFoundError } from '../../src/lib/core/errors';
+import { ValidationError, NotFoundError } from '../../src/lib/errors';
 
 describe.sequential('SegmentService Integration Tests', () => {
   const ctx = setupCompleteIntegrationTest('segment-service');

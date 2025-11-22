@@ -4,7 +4,7 @@
  */
 
 import type { Request, Response, NextFunction } from 'express';
-import { UnauthorizedError } from '../lib/core/errors';
+import { UnauthorizedError } from '../lib/errors';
 import type { TenantAuthService } from '../services/tenant-auth.service';
 import type { TenantTokenPayload } from '../lib/ports';
 

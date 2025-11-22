@@ -7,7 +7,7 @@
 
 import { describe, it, expect, beforeEach } from 'vitest';
 import { [ServiceName]Service } from '../src/services/[service-name].service';
-import { NotFoundError, ValidationError, ConflictError } from '../src/lib/core/errors';
+import { NotFoundError, ValidationError, ConflictError } from '../src/lib/errors';
 import {
   Fake[Repository]Repository,
   build[Entity]

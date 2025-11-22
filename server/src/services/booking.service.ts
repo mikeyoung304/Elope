@@ -6,7 +6,7 @@ import type { BookingRepository, PaymentProvider } from '../lib/ports';
 import type { Booking, CreateBookingInput } from '../lib/entities';
 import type { CatalogRepository } from '../lib/ports';
 import type { EventEmitter } from '../lib/core/events';
-import { NotFoundError } from '../lib/core/errors';
+import { NotFoundError } from '../lib/errors';
 import { CommissionService } from './commission.service';
 import type { PrismaTenantRepository } from '../adapters/prisma/tenant.repository';
 import { IdempotencyService } from './idempotency.service';

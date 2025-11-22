@@ -10,7 +10,7 @@ import type { TenantRequest } from '../middleware/tenant';
 import type { SegmentService } from '../services/segment.service';
 import { segmentSlugSchema, segmentQuerySchema } from '../validation/segment.schemas';
 import { logger } from '../lib/core/logger';
-import { NotFoundError } from '../lib/core/errors';
+import { NotFoundError } from '../lib/errors';
 
 /**
  * Create public segment routes

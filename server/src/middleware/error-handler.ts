@@ -5,8 +5,7 @@
 
 import type { Request, Response, NextFunction } from 'express';
 import { logger } from '../lib/core/logger';
-import { DomainError } from '../lib/core/errors';
-import { AppError } from '../lib/errors/base';
+import { DomainError, AppError } from '../lib/errors';
 import { captureException } from '../lib/errors/sentry';
 
 /**

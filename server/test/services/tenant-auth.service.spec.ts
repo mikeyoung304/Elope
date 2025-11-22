@@ -11,7 +11,7 @@
 
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { TenantAuthService } from '../../src/services/tenant-auth.service';
-import { UnauthorizedError } from '../../src/lib/core/errors';
+import { UnauthorizedError } from '../../src/lib/errors';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 

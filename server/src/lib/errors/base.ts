@@ -36,6 +36,21 @@ export class AppError extends Error {
   }
 }
 
+/**
+ * Legacy alias for AppError (for backward compatibility)
+ * @deprecated Use AppError instead
+ */
+export class DomainError extends AppError {
+  constructor(
+    message: string,
+    code: string,
+    statusCode: number = 500
+  ) {
+    super(message, code, statusCode, true);
+    this.name = 'DomainError';
+  }
+}
+
 // ============================================================================
 // Infrastructure Errors
 // ============================================================================

@@ -11,7 +11,7 @@
 
 import { describe, it, expect, beforeEach, afterEach, afterAll } from 'vitest';
 import { PrismaCatalogRepository } from '../../src/adapters/prisma/catalog.repository';
-import { DomainError } from '../../src/lib/core/errors';
+import { DomainError } from '../../src/lib/errors';
 import { setupCompleteIntegrationTest } from '../helpers/integration-setup';
 
 describe.sequential('PrismaCatalogRepository - Integration Tests', () => {

@@ -16,7 +16,7 @@ import {
   FakePaymentProvider,
   buildPackage,
 } from '../helpers/fakes';
-import { NotFoundError } from '../../src/lib/core/errors';
+import { NotFoundError } from '../../src/lib/errors';
 
 describe('BookingService - Edge Cases', () => {
   let service: BookingService;

@@ -4,7 +4,7 @@
 
 import { describe, it, expect, beforeEach } from 'vitest';
 import { CatalogService } from '../src/services/catalog.service';
-import { NotFoundError, ValidationError } from '../src/lib/core/errors';
+import { NotFoundError, ValidationError } from '../src/lib/errors';
 import { FakeCatalogRepository, buildPackage, buildAddOn } from './helpers/fakes';
 
 describe('CatalogService', () => {

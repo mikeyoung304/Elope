@@ -13,7 +13,7 @@ import {
   ForbiddenError,
   ConflictError,
   UnprocessableEntityError,
-} from '../../src/lib/core/errors';
+} from '../../src/lib/errors';
 import { BookingConflictError } from '../../src/lib/errors';
 
 describe('Error Handler Middleware', () => {
@@ -158,7 +158,7 @@ describe('Error Handler Middleware', () => {
       expect(res.json).toHaveBeenCalledWith({
         status: 'error',
         statusCode: 409,
-        error: 'CONFLICT',
+        error: 'BOOKING_CONFLICT',
         message: 'Date 2025-12-25 is already booked',
         requestId: undefined,
       });
@@ -220,8 +220,9 @@ describe('Error Handler Middleware', () => {
             message: 'Duplicate booking',
             code: 'CONFLICT',
           },
+          requestId: undefined,
         },
-        'Domain error'
+        'Application error'
       );
     });
 

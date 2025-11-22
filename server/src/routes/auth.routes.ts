@@ -10,7 +10,7 @@ import type { TenantAuthService } from '../services/tenant-auth.service';
 import type { PrismaTenantRepository } from '../adapters/prisma/tenant.repository';
 import { loginLimiter } from '../middleware/rateLimiter';
 import { logger } from '../lib/core/logger';
-import { UnauthorizedError } from '../lib/core/errors';
+import { UnauthorizedError } from '../lib/errors';
 
 /**
  * Unified login DTO

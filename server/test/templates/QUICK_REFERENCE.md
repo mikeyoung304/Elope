@@ -125,7 +125,7 @@ import request from 'supertest';
 import type { Express } from 'express';
 
 // Errors
-import { NotFoundError, ValidationError, ConflictError } from '../src/lib/core/errors';
+import { NotFoundError, ValidationError, ConflictError } from '../src/lib/errors';
 
 // Fakes and Builders
 import {

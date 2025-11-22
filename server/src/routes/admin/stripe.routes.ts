@@ -10,7 +10,7 @@
 
 import { Router, Request, Response, NextFunction } from 'express';
 import { PrismaClient } from '../../generated/prisma';
-import { ValidationError, NotFoundError } from '../../lib/core/errors';
+import { ValidationError, NotFoundError } from '../../lib/errors';
 import type {
   StripeConnectDto,
   StripeOnboardingLinkDto,

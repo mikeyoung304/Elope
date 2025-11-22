@@ -2,7 +2,7 @@
  * Shared validation utilities
  */
 
-import { ValidationError } from './core/errors';
+import { ValidationError } from './errors';
 
 /**
  * Validate price is non-negative

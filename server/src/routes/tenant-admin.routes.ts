@@ -25,7 +25,7 @@ import {
   NotFoundError,
   ValidationError,
   ForbiddenError,
-} from '../lib/core/errors';
+} from '../lib/errors';
 
 // Configure multer for memory storage
 const upload = multer({

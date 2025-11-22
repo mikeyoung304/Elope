@@ -17,7 +17,7 @@ import type {
   BookingQueryParams,
   UpdateBrandingInput,
 } from '../validation/tenant-admin.schemas';
-import { NotFoundError, ValidationError } from '../lib/core/errors';
+import { NotFoundError, ValidationError } from '../lib/errors';
 
 /**
  * Package response DTO

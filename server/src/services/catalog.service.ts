@@ -10,7 +10,7 @@ import type {
   UpdateAddOnInput,
 } from '../lib/ports';
 import type { Package, AddOn } from '../lib/entities';
-import { NotFoundError, ValidationError } from '../lib/core/errors';
+import { NotFoundError, ValidationError } from '../lib/errors';
 import type { CacheService } from '../lib/cache';
 import { validatePrice, validateRequiredFields } from '../lib/validation';
 import type { AuditService } from './audit.service';
