@@ -75,18 +75,18 @@ export function PackageList({ packages, onEdit, onDelete }: PackageListProps) {
           >
             {/* Photo Thumbnail */}
             <div className="relative flex-shrink-0">
-              {(pkg as any).photos && (pkg as any).photos.length > 0 ? (
+              {pkg.photos && pkg.photos.length > 0 ? (
                 <div className="relative">
                   <img
-                    src={(pkg as any).photos[0].url}
+                    src={pkg.photos[0].url}
                     alt={`${pkg.title} preview`}
                     className="w-24 h-24 object-cover rounded-lg border-2 border-macon-navy-500"
                   />
-                  {(pkg as any).photos.length > 1 && (
+                  {pkg.photos.length > 1 && (
                     <Badge
                       className="absolute -top-2 -right-2 bg-macon-orange text-white border-macon-navy-700"
                     >
-                      {(pkg as any).photos.length}
+                      {pkg.photos.length}
                     </Badge>
                   )}
                 </div>
@@ -102,11 +102,11 @@ export function PackageList({ packages, onEdit, onDelete }: PackageListProps) {
                 <h3 className="text-xl font-semibold text-macon-navy-50">{pkg.title}</h3>
                 <Badge
                   variant="outline"
-                  className={(pkg as any).isActive !== false
+                  className={pkg.isActive !== false
                     ? "border-green-500 bg-green-900/20 text-green-300"
                     : "border-red-500 bg-red-900/20 text-red-300"}
                 >
-                  {(pkg as any).isActive !== false ? "Active" : "Inactive"}
+                  {pkg.isActive !== false ? "Active" : "Inactive"}
                 </Badge>
               </div>
               <p className="text-base text-macon-navy-200 mt-1">{pkg.description}</p>
@@ -114,9 +114,7 @@ export function PackageList({ packages, onEdit, onDelete }: PackageListProps) {
                 <span className="font-medium text-macon-navy-300">
                   {formatCurrency(pkg.priceCents)}
                 </span>
-                {(pkg as any).minLeadDays && (
-                  <span>Min {(pkg as any).minLeadDays} days notice</span>
-                )}
+                {/* TODO: Add minLeadDays field to backend schema and API contract */}
               </div>
             </div>
             <div className="flex gap-2">

@@ -25,6 +25,17 @@ export const PackageDtoSchema = z.object({
   priceCents: z.number().int(),
   photoUrl: z.string().url().optional(),
   addOns: z.array(AddOnDtoSchema),
+  // Additional fields from database schema
+  segmentId: z.string().nullable().optional(),
+  grouping: z.string().nullable().optional(),
+  groupingOrder: z.number().int().nullable().optional(),
+  isActive: z.boolean().default(true),
+  photos: z.array(z.object({
+    url: z.string().url(),
+    filename: z.string(),
+    size: z.number(),
+    order: z.number().int(),
+  })).default([]),
 });
 
 export type PackageDto = z.infer<typeof PackageDtoSchema>;

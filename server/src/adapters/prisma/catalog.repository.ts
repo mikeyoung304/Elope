@@ -403,6 +403,9 @@ export class PrismaCatalogRepository implements CatalogRepository {
     description: string | null;
     basePrice: number;
     active: boolean;
+    segmentId?: string | null;
+    grouping?: string | null;
+    groupingOrder?: number | null;
     photos?: PrismaJson<PackagePhoto[]>;
   }): Package {
     return {
@@ -414,6 +417,10 @@ export class PrismaCatalogRepository implements CatalogRepository {
       priceCents: pkg.basePrice,
       photoUrl: undefined,
       photos: (pkg.photos as PackagePhoto[]) || [],
+      active: pkg.active,
+      segmentId: pkg.segmentId,
+      grouping: pkg.grouping,
+      groupingOrder: pkg.groupingOrder,
     };
   }
 

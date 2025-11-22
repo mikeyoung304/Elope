@@ -50,6 +50,10 @@ function seedData(): void {
     priceCents: 99900, // $999
     photoUrl: 'https://images.unsplash.com/photo-1519741497674-611481863552?w=800&h=600&fit=crop',
     photos: [],
+    active: true,
+    segmentId: null,
+    grouping: null,
+    groupingOrder: null,
   });
 
   packages.set('pkg_micro', {
@@ -61,6 +65,10 @@ function seedData(): void {
     priceCents: 249900, // $2,499
     photoUrl: 'https://images.unsplash.com/photo-1583939003579-730e3918a45a?w=800&h=600&fit=crop',
     photos: [],
+    active: true,
+    segmentId: null,
+    grouping: null,
+    groupingOrder: null,
   });
 
   packages.set('pkg_garden', {
@@ -72,6 +80,10 @@ function seedData(): void {
     priceCents: 449900, // $4,499
     photoUrl: 'https://images.unsplash.com/photo-1464366400600-7168b8af9bc3?w=800&h=600&fit=crop',
     photos: [],
+    active: true,
+    segmentId: null,
+    grouping: null,
+    groupingOrder: null,
   });
 
   packages.set('pkg_luxury', {
@@ -83,6 +95,10 @@ function seedData(): void {
     priceCents: 899900, // $8,999
     photoUrl: 'https://images.unsplash.com/photo-1511285560929-80b456fea0bc?w=800&h=600&fit=crop',
     photos: [],
+    active: true,
+    segmentId: null,
+    grouping: null,
+    groupingOrder: null,
   });
 
   packages.set('pkg_destination', {
@@ -94,6 +110,10 @@ function seedData(): void {
     priceCents: 599900, // $5,999
     photoUrl: 'https://images.unsplash.com/photo-1537633552985-df8429e8048b?w=800&h=600&fit=crop',
     photos: [],
+    active: true,
+    segmentId: null,
+    grouping: null,
+    groupingOrder: null,
   });
 
   packages.set('pkg_courthouse', {
@@ -105,6 +125,10 @@ function seedData(): void {
     priceCents: 79900, // $799
     photoUrl: 'https://images.unsplash.com/photo-1606800052052-a08af7148866?w=800&h=600&fit=crop',
     photos: [],
+    active: true,
+    segmentId: null,
+    grouping: null,
+    groupingOrder: null,
   });
 
   // Add-ons

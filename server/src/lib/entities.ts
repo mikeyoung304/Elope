@@ -6,6 +6,13 @@
 // Catalog Entities
 // ============================================================================
 
+export interface PackagePhoto {
+  url: string;
+  filename: string;
+  size: number;
+  order: number;
+}
+
 export interface Package {
   id: string;
   tenantId: string; // Multi-tenant isolation
@@ -14,7 +21,12 @@ export interface Package {
   description: string;
   priceCents: number;
   photoUrl?: string;
-  photos?: any; // Photo gallery: Array<{url, filename, size, order}>
+  photos?: PackagePhoto[]; // Photo gallery
+  // Segment and grouping fields
+  segmentId?: string | null;
+  grouping?: string | null;
+  groupingOrder?: number | null;
+  active?: boolean; // Package active status (maps to DB 'active' field)
 }
 
 export interface AddOn {

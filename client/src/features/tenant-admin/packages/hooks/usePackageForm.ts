@@ -42,8 +42,9 @@ export function usePackageForm({ onSuccess, onPackagesChange }: UsePackageFormPr
       title: pkg.title,
       description: pkg.description,
       priceCents: pkg.priceCents.toString(),
-      minLeadDays: (pkg as any).minLeadDays?.toString() || "7",
-      isActive: (pkg as any).isActive !== false,
+      // TODO: Add minLeadDays to backend schema
+      minLeadDays: "7", // Default value until backend supports this field
+      isActive: pkg.isActive !== false,
     });
   }, []);
 
