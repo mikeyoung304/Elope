@@ -14,7 +14,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { formatCurrency } from "@/lib/utils";
-import type { BookingDto } from "@elope/contracts";
+import type { BookingDto } from "@macon/contracts";
 
 interface BookingListProps {
   bookings: BookingDto[];

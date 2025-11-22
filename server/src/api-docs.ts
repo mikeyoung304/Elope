@@ -61,7 +61,7 @@ The \`POST /v1/webhooks/stripe\` endpoint handles Stripe payment events. It requ
     `.trim(),
     contact: {
       name: 'Elope Support',
-      email: 'support@elope.example.com',
+      email: 'support@macon.example.com',
     },
   },
   servers: [

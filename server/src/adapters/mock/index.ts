@@ -2,7 +2,7 @@
  * Mock adapters for local development without external services
  */
 
-import { toUtcMidnight } from '@elope/shared';
+import { toUtcMidnight } from '@macon/shared';
 import type { Package, AddOn } from '../lib/entities';
 import type { CatalogRepository } from '../lib/ports';
 import type { Booking } from '../lib/entities';
@@ -183,9 +183,9 @@ function seedData(): void {
   // Admin user
   // OWASP 2023 recommendation for bcrypt rounds
   const passwordHash = bcrypt.hashSync('admin123', 12);
-  users.set('admin@elope.com', {
+  users.set('admin@macon.com', {
     id: 'user_admin',
-    email: 'admin@elope.com',
+    email: 'admin@macon.com',
     passwordHash,
     role: 'admin',
   });

@@ -4,7 +4,7 @@ import type {
   SegmentDto,
   CreateSegmentDto,
   UpdateSegmentDto,
-} from "@elope/contracts";
+} from "@macon/contracts";
 import type { SegmentFormData } from "../../types";
 
 interface UseSegmentManagerProps {

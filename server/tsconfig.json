@@ -20,8 +20,8 @@
     "types": ["node"],
     "baseUrl": ".",
     "paths": {
-      "@elope/contracts": ["../packages/contracts/src"],
-      "@elope/shared": ["../packages/shared/src"]
+      "@macon/contracts": ["../packages/contracts/src"],
+      "@macon/shared": ["../packages/shared/src"]
     }
   },
   "include": ["src/**/*"],

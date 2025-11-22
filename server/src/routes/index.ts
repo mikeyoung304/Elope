@@ -4,7 +4,7 @@
 
 import type { Application } from 'express';
 import { createExpressEndpoints, initServer } from '@ts-rest/express';
-import { Contracts } from '@elope/contracts';
+import { Contracts } from '@macon/contracts';
 import type { PackagesController } from './packages.routes';
 import type { AvailabilityController } from './availability.routes';
 import type { BookingsController } from './bookings.routes';

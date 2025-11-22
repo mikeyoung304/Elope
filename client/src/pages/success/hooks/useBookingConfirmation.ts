@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { api } from "@/lib/api";
-import type { BookingDto, PackageDto } from "@elope/contracts";
+import type { BookingDto, PackageDto } from "@macon/contracts";
 
 interface UseBookingConfirmationProps {
   bookingId: string | null;

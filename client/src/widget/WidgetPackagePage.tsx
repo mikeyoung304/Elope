@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { toUtcMidnight } from "@elope/shared";
+import { toUtcMidnight } from "@macon/shared";
 import { usePackage } from "../features/catalog/hooks";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";

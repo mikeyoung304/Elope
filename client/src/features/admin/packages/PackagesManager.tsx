@@ -1,4 +1,4 @@
-import type { PackageDto } from "@elope/contracts";
+import type { PackageDto } from "@macon/contracts";
 import { PackageForm } from "../PackageForm";
 import { SuccessMessage } from "./SuccessMessage";
 import { CreatePackageButton } from "./CreatePackageButton";

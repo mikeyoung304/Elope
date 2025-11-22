@@ -4,7 +4,7 @@ import type {
   PackageDto,
   CreatePackageDto,
   UpdatePackageDto,
-} from "@elope/contracts";
+} from "@macon/contracts";
 import type { PackageFormData } from "../../types";
 
 interface UsePackageManagerProps {

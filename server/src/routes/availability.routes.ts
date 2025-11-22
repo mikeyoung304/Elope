@@ -3,7 +3,7 @@
  */
 
 import type { AvailabilityService } from '../services/availability.service';
-import type { AvailabilityDto } from '@elope/contracts';
+import type { AvailabilityDto } from '@macon/contracts';
 
 export class AvailabilityController {
   constructor(private readonly availabilityService: AvailabilityService) {}

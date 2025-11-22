@@ -3,7 +3,7 @@
  */
 
 import type { BookingService } from '../services/booking.service';
-import type { CreateCheckoutDto, BookingDto } from '@elope/contracts';
+import type { CreateCheckoutDto, BookingDto } from '@macon/contracts';
 import { NotFoundError } from '../lib/core/errors';
 
 export class BookingsController {

@@ -2,7 +2,7 @@
  * Shared types for admin components
  */
 
-import type { PackageDto, AddOnDto } from "@elope/contracts";
+import type { PackageDto, AddOnDto } from "@macon/contracts";
 
 export interface PackageFormData {
   slug: string;

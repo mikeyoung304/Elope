@@ -9,7 +9,7 @@ import {
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import type { SegmentDto } from "@elope/contracts";
+import type { SegmentDto } from "@macon/contracts";
 
 interface SegmentsListProps {
   segments: SegmentDto[];

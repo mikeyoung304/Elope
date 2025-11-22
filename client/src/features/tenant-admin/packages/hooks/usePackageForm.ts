@@ -1,6 +1,6 @@
 import { useState, useCallback } from "react";
 import { api } from "@/lib/api";
-import type { PackageDto } from "@elope/contracts";
+import type { PackageDto } from "@macon/contracts";
 
 export interface PackageFormData {
   title: string;

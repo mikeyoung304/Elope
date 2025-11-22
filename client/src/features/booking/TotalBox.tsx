@@ -1,7 +1,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { formatCurrency } from "@/lib/utils";
 import { useState, useEffect } from "react";
-import type { AddOnDto } from "@elope/contracts";
+import type { AddOnDto } from "@macon/contracts";
 
 interface TotalBoxProps {
   total: number;

@@ -10,7 +10,7 @@ import type {
   CreateAddOnDto,
   UpdateAddOnDto,
   AddOnDto,
-} from '@elope/contracts';
+} from '@macon/contracts';
 
 // Default tenant for admin operations (legacy single-tenant mode)
 const DEFAULT_TENANT = 'tenant_default_legacy';

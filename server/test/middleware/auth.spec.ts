@@ -44,7 +44,7 @@ describe('Auth Middleware', () => {
     it('should authenticate valid Bearer token', () => {
       const mockPayload: TokenPayload = {
         userId: 'user_admin',
-        email: 'admin@elope.com',
+        email: 'admin@macon.com',
         role: 'admin',
       };
 
@@ -63,7 +63,7 @@ describe('Auth Middleware', () => {
     it('should log authentication success', () => {
       const mockPayload: TokenPayload = {
         userId: 'user_admin',
-        email: 'admin@elope.com',
+        email: 'admin@macon.com',
         role: 'admin',
       };
 
@@ -73,7 +73,7 @@ describe('Auth Middleware', () => {
       authMiddleware(req as Request, res as Response, next);
 
       expect(res.locals!.logger.info).toHaveBeenCalledWith(
-        { userId: 'user_admin', email: 'admin@elope.com' },
+        { userId: 'user_admin', email: 'admin@macon.com' },
         'Admin authenticated'
       );
     });
@@ -203,7 +203,7 @@ describe('Auth Middleware', () => {
     it('should handle multiple admin roles', () => {
       const mockPayload: TokenPayload = {
         userId: 'user_super_admin',
-        email: 'super@elope.com',
+        email: 'super@macon.com',
         role: 'admin',
       };
 
@@ -221,7 +221,7 @@ describe('Auth Middleware', () => {
 
       const mockPayload: TokenPayload = {
         userId: 'user_admin',
-        email: 'admin@elope.com',
+        email: 'admin@macon.com',
         role: 'admin',
       };
 

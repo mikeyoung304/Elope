@@ -4,7 +4,7 @@
 
 import type { IdentityService } from '../services/identity.service';
 import type { BookingService } from '../services/booking.service';
-import type { AdminLoginDto, BookingDto } from '@elope/contracts';
+import type { AdminLoginDto, BookingDto } from '@macon/contracts';
 
 // Default tenant for admin operations (legacy single-tenant mode)
 const DEFAULT_TENANT = 'tenant_default_legacy';

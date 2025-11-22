@@ -1,6 +1,6 @@
 import { Plus, CheckCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import type { PackageDto } from "@elope/contracts";
+import type { PackageDto } from "@macon/contracts";
 import { PackagePhotoUploader } from "@/components/PackagePhotoUploader";
 import { usePackageForm } from "./packages/hooks/usePackageForm";
 import { usePackageManager } from "./packages/hooks/usePackageManager";

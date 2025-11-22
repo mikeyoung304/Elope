@@ -10,7 +10,7 @@ import { CatalogFilters } from '@/features/catalog/CatalogFilters';
 import { PackageCardSkeleton } from '@/components/ui/skeleton';
 import { Button } from '@/components/ui/button';
 import { usePackages } from '@/features/catalog/hooks';
-import type { PackageDto } from '@elope/contracts';
+import type { PackageDto } from '@macon/contracts';
 
 export function PackageCatalog() {
   // Fetch packages

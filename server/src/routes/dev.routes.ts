@@ -2,7 +2,7 @@
  * Dev-only controller for mock mode simulators
  */
 
-import { toUtcMidnight } from '@elope/shared';
+import { toUtcMidnight } from '@macon/shared';
 import type { BookingService } from '../services/booking.service';
 import type { CatalogRepository } from '../lib/ports';
 import { getMockState, resetMockState } from '../adapters/mock';

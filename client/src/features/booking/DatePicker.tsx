@@ -3,7 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { DayPicker } from "react-day-picker";
 import { Calendar, Loader2 } from "lucide-react";
 import { toast } from "sonner";
-import { toUtcMidnight } from "@elope/shared";
+import { toUtcMidnight } from "@macon/shared";
 import { api } from "../../lib/api";
 import { cn } from "@/lib/utils";
 import { queryKeys, queryOptions } from "@/lib/queryClient";

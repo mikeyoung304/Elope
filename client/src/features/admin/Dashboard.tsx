@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { LogOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { api } from "../../lib/api";
-import type { BookingDto, PackageDto } from "@elope/contracts";
+import type { BookingDto, PackageDto } from "@macon/contracts";
 import { PackagesManager } from "./packages";
 import { BookingList } from "./BookingList";
 import { DashboardMetrics } from "./dashboard/components/DashboardMetrics";

@@ -23,7 +23,7 @@ export function Login() {
 
   // Auto-fill for local development/demo - admin by default
   const { values, handleChange } = useForm({
-    email: "admin@elope.com",
+    email: "admin@macon.com",
     password: "admin123"
   });
 

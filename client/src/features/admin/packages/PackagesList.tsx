@@ -4,7 +4,7 @@ import { EmptyState } from "@/components/ui/empty-state";
 import { PackageCard } from "../PackageCard";
 import { AddOnManager } from "../AddOnManager";
 import { Package } from "lucide-react";
-import type { PackageDto } from "@elope/contracts";
+import type { PackageDto } from "@macon/contracts";
 import type { AddOnFormData } from "../types";
 
 interface PackagesListProps {

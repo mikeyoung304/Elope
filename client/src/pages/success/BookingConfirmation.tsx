@@ -2,7 +2,7 @@ import { useEffect } from "react";
 import { Calendar, Mail, Users, Package, Plus, CheckCircle } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { formatCurrency } from "@/lib/utils";
-import type { BookingDto, PackageDto } from "@elope/contracts";
+import type { BookingDto, PackageDto } from "@macon/contracts";
 
 interface BookingConfirmationProps {
   booking: BookingDto;

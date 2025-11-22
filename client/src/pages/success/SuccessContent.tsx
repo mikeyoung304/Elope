@@ -7,7 +7,7 @@ import type { LastCheckout } from "@/lib/types";
 import { LoadingState } from "./LoadingState";
 import { ErrorState } from "./ErrorState";
 import { BookingConfirmation } from "./BookingConfirmation";
-import type { BookingDto, PackageDto } from "@elope/contracts";
+import type { BookingDto, PackageDto } from "@macon/contracts";
 
 interface SuccessContentProps {
   sessionId: string | null;

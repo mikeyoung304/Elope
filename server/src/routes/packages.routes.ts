@@ -3,7 +3,7 @@
  */
 
 import type { CatalogService } from '../services/catalog.service';
-import type { PackageDto, AddOnDto } from '@elope/contracts';
+import type { PackageDto, AddOnDto } from '@macon/contracts';
 
 export class PackagesController {
   constructor(private readonly catalogService: CatalogService) {}

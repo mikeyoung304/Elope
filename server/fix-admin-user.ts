@@ -1,5 +1,5 @@
 /**
- * Script to update admin user email to admin@elope.com
+ * Script to update admin user email to admin@macon.com
  */
 import { PrismaClient } from './src/generated/prisma/index.js';
 import bcrypt from 'bcryptjs';
@@ -14,11 +14,11 @@ async function main() {
   const user = await prisma.user.upsert({
     where: { email: 'admin@example.com' },
     update: {
-      email: 'admin@elope.com',
+      email: 'admin@macon.com',
       passwordHash,
     },
     create: {
-      email: 'admin@elope.com',
+      email: 'admin@macon.com',
       passwordHash,
       role: 'ADMIN',
     },

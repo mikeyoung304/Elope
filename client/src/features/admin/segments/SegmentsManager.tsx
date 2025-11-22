@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
-import type { SegmentDto } from "@elope/contracts";
+import type { SegmentDto } from "@macon/contracts";
 import { api } from "@/lib/api";
 import { SegmentForm } from "./SegmentForm";
 import { SegmentsList } from "./SegmentsList";

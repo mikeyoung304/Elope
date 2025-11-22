@@ -3,7 +3,7 @@
  * Handles public tenant-specific endpoints (branding configuration)
  */
 
-import type { TenantBrandingDto } from '@elope/contracts';
+import type { TenantBrandingDto } from '@macon/contracts';
 import type { PrismaTenantRepository } from '../adapters/prisma/tenant.repository';
 
 export class TenantController {

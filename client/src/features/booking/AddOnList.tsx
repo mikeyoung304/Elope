@@ -1,4 +1,4 @@
-import type { AddOnDto } from "@elope/contracts";
+import type { AddOnDto } from "@macon/contracts";
 import { Check } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { cn, formatCurrency } from "@/lib/utils";

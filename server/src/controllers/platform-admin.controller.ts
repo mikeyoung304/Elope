@@ -4,7 +4,7 @@
  */
 
 import type { PrismaClient } from '../generated/prisma/index.js';
-import type { TenantDto, PlatformStats } from '@elope/contracts';
+import type { TenantDto, PlatformStats } from '@macon/contracts';
 import { logger } from '../lib/core/logger';
 
 export class PlatformAdminController {

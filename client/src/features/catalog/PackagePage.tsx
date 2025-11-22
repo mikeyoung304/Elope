@@ -1,7 +1,7 @@
 import { useState, useMemo } from "react";
 import { useParams } from "react-router-dom";
 import { toast } from "sonner";
-import { toUtcMidnight } from "@elope/shared";
+import { toUtcMidnight } from "@macon/shared";
 import { usePackage } from "./hooks";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";

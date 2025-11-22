@@ -15,7 +15,7 @@ import type {
   StripeConnectDto,
   StripeOnboardingLinkDto,
   StripeAccountStatusDto,
-} from '@elope/contracts';
+} from '@macon/contracts';
 
 // Import StripeConnectService (will be created by another agent)
 // Assuming the service will have these methods:

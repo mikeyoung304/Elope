@@ -21,9 +21,9 @@ async function main() {
 
   const passwordHash = await bcrypt.hash('admin123', BCRYPT_ROUNDS);
   await prisma.user.upsert({
-    where: { email: 'admin@elope.com' },
+    where: { email: 'admin@macon.com' },
     update: { passwordHash, role: 'PLATFORM_ADMIN' },
-    create: { email: 'admin@elope.com', name: 'Platform Admin', role: 'PLATFORM_ADMIN', passwordHash },
+    create: { email: 'admin@macon.com', name: 'Platform Admin', role: 'PLATFORM_ADMIN', passwordHash },
   });
 
   // Create test tenant for E2E tests with known API key

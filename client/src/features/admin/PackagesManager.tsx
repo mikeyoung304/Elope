@@ -21,7 +21,7 @@ import type {
   UpdatePackageDto,
   CreateAddOnDto,
   UpdateAddOnDto,
-} from "@elope/contracts";
+} from "@macon/contracts";
 import { PackageCard } from "./PackageCard";
 import { PackageForm } from "./PackageForm";
 import { AddOnManager } from "./AddOnManager";

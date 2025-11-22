@@ -4,7 +4,7 @@ import type {
   AddOnDto,
   CreateAddOnDto,
   UpdateAddOnDto,
-} from "@elope/contracts";
+} from "@macon/contracts";
 import type { AddOnFormData } from "../../types";
 
 interface UseAddOnManagerProps {

@@ -3,7 +3,7 @@ import { Package, XCircle, Calendar, Palette } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { api } from "../../lib/api";
 import { cn } from "@/lib/utils";
-import type { PackageDto, BookingDto } from "@elope/contracts";
+import type { PackageDto, BookingDto } from "@macon/contracts";
 import { TenantPackagesManager } from "./TenantPackagesManager";
 import { BlackoutsManager } from "./BlackoutsManager";
 import { TenantBookingList } from "./TenantBookingList";

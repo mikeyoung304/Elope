@@ -15,7 +15,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { formatCurrency } from "@/lib/utils";
-import type { PackageDto } from "@elope/contracts";
+import type { PackageDto } from "@macon/contracts";
 
 interface PackageListProps {
   packages: PackageDto[];

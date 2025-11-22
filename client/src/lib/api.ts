@@ -1,10 +1,10 @@
 /**
  * ts-rest API client
- * Bound to @elope/contracts for type-safe API calls
+ * Bound to @macon/contracts for type-safe API calls
  */
 
 import { initClient } from "@ts-rest/core";
-import { Contracts } from "@elope/contracts";
+import { Contracts } from "@macon/contracts";
 
 /**
  * Normalized API base URL
