@@ -4,6 +4,59 @@
 
 import { z } from 'zod';
 
+// ============================================================================
+// Error Response Schemas
+// ============================================================================
+
+/**
+ * Standard error response schema for all API endpoints
+ * Matches the format from error-handler middleware
+ */
+export const ErrorResponseSchema = z.object({
+  status: z.literal('error'),
+  statusCode: z.number().int(),
+  error: z.string(), // Error code (e.g., 'NOT_FOUND', 'VALIDATION_ERROR')
+  message: z.string(),
+  requestId: z.string().optional(),
+  errors: z.array(z.object({
+    field: z.string(),
+    message: z.string(),
+  })).optional(), // Field-level validation errors
+});
+
+export type ErrorResponse = z.infer<typeof ErrorResponseSchema>;
+
+/**
+ * Convenience schemas for common HTTP error status codes
+ */
+export const BadRequestErrorSchema = ErrorResponseSchema.extend({
+  statusCode: z.literal(400),
+});
+
+export const UnauthorizedErrorSchema = ErrorResponseSchema.extend({
+  statusCode: z.literal(401),
+});
+
+export const ForbiddenErrorSchema = ErrorResponseSchema.extend({
+  statusCode: z.literal(403),
+});
+
+export const NotFoundErrorSchema = ErrorResponseSchema.extend({
+  statusCode: z.literal(404),
+});
+
+export const ConflictErrorSchema = ErrorResponseSchema.extend({
+  statusCode: z.literal(409),
+});
+
+export const UnprocessableEntityErrorSchema = ErrorResponseSchema.extend({
+  statusCode: z.literal(422),
+});
+
+export const InternalServerErrorSchema = ErrorResponseSchema.extend({
+  statusCode: z.literal(500),
+});
+
 // Add-on DTO
 export const AddOnDtoSchema = z.object({
   id: z.string(),
