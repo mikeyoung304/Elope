@@ -5,3 +5,4 @@
 
 export { ErrorBoundary } from './ErrorBoundary';
 export { ErrorFallback, MinimalErrorFallback } from './ErrorFallback';
+export { FeatureErrorBoundary } from './FeatureErrorBoundary';

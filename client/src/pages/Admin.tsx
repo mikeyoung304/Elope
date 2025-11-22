@@ -2,6 +2,7 @@ import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Container } from "../ui/Container";
 import { Dashboard } from "../features/admin/Dashboard";
+import { FeatureErrorBoundary } from "../components/errors";
 
 export function Admin() {
   const navigate = useNavigate();
@@ -21,8 +22,10 @@ export function Admin() {
   }
 
   return (
-    <Container className="py-12">
-      <Dashboard />
-    </Container>
+    <FeatureErrorBoundary featureName="Admin Dashboard">
+      <Container className="py-12">
+        <Dashboard />
+      </Container>
+    </FeatureErrorBoundary>
   );
 }

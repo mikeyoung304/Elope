@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { TenantDashboard as TenantDashboardComponent } from "../features/tenant-admin/TenantDashboard";
+import { FeatureErrorBoundary } from "../components/errors";
 import { api } from "../lib/api";
 
 type TenantDto = {
@@ -50,5 +51,9 @@ export function TenantDashboard() {
     return null;
   }
 
-  return <TenantDashboardComponent tenantInfo={tenantInfo} />;
+  return (
+    <FeatureErrorBoundary featureName="Tenant Dashboard">
+      <TenantDashboardComponent tenantInfo={tenantInfo} />
+    </FeatureErrorBoundary>
+  );
 }

@@ -1,4 +1,5 @@
 import { useState, useCallback } from "react";
+import { toast } from "sonner";
 import { api } from "@/lib/api";
 import { packagePhotoApi } from "@/lib/package-photo-api";
 import type { PackageDto } from "@macon/contracts";
@@ -52,11 +53,15 @@ export function usePackageManager(onPackagesChange: () => void) {
         showSuccess("Package deleted successfully");
         onPackagesChange();
       } else {
-        alert("Failed to delete package");
+        toast.error("Failed to delete package", {
+          description: "Please try again or contact support.",
+        });
       }
     } catch (err) {
       console.error("Failed to delete package:", err);
-      alert("An error occurred while deleting the package");
+      toast.error("An error occurred while deleting the package", {
+        description: "Please try again or contact support.",
+      });
     }
   }, [showSuccess, onPackagesChange]);
 

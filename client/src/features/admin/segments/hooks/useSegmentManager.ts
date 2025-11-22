@@ -1,4 +1,5 @@
 import { useState, useCallback } from "react";
+import { toast } from "sonner";
 import { api } from "@/lib/api";
 import type {
   SegmentDto,
@@ -192,11 +193,15 @@ export function useSegmentManager({ onSegmentsChange, showSuccess }: UseSegmentM
         showSuccess("Segment deleted successfully");
         onSegmentsChange();
       } else {
-        alert("Failed to delete segment");
+        toast.error("Failed to delete segment", {
+          description: "Please try again or contact support.",
+        });
       }
     } catch (err) {
       console.error("Failed to delete segment:", err);
-      alert("An error occurred while deleting the segment");
+      toast.error("An error occurred while deleting the segment", {
+        description: "Please try again or contact support.",
+      });
     }
   }, [showSuccess, onSegmentsChange]);
 

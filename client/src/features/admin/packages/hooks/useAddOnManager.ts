@@ -1,4 +1,5 @@
 import { useState, useCallback, useEffect } from "react";
+import { toast } from "sonner";
 import { api } from "@/lib/api";
 import type {
   AddOnDto,
@@ -156,11 +157,15 @@ export function useAddOnManager({ onPackagesChange, showSuccess }: UseAddOnManag
         showSuccess("Add-on deleted successfully");
         onPackagesChange();
       } else {
-        alert("Failed to delete add-on");
+        toast.error("Failed to delete add-on", {
+          description: "Please try again or contact support.",
+        });
       }
     } catch (err) {
       console.error("Failed to delete add-on:", err);
-      alert("An error occurred while deleting the add-on");
+      toast.error("An error occurred while deleting the add-on", {
+        description: "Please try again or contact support.",
+      });
     }
   }, [showSuccess, onPackagesChange]);
 

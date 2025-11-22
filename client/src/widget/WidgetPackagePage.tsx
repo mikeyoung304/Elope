@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { toast } from "sonner";
 import { toUtcMidnight } from "@macon/shared";
 import { usePackage } from "../features/catalog/hooks";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -78,11 +79,15 @@ export function WidgetPackagePage({ packageSlug, onBack, onBookingComplete }: Pr
         // Note: onBookingComplete will be called after successful payment
         // when user returns from Stripe (handled by parent page)
       } else {
-        alert('Failed to create checkout session. Please try again.');
+        toast.error('Failed to create checkout session', {
+          description: 'Please try again or contact support.',
+        });
       }
     } catch (error) {
       console.error('Checkout error:', error);
-      alert('An error occurred during checkout. Please try again.');
+      toast.error('An error occurred during checkout', {
+        description: 'Please try again or contact support.',
+      });
     }
   };
 

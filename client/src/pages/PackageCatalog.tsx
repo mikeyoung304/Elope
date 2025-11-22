@@ -10,9 +10,10 @@ import { CatalogFilters } from '@/features/catalog/CatalogFilters';
 import { PackageCardSkeleton } from '@/components/ui/skeleton';
 import { Button } from '@/components/ui/button';
 import { usePackages } from '@/features/catalog/hooks';
+import { FeatureErrorBoundary } from '@/components/errors';
 import type { PackageDto } from '@macon/contracts';
 
-export function PackageCatalog() {
+function PackageCatalogContent() {
   // Fetch packages
   const { data: packages, isLoading, error, refetch } = usePackages();
 
@@ -189,5 +190,13 @@ export function PackageCatalog() {
         </div>
       </div>
     </Container>
+  );
+}
+
+export function PackageCatalog() {
+  return (
+    <FeatureErrorBoundary featureName="Package Catalog">
+      <PackageCatalogContent />
+    </FeatureErrorBoundary>
   );
 }
