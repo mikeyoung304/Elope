@@ -166,4 +166,231 @@ When migrating from navy background to white background:
 
 ---
 
-*Last Updated: November 16, 2025*
+## Refactoring Phases 3-4: Error Handling & Code Quality (Nov 22, 2025)
+
+### Phase 3a: Backend Error Consolidation
+
+**Issue:** Three duplicate error handling systems existed across the codebase with inconsistent patterns.
+
+**Locations:**
+- `server/src/lib/errors.ts` (primary)
+- `server/src/lib/core/errors.ts` (duplicate)
+- `server/src/routes/errors.ts` (duplicate)
+
+**Solution:**
+1. Consolidated into single `lib/errors/` directory
+2. Created 40+ domain-specific error classes (e.g., `BookingConflictError`, `PackageNotFoundError`)
+3. Updated 51 files (38 source + 13 test)
+4. Deleted 321 lines of duplicate code
+
+**Key Lessons:**
+1. **Single Source of Truth:** Maintain ONE error handling system, not three
+2. **Domain-Specific Errors:** Create typed error classes instead of generic errors with string messages
+3. **HTTP Mapping Consistency:** Each error class knows its HTTP status code
+4. **Gradual Migration:** Updated files incrementally, tested after each batch
+5. **Delete with Confidence:** If tests pass, delete the duplicate code immediately
+
+**Prevention:**
+- ✅ Added linting rule to detect duplicate error patterns
+- ✅ Documented error handling pattern in CLAUDE.md
+- ✅ Created ADR-006 for centralized error handling
+
+### Phase 3b: API Error Response Schemas
+
+**Issue:** API contracts didn't document error responses, making client-side error handling fragile.
+
+**Example Before:**
+```typescript
+// Contract only documented success case
+export const getPackages = {
+  method: 'GET',
+  path: '/packages',
+  responses: {
+    200: z.array(PackageSchema),
+  },
+};
+
+// Client had no type information for errors
+const result = await apiClient.getPackages();
+// What if it returns 404? 500? Unknown!
+```
+
+**Solution:**
+1. Created `ErrorResponseSchema` with field-level validation support
+2. Created 7 convenience schemas (400, 401, 403, 404, 409, 422, 500)
+3. Added error responses to all 44 API endpoints
+4. Type-safe error handling in client
+
+**Example After:**
+```typescript
+export const getPackages = {
+  method: 'GET',
+  path: '/packages',
+  responses: {
+    200: z.array(PackageSchema),
+    401: UnauthorizedResponseSchema,
+    500: InternalServerErrorResponseSchema,
+  },
+};
+
+// Client now has type-safe error handling
+const result = await apiClient.getPackages();
+if (result.status === 401) {
+  toast.error(result.body.error); // Type-safe!
+}
+```
+
+**Key Lessons:**
+1. **Document All Responses:** Errors are part of the contract, not exceptions
+2. **Field-Level Validation:** Return specific field errors for 422 responses
+3. **Consistent Schema:** Reuse error schemas across endpoints
+4. **Client Type Safety:** ts-rest generates type-safe error handlers
+5. **Better UX:** Specific error messages > generic "Something went wrong"
+
+**Prevention:**
+- ✅ Added contract linting to require error responses
+- ✅ Created error schema templates in contracts package
+- ✅ Documented pattern in CLAUDE.md
+
+### Phase 3c: React Error Boundaries & Toast Notifications
+
+**Issue:** 10 production `alert()` calls and no error boundaries meant:
+- Blocking error dialogs (bad UX)
+- Feature errors crashed entire app
+- No error reporting to monitoring services
+
+**Solution:**
+1. Created `FeatureErrorBoundary` component with Sentry integration
+2. Wrapped 5 critical features (Catalog, Package, Admin, TenantDashboard, Booking)
+3. Replaced all 10 `alert()` calls with `toast.error()`
+4. Integrated Sonner toast library
+
+**Before:**
+```tsx
+// Crashes entire app on error
+<PackageCatalog />
+
+// Blocks user interaction
+alert("Failed to delete package");
+```
+
+**After:**
+```tsx
+// Isolated failure with fallback UI
+<FeatureErrorBoundary featureName="Package Catalog">
+  <PackageCatalog />
+</FeatureErrorBoundary>
+
+// Non-blocking notification
+toast.error("Failed to delete package", {
+  description: "Please try again or contact support.",
+});
+```
+
+**Key Lessons:**
+1. **Isolated Failures:** Error boundaries prevent cascade failures
+2. **Non-Blocking Errors:** Toast notifications > alert() dialogs
+3. **Error Reporting:** Error boundaries integrate with Sentry/monitoring
+4. **Better UX:** User can continue using app even if one feature fails
+5. **Graceful Degradation:** Show fallback UI instead of white screen
+
+**Prevention:**
+- ✅ Added ESLint rule to ban `alert()` usage
+- ✅ Created error boundary template for new features
+- ✅ Documented pattern in CLAUDE.md (ADR-007)
+
+### Phase 4a: Cache Helper Extraction
+
+**Issue:** ~100 lines of duplicated caching logic across services with subtle differences.
+
+**Locations:**
+- `CatalogService.ts` - 6 methods with duplicate cache patterns
+- `SegmentService.ts` - 4 methods with duplicate cache patterns
+- Inconsistent cache key formats
+- Repeated TTL logic
+
+**Before (12 lines per method):**
+```typescript
+async getAllPackages(tenantId: string): Promise<Package[]> {
+  const cacheKey = `catalog:${tenantId}:all-packages`;
+  const cached = this.cache?.get<Package[]>(cacheKey);
+  if (cached) {
+    return cached;
+  }
+  const packages = await this.repository.getAllPackages(tenantId);
+  this.cache?.set(cacheKey, packages, 900); // 15 min
+  return packages;
+}
+```
+
+**After (4 lines per method):**
+```typescript
+async getAllPackages(tenantId: string): Promise<Package[]> {
+  return cachedOperation(this.cache, {
+    prefix: 'catalog', keyParts: [tenantId, 'all-packages'], ttl: 900
+  }, () => this.repository.getAllPackages(tenantId));
+}
+```
+
+**Solution:**
+1. Created `lib/cache-helpers.ts` with reusable utilities
+2. Extracted `cachedOperation()` helper
+3. Refactored 10+ methods across 2 services
+4. Eliminated ~100 lines of duplication
+
+**Key Lessons:**
+1. **DRY Cache Patterns:** Extract repeated try-get-set logic
+2. **Consistent Key Format:** Helper enforces standard `prefix:tenant:...` format
+3. **Type Safety:** Generic helper maintains type information
+4. **Tenant Isolation:** Helper makes tenant scoping mandatory
+5. **Maintainability:** One place to update cache logic
+
+**Prevention:**
+- ✅ Documented caching pattern in CLAUDE.md (ADR-008)
+- ✅ Created cache helper template
+- ✅ Added code review checklist for cache usage
+
+### Phase 4b: Shared UI Components
+
+**Issue:** Inline UI patterns duplicated across 10+ files:
+- Success messages (5+ files)
+- Error alerts (8+ files)
+- Form fields (multiple variants)
+- Inconsistent styling and behavior
+
+**Solution:**
+1. Created `SuccessMessage` component (used in 5+ files)
+2. Created `ErrorAlert` component (used in 8+ files)
+3. Created `FormField` component with variants
+4. Deleted deprecated `PackagesManager.tsx` (444 lines)
+5. Established reusable UI patterns
+
+**Before:**
+```tsx
+// Duplicated in 8 files with slight variations
+<div className="flex items-center gap-2 p-4 border border-red-600 bg-red-700">
+  <AlertCircle className="w-5 h-5 text-red-200" />
+  <span className="text-base text-red-100">{error}</span>
+</div>
+```
+
+**After:**
+```tsx
+<ErrorAlert message={error} />
+```
+
+**Key Lessons:**
+1. **Component Extraction Threshold:** Extract after 3+ usages
+2. **Consistent Styling:** Shared components enforce design system
+3. **Prop API Design:** Keep simple (1-3 props), extend with className
+4. **Delete Old Code:** Remove 444-line deprecated file after refactoring
+5. **Progressive Migration:** Extract components, then migrate incrementally
+
+**Prevention:**
+- ✅ Created component library in `client/src/components/ui/`
+- ✅ Documented component patterns in CURRENT_STATUS.md
+- ✅ Added Storybook for component catalog (planned)
+
+---
+
+*Last Updated: November 22, 2025*
