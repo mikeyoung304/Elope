@@ -7,7 +7,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 MAIS (Macon AI Solutions) is a business growth club platform that partners with entrepreneurs and small business owners through revenue-sharing partnerships. Built as a multi-tenant modular monolith with Express + React, featuring complete data isolation, config-driven architecture, and mock-first development. The platform provides AI consulting, seamless booking/scheduling, professional websites, and marketing automation.
 
 **Tech Stack:**
-- Backend: Express 4, TypeScript 5.7 (strict), Prisma 6, PostgreSQL
+- Backend: Express 4, TypeScript 5.9.3 (strict), Prisma 6, PostgreSQL
 - Frontend: React 18, Vite 6, TailwindCSS, Radix UI, TanStack Query
 - API: ts-rest + Zod for type-safe contracts
 - Testing: Vitest (unit/integration), Playwright (E2E)

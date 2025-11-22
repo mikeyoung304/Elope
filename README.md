@@ -1,7 +1,7 @@
 # Macon AI Solutions - Business Growth Club Platform
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
-[![TypeScript](https://img.shields.io/badge/TypeScript-5.7-blue)](https://www.typescriptlang.org/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.9.3-blue)](https://www.typescriptlang.org/)
 [![Node.js](https://img.shields.io/badge/Node.js-20+-green)](https://nodejs.org/)
 [![PostgreSQL](https://img.shields.io/badge/PostgreSQL-15-blue)](https://www.postgresql.org/)
 [![Test Coverage](https://img.shields.io/badge/coverage-92.2%25-brightgreen)](./TESTING.md)
@@ -249,7 +249,7 @@ Learn more: [ARCHITECTURE.md](./ARCHITECTURE.md) | [MULTI_TENANT_IMPLEMENTATION_
 
 - **Runtime**: Node.js 20+
 - **Framework**: Express 4 (HTTP server)
-- **Language**: TypeScript 5.7 (strict mode)
+- **Language**: TypeScript 5.9.3 (strict mode)
 - **Database**: PostgreSQL 15 (via Supabase)
 - **ORM**: Prisma 6 (type-safe queries, migrations)
 - **API Contract**: ts-rest + Zod (type-safe API)
@@ -263,7 +263,7 @@ Learn more: [ARCHITECTURE.md](./ARCHITECTURE.md) | [MULTI_TENANT_IMPLEMENTATION_
 
 - **Framework**: React 18
 - **Build Tool**: Vite 6
-- **Language**: TypeScript 5.7
+- **Language**: TypeScript 5.9.3
 - **Styling**: Tailwind CSS 3
 - **UI Components**: Radix UI (accessible primitives)
 - **State Management**: TanStack Query (server state)
@@ -614,7 +614,7 @@ This allows you to run "real mode" with just database + Stripe, and add email/ca
 
 ## Embeddable Widget
 
-Elope offers an embeddable booking widget that tenants can add to their existing websites with just a few lines of code.
+MAIS offers an embeddable booking widget that tenants can add to their existing websites with just a few lines of code.
 
 ### Quick Integration Example
 

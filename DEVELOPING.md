@@ -89,12 +89,12 @@ Install PostgreSQL 14+. Options:
 
 1. **Create a database:**
    ```bash
-   createdb elope_dev
+   createdb mais_dev
    ```
 
 2. **Set DATABASE_URL in `server/.env`:**
    ```bash
-   DATABASE_URL="postgresql://username:password@localhost:5432/elope_dev?schema=public"
+   DATABASE_URL="postgresql://username:password@localhost:5432/mais_dev?schema=public"
    ```
 
 3. **Run migrations:**
