@@ -182,6 +182,14 @@ export interface UnifiedTokenPayload {
   // Tenant admin fields (present when role = TENANT_ADMIN)
   tenantId?: string;
   slug?: string;
+
+  // Impersonation fields (present when platform admin impersonates tenant)
+  impersonating?: {
+    tenantId: string;
+    tenantSlug: string;
+    tenantEmail: string;
+    startedAt: string; // ISO timestamp
+  };
 }
 
 /**

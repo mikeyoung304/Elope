@@ -126,4 +126,172 @@ describe('IdentityService', () => {
       expect(() => service.verifyToken(token)).toThrow(UnauthorizedError);
     });
   });
+
+  describe('createToken', () => {
+    it('creates valid JWT token with correct payload', () => {
+      // Arrange
+      const payload = {
+        userId: 'user_123',
+        email: 'admin@example.com',
+        role: 'PLATFORM_ADMIN' as const,
+      };
+
+      // Act
+      const token = service.createToken(payload);
+
+      // Assert
+      expect(token).toBeDefined();
+      expect(typeof token).toBe('string');
+      expect(token.split('.')).toHaveLength(3); // JWT has 3 parts
+
+      // Verify token payload
+      const decoded = service.verifyToken(token);
+      expect(decoded.userId).toBe('user_123');
+      expect(decoded.email).toBe('admin@example.com');
+    });
+
+    it('creates token without impersonation data', () => {
+      // Arrange
+      const payload = {
+        userId: 'user_456',
+        email: 'another@example.com',
+        role: 'PLATFORM_ADMIN' as const,
+      };
+
+      // Act
+      const token = service.createToken(payload);
+      const decoded = service.verifyToken(token) as any;
+
+      // Assert: should NOT have impersonating field
+      expect(decoded.impersonating).toBeUndefined();
+    });
+
+    it('token expires after configured duration', () => {
+      // Arrange
+      const payload = {
+        userId: 'user_123',
+        email: 'admin@example.com',
+        role: 'PLATFORM_ADMIN' as const,
+      };
+
+      // Act
+      const token = service.createToken(payload);
+      const decoded = service.verifyToken(token) as any;
+
+      // Assert: should have exp claim (7 days from now)
+      expect(decoded.exp).toBeDefined();
+      const now = Math.floor(Date.now() / 1000);
+      const sevenDays = 7 * 24 * 60 * 60;
+      expect(decoded.exp).toBeGreaterThan(now);
+      expect(decoded.exp).toBeLessThanOrEqual(now + sevenDays + 5); // 5 second tolerance
+    });
+  });
+
+  describe('createImpersonationToken', () => {
+    it('creates valid JWT token with impersonation data', () => {
+      // Arrange
+      const payload = {
+        userId: 'admin_123',
+        email: 'admin@example.com',
+        role: 'PLATFORM_ADMIN' as const,
+        impersonating: {
+          tenantId: 'tenant_456',
+          tenantSlug: 'acme-corp',
+          tenantEmail: 'tenant@acme.com',
+          startedAt: new Date().toISOString(),
+        },
+      };
+
+      // Act
+      const token = service.createImpersonationToken(payload);
+
+      // Assert
+      expect(token).toBeDefined();
+      expect(typeof token).toBe('string');
+      expect(token.split('.')).toHaveLength(3); // JWT has 3 parts
+
+      // Verify token payload
+      const decoded = service.verifyToken(token) as any;
+      expect(decoded.userId).toBe('admin_123');
+      expect(decoded.email).toBe('admin@example.com');
+      expect(decoded.impersonating).toBeDefined();
+      expect(decoded.impersonating.tenantId).toBe('tenant_456');
+      expect(decoded.impersonating.tenantSlug).toBe('acme-corp');
+      expect(decoded.impersonating.tenantEmail).toBe('tenant@acme.com');
+      expect(decoded.impersonating.startedAt).toBeDefined();
+    });
+
+    it('preserves all impersonation metadata', () => {
+      // Arrange
+      const startTime = new Date('2025-01-01T00:00:00Z').toISOString();
+      const payload = {
+        userId: 'admin_789',
+        email: 'superadmin@example.com',
+        role: 'PLATFORM_ADMIN' as const,
+        impersonating: {
+          tenantId: 'tenant_xyz',
+          tenantSlug: 'test-tenant',
+          tenantEmail: 'test@tenant.com',
+          startedAt: startTime,
+        },
+      };
+
+      // Act
+      const token = service.createImpersonationToken(payload);
+      const decoded = service.verifyToken(token) as any;
+
+      // Assert: all impersonation fields preserved
+      expect(decoded.impersonating.tenantId).toBe('tenant_xyz');
+      expect(decoded.impersonating.tenantSlug).toBe('test-tenant');
+      expect(decoded.impersonating.tenantEmail).toBe('test@tenant.com');
+      expect(decoded.impersonating.startedAt).toBe(startTime);
+    });
+
+    it('token can be verified with verifyToken method', () => {
+      // Arrange
+      const payload = {
+        userId: 'admin_999',
+        email: 'admin@platform.com',
+        role: 'PLATFORM_ADMIN' as const,
+        impersonating: {
+          tenantId: 'tenant_abc',
+          tenantSlug: 'client-corp',
+          tenantEmail: 'client@corp.com',
+          startedAt: new Date().toISOString(),
+        },
+      };
+
+      // Act
+      const token = service.createImpersonationToken(payload);
+
+      // Assert: should not throw
+      expect(() => service.verifyToken(token)).not.toThrow();
+    });
+
+    it('impersonation token expires after configured duration', () => {
+      // Arrange
+      const payload = {
+        userId: 'admin_111',
+        email: 'admin@example.com',
+        role: 'PLATFORM_ADMIN' as const,
+        impersonating: {
+          tenantId: 'tenant_222',
+          tenantSlug: 'tenant-slug',
+          tenantEmail: 'tenant@example.com',
+          startedAt: new Date().toISOString(),
+        },
+      };
+
+      // Act
+      const token = service.createImpersonationToken(payload);
+      const decoded = service.verifyToken(token) as any;
+
+      // Assert: should have exp claim
+      expect(decoded.exp).toBeDefined();
+      const now = Math.floor(Date.now() / 1000);
+      const sevenDays = 7 * 24 * 60 * 60;
+      expect(decoded.exp).toBeGreaterThan(now);
+      expect(decoded.exp).toBeLessThanOrEqual(now + sevenDays + 5); // 5 second tolerance
+    });
+  });
 });

@@ -19,11 +19,11 @@ async function main() {
     throw new Error('ADMIN_DEFAULT_PASSWORD must be at least 12 characters');
   }
 
-  const passwordHash = await bcrypt.hash('admin123', BCRYPT_ROUNDS);
+  const passwordHash = await bcrypt.hash('@Nupples8', BCRYPT_ROUNDS);
   await prisma.user.upsert({
-    where: { email: 'admin@macon.com' },
+    where: { email: 'mike@maconheadshots.com' },
     update: { passwordHash, role: 'PLATFORM_ADMIN' },
-    create: { email: 'admin@macon.com', name: 'Platform Admin', role: 'PLATFORM_ADMIN', passwordHash },
+    create: { email: 'mike@maconheadshots.com', name: 'Mike Young', role: 'PLATFORM_ADMIN', passwordHash },
   });
 
   // Create test tenant for E2E tests with known API key

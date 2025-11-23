@@ -128,6 +128,91 @@ export class UnifiedAuthController {
       }
     }
   }
+
+  /**
+   * Start impersonating a tenant
+   * Platform admin only - creates a new JWT with impersonation data
+   *
+   * @param currentToken - Current platform admin JWT
+   * @param tenantId - Tenant ID to impersonate
+   * @returns New JWT token with impersonation data
+   */
+  async startImpersonation(currentToken: string, tenantId: string): Promise<UnifiedLoginResponse> {
+    // Verify caller is platform admin
+    const payload = this.identityService.verifyToken(currentToken);
+    if (!payload.userId) {
+      throw new UnauthorizedError('Only platform admins can impersonate tenants');
+    }
+
+    // Get tenant details
+    const tenant = await this.tenantRepo.findById(tenantId);
+    if (!tenant) {
+      throw new UnauthorizedError('Tenant not found');
+    }
+
+    // Create new token with impersonation data
+    const impersonationToken = this.identityService.createImpersonationToken({
+      userId: payload.userId,
+      email: payload.email,
+      role: 'PLATFORM_ADMIN' as const,
+      impersonating: {
+        tenantId: tenant.id,
+        tenantSlug: tenant.slug,
+        tenantEmail: tenant.email || '',
+        startedAt: new Date().toISOString(),
+      },
+    });
+
+    logger.info({
+      event: 'impersonation_started',
+      adminEmail: payload.email,
+      tenantId: tenant.id,
+      tenantSlug: tenant.slug,
+    }, `Platform admin ${payload.email} started impersonating tenant ${tenant.slug}`);
+
+    return {
+      token: impersonationToken,
+      role: 'PLATFORM_ADMIN',
+      email: payload.email,
+      userId: payload.userId,
+      tenantId: tenant.id,
+      slug: tenant.slug,
+    };
+  }
+
+  /**
+   * Stop impersonating a tenant
+   * Returns to normal platform admin token
+   *
+   * @param impersonationToken - Current impersonation JWT
+   * @returns Normal platform admin JWT token
+   */
+  async stopImpersonation(impersonationToken: string): Promise<UnifiedLoginResponse> {
+    // Verify it's an impersonation token
+    const payload = this.identityService.verifyToken(impersonationToken);
+    if (!payload.userId) {
+      throw new UnauthorizedError('Invalid impersonation token');
+    }
+
+    // Create normal admin token (without impersonation)
+    const normalToken = this.identityService.createToken({
+      userId: payload.userId,
+      email: payload.email,
+      role: 'PLATFORM_ADMIN' as const,
+    });
+
+    logger.info({
+      event: 'impersonation_stopped',
+      adminEmail: payload.email,
+    }, `Platform admin ${payload.email} stopped impersonation`);
+
+    return {
+      token: normalToken,
+      role: 'PLATFORM_ADMIN',
+      email: payload.email,
+      userId: payload.userId,
+    };
+  }
 }
 
 /**
@@ -239,6 +324,85 @@ export function createUnifiedAuthRoutes(
       }
 
       const result = await controller.verifyToken(token);
+      res.status(200).json(result);
+    } catch (error) {
+      next(error);
+    }
+  });
+
+  /**
+   * POST /impersonate
+   * Start impersonating a tenant (platform admin only)
+   *
+   * Request body:
+   * {
+   *   "tenantId": "tenant_123"
+   * }
+   *
+   * Response: Same as /login with impersonation data
+   */
+  router.post('/impersonate', async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const authHeader = req.get('Authorization');
+      if (!authHeader) {
+        res.status(401).json({ error: 'Missing Authorization header' });
+        return;
+      }
+
+      const token = authHeader.split(' ')[1];
+      if (!token) {
+        res.status(401).json({ error: 'Missing token' });
+        return;
+      }
+
+      const { tenantId } = req.body;
+      if (!tenantId) {
+        res.status(400).json({ error: 'tenantId is required' });
+        return;
+      }
+
+      const result = await controller.startImpersonation(token, tenantId);
+
+      logger.info({
+        event: 'impersonation_api_success',
+        adminEmail: result.email,
+        tenantId: result.tenantId,
+        tenantSlug: result.slug,
+      }, 'Impersonation started via API');
+
+      res.status(200).json(result);
+    } catch (error) {
+      next(error);
+    }
+  });
+
+  /**
+   * POST /stop-impersonation
+   * Stop impersonating and return to normal admin token
+   *
+   * Response: Same as /login without impersonation data
+   */
+  router.post('/stop-impersonation', async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const authHeader = req.get('Authorization');
+      if (!authHeader) {
+        res.status(401).json({ error: 'Missing Authorization header' });
+        return;
+      }
+
+      const token = authHeader.split(' ')[1];
+      if (!token) {
+        res.status(401).json({ error: 'Missing token' });
+        return;
+      }
+
+      const result = await controller.stopImpersonation(token);
+
+      logger.info({
+        event: 'stop_impersonation_api_success',
+        adminEmail: result.email,
+      }, 'Impersonation stopped via API');
+
       res.status(200).json(result);
     } catch (error) {
       next(error);

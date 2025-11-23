@@ -6,7 +6,7 @@
 import type { Request, Response, NextFunction } from 'express';
 import { UnauthorizedError } from '../lib/errors';
 import type { IdentityService } from '../services/identity.service';
-import type { TokenPayload } from '../lib/ports';
+import type { TokenPayload, UnifiedTokenPayload } from '../lib/ports';
 
 /**
  * Creates auth middleware that verifies JWT tokens
@@ -33,12 +33,12 @@ export function createAuthMiddleware(identityService: IdentityService) {
         throw new UnauthorizedError('Missing token');
       }
 
-      // Verify token and extract payload
+      // Verify token and extract payload (could be old TokenPayload or new UnifiedTokenPayload)
       const payload: TokenPayload = identityService.verifyToken(token);
 
       // SECURITY: Validate token type - reject tenant tokens on admin routes
       // Tenant tokens have a 'type' field set to 'tenant'
-      // Admin tokens have a 'role' field set to 'admin'
+      // Admin tokens have a 'role' field set to 'admin' or 'PLATFORM_ADMIN'
       if ('type' in payload && typeof payload === 'object' && payload !== null &&
           'type' in payload && (payload as { type: string }).type === 'tenant') {
         throw new UnauthorizedError(
@@ -46,8 +46,11 @@ export function createAuthMiddleware(identityService: IdentityService) {
         );
       }
 
-      // SECURITY: Validate admin role is present
-      if (!payload.role || payload.role !== 'admin') {
+      // SECURITY: Validate admin role is present (support both old and new token formats)
+      const isOldFormat = payload.role === 'admin';
+      const isNewFormat = 'role' in payload && (payload as UnifiedTokenPayload).role === 'PLATFORM_ADMIN';
+
+      if (!isOldFormat && !isNewFormat) {
         throw new UnauthorizedError(
           'Invalid token: admin role required for admin routes'
         );
@@ -56,7 +59,18 @@ export function createAuthMiddleware(identityService: IdentityService) {
       // Attach admin user to res.locals for use in controllers
       res.locals.admin = payload;
 
-      reqLogger?.info({ userId: payload.userId, email: payload.email }, 'Admin authenticated');
+      // If impersonation token, also attach impersonation context
+      const unifiedPayload = payload as UnifiedTokenPayload;
+      if (unifiedPayload.impersonating) {
+        res.locals.impersonating = unifiedPayload.impersonating;
+        reqLogger?.info({
+          userId: payload.userId,
+          email: payload.email,
+          impersonatingTenant: unifiedPayload.impersonating.tenantSlug
+        }, 'Admin authenticated with impersonation');
+      } else {
+        reqLogger?.info({ userId: payload.userId, email: payload.email }, 'Admin authenticated');
+      }
 
       next();
     } catch (error) {

@@ -237,4 +237,124 @@ describe('Auth Middleware', () => {
       expect(next).toHaveBeenCalledWith();
     });
   });
+
+  describe('Impersonation Support', () => {
+    it('should attach impersonation context when token contains impersonating data', () => {
+      const mockPayload: any = {
+        userId: 'admin_123',
+        email: 'admin@platform.com',
+        role: 'PLATFORM_ADMIN',
+        impersonating: {
+          tenantId: 'tenant_456',
+          tenantSlug: 'acme-corp',
+          tenantEmail: 'tenant@acme.com',
+          startedAt: '2025-01-01T00:00:00Z',
+        },
+      };
+
+      (req.get as any).mockReturnValue('Bearer impersonation-token');
+      (identityService.verifyToken as any).mockReturnValue(mockPayload);
+
+      authMiddleware(req as Request, res as Response, next);
+
+      // Should attach both admin and impersonating data
+      expect(res.locals!.admin).toEqual(mockPayload);
+      expect(res.locals!.impersonating).toEqual(mockPayload.impersonating);
+      expect(next).toHaveBeenCalledWith();
+    });
+
+    it('should log impersonation context when present', () => {
+      const mockPayload: any = {
+        userId: 'admin_789',
+        email: 'admin@platform.com',
+        role: 'PLATFORM_ADMIN',
+        impersonating: {
+          tenantId: 'tenant_xyz',
+          tenantSlug: 'test-corp',
+          tenantEmail: 'test@corp.com',
+          startedAt: '2025-01-01T00:00:00Z',
+        },
+      };
+
+      (req.get as any).mockReturnValue('Bearer impersonation-token');
+      (identityService.verifyToken as any).mockReturnValue(mockPayload);
+
+      authMiddleware(req as Request, res as Response, next);
+
+      expect(res.locals!.logger.info).toHaveBeenCalledWith(
+        {
+          userId: 'admin_789',
+          email: 'admin@platform.com',
+          impersonatingTenant: 'test-corp',
+        },
+        'Admin authenticated with impersonation'
+      );
+    });
+
+    it('should not attach impersonating when token has no impersonation data', () => {
+      const mockPayload: TokenPayload = {
+        userId: 'admin_123',
+        email: 'admin@platform.com',
+        role: 'admin',
+      };
+
+      (req.get as any).mockReturnValue('Bearer normal-token');
+      (identityService.verifyToken as any).mockReturnValue(mockPayload);
+
+      authMiddleware(req as Request, res as Response, next);
+
+      expect(res.locals!.admin).toEqual(mockPayload);
+      expect(res.locals!.impersonating).toBeUndefined();
+      expect(next).toHaveBeenCalledWith();
+    });
+
+    it('should handle impersonation token with all metadata fields', () => {
+      const mockPayload: any = {
+        userId: 'admin_999',
+        email: 'superadmin@platform.com',
+        role: 'PLATFORM_ADMIN',
+        impersonating: {
+          tenantId: 'tenant_full',
+          tenantSlug: 'full-tenant',
+          tenantEmail: 'full@tenant.com',
+          startedAt: '2025-11-22T12:00:00Z',
+        },
+      };
+
+      (req.get as any).mockReturnValue('Bearer full-imp-token');
+      (identityService.verifyToken as any).mockReturnValue(mockPayload);
+
+      authMiddleware(req as Request, res as Response, next);
+
+      // Verify all impersonation fields are preserved
+      expect(res.locals!.impersonating.tenantId).toBe('tenant_full');
+      expect(res.locals!.impersonating.tenantSlug).toBe('full-tenant');
+      expect(res.locals!.impersonating.tenantEmail).toBe('full@tenant.com');
+      expect(res.locals!.impersonating.startedAt).toBe('2025-11-22T12:00:00Z');
+    });
+
+    it('should support both old admin format and new PLATFORM_ADMIN format with impersonation', () => {
+      const mockPayload: any = {
+        userId: 'admin_compat',
+        email: 'admin@example.com',
+        role: 'PLATFORM_ADMIN',
+        impersonating: {
+          tenantId: 'tenant_compat',
+          tenantSlug: 'compat-tenant',
+          tenantEmail: 'compat@tenant.com',
+          startedAt: new Date().toISOString(),
+        },
+      };
+
+      (req.get as any).mockReturnValue('Bearer compat-token');
+      (identityService.verifyToken as any).mockReturnValue(mockPayload);
+
+      authMiddleware(req as Request, res as Response, next);
+
+      // Should accept PLATFORM_ADMIN role
+      expect(res.locals!.admin.role).toBe('PLATFORM_ADMIN');
+      expect(res.locals!.impersonating).toBeDefined();
+      expect(next).toHaveBeenCalledWith();
+    });
+  });
 });

@@ -4,7 +4,7 @@
 
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
-import type { UserRepository, TokenPayload } from '../lib/ports';
+import type { UserRepository, TokenPayload, UnifiedTokenPayload } from '../lib/ports';
 import { UnauthorizedError } from '../lib/errors';
 
 export class IdentityService {
@@ -45,5 +45,25 @@ export class IdentityService {
     } catch {
       throw new UnauthorizedError('Invalid or expired token');
     }
+  }
+
+  /**
+   * Create a normal admin JWT token without impersonation
+   */
+  createToken(payload: Omit<UnifiedTokenPayload, 'impersonating'>): string {
+    return jwt.sign(payload, this.jwtSecret, {
+      algorithm: 'HS256',
+      expiresIn: '7d',
+    });
+  }
+
+  /**
+   * Create an impersonation JWT token with tenant context
+   */
+  createImpersonationToken(payload: UnifiedTokenPayload): string {
+    return jwt.sign(payload, this.jwtSecret, {
+      algorithm: 'HS256',
+      expiresIn: '7d', // Consider shorter expiry for security
+    });
   }
 }
