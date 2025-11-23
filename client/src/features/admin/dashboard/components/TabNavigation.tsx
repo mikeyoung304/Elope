@@ -1,6 +1,6 @@
 import { cn } from "@/lib/utils";
 
-type TabValue = "bookings" | "blackouts" | "packages";
+type TabValue = "bookings" | "blackouts" | "packages" | "tenants";
 
 interface TabNavigationProps {
   activeTab: TabValue;
@@ -14,6 +14,7 @@ interface TabNavigationProps {
  */
 export function TabNavigation({ activeTab, onTabChange }: TabNavigationProps) {
   const tabs: { value: TabValue; label: string }[] = [
+    { value: "tenants", label: "Tenants" },
     { value: "bookings", label: "Bookings" },
     { value: "blackouts", label: "Blackouts" },
     { value: "packages", label: "Packages" },

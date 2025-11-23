@@ -9,6 +9,8 @@ import { BookingList } from "./BookingList";
 import { DashboardMetrics } from "./dashboard/components/DashboardMetrics";
 import { TabNavigation } from "./dashboard/components/TabNavigation";
 import { BlackoutsTab } from "./dashboard/tabs/BlackoutsTab";
+import { TenantsTab } from "./dashboard/tabs/TenantsTab";
+import { ImpersonationBanner } from "./dashboard/components/ImpersonationBanner";
 
 type Blackout = {
   date: string;
@@ -21,13 +23,57 @@ type Blackout = {
  * Main admin dashboard with tabs for bookings, blackouts, and packages.
  * Refactored to use smaller components for better maintainability.
  */
+type Tenant = {
+  id: string;
+  slug: string;
+  name: string;
+  apiKeyPublic: string;
+  commissionPercent: number;
+  stripeOnboarded: boolean;
+  stripeAccountId: string | null;
+  isActive: boolean;
+  createdAt: string;
+  updatedAt: string;
+  stats: {
+    bookings: number;
+    packages: number;
+    addOns: number;
+  };
+};
+
 export function Dashboard() {
   const navigate = useNavigate();
-  const [activeTab, setActiveTab] = useState<"bookings" | "blackouts" | "packages">("bookings");
+  const [activeTab, setActiveTab] = useState<"bookings" | "blackouts" | "packages" | "tenants">("tenants");
   const [bookings, setBookings] = useState<BookingDto[]>([]);
   const [blackouts, setBlackouts] = useState<Blackout[]>([]);
   const [packages, setPackages] = useState<PackageDto[]>([]);
+  const [tenants, setTenants] = useState<Tenant[]>([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [impersonating, setImpersonating] = useState<{
+    tenantId: string;
+    tenantSlug: string;
+    tenantName: string;
+  } | null>(null);
+
+  // Check if admin is impersonating on mount
+  useEffect(() => {
+    const token = localStorage.getItem("adminToken");
+    if (token) {
+      try {
+        // Decode JWT to check for impersonation data (simple base64 decode, no verification)
+        const payload = JSON.parse(atob(token.split('.')[1]));
+        if (payload.impersonating) {
+          setImpersonating({
+            tenantId: payload.impersonating.tenantId,
+            tenantSlug: payload.impersonating.tenantSlug,
+            tenantName: payload.impersonating.tenantEmail || payload.impersonating.tenantSlug,
+          });
+        }
+      } catch (error) {
+        console.error("Failed to decode JWT:", error);
+      }
+    }
+  }, []);
 
   useEffect(() => {
     if (activeTab === "bookings") {
@@ -36,6 +82,8 @@ export function Dashboard() {
       loadBlackouts();
     } else if (activeTab === "packages") {
       loadPackages();
+    } else if (activeTab === "tenants") {
+      loadTenants();
     }
   }, [activeTab]);
 
@@ -76,6 +124,20 @@ export function Dashboard() {
       }
     } catch (error) {
       console.error("Failed to load packages:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
+
+  const loadTenants = useCallback(async () => {
+    setIsLoading(true);
+    try {
+      const result = await api.adminGetTenants();
+      if (result.status === 200 && result.body) {
+        setTenants(result.body.tenants);
+      }
+    } catch (error) {
+      console.error("Failed to load tenants:", error);
     } finally {
       setIsLoading(false);
     }
@@ -149,6 +211,15 @@ export function Dashboard() {
         </Button>
       </div>
 
+      {/* Impersonation Banner */}
+      {impersonating && (
+        <ImpersonationBanner
+          tenantName={impersonating.tenantName}
+          tenantSlug={impersonating.tenantSlug}
+          onStopImpersonation={() => setImpersonating(null)}
+        />
+      )}
+
       {/* Metrics Cards */}
       <DashboardMetrics
         totalBookings={metrics.totalBookings}
@@ -177,6 +248,11 @@ export function Dashboard() {
       {/* Packages Tab */}
       {activeTab === "packages" && (
         <PackagesManager packages={packages} onPackagesChange={loadPackages} />
+      )}
+
+      {/* Tenants Tab */}
+      {activeTab === "tenants" && (
+        <TenantsTab tenants={tenants} isLoading={isLoading} onRefresh={loadTenants} />
       )}
     </div>
   );

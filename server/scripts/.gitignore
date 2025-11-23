@@ -1,0 +1,8 @@
+# Sensitive scripts with real credentials
+create-real-tenants.ts
+create-real-tenants.js
+create-real-tenants-sql.sh
+
+# Any backup files
+*.backup
+*.bak

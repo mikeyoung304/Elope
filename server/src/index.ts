@@ -22,7 +22,8 @@ async function main(): Promise<void> {
     logger.info('Configuration loaded');
 
     // Verify Supabase database connection
-    await verifyDatabaseConnection();
+    // TODO: Re-enable once SUPABASE_SERVICE_KEY is configured
+    // await verifyDatabaseConnection();
 
     // Initialize Sentry error tracking (optional - gracefully degrades if no DSN)
     initSentry();

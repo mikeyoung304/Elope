@@ -1,0 +1,162 @@
+import { useState, useEffect } from "react";
+import { Users, LogIn } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { api } from "@/lib/api";
+
+type Tenant = {
+  id: string;
+  slug: string;
+  name: string;
+  apiKeyPublic: string;
+  commissionPercent: number;
+  stripeOnboarded: boolean;
+  stripeAccountId: string | null;
+  isActive: boolean;
+  createdAt: string;
+  updatedAt: string;
+  stats: {
+    bookings: number;
+    packages: number;
+    addOns: number;
+  };
+};
+
+interface TenantsTabProps {
+  tenants: Tenant[];
+  isLoading: boolean;
+  onRefresh: () => void;
+}
+
+/**
+ * Tenants Tab Component
+ *
+ * Displays list of all tenants with impersonation buttons for platform admin.
+ * Allows admin to sign into any tenant's dashboard with full editing capabilities.
+ */
+export function TenantsTab({ tenants, isLoading, onRefresh }: TenantsTabProps) {
+  const [impersonating, setImpersonating] = useState<string | null>(null);
+
+  const handleImpersonate = async (tenantId: string) => {
+    setImpersonating(tenantId);
+    try {
+      const result = await api.adminImpersonate(tenantId);
+      if (result.status === 200 && result.body) {
+        // Token is automatically stored by api.adminImpersonate
+        // Reload the page to reinitialize with impersonation context
+        window.location.reload();
+      } else {
+        console.error("Impersonation failed:", result.status);
+        alert("Failed to impersonate tenant. Please try again.");
+      }
+    } catch (error) {
+      console.error("Impersonation error:", error);
+      alert("An error occurred while impersonating tenant.");
+    } finally {
+      setImpersonating(null);
+    }
+  };
+
+  if (isLoading) {
+    return (
+      <div className="bg-macon-navy-900 rounded-lg p-8 text-center">
+        <p className="text-macon-navy-300">Loading tenants...</p>
+      </div>
+    );
+  }
+
+  if (tenants.length === 0) {
+    return (
+      <div className="bg-macon-navy-900 rounded-lg p-8 text-center">
+        <Users className="w-12 h-12 text-macon-navy-600 mx-auto mb-4" />
+        <p className="text-macon-navy-300 text-lg">No tenants found</p>
+        <p className="text-macon-navy-500 text-sm mt-2">
+          Create a new tenant to get started
+        </p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-4">
+      <div className="flex justify-between items-center">
+        <h2 className="text-2xl font-semibold text-macon-navy-50">
+          Tenants ({tenants.length})
+        </h2>
+        <Button
+          onClick={onRefresh}
+          variant="outline"
+          className="border-macon-navy-600 text-macon-navy-100 hover:bg-macon-navy-800"
+        >
+          Refresh
+        </Button>
+      </div>
+
+      <div className="grid gap-4">
+        {tenants.map((tenant) => (
+          <div
+            key={tenant.id}
+            className="bg-macon-navy-900 rounded-lg p-6 border border-macon-navy-800 hover:border-macon-navy-700 transition-colors"
+          >
+            <div className="flex items-start justify-between">
+              <div className="flex-1">
+                <div className="flex items-center gap-3 mb-2">
+                  <h3 className="text-xl font-semibold text-macon-navy-50">
+                    {tenant.name}
+                  </h3>
+                  {!tenant.isActive && (
+                    <span className="px-2 py-1 bg-red-900/50 text-red-300 text-xs rounded">
+                      Inactive
+                    </span>
+                  )}
+                  {tenant.stripeOnboarded && (
+                    <span className="px-2 py-1 bg-green-900/50 text-green-300 text-xs rounded">
+                      Stripe Connected
+                    </span>
+                  )}
+                </div>
+
+                <div className="space-y-1 text-sm text-macon-navy-400">
+                  <p>
+                    <span className="font-medium">Slug:</span> {tenant.slug}
+                  </p>
+                  <p>
+                    <span className="font-medium">Commission:</span>{" "}
+                    {tenant.commissionPercent}%
+                  </p>
+                  <p>
+                    <span className="font-medium">API Key:</span>{" "}
+                    <code className="bg-macon-navy-950 px-2 py-0.5 rounded text-xs">
+                      {tenant.apiKeyPublic}
+                    </code>
+                  </p>
+                </div>
+
+                <div className="flex gap-4 mt-3 text-xs text-macon-navy-500">
+                  <span>{tenant.stats.bookings} bookings</span>
+                  <span>{tenant.stats.packages} packages</span>
+                  <span>{tenant.stats.addOns} add-ons</span>
+                </div>
+              </div>
+
+              <Button
+                onClick={() => handleImpersonate(tenant.id)}
+                disabled={!tenant.isActive || impersonating === tenant.id}
+                className="bg-macon-peach hover:bg-macon-peach/90 text-macon-navy-950 font-semibold"
+                size="lg"
+              >
+                {impersonating === tenant.id ? (
+                  <>Loading...</>
+                ) : (
+                  <>
+                    <LogIn className="w-4 h-4 mr-2" />
+                    Sign In As
+                  </>
+                )}
+              </Button>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
