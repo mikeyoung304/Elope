@@ -108,7 +108,8 @@ describe.sequential('PrismaBookingRepository - Integration Tests', () => {
 
     // SKIPPED: This test is flaky due to timing-dependent race conditions in database transactions
     // The pessimistic locking works correctly in production, but the test timing can vary
-    it.skip('should handle concurrent booking attempts', async () => {
+    it('should handle concurrent booking attempts', async () => {
+      // FIXED: ReadCommitted isolation handles concurrent attempts correctly
       const date = '2026-01-15';
       const booking1: Booking = {
         id: 'concurrent-1',
@@ -258,11 +259,8 @@ describe.sequential('PrismaBookingRepository - Integration Tests', () => {
       expect(bookingCount).toBe(0);
     });
 
-    it.skip('should create booking with add-ons atomically', async () => {
-      // TODO (Sprint 6 - Phase 2): SKIPPED - AddOn not found in transaction
-      // Failure: PrismaClientKnownRequestError - foreign key constraint at catalog.repository.ts:175
-      // Root Cause: Test data setup or cleanup timing issue
-      // Fix: Investigate addOn creation in beforeEach. See SPRINT_6_STABILIZATION_PLAN.md
+    it('should create booking with add-ons atomically', async () => {
+      // FIXED: ReadCommitted isolation + proper beforeEach setup resolves FK issues
       const booking: Booking = {
         id: 'addon-test',
         packageId: testPackageId,
@@ -374,6 +372,11 @@ describe.sequential('PrismaBookingRepository - Integration Tests', () => {
     it('should find booking by id', async () => {
       // FIXED: Use direct database seeding to avoid repository deadlock issues
 
+      // Cleanup any existing customer with this email
+      await ctx.prisma.customer.deleteMany({
+        where: { tenantId: testTenantId, email: 'find@test.com' },
+      });
+
       // Direct database insert (bypasses repository locking logic)
       const customer = await ctx.prisma.customer.create({
         data: {
@@ -409,19 +412,14 @@ describe.sequential('PrismaBookingRepository - Integration Tests', () => {
       expect(found?.email).toBe('find@test.com');
     });
 
-    it.skip('should return null for non-existent booking', async () => {
-      // TODO (Sprint 6 - Phase 2): SKIPPED - Cascading failure from skipped tests
-      // Failure: Unexpected failure after skipping other booking tests
-      // Root Cause: Data contamination or test order dependency
-      // Fix: Safe to re-enable after resolving other booking test issues
+    it('should return null for non-existent booking', async () => {
+      // FIXED: Simple query test, works with ReadCommitted isolation
       const found = await repository.findById(testTenantId, 'non-existent-id');
       expect(found).toBeNull();
     });
 
-    it.skip('should check if date is booked', async () => {
-      // TODO (Sprint 6 - Phase 2): SKIPPED - Booking creation fails (deadlock cascading)
-      // Failure: Transaction conflict at booking.repository.ts:139
-      // Fix: First resolve transaction deadlock issues then re-enable
+    it('should check if date is booked', async () => {
+      // FIXED: ReadCommitted isolation resolves deadlock issues
       const booking: Booking = {
         id: 'check-date-test',
         packageId: testPackageId,
@@ -443,10 +441,8 @@ describe.sequential('PrismaBookingRepository - Integration Tests', () => {
       expect(isNotBooked).toBe(false);
     });
 
-    it.skip('should find all bookings ordered by creation date', async () => {
-      // TODO (Sprint 6 - Phase 2): SKIPPED - Count mismatch (data contamination)
-      // Failure: Expected 3 bookings, found 2 (booking creation failures cascading)
-      // Fix: Resolve transaction issues, may also have cleanup/isolation problems
+    it('should find all bookings ordered by creation date', async () => {
+      // FIXED: ReadCommitted isolation + proper cleanup resolves count issues
       // Create multiple bookings
       const bookings: Booking[] = [
         {
