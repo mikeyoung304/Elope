@@ -330,11 +330,9 @@ describe.sequential('Cache Tenant Isolation - Integration Tests', () => {
       expect(stats.hits).toBe(0);
     });
 
-    it.skip('should invalidate old and new slug caches when slug is updated', async () => {
-      // TODO (Sprint 6 - Phase 2): SKIPPED - Package not found after update
-      // Failure: NotFoundError - Package with id not found at catalog.service.ts
-      // Root Cause: Package deletion/update timing with cache invalidation
-      // Fix: Investigate catalog service update + cache invalidation sequence
+    it('should invalidate old and new slug caches when slug is updated', async () => {
+      // FIXED: Added verification that package exists before update, added delay for DB consistency
+
       // Create a package
       const pkg = await repository.createPackage(tenantA_id, {
         slug: 'old-slug-test-unique',
@@ -343,8 +341,20 @@ describe.sequential('Cache Tenant Isolation - Integration Tests', () => {
         priceCents: 200000,
       });
 
+      // Verify package exists immediately after creation
+      const verifyCreated = await repository.getPackageById(tenantA_id, pkg.id);
+      expect(verifyCreated).not.toBeNull();
+      expect(verifyCreated?.id).toBe(pkg.id);
+
       // Cache the package by old slug
       await catalogService.getPackageBySlug(tenantA_id, 'old-slug-test-unique');
+
+      // Add small delay to ensure DB consistency
+      await new Promise((resolve) => setTimeout(resolve, 10));
+
+      // Verify package still exists before update
+      const verifyBeforeUpdate = await repository.getPackageById(tenantA_id, pkg.id);
+      expect(verifyBeforeUpdate).not.toBeNull();
 
       // Update slug
       await catalogService.updatePackage(tenantA_id, pkg.id, {
@@ -355,7 +365,10 @@ describe.sequential('Cache Tenant Isolation - Integration Tests', () => {
       ctx.cache.resetStats();
 
       // Fetch by new slug - should be cache miss (new slug wasn't cached)
-      const pkgByNewSlug = await catalogService.getPackageBySlug(tenantA_id, 'new-slug-test-unique');
+      const pkgByNewSlug = await catalogService.getPackageBySlug(
+        tenantA_id,
+        'new-slug-test-unique'
+      );
 
       const stats = ctx.cache.getStats();
 
@@ -543,16 +556,14 @@ describe.sequential('Cache Tenant Isolation - Integration Tests', () => {
   });
 
   describe('Cache Security Validation', () => {
-    it.skip('should never allow cache key without tenantId prefix', () => {
-      // TODO (Sprint 6 - Phase 1): SKIPPED - Flaky test
-      // Reason: Test setup issue causing immediate failure (0ms execution time)
-      // Pass Rate: 1/3 runs (only Run 2 passed)
-      // Fail Rate: 2/3 runs (Run 1, Run 3 failed)
-      // Fix Needed: This is a design validation test - needs proper async setup or refactoring
-      // See: SPRINT_6_STABILIZATION_PLAN.md § Cache Isolation Tests (Flaky #4)
-
+    it('should never allow cache key without tenantId prefix', async () => {
+      // FIXED: Made async and added tenant verification
       // This test validates the pattern - cache keys MUST include tenantId
-      // The implementation is already correct in CatalogService
+
+      // Verify tenant setup succeeded
+      expect(tenantA_id).toBeTruthy();
+      expect(tenantB_id).toBeTruthy();
+      expect(tenantA_id).not.toBe(tenantB_id);
 
       // Test that attempting to manually use cache without tenantId would fail isolation
       // (This is a design validation test, not testing actual vulnerability)
@@ -569,31 +580,49 @@ describe.sequential('Cache Tenant Isolation - Integration Tests', () => {
       // Verify both include tenantId
       expect(safeKeyA).toContain(tenantA_id);
       expect(safeKeyB).toContain(tenantB_id);
+
+      // Also verify neither includes the other's tenantId
+      expect(safeKeyA).not.toContain(tenantB_id);
+      expect(safeKeyB).not.toContain(tenantA_id);
     });
 
-    it.skip('should have cache key format: catalog:${tenantId}:resource', async () => {
-      // TODO (Sprint 6 - Phase 1): SKIPPED - Flaky test
-      // Reason: Test setup issue causing immediate failure (0ms execution time)
-      // Pass Rate: 1/3 runs (only Run 2 passed)
-      // Fail Rate: 2/3 runs (Run 1, Run 3 failed)
-      // Fix Needed: Verify cache statistics are properly tracked, may need to check cache internals
-      // See: SPRINT_6_STABILIZATION_PLAN.md § Cache Isolation Tests (Flaky #5)
+    it('should have cache key format: catalog:${tenantId}:resource', async () => {
+      // FIXED: Added explicit cache cleanup and verification
+
+      // Explicitly flush cache before test
+      ctx.cache.flush();
+      ctx.cache.resetStats();
+
+      // Verify starting state
+      const initialStats = ctx.cache.getStats();
+      expect(initialStats.keys).toBe(0);
+      expect(initialStats.totalRequests).toBe(0);
 
       // Create and cache a package
-      await repository.createPackage(tenantA_id, {
+      const created = await repository.createPackage(tenantA_id, {
         slug: 'format-test',
         title: 'Format Test',
         description: 'Test',
         priceCents: 100000,
       });
 
-      // Cache the package
-      await catalogService.getAllPackages(tenantA_id);
-      await catalogService.getPackageBySlug(tenantA_id, 'format-test');
+      // Verify package was created
+      expect(created.id).toBeTruthy();
+      expect(created.slug).toBe('format-test');
+
+      // Cache the package (these should increment cache stats)
+      const allPackages = await catalogService.getAllPackages(tenantA_id);
+      const specificPackage = await catalogService.getPackageBySlug(tenantA_id, 'format-test');
+
+      // Verify fetch results
+      expect(allPackages).toHaveLength(1);
+      expect(specificPackage.slug).toBe('format-test');
 
       const stats = ctx.cache.getStats();
 
-      // Verify cache has entries (proving the format is being used)
+      // Verify cache behavior
+      expect(stats.misses).toBe(2); // First call to each method = 2 misses
+      expect(stats.hits).toBe(0); // No hits yet
       expect(stats.keys).toBe(2); // all-packages + specific package
 
       // The actual key format is enforced in CatalogService implementation:
@@ -603,13 +632,8 @@ describe.sequential('Cache Tenant Isolation - Integration Tests', () => {
   });
 
   describe('Cache Performance and Behavior', () => {
-    it.skip('should improve response time on cache hit', async () => {
-      // TODO (Sprint 6 - Phase 1): SKIPPED - Flaky test
-      // Reason: Performance timing assertions fail due to variable system load (0ms failure)
-      // Pass Rate: 1/3 runs (only Run 2 passed)
-      // Fail Rate: 2/3 runs (Run 1, Run 3 failed immediately)
-      // Fix Needed: Remove timing assertions entirely, focus on correctness not performance
-      // See: SPRINT_6_STABILIZATION_PLAN.md § Cache Isolation Tests (Flaky #6)
+    it('should improve response time on cache hit', async () => {
+      // FIXED: Removed timing assertions (inherently flaky) - focus on cache correctness instead
 
       // Create a package
       await repository.createPackage(tenantA_id, {
@@ -619,34 +643,43 @@ describe.sequential('Cache Tenant Isolation - Integration Tests', () => {
         priceCents: 100000,
       });
 
-      // First call - cache miss (slower, hits database)
-      const start1 = Date.now();
-      await catalogService.getAllPackages(tenantA_id);
-      const time1 = Date.now() - start1;
+      // Reset stats to track just these operations
+      ctx.cache.resetStats();
 
-      // Second call - cache hit (faster, returns from memory)
-      const start2 = Date.now();
-      await catalogService.getAllPackages(tenantA_id);
-      const time2 = Date.now() - start2;
-
-      // Cache hit should be faster (not always guaranteed in test env, but likely)
-      // At minimum, verify both calls return the same data
+      // First call - cache miss (should populate cache)
       const result1 = await catalogService.getAllPackages(tenantA_id);
+      const statsAfterMiss = ctx.cache.getStats();
+
+      // Verify cache miss behavior
+      expect(statsAfterMiss.misses).toBe(1);
+      expect(statsAfterMiss.hits).toBe(0);
+      expect(result1).toHaveLength(1);
+
+      // Second call - cache hit (should return from memory)
       const result2 = await catalogService.getAllPackages(tenantA_id);
+      const statsAfterHit = ctx.cache.getStats();
 
+      // Verify cache hit behavior
+      expect(statsAfterHit.misses).toBe(1); // Still 1 miss
+      expect(statsAfterHit.hits).toBe(1); // Now 1 hit
+      expect(statsAfterHit.hitRate).toBe('50.00%');
+
+      // Verify data consistency (same results from cache)
       expect(result1).toEqual(result2);
-
-      const stats = ctx.cache.getStats();
-      expect(stats.hits).toBeGreaterThan(0);
+      expect(result2).toHaveLength(1);
+      expect(result2[0].slug).toBe('perf-test');
     });
 
-    it.skip('should track cache statistics correctly', async () => {
-      // TODO (Sprint 6 - Phase 1): SKIPPED - Flaky test
-      // Reason: Test setup issue causing immediate failure (1ms execution time)
-      // Pass Rate: 1/3 runs (only Run 2 passed)
-      // Fail Rate: 2/3 runs (Run 1, Run 3 failed)
-      // Fix Needed: Investigate cache statistics tracking, may have race condition in stats collection
-      // See: SPRINT_6_STABILIZATION_PLAN.md § Cache Isolation Tests (Flaky #7)
+    it('should track cache statistics correctly', async () => {
+      // FIXED: Added explicit cache cleanup and step-by-step verification
+
+      // Ensure clean starting state
+      ctx.cache.flush();
+      ctx.cache.resetStats();
+
+      const initialStats = ctx.cache.getStats();
+      expect(initialStats.totalRequests).toBe(0);
+      expect(initialStats.keys).toBe(0);
 
       // Create packages for both tenants
       await repository.createPackage(tenantA_id, {
@@ -663,15 +696,35 @@ describe.sequential('Cache Tenant Isolation - Integration Tests', () => {
         priceCents: 200000,
       });
 
-      // Make specific number of calls
+      // Reset stats AFTER package creation to only track catalog calls
+      ctx.cache.resetStats();
+
+      // Make specific number of calls with step-by-step verification
       await catalogService.getAllPackages(tenantA_id); // Miss
+
+      let stats = ctx.cache.getStats();
+      expect(stats.misses).toBe(1);
+      expect(stats.hits).toBe(0);
+      expect(stats.keys).toBe(1);
+
       await catalogService.getAllPackages(tenantA_id); // Hit
+
+      stats = ctx.cache.getStats();
+      expect(stats.misses).toBe(1);
+      expect(stats.hits).toBe(1);
+      expect(stats.keys).toBe(1);
+
       await catalogService.getAllPackages(tenantB_id); // Miss
+
+      stats = ctx.cache.getStats();
+      expect(stats.misses).toBe(2);
+      expect(stats.hits).toBe(1);
+      expect(stats.keys).toBe(2);
+
       await catalogService.getAllPackages(tenantB_id); // Hit
 
-      const stats = ctx.cache.getStats();
-
-      // Verify statistics
+      // Final verification
+      stats = ctx.cache.getStats();
       expect(stats.totalRequests).toBe(4);
       expect(stats.hits).toBe(2);
       expect(stats.misses).toBe(2);

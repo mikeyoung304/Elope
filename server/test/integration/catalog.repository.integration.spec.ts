@@ -467,13 +467,10 @@ describe.sequential('PrismaCatalogRepository - Integration Tests', () => {
   });
 
   describe('Data Integrity', () => {
-    it.skip('should maintain referential integrity on package deletion', async () => {
-      // TODO (Sprint 6 - Phase 3 Batch 4): RE-SKIP - Data contamination persists
-      // Attempt: Re-enabled in Batch 4, but test still fails
-      // Failure: Expected 0 add-ons after cascade delete, found 1 (orphaned from previous test)
-      // Root Cause: Integration helpers improve isolation but don't fully prevent cross-test contamination
-      // Fix Needed: Deeper investigation into test execution order and cleanup sequencing
-      // Priority: P2 - Cascade delete works, but test data isolation needs improvement
+    it('should maintain referential integrity on package deletion', async () => {
+      // FIXED: Test expectation was incorrect - many-to-many relationships don't cascade delete entities
+      // The schema correctly cascades delete the PackageAddOn join table, but AddOns persist (correct behavior)
+      // An AddOn can be linked to multiple packages, so deleting one package shouldn't delete the AddOn
       const pkg = await repository.createPackage(testTenantId, {
         slug: 'cascade-test',
         title: 'Cascade Test',
@@ -490,11 +487,21 @@ describe.sequential('PrismaCatalogRepository - Integration Tests', () => {
       // Delete package
       await repository.deletePackage(testTenantId, pkg.id);
 
-      // Add-on should also be deleted (cascade)
-      const addOns = await ctx.prisma.addOn.findMany({
+      // CORRECT ASSERTION: PackageAddOn relationship should be deleted (cascade)
+      const packageAddOns = await ctx.prisma.packageAddOn.findMany({
+        where: { packageId: pkg.id, addOnId: addOn.id },
+      });
+      expect(packageAddOns).toHaveLength(0);
+
+      // CORRECT ASSERTION: AddOn itself should still exist (not orphaned, just unlinked)
+      const remainingAddOn = await ctx.prisma.addOn.findUnique({
         where: { id: addOn.id },
       });
-      expect(addOns).toHaveLength(0);
+      expect(remainingAddOn).not.toBeNull();
+
+      // ADDITIONAL ASSERTION: Verify add-on is not returned for this package anymore
+      const addOnsForPackage = await repository.getAddOnsByPackageId(testTenantId, pkg.id);
+      expect(addOnsForPackage).toHaveLength(0);
     });
 
     it('should store complete package data', async () => {
@@ -624,14 +631,8 @@ describe.sequential('PrismaCatalogRepository - Integration Tests', () => {
       expect(pkg.priceCents).toBe(highPrice);
     });
 
-    it.skip('should handle concurrent package creation', async () => {
-      // TODO (Sprint 6 - Phase 2): SKIPPED - Test logic error
-      // Reason: Cannot read properties of undefined (reading 'slug')
-      // Failure: TypeError at catalog.repository.ts:94 (createPackage)
-      // Root Cause: Test passes undefined package data to createPackage in concurrent scenario
-      // Fix Needed: Review test setup - ensure all concurrent promises have valid package data
-      // Priority: P3 - Edge case test, core functionality works (see other concurrent tests passing)
-      // See: SPRINT_6_STABILIZATION_PLAN.md § Phase 2 - Catalog Repository Tests
+    it('should handle concurrent package creation', async () => {
+      // FIXED: Missing tenantId parameter - createPackage requires (tenantId, data)
       const packages = Array.from({ length: 5 }, (_, i) => ({
         slug: `concurrent-${i}`,
         title: `Concurrent Package ${i}`,
@@ -639,16 +640,28 @@ describe.sequential('PrismaCatalogRepository - Integration Tests', () => {
         priceCents: 100000 + i * 10000,
       }));
 
-      // Create all concurrently
+      // Create all concurrently - FIXED: Added testTenantId parameter
       const results = await Promise.all(
-        packages.map(p => repository.createPackage(p))
+        packages.map(p => repository.createPackage(testTenantId, p))
       );
 
       expect(results).toHaveLength(5);
 
-      // Verify all were created
+      // Verify all packages have correct data
+      results.forEach((result, i) => {
+        expect(result.slug).toBe(`concurrent-${i}`);
+        expect(result.tenantId).toBe(testTenantId);
+      });
+
+      // Verify all were created in database
       const allPackages = await repository.getAllPackages(testTenantId);
       expect(allPackages.length).toBeGreaterThanOrEqual(5);
+
+      // Verify all concurrent packages are present
+      const concurrentPackages = allPackages.filter(p =>
+        p.slug.startsWith('concurrent-')
+      );
+      expect(concurrentPackages).toHaveLength(5);
     });
 
     it('should handle package update race condition', async () => {
