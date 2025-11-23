@@ -110,7 +110,12 @@ export class PrismaWebhookRepository implements WebhookRepository {
       logger.info({ tenantId: input.tenantId, eventId: input.eventId, eventType: input.eventType }, 'Webhook event recorded');
     } catch (error) {
       // Only ignore unique constraint violations (duplicate eventId)
-      if (error instanceof PrismaClientKnownRequestError && error.code === 'P2002') {
+      // Use duck typing instead of instanceof due to module resolution issues
+      const errorCode = (error as any)?.code;
+      const errorName = (error as any)?.constructor?.name;
+
+      // Check for P2002 (unique constraint) via error code and name
+      if (errorCode === 'P2002' && errorName === 'PrismaClientKnownRequestError') {
         logger.info({ tenantId: input.tenantId, eventId: input.eventId }, 'Webhook already recorded (duplicate eventId)');
         return;  // Graceful handling of duplicates
       }
