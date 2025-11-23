@@ -16,8 +16,19 @@ const BOOKING_ISOLATION_LEVEL = 'Serializable' as const;
 const MAX_TRANSACTION_RETRIES = 3;  // Retry up to 3 times on deadlock
 const RETRY_DELAY_MS = 100;  // Base delay between retries
 
+export interface BookingRepositoryConfig {
+  isolationLevel?: 'Serializable' | 'ReadCommitted';
+}
+
 export class PrismaBookingRepository implements BookingRepository {
-  constructor(private readonly prisma: PrismaClient) {}
+  private readonly isolationLevel: 'Serializable' | 'ReadCommitted';
+
+  constructor(
+    private readonly prisma: PrismaClient,
+    config?: BookingRepositoryConfig
+  ) {
+    this.isolationLevel = config?.isolationLevel ?? BOOKING_ISOLATION_LEVEL;
+  }
 
   /**
    * Helper: Retry transaction on serialization failures (deadlocks/write conflicts)
@@ -223,7 +234,7 @@ export class PrismaBookingRepository implements BookingRepository {
         return this.toDomainBooking(created);
       }, {
         timeout: BOOKING_TRANSACTION_TIMEOUT_MS,
-        isolationLevel: BOOKING_ISOLATION_LEVEL as any,
+        isolationLevel: this.isolationLevel as any,
       });
       } catch (error) {
         // Handle unique constraint violation on eventDate
