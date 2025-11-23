@@ -7,7 +7,6 @@
  */
 
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
-import { PrismaClient } from '../../src/generated/prisma';
 import { PrismaWebhookRepository } from '../../src/adapters/prisma/webhook.repository';
 import { WebhooksController } from '../../src/routes/webhooks.routes';
 import { BookingService } from '../../src/services/booking.service';
@@ -17,31 +16,10 @@ import { FakeEventEmitter, FakePaymentProvider } from '../helpers/fakes';
 import { CommissionService } from '../../src/services/commission.service';
 import { PrismaTenantRepository } from '../../src/adapters/prisma/tenant.repository';
 import type Stripe from 'stripe';
+import { setupCompleteIntegrationTest } from '../helpers/integration-setup';
 
-// TODO (Sprint 6 - Phase 1): ENTIRE FILE SKIPPED - Not refactored to use integration helpers
-// Status: 13/14 tests failing consistently across all 3 runs
-// Root Cause: This file was not refactored during Sprint 5 test modernization
-// - Does not use setupCompleteIntegrationTest() helper
-// - Does not use ctx.factories for test data
-// - Does not use ctx.cleanup() properly
-// - Manual PrismaClient initialization instead of helper-managed connection
-//
-// Impact: 1-2 tests pass sporadically, but 13 fail consistently
-//
-// Fix Strategy:
-// 1. Refactor to use integration-setup helpers (like booking-race-conditions.spec.ts)
-// 2. Add proper tenant isolation with ctx.tenants
-// 3. Use factories for test data generation
-// 4. Follow established pattern from other refactored race condition tests
-//
-// References:
-// - See: SPRINT_6_STABILIZATION_PLAN.md § Webhook Race Conditions
-// - Good example: booking-race-conditions.spec.ts (refactored in Sprint 5)
-// - Pattern: setupCompleteIntegrationTest() with proper cleanup
-//
-// Priority: LOW - Refactor in future sprint when focusing on webhook test coverage
-describe.skip('Webhook Race Conditions - Integration Tests', () => {
-  let prisma: PrismaClient;
+describe.sequential('Webhook Race Conditions - Integration Tests', () => {
+  const ctx = setupCompleteIntegrationTest('webhook-race');
   let webhookRepo: PrismaWebhookRepository;
   let bookingRepo: PrismaBookingRepository;
   let catalogRepo: PrismaCatalogRepository;
@@ -51,39 +29,24 @@ describe.skip('Webhook Race Conditions - Integration Tests', () => {
   let eventEmitter: FakeEventEmitter;
   let testTenantId: string;
   let testPackageId: string;
+  let testPackageSlug: string;
+  let tenantRepo: PrismaTenantRepository;
 
   beforeEach(async () => {
-    // Connect to test database
-    prisma = new PrismaClient({
-      datasources: {
-        db: {
-          url: process.env.DATABASE_URL_TEST || process.env.DATABASE_URL,
-        },
-      },
-    });
+    // Setup tenant
+    await ctx.tenants.cleanupTenants();
+    await ctx.tenants.tenantA.create();
+    testTenantId = ctx.tenants.tenantA.id;
 
     // Initialize repositories
-    webhookRepo = new PrismaWebhookRepository(prisma);
-    bookingRepo = new PrismaBookingRepository(prisma);
-    catalogRepo = new PrismaCatalogRepository(prisma);
-    const tenantRepo = new PrismaTenantRepository(prisma);
+    webhookRepo = new PrismaWebhookRepository(ctx.prisma);
+    bookingRepo = new PrismaBookingRepository(ctx.prisma);
+    catalogRepo = new PrismaCatalogRepository(ctx.prisma);
+    tenantRepo = new PrismaTenantRepository(ctx.prisma);
 
     // Initialize fakes
     eventEmitter = new FakeEventEmitter();
     paymentProvider = new FakePaymentProvider();
-
-    // Create test tenant
-    const tenant = await prisma.tenant.upsert({
-      where: { slug: 'test-tenant-webhook' },
-      update: {},
-      create: {
-        slug: 'test-tenant-webhook',
-        name: 'Test Tenant Webhook',
-        apiKeyPublic: 'pk_test_webhook_123',
-        apiKeySecret: 'sk_test_webhook_hash',
-      },
-    });
-    testTenantId = tenant.id;
 
     // Initialize services
     const commissionService = new CommissionService(catalogRepo);
@@ -102,33 +65,15 @@ describe.skip('Webhook Race Conditions - Integration Tests', () => {
       webhookRepo
     );
 
-    // Clean database
-    await prisma.webhookEvent.deleteMany();
-    await prisma.bookingAddOn.deleteMany();
-    await prisma.booking.deleteMany();
-    await prisma.customer.deleteMany();
-
-    // Get or create test package with composite key
-    const pkg = await prisma.package.upsert({
-      where: {
-        tenantId_slug: {
-          tenantId: testTenantId,
-          slug: 'test-package-webhook',
-        },
-      },
-      update: {},
-      create: {
-        tenantId: testTenantId,
-        slug: 'test-package-webhook',
-        name: 'Test Package Webhook',
-        basePrice: 250000,
-      },
-    });
-    testPackageId = pkg.id;
+    // Create test package using catalog repository
+    const pkg = ctx.factories.package.create({ title: 'Test Package Webhook', priceCents: 250000 });
+    const createdPkg = await catalogRepo.createPackage(testTenantId, pkg);
+    testPackageId = createdPkg.id;
+    testPackageSlug = createdPkg.slug;
   });
 
   afterEach(async () => {
-    await prisma.$disconnect();
+    await ctx.cleanup();
   });
 
   /**
@@ -148,7 +93,7 @@ describe.skip('Webhook Race Conditions - Integration Tests', () => {
           amount_total: 250000,
           metadata: {
             tenantId: testTenantId,
-            packageId: testPackageId,
+            packageId: testPackageSlug, // Use slug, not database ID
             eventDate,
             email: `test-${eventId}@example.com`,
             coupleName: `Test Couple ${eventId}`,
@@ -189,14 +134,14 @@ describe.skip('Webhook Race Conditions - Integration Tests', () => {
       expect(results[1]?.status).toBe('fulfilled');
 
       // Verify only one booking was created
-      const bookings = await prisma.booking.findMany({
+      const bookings = await ctx.prisma.booking.findMany({
         where: { tenantId: testTenantId, date: new Date(eventDate) },
       });
       expect(bookings).toHaveLength(1);
 
       // Verify webhook was recorded with proper status
-      const webhookEvents = await prisma.webhookEvent.findMany({
-        where: { eventId },
+      const webhookEvents = await ctx.prisma.webhookEvent.findMany({
+        where: { tenantId: testTenantId, eventId },
       });
       expect(webhookEvents).toHaveLength(1);
 
@@ -226,20 +171,24 @@ describe.skip('Webhook Race Conditions - Integration Tests', () => {
       expect(fulfilled.length).toBeGreaterThan(0);
 
       // Verify only one booking was created
-      const bookings = await prisma.booking.findMany({
+      const bookings = await ctx.prisma.booking.findMany({
         where: { tenantId: testTenantId, date: new Date(eventDate) },
       });
       expect(bookings).toHaveLength(1);
 
       // Verify webhook events
-      const webhookEvents = await prisma.webhookEvent.findMany({
-        where: { eventId },
+      const webhookEvents = await ctx.prisma.webhookEvent.findMany({
+        where: { tenantId: testTenantId, eventId },
       });
       expect(webhookEvents).toHaveLength(1);
     });
 
     it('should detect duplicates at repository level', async () => {
       const eventId = 'evt_repo_duplicate_001';
+
+      // Check for duplicate before recording (should be false)
+      const isDupe0 = await webhookRepo.isDuplicate(testTenantId, eventId);
+      expect(isDupe0).toBe(false);
 
       // Record webhook first time
       await webhookRepo.recordWebhook({
@@ -249,27 +198,28 @@ describe.skip('Webhook Race Conditions - Integration Tests', () => {
         rawPayload: JSON.stringify({ test: 'data' }),
       });
 
-      // Check for duplicate
+      // Check for duplicate after recording (should be true)
       const isDupe1 = await webhookRepo.isDuplicate(testTenantId, eventId);
       expect(isDupe1).toBe(true);
 
-      // Try to record again (should handle gracefully)
-      await webhookRepo.recordWebhook({
-        tenantId: testTenantId,
-        eventId,
-        eventType: 'checkout.session.completed',
-        rawPayload: JSON.stringify({ test: 'data' }),
-      });
+      // Try to record again (should handle gracefully via P2002 catch)
+      await expect(
+        webhookRepo.recordWebhook({
+          tenantId: testTenantId,
+          eventId,
+          eventType: 'checkout.session.completed',
+          rawPayload: JSON.stringify({ test: 'data' }),
+        })
+      ).resolves.toBeUndefined(); // Should resolve successfully, not throw
 
-      // Check duplicate again
-      const isDupe2 = await webhookRepo.isDuplicate(testTenantId, eventId);
-      expect(isDupe2).toBe(true);
-
-      // Verify only one record exists
-      const events = await prisma.webhookEvent.findMany({
-        where: { eventId },
+      // Verify only one record exists (second call was gracefully ignored)
+      const events = await ctx.prisma.webhookEvent.findMany({
+        where: { tenantId: testTenantId, eventId },
       });
       expect(events).toHaveLength(1);
+
+      // Status should be DUPLICATE (from isDuplicate call)
+      expect(events[0]?.status).toBe('DUPLICATE');
     });
 
     it('should handle concurrent isDuplicate checks', async () => {
@@ -296,8 +246,8 @@ describe.skip('Webhook Race Conditions - Integration Tests', () => {
       expect(checks.every(c => c === true)).toBe(true);
 
       // Verify status is DUPLICATE
-      const event = await prisma.webhookEvent.findUnique({
-        where: { eventId },
+      const event = await ctx.prisma.webhookEvent.findUnique({
+        where: { tenantId_eventId: { tenantId: testTenantId, eventId } },
       });
       expect(event?.status).toBe('DUPLICATE');
     });
@@ -337,14 +287,15 @@ describe.skip('Webhook Race Conditions - Integration Tests', () => {
       expect(failed).toHaveLength(1);
 
       // Verify only one booking was created
-      const bookings = await prisma.booking.findMany({
+      const bookings = await ctx.prisma.booking.findMany({
         where: { tenantId: testTenantId, date: new Date(eventDate) },
       });
       expect(bookings).toHaveLength(1);
 
       // Verify both webhooks were recorded
-      const webhookEvents = await prisma.webhookEvent.findMany({
+      const webhookEvents = await ctx.prisma.webhookEvent.findMany({
         where: {
+          tenantId: testTenantId,
           eventId: {
             in: [event1Id, event2Id],
           },
@@ -385,14 +336,15 @@ describe.skip('Webhook Race Conditions - Integration Tests', () => {
       expect(failureCount).toBe(4);
 
       // Verify only one booking exists
-      const bookings = await prisma.booking.findMany({
+      const bookings = await ctx.prisma.booking.findMany({
         where: { tenantId: testTenantId, date: new Date(eventDate) },
       });
       expect(bookings).toHaveLength(1);
 
       // Verify all webhooks were recorded
-      const webhookEvents = await prisma.webhookEvent.findMany({
+      const webhookEvents = await ctx.prisma.webhookEvent.findMany({
         where: {
+          tenantId: testTenantId,
           eventType: 'checkout.session.completed',
           createdAt: {
             gte: new Date(Date.now() - 10000), // Last 10 seconds
@@ -426,14 +378,14 @@ describe.skip('Webhook Race Conditions - Integration Tests', () => {
       ).resolves.toBeUndefined();
 
       // Verify still only one booking
-      const bookings = await prisma.booking.findMany({
-        where: { date: new Date(eventDate) },
+      const bookings = await ctx.prisma.booking.findMany({
+        where: { tenantId: testTenantId, date: new Date(eventDate) },
       });
       expect(bookings).toHaveLength(1);
 
       // Verify webhook status remains PROCESSED (not changed to DUPLICATE)
-      const event = await prisma.webhookEvent.findUnique({
-        where: { eventId },
+      const event = await ctx.prisma.webhookEvent.findUnique({
+        where: { tenantId_eventId: { tenantId: testTenantId, eventId } },
       });
       expect(event?.status).toBe('PROCESSED');
     });
@@ -458,14 +410,14 @@ describe.skip('Webhook Race Conditions - Integration Tests', () => {
       await webhooksController.handleStripeWebhook(rawBody, signature);
 
       // Verify only one booking created
-      const bookings = await prisma.booking.findMany({
-        where: { date: new Date(eventDate) },
+      const bookings = await ctx.prisma.booking.findMany({
+        where: { tenantId: testTenantId, date: new Date(eventDate) },
       });
       expect(bookings).toHaveLength(1);
 
       // Verify webhook event exists
-      const event = await prisma.webhookEvent.findUnique({
-        where: { eventId },
+      const event = await ctx.prisma.webhookEvent.findUnique({
+        where: { tenantId_eventId: { tenantId: testTenantId, eventId } },
       });
       expect(event).not.toBeNull();
       expect(['PROCESSED', 'DUPLICATE']).toContain(event?.status);
@@ -475,15 +427,28 @@ describe.skip('Webhook Race Conditions - Integration Tests', () => {
       // Process webhooks for different dates - all should succeed
       const dates = ['2025-09-01', '2025-09-02', '2025-09-03'];
 
+      // Create all events upfront
+      const events = dates.map((date, i) => {
+        const eventId = `evt_different_dates_${i}`;
+        return {
+          eventId,
+          stripeEvent: createMockStripeEvent(eventId, date),
+          date,
+        };
+      });
+
+      // Mock verifyWebhook to return the correct event based on the raw body
+      const eventMap = new Map(events.map(e => [e.stripeEvent.id, e.stripeEvent]));
+      paymentProvider.verifyWebhook = async (rawBody: string) => {
+        const parsed = JSON.parse(rawBody);
+        return eventMap.get(parsed.id) || parsed;
+      };
+
+      // Process all webhooks
       const results = await Promise.allSettled(
-        dates.map(async (date, i) => {
-          const eventId = `evt_different_dates_${i}`;
-          const stripeEvent = createMockStripeEvent(eventId, date);
+        events.map(({ stripeEvent }) => {
           const rawBody = JSON.stringify(stripeEvent);
           const signature = 'test_signature';
-
-          paymentProvider.verifyWebhook = async () => stripeEvent;
-
           return webhooksController.handleStripeWebhook(rawBody, signature);
         })
       );
@@ -493,7 +458,7 @@ describe.skip('Webhook Race Conditions - Integration Tests', () => {
       expect(succeeded).toHaveLength(3);
 
       // Verify 3 bookings created
-      const bookings = await prisma.booking.findMany({
+      const bookings = await ctx.prisma.booking.findMany({
         where: {
           tenantId: testTenantId,
           date: {
@@ -504,8 +469,9 @@ describe.skip('Webhook Race Conditions - Integration Tests', () => {
       expect(bookings).toHaveLength(3);
 
       // Verify 3 webhooks recorded
-      const webhookEvents = await prisma.webhookEvent.findMany({
+      const webhookEvents = await ctx.prisma.webhookEvent.findMany({
         where: {
+          tenantId: testTenantId,
           eventType: 'checkout.session.completed',
           status: 'PROCESSED',
         },
@@ -529,8 +495,8 @@ describe.skip('Webhook Race Conditions - Integration Tests', () => {
       await webhooksController.handleStripeWebhook(rawBody, signature);
 
       // Verify status transition
-      const event = await prisma.webhookEvent.findUnique({
-        where: { eventId },
+      const event = await ctx.prisma.webhookEvent.findUnique({
+        where: { tenantId_eventId: { tenantId: testTenantId, eventId } },
       });
       expect(event?.status).toBe('PROCESSED');
       expect(event?.processedAt).not.toBeNull();
@@ -539,11 +505,12 @@ describe.skip('Webhook Race Conditions - Integration Tests', () => {
     it('should transition from PENDING to FAILED on booking error', async () => {
       const eventId = 'evt_status_failure_001';
       const eventDate = '2025-10-15';
+      const uniqueEmail = `preexisting-${Date.now()}@example.com`;
 
       // Pre-create a booking for this date to cause conflict
-      await prisma.booking.create({
+      await ctx.prisma.booking.create({
         data: {
-          id: 'pre-existing-booking',
+          id: `pre-existing-booking-${Date.now()}`,
           tenant: {
             connect: { id: testTenantId },
           },
@@ -555,8 +522,11 @@ describe.skip('Webhook Race Conditions - Integration Tests', () => {
           status: 'CONFIRMED',
           customer: {
             create: {
-              email: 'preexisting@example.com',
+              email: uniqueEmail,
               name: 'Pre Existing',
+              tenant: {
+                connect: { id: testTenantId },
+              },
             },
           },
         },
@@ -574,8 +544,8 @@ describe.skip('Webhook Race Conditions - Integration Tests', () => {
       ).rejects.toThrow();
 
       // Verify status is FAILED
-      const event = await prisma.webhookEvent.findUnique({
-        where: { eventId },
+      const event = await ctx.prisma.webhookEvent.findUnique({
+        where: { tenantId_eventId: { tenantId: testTenantId, eventId } },
       });
       expect(event?.status).toBe('FAILED');
       expect(event?.lastError).toBeTruthy();
@@ -604,8 +574,8 @@ describe.skip('Webhook Race Conditions - Integration Tests', () => {
       expect(results[1]?.status).toBe('fulfilled');
 
       // Final status should be one of them
-      const event = await prisma.webhookEvent.findUnique({
-        where: { eventId },
+      const event = await ctx.prisma.webhookEvent.findUnique({
+        where: { tenantId_eventId: { tenantId: testTenantId, eventId } },
       });
       expect(['PROCESSED', 'FAILED']).toContain(event?.status);
     });
@@ -656,8 +626,8 @@ describe.skip('Webhook Race Conditions - Integration Tests', () => {
       ).rejects.toThrow();
 
       // Verify webhook was recorded as FAILED
-      const event = await prisma.webhookEvent.findUnique({
-        where: { eventId },
+      const event = await ctx.prisma.webhookEvent.findUnique({
+        where: { tenantId_eventId: { tenantId: testTenantId, eventId } },
       });
       expect(event?.status).toBe('FAILED');
     });
@@ -683,8 +653,8 @@ describe.skip('Webhook Race Conditions - Integration Tests', () => {
       expect(results.length).toBe(20);
 
       // Only one booking should exist
-      const bookings = await prisma.booking.findMany({
-        where: { date: new Date(eventDate) },
+      const bookings = await ctx.prisma.booking.findMany({
+        where: { tenantId: testTenantId, date: new Date(eventDate) },
       });
       expect(bookings).toHaveLength(1);
     });
