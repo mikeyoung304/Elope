@@ -10,8 +10,9 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
+import { FormSkeleton } from "@/components/ui/skeleton";
 import { ChevronLeft, Save, AlertCircle } from "lucide-react";
-import { api } from "@/lib/api";
+import { api, baseUrl } from "@/lib/api";
 
 interface TenantFormData {
   name: string;
@@ -55,14 +56,15 @@ export function TenantForm() {
     setIsLoading(true);
     try {
       const token = localStorage.getItem("adminToken");
-      const response = await fetch(`http://localhost:3001/v1/admin/tenants/${id}`, {
+      const response = await fetch(`${baseUrl}/v1/admin/tenants/${id}`, {
         headers: {
           "Authorization": `Bearer ${token}`,
         },
       });
 
       if (response.ok) {
-        const tenant = await response.json();
+        const data = await response.json();
+        const tenant = data.tenant; // Extract tenant from wrapper object
         setFormData({
           name: tenant.name,
           slug: tenant.slug,
@@ -137,14 +139,14 @@ export function TenantForm() {
       let response;
       if (isEditing) {
         // Update existing tenant
-        response = await fetch(`http://localhost:3001/v1/admin/tenants/${id}`, {
+        response = await fetch(`${baseUrl}/v1/admin/tenants/${id}`, {
           method: "PUT",
           headers,
           body: JSON.stringify(payload),
         });
       } else {
         // Create new tenant
-        response = await fetch(`http://localhost:3001/v1/admin/tenants`, {
+        response = await fetch(`${baseUrl}/v1/admin/tenants`, {
           method: "POST",
           headers,
           body: JSON.stringify({
