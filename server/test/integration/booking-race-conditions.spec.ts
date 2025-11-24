@@ -209,49 +209,49 @@ describe.sequential('Booking Race Conditions - Integration Tests', () => {
 
   describe('Transaction Isolation', () => {
     it('should prevent double-booking with advisory locks and READ COMMITTED isolation', async () => {
-      await withDatabaseRetry(async () => {
-        const eventDate = '2025-08-01';
+      // Generate unique date to avoid conflicts from previous test runs
+      const uniqueSuffix = Date.now() % 100;
+      const eventDate = `2025-08-${String(uniqueSuffix % 28 + 1).padStart(2, '0')}`;
 
-        // Create a booking
-        const booking1: Booking = {
-          id: 'isolation-test-1',
-          packageId: testPackageId,
-          coupleName: 'Isolation Test',
-          email: 'isolation@example.com',
-          eventDate,
-          addOnIds: [],
-          totalCents: 250000,
-          status: 'PAID',
-          createdAt: new Date().toISOString(),
-        };
+      // Create a booking
+      const booking1: Booking = {
+        id: `isolation-test-1-${uniqueSuffix}`,
+        packageId: testPackageId,
+        coupleName: 'Isolation Test',
+        email: `isolation-${uniqueSuffix}@example.com`,
+        eventDate,
+        addOnIds: [],
+        totalCents: 250000,
+        status: 'PAID',
+        createdAt: new Date().toISOString(),
+      };
 
-        await bookingRepo.create(testTenantId, booking1);
+      await bookingRepo.create(testTenantId, booking1);
 
-        // Try to create another booking with same date
-        const booking2: Booking = {
-          id: 'isolation-test-2',
-          packageId: testPackageId,
-          coupleName: 'Isolation Test 2',
-          email: 'isolation2@example.com',
-          eventDate,
-          addOnIds: [],
-          totalCents: 250000,
-          status: 'PAID',
-          createdAt: new Date().toISOString(),
-        };
+      // Try to create another booking with same date
+      const booking2: Booking = {
+        id: `isolation-test-2-${uniqueSuffix}`,
+        packageId: testPackageId,
+        coupleName: 'Isolation Test 2',
+        email: `isolation2-${uniqueSuffix}@example.com`,
+        eventDate,
+        addOnIds: [],
+        totalCents: 250000,
+        status: 'PAID',
+        createdAt: new Date().toISOString(),
+      };
 
-        // Should fail due to advisory lock + unique constraint enforcement
-        // Note: Changed from SERIALIZABLE to READ COMMITTED with advisory locks (ADR-006)
-        await expect(bookingRepo.create(testTenantId, booking2))
-          .rejects
-          .toThrow(BookingConflictError);
+      // Should fail due to advisory lock + unique constraint enforcement
+      // Note: Changed from SERIALIZABLE to READ COMMITTED with advisory locks (ADR-006)
+      await expect(bookingRepo.create(testTenantId, booking2))
+        .rejects
+        .toThrow(BookingConflictError);
 
-        // Verify only one booking exists
-        const bookings = await ctx.prisma.booking.findMany({
-          where: { date: new Date(eventDate) },
-        });
-        expect(bookings).toHaveLength(1);
+      // Verify only one booking exists
+      const bookings = await ctx.prisma.booking.findMany({
+        where: { date: new Date(eventDate) },
       });
+      expect(bookings).toHaveLength(1);
     });
 
     it('should rollback on error with no partial data committed', async () => {

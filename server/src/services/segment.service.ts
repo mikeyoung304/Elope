@@ -3,7 +3,7 @@
  * Handles business logic for tenant segments (e.g., "Wellness Retreat", "Micro-Wedding")
  */
 
-import type { Segment } from '../generated/prisma';
+import type { Segment, Package, AddOn, PackageAddOn } from '../generated/prisma';
 import { NotFoundError, ValidationError } from '../lib/errors';
 import type { CacheService } from '../lib/cache';
 import {
@@ -14,9 +14,15 @@ import {
 } from '../lib/cache-helpers';
 import type { PrismaSegmentRepository, CreateSegmentInput, UpdateSegmentInput } from '../adapters/prisma/segment.repository';
 
+export interface PackageWithAddOns extends Package {
+  addOns?: {
+    addOn: AddOn;
+  }[];
+}
+
 export interface SegmentWithRelations extends Segment {
-  packages?: any[];
-  addOns?: any[];
+  packages?: PackageWithAddOns[];
+  addOns?: AddOn[];
 }
 
 /**

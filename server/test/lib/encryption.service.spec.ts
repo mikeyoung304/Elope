@@ -354,7 +354,11 @@ describe('EncryptionService', () => {
     it('should reject tampered ciphertext', () => {
       const plaintext = 'my secret';
       const encrypted = service.encrypt(plaintext);
-      encrypted.ciphertext = encrypted.ciphertext.replace('a', 'b');
+
+      // Ensure we actually tamper with the ciphertext by modifying the first character
+      const originalChar = encrypted.ciphertext[0];
+      const tamperedChar = originalChar === '0' ? '1' : '0';
+      encrypted.ciphertext = tamperedChar + encrypted.ciphertext.substring(1);
 
       const isValid = service.verify(plaintext, encrypted);
 
