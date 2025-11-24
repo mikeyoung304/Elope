@@ -53,27 +53,29 @@ export class SegmentService {
   }
 
   /**
-   * Get single segment by ID
+   * Get single segment by ID with tenant isolation
    *
+   * MULTI-TENANT: Scoped to tenantId to prevent cross-tenant access
    * Used for tenant admin operations
-   * Note: Does NOT scope by tenantId - caller must verify ownership
    *
+   * @param tenantId - Tenant ID for data isolation (CRITICAL: prevents cross-tenant access)
    * @param id - Segment ID
    * @returns Segment
-   * @throws {NotFoundError} If segment doesn't exist
+   * @throws {NotFoundError} If segment doesn't exist or access denied
    */
-  async getSegmentById(id: string): Promise<Segment> {
-    const cacheKey = `segments:id:${id}`;
+  async getSegmentById(tenantId: string, id: string): Promise<Segment> {
+    // CRITICAL: Cache key includes tenantId
+    const cacheKey = `segments:${tenantId}:id:${id}`;
 
     const cached = this.cache?.get<Segment>(cacheKey);
     if (cached) {
       return cached;
     }
 
-    const segment = await this.repository.findById(id);
+    const segment = await this.repository.findById(tenantId, id);
 
     if (!segment) {
-      throw new NotFoundError(`Segment not found: ${id}`);
+      throw new NotFoundError(`Segment not found or access denied: ${id}`);
     }
 
     // Cache for 15 minutes
@@ -186,22 +188,24 @@ export class SegmentService {
   }
 
   /**
-   * Update segment
+   * Update segment with tenant isolation
    *
+   * MULTI-TENANT: Scoped to tenantId to prevent cross-tenant modification
    * Validates slug uniqueness if slug is being changed
    * Invalidates related cache
    *
+   * @param tenantId - Tenant ID for data isolation (CRITICAL: prevents cross-tenant modification)
    * @param id - Segment ID
    * @param data - Partial segment update data
    * @returns Updated segment
-   * @throws {NotFoundError} If segment doesn't exist
+   * @throws {NotFoundError} If segment doesn't exist or access denied
    * @throws {ValidationError} If validation fails
    */
-  async updateSegment(id: string, data: UpdateSegmentInput): Promise<Segment> {
-    // Verify segment exists
-    const existing = await this.repository.findById(id);
+  async updateSegment(tenantId: string, id: string, data: UpdateSegmentInput): Promise<Segment> {
+    // Verify segment exists and belongs to tenant
+    const existing = await this.repository.findById(tenantId, id);
     if (!existing) {
-      throw new NotFoundError(`Segment not found: ${id}`);
+      throw new NotFoundError(`Segment not found or access denied: ${id}`);
     }
 
     // Validate slug if being updated
@@ -212,7 +216,7 @@ export class SegmentService {
       }
 
       const isAvailable = await this.repository.isSlugAvailable(
-        existing.tenantId,
+        tenantId,
         data.slug,
         id
       );
@@ -222,59 +226,65 @@ export class SegmentService {
     }
 
     // Update segment
-    const updated = await this.repository.update(id, data);
+    const updated = await this.repository.update(tenantId, id, data);
 
     // Invalidate cache
-    this.invalidateSegmentCache(existing.tenantId, existing.slug);
+    this.invalidateSegmentCache(tenantId, existing.slug);
     if (data.slug && data.slug !== existing.slug) {
-      this.invalidateSegmentCache(existing.tenantId, data.slug);
+      this.invalidateSegmentCache(tenantId, data.slug);
     }
 
     return updated;
   }
 
   /**
-   * Delete segment
+   * Delete segment with tenant isolation
    *
+   * MULTI-TENANT: Scoped to tenantId to prevent cross-tenant deletion
    * Note: Packages will have segmentId set to null (onDelete: SetNull)
    * Invalidates cache
    *
+   * @param tenantId - Tenant ID for data isolation (CRITICAL: prevents cross-tenant deletion)
    * @param id - Segment ID
-   * @throws {NotFoundError} If segment doesn't exist
+   * @throws {NotFoundError} If segment doesn't exist or access denied
    */
-  async deleteSegment(id: string): Promise<void> {
-    // Verify segment exists
-    const existing = await this.repository.findById(id);
+  async deleteSegment(tenantId: string, id: string): Promise<void> {
+    // Verify segment exists and belongs to tenant
+    const existing = await this.repository.findById(tenantId, id);
     if (!existing) {
-      throw new NotFoundError(`Segment not found: ${id}`);
+      throw new NotFoundError(`Segment not found or access denied: ${id}`);
     }
 
     // Delete segment
-    await this.repository.delete(id);
+    await this.repository.delete(tenantId, id);
 
     // Invalidate cache
-    this.invalidateSegmentCache(existing.tenantId, existing.slug);
+    this.invalidateSegmentCache(tenantId, existing.slug);
   }
 
   /**
-   * Get segment statistics
+   * Get segment statistics with tenant isolation
    *
+   * MULTI-TENANT: Scoped to tenantId to prevent cross-tenant data access
+   *
+   * @param tenantId - Tenant ID for data isolation (CRITICAL: prevents cross-tenant access)
    * @param id - Segment ID
    * @returns Package and add-on counts
-   * @throws {NotFoundError} If segment doesn't exist
+   * @throws {NotFoundError} If segment doesn't exist or access denied
    */
-  async getSegmentStats(id: string): Promise<{
+  async getSegmentStats(tenantId: string, id: string): Promise<{
     packageCount: number;
     addOnCount: number;
   }> {
-    const cacheKey = `segments:${id}:stats`;
+    // CRITICAL: Cache key includes tenantId
+    const cacheKey = `segments:${tenantId}:${id}:stats`;
 
     const cached = this.cache?.get<{ packageCount: number; addOnCount: number }>(cacheKey);
     if (cached) {
       return cached;
     }
 
-    const stats = await this.repository.getStats(id);
+    const stats = await this.repository.getStats(tenantId, id);
 
     // Cache for 5 minutes (shorter TTL for frequently changing data)
     this.cache?.set(cacheKey, stats, 300);

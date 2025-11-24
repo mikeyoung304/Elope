@@ -140,14 +140,8 @@ export function createTenantAdminSegmentsRouter(segmentService: SegmentService):
       const params = segmentIdSchema.parse(req.params);
       const { id } = params;
 
-      // Get segment with ownership verification
-      const segment = await segmentService.getSegmentById(id);
-
-      // Verify ownership
-      if (segment.tenantId !== tenantId) {
-        res.status(404).json({ error: 'Segment not found' });
-        return;
-      }
+      // Get segment with tenant isolation (automatic ownership verification)
+      const segment = await segmentService.getSegmentById(tenantId, id);
 
       res.json(segment);
     } catch (error) {
@@ -197,14 +191,8 @@ export function createTenantAdminSegmentsRouter(segmentService: SegmentService):
       // Validate update data (partial schema)
       const data = updateSegmentSchema.parse(req.body);
 
-      // Update segment (service handles ownership verification and cache invalidation)
-      const segment = await segmentService.updateSegment(id, data);
-
-      // Verify ownership
-      if (segment.tenantId !== tenantId) {
-        res.status(404).json({ error: 'Segment not found' });
-        return;
-      }
+      // Update segment with tenant isolation (automatic ownership verification)
+      const segment = await segmentService.updateSegment(tenantId, id, data);
 
       logger.info(
         { tenantId, segmentId: segment.id, slug: segment.slug },
@@ -258,8 +246,8 @@ export function createTenantAdminSegmentsRouter(segmentService: SegmentService):
       const params = segmentIdSchema.parse(req.params);
       const { id } = params;
 
-      // Delete segment (service handles ownership verification and cache invalidation)
-      await segmentService.deleteSegment(id);
+      // Delete segment with tenant isolation (automatic ownership verification)
+      await segmentService.deleteSegment(tenantId, id);
 
       logger.info(
         { tenantId, segmentId: id },
@@ -308,15 +296,8 @@ export function createTenantAdminSegmentsRouter(segmentService: SegmentService):
       const params = segmentIdSchema.parse(req.params);
       const { id } = params;
 
-      // Get segment to verify ownership
-      const segment = await segmentService.getSegmentById(id);
-      if (segment.tenantId !== tenantId) {
-        res.status(404).json({ error: 'Segment not found' });
-        return;
-      }
-
-      // Get stats
-      const stats = await segmentService.getSegmentStats(id);
+      // Get stats with tenant isolation (automatic ownership verification)
+      const stats = await segmentService.getSegmentStats(tenantId, id);
 
       res.json(stats);
     } catch (error) {

@@ -40,14 +40,15 @@ export class PrismaSegmentRepository {
   constructor(private readonly prisma: PrismaClient) {}
 
   /**
-   * Find segment by ID
+   * Find segment by ID with tenant isolation
    *
+   * @param tenantId - Tenant ID for isolation (CRITICAL: prevents cross-tenant access)
    * @param id - Segment ID (CUID)
    * @returns Segment or null if not found
    */
-  async findById(id: string): Promise<Segment | null> {
-    return await this.prisma.segment.findUnique({
-      where: { id },
+  async findById(tenantId: string, id: string): Promise<Segment | null> {
+    return await this.prisma.segment.findFirst({
+      where: { id, tenantId },
     });
   }
 
@@ -112,13 +113,24 @@ export class PrismaSegmentRepository {
   }
 
   /**
-   * Update segment by ID
+   * Update segment by ID with tenant isolation
    *
+   * @param tenantId - Tenant ID for isolation (CRITICAL: prevents cross-tenant modification)
    * @param id - Segment ID
    * @param data - Partial segment update data
    * @returns Updated segment
+   * @throws Error if segment not found or belongs to different tenant
    */
-  async update(id: string, data: UpdateSegmentInput): Promise<Segment> {
+  async update(tenantId: string, id: string, data: UpdateSegmentInput): Promise<Segment> {
+    // First verify ownership
+    const existing = await this.prisma.segment.findFirst({
+      where: { id, tenantId },
+    });
+
+    if (!existing) {
+      throw new Error(`Segment not found or access denied: ${id}`);
+    }
+
     return await this.prisma.segment.update({
       where: { id },
       data,
@@ -126,31 +138,43 @@ export class PrismaSegmentRepository {
   }
 
   /**
-   * Delete segment by ID
+   * Delete segment by ID with tenant isolation
    * Note: Packages will have segmentId set to null (onDelete: SetNull)
    *
+   * @param tenantId - Tenant ID for isolation (CRITICAL: prevents cross-tenant deletion)
    * @param id - Segment ID
+   * @throws Error if segment not found or belongs to different tenant
    */
-  async delete(id: string): Promise<void> {
+  async delete(tenantId: string, id: string): Promise<void> {
+    // Verify ownership before deletion
+    const existing = await this.prisma.segment.findFirst({
+      where: { id, tenantId },
+    });
+
+    if (!existing) {
+      throw new Error(`Segment not found or access denied: ${id}`);
+    }
+
     await this.prisma.segment.delete({
       where: { id },
     });
   }
 
   /**
-   * Get segment with related packages
+   * Get segment with related packages with tenant isolation
    *
+   * @param tenantId - Tenant ID for isolation (CRITICAL: prevents cross-tenant data access)
    * @param id - Segment ID
    * @returns Segment with packages or null if not found
    */
-  async findByIdWithPackages(id: string): Promise<
+  async findByIdWithPackages(tenantId: string, id: string): Promise<
     | (Segment & {
         packages: any[];
       })
     | null
   > {
-    return await this.prisma.segment.findUnique({
-      where: { id },
+    return await this.prisma.segment.findFirst({
+      where: { id, tenantId },
       include: {
         packages: {
           where: { active: true },
@@ -221,17 +245,19 @@ export class PrismaSegmentRepository {
   }
 
   /**
-   * Get segment statistics (package count, booking count)
+   * Get segment statistics (package count, booking count) with tenant isolation
    *
+   * @param tenantId - Tenant ID for isolation (CRITICAL: prevents cross-tenant data access)
    * @param id - Segment ID
    * @returns Object with counts
+   * @throws Error if segment not found or belongs to different tenant
    */
-  async getStats(id: string): Promise<{
+  async getStats(tenantId: string, id: string): Promise<{
     packageCount: number;
     addOnCount: number;
   }> {
-    const segment = await this.prisma.segment.findUnique({
-      where: { id },
+    const segment = await this.prisma.segment.findFirst({
+      where: { id, tenantId },
       include: {
         _count: {
           select: {
@@ -243,7 +269,7 @@ export class PrismaSegmentRepository {
     });
 
     if (!segment) {
-      throw new Error(`Segment not found: ${id}`);
+      throw new Error(`Segment not found or access denied: ${id}`);
     }
 
     return {

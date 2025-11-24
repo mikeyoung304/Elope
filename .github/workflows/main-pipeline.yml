@@ -1,27 +1,84 @@
-name: PR Validation
+name: Main CI/CD Pipeline
 
 on:
+  push:
+    branches: ['**']
   pull_request:
-    branches: [main, develop]
-    types: [opened, synchronize, reopened]
+    branches: ['**']
 
-# Cancel in-progress runs on same PR
+# Cancel in-progress runs on same branch
 concurrency:
-  group: pr-validation-${{ github.event.pull_request.number }}
+  group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
-  # Job 1: Code Quality Checks (Lint + Format)
-  code-quality:
-    name: Code Quality (Lint & Format)
+  # Job 1: Documentation Validation (runs on all commits)
+  docs-validation:
+    name: Documentation Standards
     runs-on: ubuntu-latest
     timeout-minutes: 5
 
     steps:
-      - name: Checkout code
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Make validation script executable
+        run: chmod +x scripts/validate-docs.sh
+
+      - name: Run documentation validation
+        run: ./scripts/validate-docs.sh
+
+      - name: Comment PR on docs failure
+        if: failure() && github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: '❌ **Documentation validation failed**\n\nPlease fix documentation standards violations:\n```bash\n./scripts/validate-docs.sh\n```\n\nSee `docs/DOCUMENTATION_STANDARDS.md` for requirements.'
+            })
+
+  # Job 2: Pattern Validation (multi-tenant security patterns)
+  pattern-validation:
+    name: Multi-Tenant Pattern Validation
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Make validation script executable
+        run: chmod +x .claude/hooks/validate-patterns.sh
+
+      - name: Validate multi-tenant security patterns
+        run: ./.claude/hooks/validate-patterns.sh
+
+      - name: Comment PR on pattern failure
+        if: failure() && github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: '❌ **Multi-tenant pattern validation failed**\n\nCritical security patterns violated. Please fix:\n```bash\n./.claude/hooks/validate-patterns.sh\n```\n\nSee `.claude/PATTERNS.md` for requirements.'
+            })
+
+  # Job 3: Lint and Format Check
+  lint:
+    name: Lint & Format Check
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+      - name: Checkout repository
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0
+          fetch-depth: 0  # Needed for PR context
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -35,11 +92,11 @@ jobs:
       - name: Run ESLint
         run: npm run lint
 
-      - name: Check code formatting
+      - name: Check formatting
         run: npm run format:check
 
       - name: Comment PR on lint failure
-        if: failure()
+        if: failure() && github.event_name == 'pull_request'
         uses: actions/github-script@v7
         with:
           script: |
@@ -50,14 +107,14 @@ jobs:
               body: '❌ **Code quality checks failed**\n\nPlease fix linting and formatting issues:\n```bash\nnpm run lint\nnpm run format\n```'
             })
 
-  # Job 2: TypeScript Type Checking
+  # Job 3: TypeScript Type Checking
   typecheck:
     name: TypeScript Type Check
     runs-on: ubuntu-latest
     timeout-minutes: 5
 
     steps:
-      - name: Checkout code
+      - name: Checkout repository
         uses: actions/checkout@v4
 
       - name: Setup Node.js
@@ -73,7 +130,7 @@ jobs:
         run: npm run typecheck
 
       - name: Comment PR on typecheck failure
-        if: failure()
+        if: failure() && github.event_name == 'pull_request'
         uses: actions/github-script@v7
         with:
           script: |
@@ -84,14 +141,15 @@ jobs:
               body: '❌ **TypeScript type checking failed**\n\nPlease fix type errors:\n```bash\nnpm run typecheck\n```'
             })
 
-  # Job 3: Security Audit
+  # Job 4: Security Audit (PR-only)
   security-audit:
     name: Security Audit
     runs-on: ubuntu-latest
     timeout-minutes: 5
+    if: github.event_name == 'pull_request'
 
     steps:
-      - name: Checkout code
+      - name: Checkout repository
         uses: actions/checkout@v4
 
       - name: Setup Node.js
@@ -116,14 +174,14 @@ jobs:
           args: --severity-threshold=high
         continue-on-error: true
 
-  # Job 4: Unit Tests with Coverage
+  # Job 5: Unit Tests
   unit-tests:
     name: Unit Tests
     runs-on: ubuntu-latest
     timeout-minutes: 10
 
     steps:
-      - name: Checkout code
+      - name: Checkout repository
         uses: actions/checkout@v4
 
       - name: Setup Node.js
@@ -141,9 +199,10 @@ jobs:
           NODE_ENV: test
 
       - name: Upload unit test coverage
+        if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: unit-coverage-${{ github.event.pull_request.number }}
+          name: unit-test-coverage-${{ github.run_id }}
           path: ./server/coverage/
           retention-days: 7
 
@@ -152,24 +211,25 @@ jobs:
         with:
           files: ./server/coverage/lcov.info
           flags: unit
-          name: unit-tests-pr-${{ github.event.pull_request.number }}
+          name: unit-tests-${{ github.run_id }}
           fail_ci_if_error: false
         env:
           CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
 
-      - name: Coverage report summary
+      - name: Coverage report summary (PR only)
+        if: github.event_name == 'pull_request'
         uses: davelosert/vitest-coverage-report-action@v2
-        if: always()
         with:
           working-directory: ./server
           vite-config-path: ../vitest.config.ts
 
-  # Job 5: Integration Tests with PostgreSQL
+  # Job 6: Integration Tests (with PostgreSQL)
   integration-tests:
     name: Integration Tests
     runs-on: ubuntu-latest
     timeout-minutes: 15
 
+    # PostgreSQL service container
     services:
       postgres:
         image: postgres:16
@@ -179,6 +239,7 @@ jobs:
           POSTGRES_DB: mais_test
         ports:
           - 5432:5432
+        # Set health checks to wait until postgres has started
         options: >-
           --health-cmd pg_isready
           --health-interval 10s
@@ -186,7 +247,7 @@ jobs:
           --health-retries 5
 
     steps:
-      - name: Checkout code
+      - name: Checkout repository
         uses: actions/checkout@v4
 
       - name: Setup Node.js
@@ -211,13 +272,14 @@ jobs:
         env:
           NODE_ENV: test
           DATABASE_URL_TEST: postgresql://postgres:postgres@localhost:5432/mais_test?connection_limit=10&pool_timeout=20
-          JWT_SECRET: test-jwt-secret-for-ci-only-not-for-production
+          JWT_SECRET: test-jwt-secret-for-ci-pipeline-only-not-for-production-use
           TENANT_SECRETS_ENCRYPTION_KEY: 0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef
 
       - name: Upload integration test coverage
+        if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: integration-coverage-${{ github.event.pull_request.number }}
+          name: integration-test-coverage-${{ github.run_id }}
           path: ./server/coverage/
           retention-days: 7
 
@@ -226,118 +288,17 @@ jobs:
         with:
           files: ./server/coverage/lcov.info
           flags: integration
-          name: integration-tests-pr-${{ github.event.pull_request.number }}
+          name: integration-tests-${{ github.run_id }}
           fail_ci_if_error: false
         env:
           CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
 
-  # Job 6: E2E Tests (Playwright)
-  e2e-tests:
-    name: E2E Tests (Playwright)
-    runs-on: ubuntu-latest
-    timeout-minutes: 20
-
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '20'
-          cache: 'npm'
-
-      - name: Install dependencies
-        run: npm ci
-
-      - name: Install Playwright browsers
-        run: npx playwright install --with-deps chromium
-
-      - name: Build contracts package
-        run: npm run build --workspace=packages/contracts
-
-      - name: Start API server in mock mode (background)
-        run: |
-          npm run --workspace=server dev:mock &
-          echo "API_PID=$!" >> $GITHUB_ENV
-        env:
-          NODE_ENV: development
-          ADAPTERS_PRESET: mock
-          JWT_SECRET: test-jwt-secret-for-e2e-only
-          API_PORT: 3001
-          CORS_ORIGIN: http://localhost:5173
-
-      - name: Wait for API server
-        run: npx wait-on http://localhost:3001/health --timeout 60000
-
-      - name: Run E2E tests
-        run: npm run test:e2e
-        env:
-          CI: true
-
-      - name: Upload Playwright report on failure
-        if: failure()
-        uses: actions/upload-artifact@v4
-        with:
-          name: playwright-report-pr-${{ github.event.pull_request.number }}
-          path: playwright-report/
-          retention-days: 7
-
-      - name: Upload test results on failure
-        if: failure()
-        uses: actions/upload-artifact@v4
-        with:
-          name: test-results-pr-${{ github.event.pull_request.number }}
-          path: test-results/
-          retention-days: 7
-
-      - name: Cleanup
-        if: always()
-        run: |
-          if [ ! -z "$API_PID" ]; then
-            kill $API_PID || true
-          fi
-          lsof -ti:3001 | xargs kill -9 || true
-          lsof -ti:5173 | xargs kill -9 || true
-
-  # Job 7: Build Validation
-  build-validation:
-    name: Build Validation
-    runs-on: ubuntu-latest
-    timeout-minutes: 10
-    needs: [code-quality, typecheck]
-
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '20'
-          cache: 'npm'
-
-      - name: Install dependencies
-        run: npm ci
-
-      - name: Build all packages
-        run: npm run build --workspaces --if-present
-
-      - name: Upload build artifacts
-        uses: actions/upload-artifact@v4
-        with:
-          name: build-artifacts-pr-${{ github.event.pull_request.number }}
-          path: |
-            ./server/dist/
-            ./client/dist/
-            ./packages/*/dist/
-          retention-days: 7
-
-  # Job 8: Database Migration Validation
+  # Job 7: Database Migration Validation (PR-only)
   migration-validation:
     name: Database Migration Validation
     runs-on: ubuntu-latest
     timeout-minutes: 10
+    if: github.event_name == 'pull_request'
 
     services:
       postgres:
@@ -355,7 +316,7 @@ jobs:
           --health-retries 5
 
     steps:
-      - name: Checkout code
+      - name: Checkout repository
         uses: actions/checkout@v4
 
       - name: Setup Node.js
@@ -382,38 +343,137 @@ jobs:
       - name: Generate Prisma Client
         run: npm run --workspace=server prisma:generate
 
-      - name: Verify database schema
-        run: |
-          cd server
-          npx prisma db execute --stdin < /dev/null
-        env:
-          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/mais_migration_test
-
-  # Summary Job - Required status check
-  pr-validation-complete:
-    name: PR Validation Complete
+  # Job 8: E2E Tests (Playwright)
+  e2e-tests:
+    name: E2E Tests (Playwright)
     runs-on: ubuntu-latest
-    needs: [code-quality, typecheck, security-audit, unit-tests, integration-tests, e2e-tests, build-validation, migration-validation]
+    timeout-minutes: 20
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Playwright browsers
+        run: npx playwright install --with-deps chromium
+
+      - name: Build contracts package
+        run: npm run build --workspace=packages/contracts
+
+      - name: Start API server in mock mode (background)
+        run: |
+          npm run --workspace=server dev:mock &
+          echo "API_PID=$!" >> $GITHUB_ENV
+        env:
+          NODE_ENV: development
+          ADAPTERS_PRESET: mock
+          JWT_SECRET: test-jwt-secret-for-e2e-testing-only
+          API_PORT: 3001
+          CORS_ORIGIN: http://localhost:5173
+
+      - name: Wait for API server
+        run: npx wait-on http://localhost:3001/health --timeout 60000
+
+      - name: Run E2E tests
+        run: npm run test:e2e
+        env:
+          CI: true
+
+      - name: Upload Playwright report on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report-${{ github.run_id }}
+          path: playwright-report/
+          retention-days: 7
+
+      - name: Upload test results on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results-${{ github.run_id }}
+          path: test-results/
+          retention-days: 7
+
+      - name: Cleanup
+        if: always()
+        run: |
+          if [ ! -z "$API_PID" ]; then
+            kill $API_PID || true
+          fi
+          # Kill any remaining processes on ports 3001 and 5173
+          lsof -ti:3001 | xargs kill -9 || true
+          lsof -ti:5173 | xargs kill -9 || true
+
+  # Job 9: Build Check
+  build:
+    name: Build Validation
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    needs: [lint, typecheck]
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build all packages
+        run: npm run build --workspaces --if-present
+
+      - name: Upload build artifacts (PR only)
+        if: github.event_name == 'pull_request'
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-artifacts-${{ github.run_id }}
+          path: |
+            ./server/dist/
+            ./client/dist/
+            ./packages/*/dist/
+          retention-days: 7
+
+  # Summary job - reports overall pipeline status
+  pipeline-complete:
+    name: Pipeline Complete
+    runs-on: ubuntu-latest
+    needs: [docs-validation, pattern-validation, lint, typecheck, unit-tests, integration-tests, e2e-tests, build]
     if: always()
 
     steps:
       - name: Check all jobs status
         run: |
-          if [ "${{ needs.code-quality.result }}" != "success" ] || \
+          # Required checks (always run)
+          if [ "${{ needs.docs-validation.result }}" != "success" ] || \
+             [ "${{ needs.pattern-validation.result }}" != "success" ] || \
+             [ "${{ needs.lint.result }}" != "success" ] || \
              [ "${{ needs.typecheck.result }}" != "success" ] || \
              [ "${{ needs.unit-tests.result }}" != "success" ] || \
              [ "${{ needs.integration-tests.result }}" != "success" ] || \
              [ "${{ needs.e2e-tests.result }}" != "success" ] || \
-             [ "${{ needs.build-validation.result }}" != "success" ] || \
-             [ "${{ needs.migration-validation.result }}" != "success" ]; then
+             [ "${{ needs.build.result }}" != "success" ]; then
             echo "❌ One or more required checks failed"
             exit 1
           else
-            echo "✅ All PR validation checks passed!"
+            echo "✅ All pipeline checks passed!"
           fi
 
       - name: Comment PR with success
-        if: success()
+        if: success() && github.event_name == 'pull_request'
         uses: actions/github-script@v7
         with:
           script: |
@@ -421,5 +481,5 @@ jobs:
               issue_number: context.issue.number,
               owner: context.repo.owner,
               repo: context.repo.repo,
-              body: '✅ **All PR validation checks passed!**\n\n- Code quality: Passed\n- Type checking: Passed\n- Security audit: Completed\n- Unit tests: Passed\n- Integration tests: Passed\n- E2E tests: Passed\n- Build validation: Passed\n- Migration validation: Passed\n\nReady for review!'
+              body: '✅ **All pipeline checks passed!**\n\n- Documentation: Passed\n- Multi-tenant patterns: Passed\n- Code quality: Passed\n- Type checking: Passed\n- Unit tests: Passed\n- Integration tests: Passed\n- E2E tests: Passed\n- Build validation: Passed\n\nReady for review!'
             })

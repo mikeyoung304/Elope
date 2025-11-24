@@ -43,14 +43,115 @@ describe.sequential('SegmentRepository Integration Tests', () => {
       });
 
       // Verify tenant A can access their segment
-      const foundByA = await repository.findById(segmentA.id);
+      const foundByA = await repository.findById(tenantA.id, segmentA.id);
       expect(foundByA).not.toBeNull();
       expect(foundByA?.tenantId).toBe(tenantA.id);
+
+      // CRITICAL: Verify tenant B CANNOT access tenant A's segment
+      const foundByB = await repository.findById(tenantB.id, segmentA.id);
+      expect(foundByB).toBeNull(); // Cross-tenant access denied
 
       // Verify tenant B's queries don't return tenant A's segment
       const segmentsB = await repository.findByTenant(tenantB.id, false);
       expect(segmentsB).toHaveLength(0);
       expect(segmentsB.find(s => s.id === segmentA.id)).toBeUndefined();
+    });
+
+    it('should prevent cross-tenant segment updates', async () => {
+      const tenantA = await ctx.tenants.tenantA.create();
+      const tenantB = await ctx.tenants.tenantB.create();
+
+      // Create segment for tenant A
+      const segmentA = await repository.create({
+        tenantId: tenantA.id,
+        slug: 'wellness-retreat',
+        name: 'Wellness Retreats',
+        heroTitle: 'Rejuvenate Your Mind & Body',
+        sortOrder: 0,
+        active: true,
+      });
+
+      // Tenant A can update their segment
+      const updated = await repository.update(tenantA.id, segmentA.id, {
+        name: 'Updated by Tenant A',
+      });
+      expect(updated.name).toBe('Updated by Tenant A');
+
+      // CRITICAL: Tenant B CANNOT update tenant A's segment
+      await expect(
+        repository.update(tenantB.id, segmentA.id, {
+          name: 'Malicious update by Tenant B',
+        })
+      ).rejects.toThrow(/not found or access denied/i);
+
+      // Verify segment was not modified
+      const afterAttempt = await repository.findById(tenantA.id, segmentA.id);
+      expect(afterAttempt?.name).toBe('Updated by Tenant A'); // Unchanged
+    });
+
+    it('should prevent cross-tenant segment deletion', async () => {
+      const tenantA = await ctx.tenants.tenantA.create();
+      const tenantB = await ctx.tenants.tenantB.create();
+
+      // Create segment for tenant A
+      const segmentA = await repository.create({
+        tenantId: tenantA.id,
+        slug: 'wellness-retreat',
+        name: 'Wellness Retreats',
+        heroTitle: 'Rejuvenate Your Mind & Body',
+        sortOrder: 0,
+        active: true,
+      });
+
+      // CRITICAL: Tenant B CANNOT delete tenant A's segment
+      await expect(repository.delete(tenantB.id, segmentA.id)).rejects.toThrow(
+        /not found or access denied/i
+      );
+
+      // Verify segment still exists
+      const stillExists = await repository.findById(tenantA.id, segmentA.id);
+      expect(stillExists).not.toBeNull();
+
+      // Tenant A can delete their own segment
+      await repository.delete(tenantA.id, segmentA.id);
+      const deleted = await repository.findById(tenantA.id, segmentA.id);
+      expect(deleted).toBeNull();
+    });
+
+    it('should prevent cross-tenant stats access', async () => {
+      const tenantA = await ctx.tenants.tenantA.create();
+      const tenantB = await ctx.tenants.tenantB.create();
+
+      // Create segment for tenant A with packages
+      const segmentA = await repository.create({
+        tenantId: tenantA.id,
+        slug: 'wellness-retreat',
+        name: 'Wellness Retreats',
+        heroTitle: 'Rejuvenate Your Mind & Body',
+        sortOrder: 0,
+        active: true,
+      });
+
+      await ctx.prisma.package.create({
+        data: {
+          tenantId: tenantA.id,
+          segmentId: segmentA.id,
+          slug: 'package-1',
+          name: 'Package 1',
+          description: 'Description',
+          basePrice: 10000,
+          active: true,
+        },
+      });
+
+      // Tenant A can access their stats
+      const statsA = await repository.getStats(tenantA.id, segmentA.id);
+      expect(statsA.packageCount).toBe(1);
+
+      // CRITICAL: Tenant B CANNOT access tenant A's stats
+      await expect(repository.getStats(tenantB.id, segmentA.id)).rejects.toThrow(
+        /not found or access denied/i
+      );
     });
 
     it('should enforce unique slugs per tenant (different tenants can use same slug)', async () => {
@@ -182,7 +283,7 @@ describe.sequential('SegmentRepository Integration Tests', () => {
         active: true,
       });
 
-      const found = await repository.findById(created.id);
+      const found = await repository.findById(tenant.id, created.id);
 
       expect(found).not.toBeNull();
       expect(found?.id).toBe(created.id);
@@ -190,7 +291,8 @@ describe.sequential('SegmentRepository Integration Tests', () => {
     });
 
     it('should return null for non-existent segment ID', async () => {
-      const found = await repository.findById('non-existent-id');
+      const tenant = await ctx.tenants.tenantA.create();
+      const found = await repository.findById(tenant.id, 'non-existent-id');
       expect(found).toBeNull();
     });
 
@@ -276,7 +378,7 @@ describe.sequential('SegmentRepository Integration Tests', () => {
         active: true,
       });
 
-      const updated = await repository.update(created.id, {
+      const updated = await repository.update(tenant.id, created.id, {
         slug: 'updated-slug',
         name: 'Updated Name',
         heroTitle: 'Updated Title',
@@ -306,7 +408,7 @@ describe.sequential('SegmentRepository Integration Tests', () => {
         active: true,
       });
 
-      const updated = await repository.update(created.id, {
+      const updated = await repository.update(tenant.id, created.id, {
         name: 'Updated Name Only',
       });
 
@@ -329,15 +431,16 @@ describe.sequential('SegmentRepository Integration Tests', () => {
         active: true,
       });
 
-      await repository.delete(created.id);
+      await repository.delete(tenant.id, created.id);
 
-      const found = await repository.findById(created.id);
+      const found = await repository.findById(tenant.id, created.id);
       expect(found).toBeNull();
     });
 
     it('should handle delete of non-existent segment gracefully', async () => {
+      const tenant = await ctx.tenants.tenantA.create();
       // Prisma will throw an error, but this tests that it doesn't crash
-      await expect(repository.delete('non-existent-id')).rejects.toThrow();
+      await expect(repository.delete(tenant.id, 'non-existent-id')).rejects.toThrow();
     });
   });
 
@@ -410,7 +513,7 @@ describe.sequential('SegmentRepository Integration Tests', () => {
       });
 
       // Initially no packages or add-ons
-      const stats1 = await repository.getStats(segment.id);
+      const stats1 = await repository.getStats(tenant.id, segment.id);
       expect(stats1.packageCount).toBe(0);
       expect(stats1.addOnCount).toBe(0);
 
@@ -453,7 +556,7 @@ describe.sequential('SegmentRepository Integration Tests', () => {
         },
       });
 
-      const stats2 = await repository.getStats(segment.id);
+      const stats2 = await repository.getStats(tenant.id, segment.id);
       expect(stats2.packageCount).toBe(2);
       expect(stats2.addOnCount).toBe(1);
     });
@@ -492,7 +595,7 @@ describe.sequential('SegmentRepository Integration Tests', () => {
       expect(pkg.segmentId).toBe(segment.id);
 
       // Delete segment
-      await repository.delete(segment.id);
+      await repository.delete(tenant.id, segment.id);
 
       // Package should still exist but with null segmentId
       const pkgAfter = await ctx.prisma.package.findUnique({

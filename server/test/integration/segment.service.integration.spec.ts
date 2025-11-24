@@ -161,7 +161,7 @@ describe.sequential('SegmentService Integration Tests', () => {
       });
 
       // Update with same slug should work
-      const updated = await service.updateSegment(segment.id, {
+      const updated = await service.updateSegment(tenant.id, segment.id, {
         slug: 'original-slug',
         name: 'Updated Name',
       });
@@ -193,7 +193,7 @@ describe.sequential('SegmentService Integration Tests', () => {
 
       // Attempt to update segment two to use slug-one (already taken)
       await expect(
-        service.updateSegment(segmentTwo.id, {
+        service.updateSegment(tenant.id, segmentTwo.id, {
           slug: 'slug-one',
         })
       ).rejects.toThrow(ValidationError);
@@ -218,14 +218,18 @@ describe.sequential('SegmentService Integration Tests', () => {
     });
 
     it('should throw NotFoundError when updating non-existent segment', async () => {
+      const tenant = await ctx.tenants.tenantA.create();
+
       await expect(
-        service.updateSegment('non-existent-id', { name: 'Updated' })
+        service.updateSegment(tenant.id, 'non-existent-id', { name: 'Updated' })
       ).rejects.toThrow(NotFoundError);
     });
 
     it('should throw NotFoundError when deleting non-existent segment', async () => {
+      const tenant = await ctx.tenants.tenantA.create();
+
       await expect(
-        service.deleteSegment('non-existent-id')
+        service.deleteSegment(tenant.id, 'non-existent-id')
       ).rejects.toThrow(NotFoundError);
     });
   });
@@ -372,7 +376,7 @@ describe.sequential('SegmentService Integration Tests', () => {
       expect(ctx.cache.cache.get(slugKey)).toBeTruthy();
 
       // Update segment - should invalidate caches
-      await service.updateSegment(segment.id, { name: 'Updated' });
+      await service.updateSegment(tenant.id, segment.id, { name: 'Updated' });
 
       expect(ctx.cache.cache.get(listKey)).toBeUndefined();
       expect(ctx.cache.cache.get(slugKey)).toBeUndefined();
@@ -401,7 +405,7 @@ describe.sequential('SegmentService Integration Tests', () => {
       expect(ctx.cache.cache.get(slugKey)).toBeTruthy();
 
       // Delete segment - should invalidate caches
-      await service.deleteSegment(segment.id);
+      await service.deleteSegment(tenant.id, segment.id);
 
       expect(ctx.cache.cache.get(listKey)).toBeUndefined();
       expect(ctx.cache.cache.get(slugKey)).toBeUndefined();
@@ -425,7 +429,7 @@ describe.sequential('SegmentService Integration Tests', () => {
       expect(ctx.cache.cache.get(oldSlugKey)).toBeTruthy();
 
       // Update slug
-      await service.updateSegment(segment.id, { slug: 'new-slug' });
+      await service.updateSegment(tenant.id, segment.id, { slug: 'new-slug' });
 
       // Old slug cache should be invalidated
       expect(ctx.cache.cache.get(oldSlugKey)).toBeUndefined();

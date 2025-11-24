@@ -1,10 +1,16 @@
-# Elope - Multi-Tenant Wedding Booking Platform
+# MAIS - Multi-Tenant Business Growth Club Platform
 
 ## Quick Context
-- **Type:** Multi-tenant SaaS with embeddable widgets
-- **Phase:** 5.1 (Package Photos Backend Complete)
+- **Type:** Business growth club with revenue-sharing partnerships
+- **Phase:** Sprint 6 Complete (60% test pass rate, 0% variance)
 - **Stack:** Express + React + TypeScript + Prisma + PostgreSQL
-- **Critical:** Multi-tenant isolation, Stripe payments, commission calculation
+- **Critical:** Multi-tenant isolation, AI consulting, commission calculation
+
+## Business Model
+- AI consulting and growth strategies for entrepreneurs
+- Seamless booking/scheduling for coaching sessions
+- Professional website creation and marketing automation
+- Revenue-sharing partnerships (not subscription-based)
 
 ## Documentation Map
 - Architecture: [ARCHITECTURE.md](../ARCHITECTURE.md)
@@ -31,6 +37,7 @@
 - Reset DB: `npx prisma migrate reset`
 - Check types: `npm run typecheck`
 - Validate env: `npm run doctor`
+- Validate patterns: `./.claude/hooks/validate-patterns.sh`
 - Format code: `npm run format`
 - Lint: `npm run lint`
 
@@ -47,26 +54,33 @@
 - **Mock mode:** `ADAPTERS_PRESET=mock` (no external dependencies)
 - **Real mode:** `ADAPTERS_PRESET=real` (Stripe, PostgreSQL, etc.)
 
-## Current Tasks (Phase 5.1 → 5.2)
-- ✅ Package photo upload backend
-- ✅ Package photo upload UI
-- ✅ Unified authentication system
-- ⬜ Add-on management UI
-- ⬜ Email template customization
-- ⬜ Content page editor
+## Current Sprint Status
+- Sprint 6: Complete (60% test pass rate, 0% variance achieved)
+- Sprint 7 Goal: 70% pass rate (73/104 tests passing)
+- Phase 5.1: Backend complete (package photo uploads)
 
 ## Security Notes
-- JWT_SECRET required (32 bytes)
-- TENANT_SECRETS_ENCRYPTION_KEY required (32 bytes)
+- JWT_SECRET required (32 bytes minimum)
+- TENANT_SECRETS_ENCRYPTION_KEY required (64 hex chars)
 - Rate limiting: 5 login attempts / 15 minutes
 - All tenant API keys encrypted with AES-256-GCM
 
 ## Testing
-- Unit tests: 44 passing
-- E2E tests: 9 scenarios
-- Coverage goal: 100% for critical paths (webhooks, payments)
+- Unit tests: Isolated service logic (no DB/network)
+- Integration tests: Database-backed with tenant isolation
+- E2E tests: Playwright with mock mode for speed
+- Coverage goal: 70% overall, 100% for critical paths (webhooks, payments)
 
 ## Automated Validation
 - Pre-commit hooks validate critical patterns
-- Run manually: `.claude/hooks/validate-patterns.sh`
+- Run manually: `./.claude/hooks/validate-patterns.sh`
 - Checks: multi-tenant isolation, commission calculation, cache keys
+- CI/CD: Pattern validation runs on every commit
+
+## Before You Start Coding
+
+1. **Check current branch**: `git branch` (should be on feature branch, not main)
+2. **Validate environment**: `npm run doctor`
+3. **Review critical patterns**: Read `.claude/PATTERNS.md`
+4. **Run pattern validator**: `./.claude/hooks/validate-patterns.sh`
+5. **Start in mock mode**: `ADAPTERS_PRESET=mock npm run dev:all`

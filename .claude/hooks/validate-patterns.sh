@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Elope Multi-Tenant Pattern Validation Script
+# MAIS Multi-Tenant Pattern Validation Script
 # This script validates critical patterns to prevent cross-tenant data leaks
 # Usage: .claude/hooks/validate-patterns.sh
 # Exit codes: 0 = all checks pass, 1 = violations found
@@ -10,7 +10,7 @@ set -e
 ERRORS=0
 WARNINGS=0
 
-echo "🔍 Validating Elope Multi-Tenant Patterns..."
+echo "🔍 Validating MAIS Multi-Tenant Patterns..."
 echo ""
 
 # Change to project root

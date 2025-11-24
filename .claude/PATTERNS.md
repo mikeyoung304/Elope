@@ -1,4 +1,6 @@
-# Elope Code Patterns
+# MAIS Code Patterns
+
+> **Critical**: These patterns are enforced by `.claude/hooks/validate-patterns.sh` and CI/CD pipeline. Violations will fail builds.
 
 ## Repository Pattern
 

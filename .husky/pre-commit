@@ -1,3 +1,7 @@
+# Run documentation validation
+echo "Validating documentation standards..."
+./scripts/validate-docs.sh
+
 # Run unit tests (fast tests only)
 echo "Running unit tests..."
 npm run test:unit
