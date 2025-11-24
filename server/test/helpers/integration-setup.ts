@@ -80,12 +80,19 @@ export interface CacheTestUtils {
 /**
  * Initialize PrismaClient for integration tests
  * Automatically uses DATABASE_URL_TEST if available
+ * Configures connection pool limits to prevent P2037 exhaustion errors
  */
 export function setupIntegrationTest(): IntegrationTestContext {
+  // Add connection pool parameters to prevent exhaustion during parallel tests
+  const baseUrl = process.env.DATABASE_URL_TEST || process.env.DATABASE_URL;
+  const urlWithPool = baseUrl?.includes('?')
+    ? `${baseUrl}&connection_limit=5&pool_timeout=10`
+    : `${baseUrl}?connection_limit=5&pool_timeout=10`;
+
   const prisma = new PrismaClient({
     datasources: {
       db: {
-        url: process.env.DATABASE_URL_TEST || process.env.DATABASE_URL,
+        url: urlWithPool,
       },
     },
   });

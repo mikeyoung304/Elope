@@ -208,7 +208,7 @@ describe.sequential('Booking Race Conditions - Integration Tests', () => {
   });
 
   describe('Transaction Isolation', () => {
-    it('should maintain serializable isolation during transaction', async () => {
+    it('should prevent double-booking with advisory locks and READ COMMITTED isolation', async () => {
       await withDatabaseRetry(async () => {
         const eventDate = '2025-08-01';
 
@@ -240,10 +240,11 @@ describe.sequential('Booking Race Conditions - Integration Tests', () => {
           createdAt: new Date().toISOString(),
         };
 
-        // Should fail due to isolation level enforcement
+        // Should fail due to advisory lock + unique constraint enforcement
+        // Note: Changed from SERIALIZABLE to READ COMMITTED with advisory locks (ADR-006)
         await expect(bookingRepo.create(testTenantId, booking2))
           .rejects
-          .toThrow();
+          .toThrow(BookingConflictError);
 
         // Verify only one booking exists
         const bookings = await ctx.prisma.booking.findMany({
@@ -380,10 +381,10 @@ describe.sequential('Booking Race Conditions - Integration Tests', () => {
     });
   });
 
-  describe('Pessimistic Locking Behavior', () => {
-    it('should use FOR UPDATE NOWAIT to prevent deadlocks', async () => {
-      // Note: We removed the timing assertion as it's too sensitive to system load
-      // The key behavior is that it fails (not hangs), not how fast it fails
+  describe('Advisory Lock Behavior', () => {
+    it('should use PostgreSQL advisory locks to prevent race conditions', async () => {
+      // Note: Changed from FOR UPDATE NOWAIT to pg_advisory_xact_lock (ADR-006)
+      // Advisory locks provide explicit serialization per tenant+date without deadlocks
       await withDatabaseRetry(async () => {
         const eventDate = '2025-10-01';
 
@@ -402,7 +403,7 @@ describe.sequential('Booking Race Conditions - Integration Tests', () => {
         // Create first booking
         await bookingRepo.create(testTenantId, booking1);
 
-        // Try to create second booking (should fail, not hang)
+        // Try to create second booking (should fail due to conflict detection)
         const booking2: Booking = {
           id: 'lock-test-2',
           packageId: testPackageId,
@@ -415,7 +416,7 @@ describe.sequential('Booking Race Conditions - Integration Tests', () => {
           createdAt: new Date().toISOString(),
         };
 
-        // Should fail due to lock contention or unique constraint
+        // Should fail due to advisory lock serialization
         await expect(bookingRepo.create(testTenantId, booking2))
           .rejects
           .toThrow();
