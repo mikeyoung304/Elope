@@ -12,9 +12,27 @@ import { toISODate } from '../lib/date-utils';
 
 // Transaction configuration for booking creation
 const BOOKING_TRANSACTION_TIMEOUT_MS = 5000;  // 5 seconds
-const BOOKING_ISOLATION_LEVEL = 'Serializable' as const;
+const BOOKING_ISOLATION_LEVEL = 'ReadCommitted' as const;
 const MAX_TRANSACTION_RETRIES = 3;  // Retry up to 3 times on deadlock
 const RETRY_DELAY_MS = 100;  // Base delay between retries
+
+/**
+ * Generate deterministic lock ID from tenantId + date for PostgreSQL advisory locks
+ * Uses FNV-1a hash algorithm to convert string to 32-bit integer
+ * Advisory locks provide explicit serialization without phantom read issues
+ */
+function hashTenantDate(tenantId: string, date: string): number {
+  const str = `${tenantId}:${date}`;
+  let hash = 2166136261; // FNV offset basis
+
+  for (let i = 0; i < str.length; i++) {
+    hash ^= str.charCodeAt(i);
+    hash = Math.imul(hash, 16777619); // FNV prime
+  }
+
+  // Convert to 32-bit signed integer (PostgreSQL bigint range)
+  return hash | 0;
+}
 
 export interface BookingRepositoryConfig {
   isolationLevel?: 'Serializable' | 'ReadCommitted';
@@ -80,26 +98,26 @@ export class PrismaBookingRepository implements BookingRepository {
    * Creates a new booking with advanced race condition protection
    *
    * Implements multi-layered concurrency control to prevent double-bookings:
-   * 1. SERIALIZABLE transaction isolation level (strongest consistency)
-   * 2. FOR UPDATE NOWAIT pessimistic lock on the booking date
+   * 1. PostgreSQL advisory lock (explicit serialization per tenant+date)
+   * 2. READ COMMITTED transaction isolation level (balanced consistency)
    * 3. Explicit date availability check after lock acquisition
    * 4. Unique constraint enforcement at database level
    *
    * Transaction configuration:
    * - Timeout: 5 seconds (BOOKING_TRANSACTION_TIMEOUT_MS)
-   * - Isolation: SERIALIZABLE (prevents phantom reads)
+   * - Isolation: READ COMMITTED (avoids phantom read issues with SERIALIZABLE)
    *
    * Lock acquisition strategy:
-   * - Uses NOWAIT to fail fast on contention (prevents queue buildup)
-   * - Returns BookingLockTimeoutError if lock cannot be acquired
-   * - Detects PostgreSQL error code P2034 for timeout handling
+   * - Uses pg_advisory_xact_lock (transaction-scoped advisory lock)
+   * - Lock is automatically released when transaction commits/aborts
+   * - Waits for lock if another transaction holds it (queue buildup prevention via retry logic)
+   * - Lock ID is deterministic hash of tenantId:eventDate
    *
    * @param booking - Domain booking entity to persist
    *
    * @returns Created booking with generated timestamps
    *
    * @throws {BookingConflictError} If date is already booked (P2002 unique constraint)
-   * @throws {BookingLockTimeoutError} If transaction lock cannot be acquired (P2034)
    *
    * @example
    * ```typescript
@@ -118,8 +136,6 @@ export class PrismaBookingRepository implements BookingRepository {
    * } catch (error) {
    *   if (error instanceof BookingConflictError) {
    *     // Date already booked - show user alternative dates
-   *   } else if (error instanceof BookingLockTimeoutError) {
-   *     // High contention - retry with exponential backoff
    *   }
    * }
    * ```
@@ -128,36 +144,10 @@ export class PrismaBookingRepository implements BookingRepository {
     return this.retryTransaction(async () => {
       try {
         return await this.prisma.$transaction(async (tx) => {
-        // Lock the date to prevent concurrent bookings for this tenant
-        const lockQuery = `
-          SELECT 1 FROM "Booking"
-          WHERE "tenantId" = $1 AND date = $2
-          FOR UPDATE NOWAIT
-        `;
-
-        try {
-          await tx.$queryRawUnsafe(lockQuery, tenantId, new Date(booking.eventDate));
-        } catch (lockError) {
-          // Check specific PostgreSQL error codes
-          if (lockError instanceof PrismaClientKnownRequestError) {
-            // P2034 = Transaction failed due to lock timeout
-            if (lockError.code === 'P2034') {
-              logger.warn({ tenantId, date: booking.eventDate, error: lockError.code }, 'Lock timeout on booking date');
-              throw new BookingLockTimeoutError(booking.eventDate);
-            }
-          }
-
-          // Log unexpected errors for debugging
-          logger.error({
-            error: lockError,
-            tenantId,
-            date: booking.eventDate,
-            query: lockQuery
-          }, 'Unexpected error during lock acquisition');
-
-          // Re-throw to prevent masking real database issues
-          throw lockError;
-        }
+        // Acquire advisory lock for this specific tenant+date combination
+        // Lock is automatically released when transaction ends
+        const lockId = hashTenantDate(tenantId, booking.eventDate);
+        await tx.$executeRaw`SELECT pg_advisory_xact_lock(${lockId})`;
 
         // Check if date is already booked for this tenant
         const existing = await tx.booking.findFirst({
@@ -241,8 +231,8 @@ export class PrismaBookingRepository implements BookingRepository {
         if (error instanceof PrismaClientKnownRequestError && error.code === 'P2002') {
           throw new BookingConflictError(booking.eventDate);
         }
-        // Re-throw our custom errors
-        if (error instanceof BookingLockTimeoutError || error instanceof BookingConflictError) {
+        // Re-throw BookingConflictError (from explicit check)
+        if (error instanceof BookingConflictError) {
           throw error;
         }
         throw error;
