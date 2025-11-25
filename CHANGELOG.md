@@ -582,6 +582,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Request ID middleware for request tracking
 - Comprehensive logging with contextual metadata
 
-[1.1.0]: https://github.com/username/elope/compare/v0.1.0...v1.1.0
-[Unreleased]: https://github.com/username/elope/compare/v1.1.0...HEAD
-[0.1.0]: https://github.com/username/elope/releases/tag/v0.1.0
+[1.1.0]: https://github.com/mikeyoung304/mais/compare/v0.1.0...v1.1.0
+[Unreleased]: https://github.com/mikeyoung304/mais/compare/v1.1.0...HEAD
+[0.1.0]: https://github.com/mikeyoung304/mais/releases/tag/v0.1.0

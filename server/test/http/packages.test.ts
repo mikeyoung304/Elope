@@ -20,18 +20,18 @@ describe('GET /v1/packages', () => {
     const prisma = new PrismaClient();
 
     const tenant = await prisma.tenant.upsert({
-      where: { slug: 'elope' },
+      where: { slug: 'mais-test' },
       update: {
-        apiKeyPublic: 'pk_live_elope_0123456789abcdef',
-        apiKeySecret: 'sk_live_elope_0123456789abcdef0123456789abcdef',
+        apiKeyPublic: 'pk_live_mais-test_0123456789abcdef',
+        apiKeySecret: 'sk_live_mais-test_0123456789abcdef0123456789abcdef',
         isActive: true,
       },
       create: {
         id: 'tenant_default_legacy',
-        slug: 'elope',
-        name: 'Elope (Test)',
-        apiKeyPublic: 'pk_live_elope_0123456789abcdef',
-        apiKeySecret: 'sk_live_elope_0123456789abcdef0123456789abcdef',
+        slug: 'mais-test',
+        name: 'MAIS (Test)',
+        apiKeyPublic: 'pk_live_mais-test_0123456789abcdef',
+        apiKeySecret: 'sk_live_mais-test_0123456789abcdef0123456789abcdef',
         commissionPercent: 10.0,
         branding: {},
         isActive: true,
@@ -85,18 +85,18 @@ describe('GET /v1/packages/:slug', () => {
     const prisma = new PrismaClient();
 
     const tenant = await prisma.tenant.upsert({
-      where: { slug: 'elope' },
+      where: { slug: 'mais-test' },
       update: {
-        apiKeyPublic: 'pk_live_elope_0123456789abcdef',
-        apiKeySecret: 'sk_live_elope_0123456789abcdef0123456789abcdef',
+        apiKeyPublic: 'pk_live_mais-test_0123456789abcdef',
+        apiKeySecret: 'sk_live_mais-test_0123456789abcdef0123456789abcdef',
         isActive: true,
       },
       create: {
         id: 'tenant_default_legacy',
-        slug: 'elope',
-        name: 'Elope (Test)',
-        apiKeyPublic: 'pk_live_elope_0123456789abcdef',
-        apiKeySecret: 'sk_live_elope_0123456789abcdef0123456789abcdef',
+        slug: 'mais-test',
+        name: 'MAIS (Test)',
+        apiKeyPublic: 'pk_live_mais-test_0123456789abcdef',
+        apiKeySecret: 'sk_live_mais-test_0123456789abcdef0123456789abcdef',
         commissionPercent: 10.0,
         branding: {},
         isActive: true,

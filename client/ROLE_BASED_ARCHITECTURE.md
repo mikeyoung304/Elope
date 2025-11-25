@@ -2,7 +2,7 @@
 
 ## Overview
 
-This document describes the role-based authentication and dashboard selection system implemented for the Elope wedding booking platform. The system supports two distinct user roles with separate dashboards and access patterns.
+This document describes the role-based authentication and dashboard selection system implemented for the MAIS business growth platform. The system supports two distinct user roles with separate dashboards and access patterns.
 
 ## User Roles
 
