@@ -23,46 +23,46 @@ export function DashboardMetrics({
 }: DashboardMetricsProps) {
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
-      <Card className="p-6 bg-macon-navy-800 border-macon-navy-600">
+      <Card className="p-6 bg-macon-navy-800 border-white/20">
         <div className="flex items-center gap-3 mb-2">
           <div className="p-2 bg-macon-navy-700 rounded">
-            <Calendar className="w-5 h-5 text-macon-navy-300" />
+            <Calendar className="w-5 h-5 text-white/60" />
           </div>
-          <div className="text-base text-macon-navy-100">Total Bookings</div>
+          <div className="text-base text-white/90">Total Bookings</div>
         </div>
-        <div className="text-4xl font-bold text-macon-navy-50">{totalBookings}</div>
+        <div className="text-4xl font-bold text-white">{totalBookings}</div>
       </Card>
 
-      <Card className="p-6 bg-macon-navy-800 border-macon-navy-600">
+      <Card className="p-6 bg-macon-navy-800 border-white/20">
         <div className="flex items-center gap-3 mb-2">
           <div className="p-2 bg-macon-navy-700 rounded">
-            <DollarSign className="w-5 h-5 text-macon-navy-300" />
+            <DollarSign className="w-5 h-5 text-white/60" />
           </div>
-          <div className="text-base text-macon-navy-100">Total Revenue</div>
+          <div className="text-base text-white/90">Total Revenue</div>
         </div>
-        <div className="text-4xl font-bold text-macon-navy-300">
+        <div className="text-4xl font-bold text-white/60">
           {formatCurrency(totalRevenue)}
         </div>
       </Card>
 
-      <Card className="p-6 bg-macon-navy-800 border-macon-navy-600">
+      <Card className="p-6 bg-macon-navy-800 border-white/20">
         <div className="flex items-center gap-3 mb-2">
           <div className="p-2 bg-macon-navy-700 rounded">
-            <Package className="w-5 h-5 text-macon-navy-300" />
+            <Package className="w-5 h-5 text-white/60" />
           </div>
-          <div className="text-base text-macon-navy-100">Total Packages</div>
+          <div className="text-base text-white/90">Total Packages</div>
         </div>
-        <div className="text-4xl font-bold text-macon-navy-50">{packagesCount}</div>
+        <div className="text-4xl font-bold text-white">{packagesCount}</div>
       </Card>
 
-      <Card className="p-6 bg-macon-navy-800 border-macon-navy-600">
+      <Card className="p-6 bg-macon-navy-800 border-white/20">
         <div className="flex items-center gap-3 mb-2">
           <div className="p-2 bg-macon-navy-700 rounded">
-            <XCircle className="w-5 h-5 text-macon-navy-300" />
+            <XCircle className="w-5 h-5 text-white/60" />
           </div>
-          <div className="text-base text-macon-navy-100">Blackout Dates</div>
+          <div className="text-base text-white/90">Blackout Dates</div>
         </div>
-        <div className="text-4xl font-bold text-macon-navy-300">{blackoutsCount}</div>
+        <div className="text-4xl font-bold text-white/60">{blackoutsCount}</div>
       </Card>
     </div>
   );

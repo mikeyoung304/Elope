@@ -62,7 +62,7 @@ export function FormField(props: FormFieldProps) {
 
   return (
     <div className={`space-y-2 ${className}`}>
-      <Label htmlFor={id} className="text-macon-navy-100 text-lg">
+      <Label htmlFor={id} className="text-white/90 text-lg">
         {label}
         {required && <span className="text-destructive ml-1">*</span>}
       </Label>
@@ -76,7 +76,7 @@ export function FormField(props: FormFieldProps) {
           required={required}
           rows={(props as TextareaFormFieldProps).rows || 4}
           placeholder={(props as TextareaFormFieldProps).placeholder}
-          className="bg-macon-navy-900 border-macon-navy-600 text-macon-navy-50 placeholder:text-macon-navy-400 focus:border-macon-navy-500 focus:ring-macon-navy-500 text-lg"
+          className="bg-macon-navy-900 border-white/20 text-white placeholder:text-white/50 focus:border-white/30 focus:ring-macon-navy-500 text-lg"
         />
       ) : (
         <Input
@@ -87,7 +87,7 @@ export function FormField(props: FormFieldProps) {
           disabled={disabled}
           required={required}
           placeholder={(props as InputFormFieldProps).placeholder}
-          className="bg-macon-navy-900 border-macon-navy-600 text-macon-navy-50 placeholder:text-macon-navy-400 focus:border-macon-navy-500 focus:ring-macon-navy-500 text-lg"
+          className="bg-macon-navy-900 border-white/20 text-white placeholder:text-white/50 focus:border-white/30 focus:ring-macon-navy-500 text-lg"
         />
       )}
 
@@ -96,7 +96,7 @@ export function FormField(props: FormFieldProps) {
       )}
 
       {helperText && !error && (
-        <p className="text-base text-macon-navy-200">{helperText}</p>
+        <p className="text-base text-white/70">{helperText}</p>
       )}
     </div>
   );

@@ -106,10 +106,10 @@ function PackageCatalogContent() {
         </h1>
         <div className="text-center py-20 bg-neutral-50 rounded-xl border-2 border-neutral-200">
           <p className="text-2xl text-macon-navy-600 mb-3 font-semibold">
-            No packages available yet
+            Packages coming soon
           </p>
-          <p className="text-xl text-macon-navy-400">
-            Check back soon for exciting offerings!
+          <p className="text-xl text-white/50">
+            We're putting the finishing touches on some great offerings. Check back shortly!
           </p>
         </div>
       </Container>

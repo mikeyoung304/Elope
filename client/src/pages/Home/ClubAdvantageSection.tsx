@@ -1,19 +1,22 @@
 import { Container } from "@/ui/Container";
 import { Card, CardContent } from "@/components/ui/card";
+import { AnimatedSection } from "@/components/AnimatedSection";
 import { Building2, Zap, TrendingUp, Check } from "lucide-react";
 
 export function ClubAdvantageSection() {
   return (
     <section id="features" aria-labelledby="features-heading" className="py-16 md:py-24 bg-background">
       <Container>
-        <div className="text-center mb-12 md:mb-16">
-          <h2 id="features-heading" className="font-heading text-5xl md:text-6xl lg:text-7xl font-bold mb-4 text-transparent bg-clip-text bg-gradient-to-r from-macon-navy via-macon-orange to-macon-teal">
-            The Club Advantage
-          </h2>
-          <p className="text-xl md:text-2xl text-neutral-700 max-w-2xl mx-auto">
-            Three Pillars of Growth
-          </p>
-        </div>
+        <AnimatedSection>
+          <div className="text-center mb-12 md:mb-16">
+            <h2 id="features-heading" className="font-heading text-5xl md:text-6xl lg:text-7xl font-bold mb-4 text-transparent bg-clip-text bg-gradient-to-r from-macon-navy via-macon-orange to-macon-teal">
+              Your Growth Partner, Not Another Tool
+            </h2>
+            <p className="text-xl md:text-2xl text-neutral-700 max-w-2xl mx-auto">
+              We don't hand you software and disappear. We partner in your success.
+            </p>
+          </div>
+        </AnimatedSection>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 md:gap-8 mb-16">
           <Card className="group bg-white border-2 border-neutral-200 hover:border-macon-orange/50 shadow-elevation-1 hover:shadow-elevation-3 hover:-translate-y-1 transition-all duration-300">
@@ -22,13 +25,13 @@ export function ClubAdvantageSection() {
                 <TrendingUp className="w-8 h-8 text-macon-orange group-hover:text-white transition-all duration-300" />
               </div>
               <h3 className="font-heading text-2xl md:text-3xl font-semibold mb-3 text-neutral-900 group-hover:text-macon-navy transition-colors">
-                Business Growth, Accelerated
+                Marketing That Actually Works
               </h3>
               <p className="text-lg text-neutral-600 leading-relaxed mb-4">
-                Hands-on marketing, bespoke consulting, and sales-driven strategies powered by cutting-edge AI. We don't just give you tools—we execute alongside you.
+                We don't hand you a template and disappear. Your dedicated strategist writes your campaigns, manages your funnel, and helps you close more deals.
               </p>
               <p className="text-base text-macon-orange font-semibold">
-                Outcome: Increase revenue, land more clients, scale smarter
+                Average member sees 30% revenue increase in 90 days
               </p>
             </CardContent>
           </Card>
@@ -41,15 +44,15 @@ export function ClubAdvantageSection() {
                 <Zap className="w-10 h-10 text-white" />
               </div>
               <h3 className="font-heading text-2xl md:text-3xl font-bold mb-3 text-white">
-                Seamless Scheduling & Bookings
+                Bookings on Autopilot
               </h3>
               <p className="text-lg text-white/90 leading-relaxed mb-4">
-                Effortlessly manage appointments, payments, and client flow with tools tailored to your brand. No more double-bookings, missed payments, or admin chaos.
+                Your clients book online, pay upfront, and get automatic reminders. You wake up to a full calendar—without sending a single text.
               </p>
               <div className="flex items-start gap-2">
                 <Check className="w-5 h-5 text-macon-orange mt-0.5 flex-shrink-0" />
                 <p className="text-base text-macon-orange-light font-bold">
-                  Outcome: Save 60+ hours/month, never lose a lead, get paid faster
+                  Members save 15 hours/week on average
                 </p>
               </div>
             </CardContent>
@@ -61,13 +64,13 @@ export function ClubAdvantageSection() {
                 <Building2 className="w-8 h-8 text-macon-orange group-hover:text-white transition-all duration-300" />
               </div>
               <h3 className="font-heading text-2xl md:text-3xl font-semibold mb-3 text-neutral-900 group-hover:text-macon-navy transition-colors">
-                Your Website, Your Way
+                A Website That Works for You
               </h3>
               <p className="text-lg text-neutral-600 leading-relaxed mb-4">
-                Don't have a site? Need an upgrade? Our team designs, launches, and maintains your digital hub—no dev skills required. You focus on your business, we handle the tech.
+                Look professional without learning to code. We design, build, and maintain your website—so you can focus on serving clients.
               </p>
               <p className="text-base text-macon-orange font-semibold">
-                Outcome: Professional web presence without hiring developers
+                From zero to live website in 10 days
               </p>
             </CardContent>
           </Card>

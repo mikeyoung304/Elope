@@ -12,8 +12,19 @@ export default {
           DEFAULT: '#1a365d',
           dark: '#0f2442',
           light: '#2d4a7c',
-          50: '#e6ecf3',
-          100: '#ccd9e7',
+          // Standard scale: 50=lightest (backgrounds), 900=darkest (backgrounds)
+          // For TEXT on dark bg: use white, white/80, white/60
+          // For TEXT on light bg: use 600, 700, 800, 900
+          50: '#f8fafc',   // Lightest - subtle bg tint
+          100: '#e2e8f0',  // Very light bg
+          200: '#cbd5e1',  // Light bg
+          300: '#94a3b8',  // Medium light
+          400: '#64748b',  // Medium
+          500: '#475569',  // Medium dark
+          600: '#334155',  // Dark - good for text on light bg
+          700: '#1e3a5f',  // Navy dark - bg color
+          800: '#152e4d',  // Navy darker - bg color
+          900: '#0c1f3a',  // Navy darkest - bg color
         },
         'macon-orange': {
           DEFAULT: '#d97706',  // WCAG AA: 4.54:1 (was #fb923c at 2.26:1)
@@ -21,13 +32,29 @@ export default {
           light: '#fbbf24',    // Keep existing (decorative use)
           50: '#fff7ed',
           100: '#ffedd5',
+          200: '#fed7aa',
+          300: '#fdba74',
+          400: '#fb923c',
+          500: '#f97316',
+          600: '#ea580c',
+          700: '#c2410c',
+          800: '#9a3412',
+          900: '#7c2d12',
         },
         'macon-teal': {
           DEFAULT: '#0d9488',  // WCAG AA: 4.55:1 (was #38b2ac at 2.58:1)
           dark: '#0f766e',     // WCAG AA: 6.39:1
           light: '#5eead4',    // Keep existing (decorative use)
-          50: '#e6fffa',
-          100: '#b2f5ea',
+          50: '#f0fdfa',
+          100: '#ccfbf1',
+          200: '#99f6e4',
+          300: '#5eead4',
+          400: '#2dd4bf',
+          500: '#14b8a6',
+          600: '#0d9488',
+          700: '#0f766e',
+          800: '#115e59',
+          900: '#134e4a',
         },
         // Neutral grays
         neutral: {
@@ -188,9 +215,24 @@ export default {
           '0%': { transform: 'translateX(-100%)' },
           '100%': { transform: 'translateX(100%)' },
         },
+        'fade-in-up': {
+          '0%': { opacity: '0', transform: 'translateY(20px)' },
+          '100%': { opacity: '1', transform: 'translateY(0)' },
+        },
+        'fade-in': {
+          '0%': { opacity: '0' },
+          '100%': { opacity: '1' },
+        },
+        'scale-in': {
+          '0%': { opacity: '0', transform: 'scale(0.95)' },
+          '100%': { opacity: '1', transform: 'scale(1)' },
+        },
       },
       animation: {
         shimmer: 'shimmer 2s infinite',
+        'fade-in-up': 'fade-in-up 0.5s ease-out forwards',
+        'fade-in': 'fade-in 0.5s ease-out forwards',
+        'scale-in': 'scale-in 0.4s ease-out forwards',
       },
     },
   },

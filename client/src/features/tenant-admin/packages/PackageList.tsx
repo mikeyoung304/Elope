@@ -52,12 +52,12 @@ export function PackageList({ packages, onEdit, onDelete }: PackageListProps) {
 
   if (packages.length === 0) {
     return (
-      <Card className="p-6 bg-macon-navy-800 border-macon-navy-600">
-        <h2 className="text-2xl font-semibold mb-4 text-macon-navy-50">Packages</h2>
+      <Card className="p-6 bg-macon-navy-800 border-white/20">
+        <h2 className="text-2xl font-semibold mb-4 text-white">Packages</h2>
         <EmptyState
           icon={Package}
-          title="No wedding packages yet"
-          description="Create your first package above to start accepting bookings for your venue"
+          title="Ready to showcase your services"
+          description="Create your first package to start accepting bookings. Your packages will appear here."
           className="py-8"
         />
       </Card>
@@ -65,13 +65,13 @@ export function PackageList({ packages, onEdit, onDelete }: PackageListProps) {
   }
 
   return (
-    <Card className="p-6 bg-macon-navy-800 border-macon-navy-600">
-      <h2 className="text-2xl font-semibold mb-4 text-macon-navy-50">Packages</h2>
+    <Card className="p-6 bg-macon-navy-800 border-white/20">
+      <h2 className="text-2xl font-semibold mb-4 text-white">Packages</h2>
       <div className="space-y-3">
         {packages.map((pkg) => (
           <div
             key={pkg.id}
-            className="flex items-center gap-4 p-4 bg-macon-navy-700 border border-macon-navy-600 rounded-lg"
+            className="flex items-center gap-4 p-4 bg-macon-navy-700 border border-white/20 rounded-lg"
           >
             {/* Photo Thumbnail */}
             <div className="relative flex-shrink-0">
@@ -80,7 +80,7 @@ export function PackageList({ packages, onEdit, onDelete }: PackageListProps) {
                   <img
                     src={pkg.photos[0].url}
                     alt={`${pkg.title} preview`}
-                    className="w-24 h-24 object-cover rounded-lg border-2 border-macon-navy-500"
+                    className="w-24 h-24 object-cover rounded-lg border-2 border-white/30"
                   />
                   {pkg.photos.length > 1 && (
                     <Badge
@@ -91,15 +91,15 @@ export function PackageList({ packages, onEdit, onDelete }: PackageListProps) {
                   )}
                 </div>
               ) : (
-                <div className="w-24 h-24 flex items-center justify-center bg-macon-navy-600 border-2 border-macon-navy-500 rounded-lg">
-                  <Image className="w-8 h-8 text-macon-navy-400" />
+                <div className="w-24 h-24 flex items-center justify-center bg-macon-navy-600 border-2 border-white/30 rounded-lg">
+                  <Image className="w-8 h-8 text-white/50" />
                 </div>
               )}
             </div>
 
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-3">
-                <h3 className="text-xl font-semibold text-macon-navy-50">{pkg.title}</h3>
+                <h3 className="text-xl font-semibold text-white">{pkg.title}</h3>
                 <Badge
                   variant="outline"
                   className={pkg.isActive !== false
@@ -109,9 +109,9 @@ export function PackageList({ packages, onEdit, onDelete }: PackageListProps) {
                   {pkg.isActive !== false ? "Active" : "Inactive"}
                 </Badge>
               </div>
-              <p className="text-base text-macon-navy-200 mt-1">{pkg.description}</p>
-              <div className="flex gap-4 mt-2 text-base text-macon-navy-100">
-                <span className="font-medium text-macon-navy-300">
+              <p className="text-base text-white/70 mt-1">{pkg.description}</p>
+              <div className="flex gap-4 mt-2 text-base text-white/90">
+                <span className="font-medium text-white/60">
                   {formatCurrency(pkg.priceCents)}
                 </span>
                 {/* TODO: Add minLeadDays field to backend schema and API contract */}
@@ -122,7 +122,7 @@ export function PackageList({ packages, onEdit, onDelete }: PackageListProps) {
                 onClick={() => onEdit(pkg)}
                 variant="outline"
                 size="sm"
-                className="border-macon-navy-500 text-macon-navy-100 hover:bg-macon-navy-600"
+                className="border-white/30 text-white/90 hover:bg-macon-navy-600"
                 aria-label={`Edit package: ${pkg.title}`}
                 title="Edit package"
               >
@@ -145,7 +145,7 @@ export function PackageList({ packages, onEdit, onDelete }: PackageListProps) {
 
       {/* Delete Confirmation Dialog */}
       <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
-        <AlertDialogContent className="bg-white dark:bg-macon-navy-800 border-macon-navy-600">
+        <AlertDialogContent className="bg-white dark:bg-macon-navy-800 border-white/20">
           <AlertDialogHeader>
             <div className="flex items-center gap-3 mb-2">
               <div className="p-2 bg-danger-100 rounded-full">
@@ -153,8 +153,8 @@ export function PackageList({ packages, onEdit, onDelete }: PackageListProps) {
               </div>
               <AlertDialogTitle className="text-2xl">Delete Package?</AlertDialogTitle>
             </div>
-            <AlertDialogDescription className="text-base text-macon-navy-600 dark:text-macon-navy-300">
-              Are you sure you want to delete <strong className="font-semibold text-macon-navy-900 dark:text-macon-navy-50">"{packageToDelete?.title}"</strong>?
+            <AlertDialogDescription className="text-base text-macon-navy-600 dark:text-white/60">
+              Are you sure you want to delete <strong className="font-semibold text-macon-navy-900 dark:text-white">"{packageToDelete?.title}"</strong>?
             </AlertDialogDescription>
             <div className="mt-3 p-3 bg-danger-50 dark:bg-danger-900/20 border border-danger-200 dark:border-danger-800 rounded-lg">
               <p className="text-sm text-danger-800 dark:text-danger-300 font-medium">

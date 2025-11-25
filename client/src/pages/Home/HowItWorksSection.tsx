@@ -5,24 +5,27 @@ import { Button } from "@/components/ui/button";
 const steps = [
   {
     number: 1,
-    title: "Apply & Onboard",
-    description: "Fill a short application (5 minutes), meet your dedicated AI strategist, and join exclusive member events. We'll assess your business goals and create your custom plan.",
-    timeline: "Week 1",
+    title: "Discovery Call",
+    description: "30 minutes to understand your business, identify revenue leaks, and see exactly how we can help. No pressure, just clarity.",
+    timeline: "Day 1",
     highlight: "orange",
+    badge: "Free, no obligation",
   },
   {
     number: 2,
-    title: "Tailored Plan",
-    description: "We assess your needs, then set up booking/scheduling, marketing automation, and consulting as you require. No one-size-fits-all—every business is unique.",
-    timeline: "Week 2-3",
+    title: "Custom Blueprint",
+    description: "Your strategist builds your personalized system: booking, payments, website, and marketing—all designed around YOUR business.",
+    timeline: "Week 1-2",
     highlight: "orange",
+    badge: "You'll see your plan before we start",
   },
   {
     number: 3,
-    title: "Revenue Partnership",
-    description: "We invest in your growth and take a small % of your sales—aligned incentives, shared success. You win, we win. No monthly fees eating into your profits.",
-    timeline: "Ongoing",
+    title: "Launch & Partner",
+    description: "We implement everything. You focus on clients. We take a small percentage of new revenue—so we only profit when you do.",
+    timeline: "Week 2+",
     highlight: "teal",
+    badge: "No upfront costs. No monthly fees.",
   },
 ];
 
@@ -33,10 +36,10 @@ export function HowItWorksSection() {
         <div className="max-w-4xl mx-auto">
           <div className="text-center mb-12 md:mb-16">
             <h2 id="how-it-works-heading" className="font-heading text-5xl md:text-6xl lg:text-7xl font-bold mb-6 text-transparent bg-clip-text bg-gradient-to-r from-macon-navy via-macon-orange to-macon-teal">
-              How It Works
+              The Growth Partnership Method
             </h2>
             <p className="text-xl md:text-2xl text-neutral-700 leading-relaxed">
-              Join. Grow. Succeed.
+              From overwhelmed to automated in 3 steps
             </p>
           </div>
 
@@ -82,7 +85,7 @@ export function HowItWorksSection() {
               className="text-xl"
               asChild
             >
-              <Link to="/packages">Browse Our Packages</Link>
+              <Link to="/packages">Start My Free Growth Audit</Link>
             </Button>
           </div>
         </div>

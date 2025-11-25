@@ -1,57 +1,94 @@
 # Page snapshot
 
 ```yaml
-- generic [ref=e3]:
-  - link "Skip to content" [ref=e4] [cursor=pointer]:
-    - /url: "#main"
-  - paragraph [ref=e7]: Mock Mode - Using mock data
-  - banner [ref=e8]:
-    - generic [ref=e10]:
-      - link "Elope" [ref=e11] [cursor=pointer]:
-        - /url: /
-      - navigation "Primary navigation" [ref=e12]:
-        - link "Packages" [ref=e13] [cursor=pointer]:
+- generic [ref=e2]:
+  - generic [ref=e3]:
+    - link "Skip to content" [ref=e4] [cursor=pointer]:
+      - /url: "#main"
+    - paragraph [ref=e7]: Development Mode - Using Mock Data
+    - banner [ref=e10]:
+      - generic [ref=e12]:
+        - generic [ref=e13]:
+          - link "MACON AI Solutions - Go to homepage" [ref=e14] [cursor=pointer]:
+            - /url: /
+            - img "MACON AI Solutions" [ref=e16]
+          - link "Macon AI Solutions" [ref=e17] [cursor=pointer]:
+            - /url: /
+        - navigation "Primary navigation" [ref=e18]:
+          - link "How It Works" [ref=e19] [cursor=pointer]:
+            - /url: "#how-it-works"
+          - link "Pricing" [ref=e20] [cursor=pointer]:
+            - /url: /packages
+          - link "Log In" [ref=e21] [cursor=pointer]:
+            - /url: /login
+          - link "Get Started" [ref=e22] [cursor=pointer]:
+            - /url: /packages
+    - main [ref=e23]:
+      - generic [ref=e24]:
+        - link "Back to Home" [ref=e25] [cursor=pointer]:
           - /url: /
-        - link "Admin" [ref=e14] [cursor=pointer]:
-          - /url: /admin/login
-  - main [ref=e15]:
-    - generic [ref=e17]:
-      - generic [ref=e18]:
-        - heading "Login" [level=3] [ref=e19]
-        - paragraph [ref=e20]: Platform Admin or Tenant Admin
-      - generic [ref=e21]:
-        - generic [ref=e22]: Invalid credentials. Please check your email and password.
-        - generic [ref=e23]:
-          - generic [ref=e24]:
-            - text: Email
-            - textbox "Email" [ref=e25]: admin@elope.com
-          - generic [ref=e26]:
-            - text: Password
-            - textbox "Password" [ref=e27]: admin123
-          - button "Login" [ref=e28] [cursor=pointer]
-  - contentinfo [ref=e29]:
-    - generic [ref=e31]:
-      - generic [ref=e32]:
-        - generic [ref=e33]:
-          - heading "Elope" [level=3] [ref=e34]
-          - paragraph [ref=e35]: Making your special day stress-free and unforgettable. From intimate ceremonies to luxury celebrations.
-        - generic [ref=e36]:
-          - heading "Quick Links" [level=4] [ref=e37]
-          - list [ref=e38]:
-            - listitem [ref=e39]:
-              - link "Packages" [ref=e40] [cursor=pointer]:
-                - /url: /
-            - listitem [ref=e41]:
-              - link "About Us" [ref=e42] [cursor=pointer]:
-                - /url: "#about"
-            - listitem [ref=e43]:
-              - link "Login" [ref=e44] [cursor=pointer]:
-                - /url: /login
-        - generic [ref=e45]:
-          - heading "Contact" [level=4] [ref=e46]
-          - list [ref=e47]:
-            - listitem [ref=e48]: hello@elope.com
-            - listitem [ref=e49]: (555) 123-4567
-            - listitem [ref=e50]: Available 7 days/week
-      - paragraph [ref=e52]: © 2025 Elope. All rights reserved.
+          - img [ref=e26]
+          - generic [ref=e28]: Back to Home
+        - generic [ref=e29]:
+          - link "MACON AI Solutions - Go to homepage" [ref=e31] [cursor=pointer]:
+            - /url: /
+            - img "MACON AI Solutions" [ref=e33]
+          - generic [ref=e34]:
+            - generic [ref=e35]:
+              - heading "Login" [level=3] [ref=e36]
+              - paragraph [ref=e37]: Platform Admin or Tenant Admin
+            - generic [ref=e38]:
+              - alert [ref=e39]:
+                - paragraph [ref=e40]: Invalid credentials. Please check your email and password.
+                - generic [ref=e41]:
+                  - paragraph [ref=e42]: Need help?
+                  - generic [ref=e43]:
+                    - link "Contact support" [ref=e44] [cursor=pointer]:
+                      - /url: mailto:support@maconai.com
+                    - link "Back to homepage" [ref=e45] [cursor=pointer]:
+                      - /url: /
+              - generic [ref=e46]:
+                - generic [ref=e48]:
+                  - generic:
+                    - img
+                  - textbox "Email*" [ref=e49]: admin@example.com
+                  - generic: Email*
+                - generic [ref=e51]:
+                  - generic:
+                    - img
+                  - textbox "Password*" [ref=e52]: admin123admin
+                  - generic: Password*
+                - button "Login" [ref=e53] [cursor=pointer]
+    - contentinfo [ref=e54]:
+      - generic [ref=e56]:
+        - generic [ref=e57]:
+          - generic [ref=e58]:
+            - heading "Macon AI Solutions" [level=3] [ref=e59]
+            - paragraph [ref=e60]: Helping business owners escape the admin trap and focus on what they do best. Scheduling, websites, and marketing—handled.
+          - generic [ref=e61]:
+            - heading "Company" [level=4] [ref=e62]
+            - list [ref=e63]:
+              - listitem [ref=e64]:
+                - link "About Us" [ref=e65] [cursor=pointer]:
+                  - /url: "#about"
+              - listitem [ref=e66]:
+                - link "Careers" [ref=e67] [cursor=pointer]:
+                  - /url: "#careers"
+              - listitem [ref=e68]:
+                - link "Log In" [ref=e69] [cursor=pointer]:
+                  - /url: /login
+          - generic [ref=e70]:
+            - heading "Support" [level=4] [ref=e71]
+            - list [ref=e72]:
+              - listitem [ref=e73]:
+                - link "Contact Support" [ref=e74] [cursor=pointer]:
+                  - /url: "#contact"
+              - listitem [ref=e75]:
+                - link "Privacy Policy" [ref=e76] [cursor=pointer]:
+                  - /url: "#privacy"
+              - listitem [ref=e77]:
+                - link "Terms of Service" [ref=e78] [cursor=pointer]:
+                  - /url: "#terms"
+        - paragraph [ref=e80]: © 2025 Macon AI Solutions. All rights reserved.
+  - region "Notifications alt+T"
 ```

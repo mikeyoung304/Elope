@@ -20,7 +20,7 @@ export function WidgetCatalogGrid({ onPackageClick }: Props) {
 
   if (isLoading) {
     return (
-      <div className="text-center py-12 text-macon-navy-100 text-xl">
+      <div className="text-center py-12 text-white/90 text-xl">
         Loading packages...
       </div>
     );
@@ -28,7 +28,7 @@ export function WidgetCatalogGrid({ onPackageClick }: Props) {
 
   if (error) {
     return (
-      <div className="text-center py-12 text-macon-navy-50 text-xl">
+      <div className="text-center py-12 text-white text-xl">
         Error loading packages: {error.message}
       </div>
     );
@@ -36,7 +36,7 @@ export function WidgetCatalogGrid({ onPackageClick }: Props) {
 
   if (!packages || packages.length === 0) {
     return (
-      <div className="text-center py-12 text-macon-navy-100 text-xl">
+      <div className="text-center py-12 text-white/90 text-xl">
         No packages available
       </div>
     );
@@ -58,7 +58,7 @@ export function WidgetCatalogGrid({ onPackageClick }: Props) {
           }}
           className="cursor-pointer"
         >
-          <Card className="overflow-hidden h-full transition-all hover:shadow-elegant bg-macon-navy-800 border-macon-navy-600 hover:border-macon-navy-600 hover:shadow-lg">
+          <Card className="overflow-hidden h-full transition-all hover:shadow-elegant bg-macon-navy-800 border-white/20 hover:border-white/20 hover:shadow-lg">
             {pkg.photoUrl && (
               <div className="relative aspect-[4/3] overflow-hidden">
                 <img
@@ -70,14 +70,14 @@ export function WidgetCatalogGrid({ onPackageClick }: Props) {
               </div>
             )}
             <CardContent className="p-6">
-              <h3 className="font-heading text-3xl font-semibold mb-3 text-macon-navy-50">
+              <h3 className="font-heading text-3xl font-semibold mb-3 text-white">
                 {pkg.title}
               </h3>
-              <p className="text-macon-navy-100 mb-4 line-clamp-2 text-lg leading-relaxed">
+              <p className="text-white/90 mb-4 line-clamp-2 text-lg leading-relaxed">
                 {pkg.description}
               </p>
-              <div className="flex justify-between items-center pt-2 border-t border-macon-navy-600">
-                <span className="text-4xl font-heading font-semibold text-macon-navy-300">
+              <div className="flex justify-between items-center pt-2 border-t border-white/20">
+                <span className="text-4xl font-heading font-semibold text-white/60">
                   {formatCurrency(pkg.priceCents)}
                 </span>
               </div>

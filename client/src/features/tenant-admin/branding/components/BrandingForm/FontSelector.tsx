@@ -23,14 +23,14 @@ interface FontSelectorProps {
 export function FontSelector({ value, disabled = false, onChange }: FontSelectorProps) {
   return (
     <div className="space-y-2">
-      <Label htmlFor="fontFamily" className="text-macon-navy-100 text-lg">
+      <Label htmlFor="fontFamily" className="text-white/90 text-lg">
         Font Family
       </Label>
       <select
         id="fontFamily"
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        className="w-full h-12 px-3 bg-macon-navy-900 border border-macon-navy-600 text-macon-navy-50 rounded-md focus:border-macon-navy-500 focus:outline-none text-lg"
+        className="w-full h-12 px-3 bg-macon-navy-900 border border-white/20 text-white rounded-md focus:border-white/30 focus:outline-none text-lg"
         disabled={disabled}
       >
         {FONT_OPTIONS.map((option) => (
@@ -39,7 +39,7 @@ export function FontSelector({ value, disabled = false, onChange }: FontSelector
           </option>
         ))}
       </select>
-      <p className="text-base text-macon-navy-200">Typography for your booking widget</p>
+      <p className="text-base text-white/70">Typography for your booking widget</p>
     </div>
   );
 }

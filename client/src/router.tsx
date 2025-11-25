@@ -44,6 +44,7 @@ const ProtectedSuspenseWrapper = ({
 );
 
 export const router = createBrowserRouter([
+  // Public routes with AppShell (header + footer)
   {
     path: "/",
     element: <AppShell />,
@@ -68,51 +69,6 @@ export const router = createBrowserRouter([
         path: "login",
         element: <SuspenseWrapper><Login /></SuspenseWrapper>,
       },
-      {
-        path: "admin/dashboard",
-        element: (
-          <ProtectedSuspenseWrapper allowedRoles={["PLATFORM_ADMIN"]}>
-            <PlatformAdminDashboard />
-          </ProtectedSuspenseWrapper>
-        ),
-      },
-      {
-        path: "admin/segments",
-        element: (
-          <ProtectedSuspenseWrapper allowedRoles={["PLATFORM_ADMIN"]}>
-            <SegmentsManager />
-          </ProtectedSuspenseWrapper>
-        ),
-      },
-      {
-        path: "admin/tenants/new",
-        element: (
-          <ProtectedSuspenseWrapper allowedRoles={["PLATFORM_ADMIN"]}>
-            <TenantForm />
-          </ProtectedSuspenseWrapper>
-        ),
-      },
-      {
-        path: "admin/tenants/:id",
-        element: (
-          <ProtectedSuspenseWrapper allowedRoles={["PLATFORM_ADMIN"]}>
-            <TenantForm />
-          </ProtectedSuspenseWrapper>
-        ),
-      },
-      {
-        path: "tenant/dashboard",
-        element: (
-          <ProtectedSuspenseWrapper allowedRoles={["TENANT_ADMIN"]}>
-            <TenantAdminDashboard />
-          </ProtectedSuspenseWrapper>
-        ),
-      },
-      // Legacy admin route - redirect to new dashboard
-      {
-        path: "admin",
-        element: <Navigate to="/admin/dashboard" replace />,
-      },
       // Legacy routes - redirect to unified login
       {
         path: "admin/login",
@@ -123,5 +79,52 @@ export const router = createBrowserRouter([
         element: <Navigate to="/login" replace />,
       },
     ],
+  },
+  // Admin routes WITHOUT AppShell (use AdminLayout only)
+  {
+    path: "admin/dashboard",
+    element: (
+      <ProtectedSuspenseWrapper allowedRoles={["PLATFORM_ADMIN"]}>
+        <PlatformAdminDashboard />
+      </ProtectedSuspenseWrapper>
+    ),
+  },
+  {
+    path: "admin/segments",
+    element: (
+      <ProtectedSuspenseWrapper allowedRoles={["PLATFORM_ADMIN"]}>
+        <SegmentsManager />
+      </ProtectedSuspenseWrapper>
+    ),
+  },
+  {
+    path: "admin/tenants/new",
+    element: (
+      <ProtectedSuspenseWrapper allowedRoles={["PLATFORM_ADMIN"]}>
+        <TenantForm />
+      </ProtectedSuspenseWrapper>
+    ),
+  },
+  {
+    path: "admin/tenants/:id",
+    element: (
+      <ProtectedSuspenseWrapper allowedRoles={["PLATFORM_ADMIN"]}>
+        <TenantForm />
+      </ProtectedSuspenseWrapper>
+    ),
+  },
+  // Legacy admin route - redirect to new dashboard
+  {
+    path: "admin",
+    element: <Navigate to="/admin/dashboard" replace />,
+  },
+  // Tenant admin routes WITHOUT AppShell
+  {
+    path: "tenant/dashboard",
+    element: (
+      <ProtectedSuspenseWrapper allowedRoles={["TENANT_ADMIN"]}>
+        <TenantAdminDashboard />
+      </ProtectedSuspenseWrapper>
+    ),
   },
 ]);

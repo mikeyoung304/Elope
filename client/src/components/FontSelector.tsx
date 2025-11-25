@@ -112,20 +112,20 @@ export function FontSelector({ value = 'Inter', onChange, className = '' }: Font
 
   return (
     <div className={`space-y-2 ${className}`}>
-      <Label className="text-macon-navy-100">Font Family</Label>
+      <Label className="text-white/90">Font Family</Label>
 
       <div className="relative">
         {/* Dropdown button */}
         <button
           type="button"
           onClick={() => setIsOpen(!isOpen)}
-          className="w-full px-4 py-3 bg-macon-navy-900 border border-macon-navy-600 rounded-md text-left text-macon-navy-50 hover:border-macon-navy-500 focus:outline-none focus:ring-2 focus:ring-macon-navy-500 focus:border-macon-navy-500 transition-colors"
+          className="w-full px-4 py-3 bg-macon-navy-900 border border-white/20 rounded-md text-left text-white hover:border-white/30 focus:outline-none focus:ring-2 focus:ring-macon-navy-500 focus:border-white/30 transition-colors"
           style={{ fontFamily: selectedOption.name }}
         >
           <span className="block truncate">{selectedOption.displayName}</span>
           <span className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
             <svg
-              className={`w-5 h-5 text-macon-navy-300 transition-transform ${isOpen ? 'rotate-180' : ''}`}
+              className={`w-5 h-5 text-white/60 transition-transform ${isOpen ? 'rotate-180' : ''}`}
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
@@ -138,7 +138,7 @@ export function FontSelector({ value = 'Inter', onChange, className = '' }: Font
         {/* Dropdown menu */}
         {isOpen && (
           <>
-            <div className="absolute z-10 w-full mt-1 bg-macon-navy-800 border border-macon-navy-600 rounded-md shadow-lg max-h-96 overflow-auto">
+            <div className="absolute z-10 w-full mt-1 bg-macon-navy-800 border border-white/20 rounded-md shadow-lg max-h-96 overflow-auto">
               {FONT_OPTIONS.map((option) => {
                 // Load font for preview
                 loadGoogleFont(option.googleFontUrl);
@@ -151,7 +151,7 @@ export function FontSelector({ value = 'Inter', onChange, className = '' }: Font
                     className={`w-full px-4 py-3 text-left transition-colors ${
                       option.name === selectedFont
                         ? 'bg-macon-orange text-white'
-                        : 'text-macon-navy-100 hover:bg-macon-navy-700'
+                        : 'text-white/90 hover:bg-macon-navy-700'
                     }`}
                     style={{ fontFamily: option.name }}
                   >
@@ -192,14 +192,14 @@ export function FontSelector({ value = 'Inter', onChange, className = '' }: Font
 
       {/* Live preview */}
       <div
-        className="p-4 bg-macon-navy-900 border border-macon-navy-600 rounded-md"
+        className="p-4 bg-macon-navy-900 border border-white/20 rounded-md"
         style={{ fontFamily: selectedOption.name }}
       >
-        <p className="text-macon-navy-100 text-lg mb-2">Preview:</p>
-        <h3 className="text-2xl font-semibold text-macon-navy-50 mb-1">
+        <p className="text-white/90 text-lg mb-2">Preview:</p>
+        <h3 className="text-2xl font-semibold text-white mb-1">
           Your Wedding Package
         </h3>
-        <p className="text-macon-navy-200">
+        <p className="text-white/70">
           Experience an unforgettable celebration with our exclusive wedding packages.
         </p>
       </div>

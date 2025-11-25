@@ -110,14 +110,14 @@ export function LogoUploadButton({
 
       {/* Preview area */}
       {previewUrl && (
-        <div className="relative w-full p-4 bg-macon-navy-900 border border-macon-navy-600 rounded-lg">
+        <div className="relative w-full p-4 bg-macon-navy-900 border border-white/20 rounded-lg">
           <div className="flex items-center justify-between mb-2">
-            <span className="text-sm text-macon-navy-200">Logo Preview</span>
+            <span className="text-sm text-white/70">Logo Preview</span>
             <button
               type="button"
               onClick={handleRemoveLogo}
               disabled={disabled || isUploading}
-              className="p-1 text-macon-navy-300 hover:text-macon-navy-100 hover:bg-macon-navy-700 rounded transition-colors"
+              className="p-1 text-white/60 hover:text-white/90 hover:bg-macon-navy-700 rounded transition-colors"
               title="Remove logo"
             >
               <X className="w-4 h-4" />
@@ -139,7 +139,7 @@ export function LogoUploadButton({
         onClick={handleButtonClick}
         disabled={disabled || isUploading}
         variant="outline"
-        className="w-full border-macon-navy-600 text-macon-navy-100 hover:bg-macon-navy-700 hover:text-macon-navy-50"
+        className="w-full border-white/20 text-white/90 hover:bg-macon-navy-700 hover:text-white"
       >
         {isUploading ? (
           <>
@@ -160,7 +160,7 @@ export function LogoUploadButton({
       </Button>
 
       {/* Helper text */}
-      <p className="text-sm text-macon-navy-300">
+      <p className="text-sm text-white/60">
         Recommended: Square image, PNG or SVG format, max 2MB
       </p>
     </div>

@@ -51,9 +51,9 @@ export function TenantLogin({ onLogin, error, isLoading }: TenantLoginProps) {
   };
 
   return (
-    <Card className="max-w-md mx-auto bg-macon-navy-800 border-macon-navy-600">
+    <Card className="max-w-md mx-auto bg-macon-navy-800 border-white/20">
       <CardHeader>
-        <CardTitle className="text-center text-macon-navy-50 text-3xl">Tenant Login</CardTitle>
+        <CardTitle className="text-center text-white text-3xl">Tenant Login</CardTitle>
       </CardHeader>
       <CardContent>
         {/* Validation Errors */}
@@ -64,7 +64,7 @@ export function TenantLogin({ onLogin, error, isLoading }: TenantLoginProps) {
 
         {/* Server Error */}
         {error && (
-          <div role="alert" className="mb-6 p-3 bg-macon-navy-700 border border-macon-navy-600 text-macon-navy-100 rounded text-lg">
+          <div role="alert" className="mb-6 p-3 bg-macon-navy-700 border border-white/20 text-white/90 rounded text-lg">
             {error}
           </div>
         )}
@@ -77,7 +77,7 @@ export function TenantLogin({ onLogin, error, isLoading }: TenantLoginProps) {
             label="Email"
             floatingLabel
             leftIcon={<Mail className="w-5 h-5" />}
-            className="bg-macon-navy-900 border-macon-navy-600 text-macon-navy-50 placeholder:text-macon-navy-400 focus:border-macon-navy-500"
+            className="bg-macon-navy-900 border-white/20 text-white placeholder:text-white/50 focus:border-white/30"
             required
             disabled={isLoading}
           />
@@ -89,7 +89,7 @@ export function TenantLogin({ onLogin, error, isLoading }: TenantLoginProps) {
             label="Password"
             floatingLabel
             leftIcon={<Lock className="w-5 h-5" />}
-            className="bg-macon-navy-900 border-macon-navy-600 text-macon-navy-50 placeholder:text-macon-navy-400 focus:border-macon-navy-500"
+            className="bg-macon-navy-900 border-white/20 text-white placeholder:text-white/50 focus:border-white/30"
             required
             disabled={isLoading}
           />

@@ -27,11 +27,11 @@ export function BlackoutForm({
   onSubmit
 }: BlackoutFormProps) {
   return (
-    <Card className="p-6 bg-macon-navy-800 border-macon-navy-600">
-      <h2 className="text-2xl font-semibold mb-4 text-macon-navy-50">Add Blackout Date</h2>
+    <Card className="p-6 bg-macon-navy-800 border-white/20">
+      <h2 className="text-2xl font-semibold mb-4 text-white">Add Blackout Date</h2>
       <form onSubmit={onSubmit} className="flex gap-4">
         <div className="flex-1">
-          <Label htmlFor="blackoutDate" className="text-macon-navy-100 text-lg">
+          <Label htmlFor="blackoutDate" className="text-white/90 text-lg">
             Date
           </Label>
           <Input
@@ -39,13 +39,13 @@ export function BlackoutForm({
             type="date"
             value={newBlackoutDate}
             onChange={(e) => setNewBlackoutDate(e.target.value)}
-            className="bg-macon-navy-900 border-macon-navy-600 text-macon-navy-50 focus:border-macon-navy-500 text-lg h-12"
+            className="bg-macon-navy-900 border-white/20 text-white focus:border-white/30 text-lg h-12"
             required
             disabled={isAdding}
           />
         </div>
         <div className="flex-1">
-          <Label htmlFor="blackoutReason" className="text-macon-navy-100 text-lg">
+          <Label htmlFor="blackoutReason" className="text-white/90 text-lg">
             Reason (optional)
           </Label>
           <Input
@@ -54,7 +54,7 @@ export function BlackoutForm({
             value={newBlackoutReason}
             onChange={(e) => setNewBlackoutReason(e.target.value)}
             placeholder="Holiday, maintenance, etc."
-            className="bg-macon-navy-900 border-macon-navy-600 text-macon-navy-50 placeholder:text-macon-navy-400 focus:border-macon-navy-500 text-lg h-12"
+            className="bg-macon-navy-900 border-white/20 text-white placeholder:text-white/50 focus:border-white/30 text-lg h-12"
             disabled={isAdding}
           />
         </div>

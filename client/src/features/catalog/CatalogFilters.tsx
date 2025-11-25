@@ -57,7 +57,7 @@ export function CatalogFilters({
         {/* Search Input */}
         <div className="flex-1">
           <div className="relative">
-            <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-macon-navy-400 w-5 h-5" aria-hidden="true" />
+            <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-white/50 w-5 h-5" aria-hidden="true" />
             <Input
               type="text"
               placeholder="Search packages by name or description..."

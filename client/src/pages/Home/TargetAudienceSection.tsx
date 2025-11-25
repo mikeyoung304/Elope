@@ -10,10 +10,10 @@ export function TargetAudienceSection() {
         <div className="max-w-4xl mx-auto">
           <div className="text-center mb-12 md:mb-16">
             <h2 id="target-audience-heading" className="font-heading text-5xl md:text-6xl lg:text-7xl font-bold mb-6 text-transparent bg-clip-text bg-gradient-to-r from-macon-navy via-macon-orange to-macon-teal">
-              Who Is This For?
+              Is This You?
             </h2>
             <p className="text-xl md:text-2xl text-neutral-700 leading-relaxed max-w-3xl mx-auto">
-              Entrepreneurs, small business owners, and anyone ready to level up with AI and digital essentials. Whether you're launching, scaling, or pivoting—we're your growth partner.
+              We've helped business owners just like you escape the grind.
             </p>
           </div>
 
@@ -27,11 +27,11 @@ export function TargetAudienceSection() {
                   The Solopreneur
                 </h3>
                 <p className="text-xl text-neutral-700 leading-relaxed mb-4">
-                  You're wearing all the hats (sales, marketing, ops) and drowning in admin.
+                  You're working 70-hour weeks and still dropping balls. Your inbox is chaos, your calendar is a mess, and you can't remember the last time you took a day off.
                 </p>
                 <p className="text-base text-neutral-600">
-                  <strong>We handle:</strong> Scheduling, payments, website, marketing automation<br/>
-                  <strong>You focus on:</strong> Delivering your service, closing deals
+                  <strong>We handle:</strong> All the stuff you hate—scheduling, follow-ups, invoicing, that outdated website.<br/>
+                  <strong>You focus on:</strong> Your craft. Your family.
                 </p>
               </CardContent>
             </Card>
@@ -45,11 +45,11 @@ export function TargetAudienceSection() {
                   The Scaling Startup
                 </h3>
                 <p className="text-xl text-neutral-700 leading-relaxed mb-4">
-                  You've proven the concept, now need systems to scale without chaos.
+                  You're growing fast—but your systems aren't keeping up. Every new client means more chaos, and you're scared to hire because nothing is documented.
                 </p>
                 <p className="text-base text-neutral-600">
-                  <strong>We handle:</strong> Lead management, client onboarding, analytics, consulting<br/>
-                  <strong>You focus on:</strong> Strategy, partnerships, growth
+                  <strong>We handle:</strong> Automated onboarding, lead tracking, client management.<br/>
+                  <strong>You focus on:</strong> Strategy, partnerships, the big picture.
                 </p>
               </CardContent>
             </Card>
@@ -63,11 +63,11 @@ export function TargetAudienceSection() {
                   The Pivot Artist
                 </h3>
                 <p className="text-xl text-neutral-700 leading-relaxed mb-4">
-                  You're shifting your business model or launching a new offering.
+                  You're reinventing your business—again—and need to move fast. Last thing you want is to spend 6 months building infrastructure.
                 </p>
                 <p className="text-base text-neutral-600">
-                  <strong>We handle:</strong> Website redesign, new booking flows, AI-powered marketing<br/>
-                  <strong>You focus on:</strong> Testing, iterating, finding product-market fit
+                  <strong>We handle:</strong> Rapid deployment in weeks, not months—website, booking, marketing.<br/>
+                  <strong>You focus on:</strong> Testing, iterating, finding what works.
                 </p>
               </CardContent>
             </Card>

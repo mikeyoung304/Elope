@@ -105,9 +105,9 @@ export function RoleBasedNav({ variant = "sidebar" }: { variant?: "sidebar" | "h
               aria-current={isActive ? 'page' : undefined}
               className={cn(
                 "flex items-center gap-2 px-4 py-2 rounded-lg",
-                "text-macon-navy-100 hover:text-macon-navy-50 hover:bg-macon-navy-700",
+                "text-white/80 hover:text-white hover:bg-white/10",
                 "transition-colors",
-                isActive && "bg-macon-navy-700 text-macon-navy-50 font-semibold"
+                isActive && "bg-white/10 text-white font-semibold"
               )}
             >
               {item.icon}
@@ -131,14 +131,14 @@ export function RoleBasedNav({ variant = "sidebar" }: { variant?: "sidebar" | "h
             aria-current={isActive ? 'page' : undefined}
             className={cn(
               "flex items-center gap-3 px-4 py-3 rounded-lg",
-              "text-macon-navy-100 hover:text-macon-navy-50 hover:bg-macon-navy-700",
+              "text-white/80 hover:text-white hover:bg-white/10",
               "transition-colors group",
-              isActive && "bg-macon-navy-700 text-macon-navy-50 border-l-4 border-macon-orange-500"
+              isActive && "bg-white/10 text-white border-l-4 border-macon-orange"
             )}
           >
             <div className={cn(
-              "text-macon-navy-300 group-hover:text-macon-navy-50",
-              isActive && "text-macon-orange-500"
+              "text-white/60 group-hover:text-white",
+              isActive && "text-macon-orange"
             )}>
               {item.icon}
             </div>
@@ -148,7 +148,7 @@ export function RoleBasedNav({ variant = "sidebar" }: { variant?: "sidebar" | "h
                 isActive && "font-semibold"
               )}>{item.label}</div>
               {item.description && (
-                <div className="text-sm text-macon-navy-300">{item.description}</div>
+                <div className="text-sm text-white/60">{item.description}</div>
               )}
             </div>
           </Link>

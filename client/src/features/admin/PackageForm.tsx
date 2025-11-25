@@ -61,22 +61,22 @@ export function PackageForm({
         Back
       </Button>
 
-      <Card className="p-6 bg-macon-navy-800 border-macon-navy-600">
-        <h2 className="text-2xl font-semibold mb-4 text-macon-navy-50">
+      <Card className="p-6 bg-macon-navy-800 border-white/20">
+        <h2 className="text-2xl font-semibold mb-4 text-white">
           {editingPackageId ? "Edit Package" : "Create New Package"}
         </h2>
 
       {error && (
-        <div role="alert" className="flex items-center gap-2 p-4 mb-4 border border-macon-navy-600 bg-macon-navy-700 rounded-lg">
-          <AlertCircle className="w-5 h-5 text-macon-navy-200" />
-          <span className="text-base text-macon-navy-100">{error}</span>
+        <div role="alert" className="flex items-center gap-2 p-4 mb-4 border border-white/20 bg-macon-navy-700 rounded-lg">
+          <AlertCircle className="w-5 h-5 text-white/70" />
+          <span className="text-base text-white/90">{error}</span>
         </div>
       )}
 
       <form onSubmit={onSubmit} className="space-y-4">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="space-y-2">
-            <Label htmlFor="slug" className="text-macon-navy-100 text-lg">
+            <Label htmlFor="slug" className="text-white/90 text-lg">
               Slug <span className="text-destructive">*</span>
             </Label>
             <Input
@@ -88,14 +88,14 @@ export function PackageForm({
               }
               placeholder="romantic-sunset"
               disabled={isSaving}
-              className="bg-macon-navy-900 border-macon-navy-600 text-macon-navy-50 placeholder:text-macon-navy-400 focus:border-macon-navy-500 text-lg h-12"
+              className="bg-macon-navy-900 border-white/20 text-white placeholder:text-white/50 focus:border-white/30 text-lg h-12"
               required
             />
-            <p className="text-base text-macon-navy-200">Lowercase with hyphens only</p>
+            <p className="text-base text-white/70">Lowercase with hyphens only</p>
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="title" className="text-macon-navy-100 text-lg">
+            <Label htmlFor="title" className="text-white/90 text-lg">
               Title <span className="text-destructive">*</span>
             </Label>
             <Input
@@ -107,14 +107,14 @@ export function PackageForm({
               }
               placeholder="Romantic Sunset"
               disabled={isSaving}
-              className="bg-macon-navy-900 border-macon-navy-600 text-macon-navy-50 placeholder:text-macon-navy-400 focus:border-macon-navy-500 text-lg h-12"
+              className="bg-macon-navy-900 border-white/20 text-white placeholder:text-white/50 focus:border-white/30 text-lg h-12"
               required
             />
           </div>
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="description" className="text-macon-navy-100 text-lg">
+          <Label htmlFor="description" className="text-white/90 text-lg">
             Description <span className="text-destructive">*</span>
           </Label>
           <Textarea
@@ -126,14 +126,14 @@ export function PackageForm({
             rows={3}
             placeholder="A beautiful sunset ceremony..."
             disabled={isSaving}
-            className="bg-macon-navy-900 border-macon-navy-600 text-macon-navy-50 placeholder:text-macon-navy-400 focus:border-macon-navy-500 text-lg"
+            className="bg-macon-navy-900 border-white/20 text-white placeholder:text-white/50 focus:border-white/30 text-lg"
             required
           />
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="space-y-2">
-            <Label htmlFor="priceCents" className="text-macon-navy-100 text-lg">
+            <Label htmlFor="priceCents" className="text-white/90 text-lg">
               Price (cents) <span className="text-destructive">*</span>
             </Label>
             <Input
@@ -146,10 +146,10 @@ export function PackageForm({
               placeholder="50000"
               min="0"
               disabled={isSaving}
-              className="bg-macon-navy-900 border-macon-navy-600 text-macon-navy-50 placeholder:text-macon-navy-400 focus:border-macon-navy-500 text-lg h-12"
+              className="bg-macon-navy-900 border-white/20 text-white placeholder:text-white/50 focus:border-white/30 text-lg h-12"
               required
             />
-            <p className="text-base text-macon-navy-200">
+            <p className="text-base text-white/70">
               {packageForm.priceCents && !isNaN(parseInt(packageForm.priceCents, 10))
                 ? formatCurrency(parseInt(packageForm.priceCents, 10))
                 : "Enter price in cents (e.g., 50000 = $500.00)"}
@@ -159,7 +159,7 @@ export function PackageForm({
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="space-y-2">
-            <Label htmlFor="photoUrl" className="text-macon-navy-100 text-lg">
+            <Label htmlFor="photoUrl" className="text-white/90 text-lg">
               Photo URL
             </Label>
             <Input
@@ -171,12 +171,12 @@ export function PackageForm({
               }
               placeholder="https://example.com/photo.jpg"
               disabled={isSaving}
-              className="bg-macon-navy-900 border-macon-navy-600 text-macon-navy-50 placeholder:text-macon-navy-400 focus:border-macon-navy-500 text-lg h-12"
+              className="bg-macon-navy-900 border-white/20 text-white placeholder:text-white/50 focus:border-white/30 text-lg h-12"
             />
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="segmentId" className="text-macon-navy-100 text-lg">
+            <Label htmlFor="segmentId" className="text-white/90 text-lg">
               Segment (Optional)
             </Label>
             <Select
@@ -186,7 +186,7 @@ export function PackageForm({
               }
               disabled={isSaving}
             >
-              <SelectTrigger className="bg-macon-navy-900 border-macon-navy-600 text-macon-navy-50 h-12 text-lg">
+              <SelectTrigger className="bg-macon-navy-900 border-white/20 text-white h-12 text-lg">
                 <SelectValue placeholder="No segment (General Catalog)" />
               </SelectTrigger>
               <SelectContent>
@@ -198,7 +198,7 @@ export function PackageForm({
                 ))}
               </SelectContent>
             </Select>
-            <p className="text-base text-macon-navy-200">
+            <p className="text-base text-white/70">
               Assign this package to a specific business segment
             </p>
           </div>
@@ -222,7 +222,7 @@ export function PackageForm({
             variant="outline"
             onClick={onCancel}
             disabled={isSaving}
-            className="border-macon-navy-600 text-macon-navy-100 hover:bg-macon-navy-700 text-lg h-12 px-6"
+            className="border-white/20 text-white/90 hover:bg-macon-navy-700 text-lg h-12 px-6"
           >
             Cancel
           </Button>

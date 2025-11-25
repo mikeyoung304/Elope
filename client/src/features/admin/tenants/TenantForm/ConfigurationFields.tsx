@@ -19,7 +19,7 @@ export function ConfigurationFields({
     <>
       {/* Commission Rate */}
       <div className="space-y-2">
-        <Label htmlFor="commissionRate" className="text-macon-navy-100">
+        <Label htmlFor="commissionRate" className="text-white/90">
           Commission Rate (%) *
         </Label>
         <select
@@ -27,7 +27,7 @@ export function ConfigurationFields({
           value={formData.commissionRate.toString()}
           onChange={(e) => onChange({ commissionRate: parseInt(e.target.value) })}
           disabled={isSubmitting}
-          className="w-full px-3 py-2 bg-macon-navy-900 border border-macon-navy-600 text-macon-navy-50 rounded-md focus:outline-none focus:ring-2 focus:ring-macon-navy-500"
+          className="w-full px-3 py-2 bg-macon-navy-900 border border-white/20 text-white rounded-md focus:outline-none focus:ring-2 focus:ring-macon-navy-500"
         >
           <option value="10">10%</option>
           <option value="12">12%</option>
@@ -41,18 +41,18 @@ export function ConfigurationFields({
 
       {/* Stripe Account ID */}
       <div className="space-y-2">
-        <Label htmlFor="stripeAccountId" className="text-macon-navy-100">
+        <Label htmlFor="stripeAccountId" className="text-white/90">
           Stripe Account ID
         </Label>
         <Input
           id="stripeAccountId"
           value={formData.stripeAccountId}
           onChange={(e) => onChange({ stripeAccountId: e.target.value })}
-          className="bg-macon-navy-900 border-macon-navy-600 text-macon-navy-50"
+          className="bg-macon-navy-900 border-white/20 text-white"
           placeholder="acct_1234567890"
           disabled={isSubmitting}
         />
-        <p className="text-macon-navy-300 text-sm">
+        <p className="text-white/60 text-sm">
           Leave empty to set up later
         </p>
       </div>
@@ -60,10 +60,10 @@ export function ConfigurationFields({
       {/* Active Status */}
       <div className="flex items-center justify-between">
         <div className="space-y-1">
-          <Label htmlFor="isActive" className="text-macon-navy-100">
+          <Label htmlFor="isActive" className="text-white/90">
             Active Status
           </Label>
-          <p className="text-sm text-macon-navy-300">
+          <p className="text-sm text-white/60">
             Active tenants can accept bookings
           </p>
         </div>

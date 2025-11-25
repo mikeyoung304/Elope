@@ -39,7 +39,7 @@ export function FormActions({
         variant="outline"
         onClick={onCancel}
         disabled={isSaving}
-        className="border-macon-navy-600 text-macon-navy-100 hover:bg-macon-navy-700 text-lg h-12 px-6"
+        className="border-white/20 text-white/90 hover:bg-macon-navy-700 text-lg h-12 px-6"
       >
         Cancel
       </Button>

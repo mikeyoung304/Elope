@@ -40,7 +40,7 @@ export function Success() {
 
   return (
     <Container className="py-12 md:py-20">
-      <Card className="max-w-3xl mx-auto bg-macon-navy-800 border-macon-navy-600 shadow-lg">
+      <Card className="max-w-3xl mx-auto bg-macon-navy-800 border-white/20 shadow-lg">
         <CardHeader className="text-center space-y-4 pb-8">
           <div className="flex justify-center">
             <div
@@ -49,13 +49,13 @@ export function Success() {
               )}
             >
               {showSuccessIcon ? (
-                <CheckCircle className="w-8 h-8 text-macon-navy-300" />
+                <CheckCircle className="w-8 h-8 text-white/60" />
               ) : (
-                <AlertCircle className="w-8 h-8 text-macon-navy-200" />
+                <AlertCircle className="w-8 h-8 text-white/70" />
               )}
             </div>
           </div>
-          <CardTitle className="font-heading text-4xl md:text-5xl text-macon-navy-50">
+          <CardTitle className="font-heading text-4xl md:text-5xl text-white">
             {bookingDetails ? "Booking Confirmed!" : isPaidOrConfirmed ? "Booking Confirmed!" : "Almost There!"}
           </CardTitle>
         </CardHeader>

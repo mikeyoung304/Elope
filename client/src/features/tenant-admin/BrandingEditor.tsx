@@ -112,15 +112,15 @@ export function BrandingEditor({ branding, isLoading, onBrandingChange }: Brandi
     <div className="space-y-6">
       {/* Success Message */}
       {successMessage && (
-        <div className="flex items-center gap-2 p-4 border border-macon-navy-600 bg-macon-navy-700 rounded-lg">
-          <CheckCircle className="w-5 h-5 text-macon-navy-300" />
-          <span className="text-lg font-medium text-macon-navy-100">{successMessage}</span>
+        <div className="flex items-center gap-2 p-4 border border-white/20 bg-macon-navy-700 rounded-lg">
+          <CheckCircle className="w-5 h-5 text-white/60" />
+          <span className="text-lg font-medium text-white/90">{successMessage}</span>
         </div>
       )}
 
       {isLoading ? (
         <div className="flex items-center justify-center py-12">
-          <Loader2 className="w-8 h-8 animate-spin text-macon-navy-300" />
+          <Loader2 className="w-8 h-8 animate-spin text-white/60" />
         </div>
       ) : (
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">

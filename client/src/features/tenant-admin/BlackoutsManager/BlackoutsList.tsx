@@ -30,42 +30,42 @@ export function BlackoutsList({ blackouts, isLoading, onDeleteClick }: Blackouts
   );
 
   return (
-    <Card className="p-6 bg-macon-navy-800 border-macon-navy-600">
-      <h2 className="text-2xl font-semibold mb-6 text-macon-navy-50">Blackout Dates</h2>
+    <Card className="p-6 bg-macon-navy-800 border-white/20">
+      <h2 className="text-2xl font-semibold mb-6 text-white">Blackout Dates</h2>
 
       {/* Future Enhancement Note */}
-      <div className="mb-4 p-3 bg-macon-navy-700 border border-macon-navy-600 rounded text-base text-macon-navy-200">
+      <div className="mb-4 p-3 bg-macon-navy-700 border border-white/20 rounded text-base text-white/70">
         Calendar view coming soon. For now, all blackout dates are listed below.
       </div>
 
       <Table>
         <TableHeader>
-          <TableRow className="border-macon-navy-600 hover:bg-macon-navy-700">
-            <TableHead className="text-macon-navy-100 text-lg">Date</TableHead>
-            <TableHead className="text-macon-navy-100 text-lg">Reason</TableHead>
-            <TableHead className="text-macon-navy-100 text-lg w-24">Actions</TableHead>
+          <TableRow className="border-white/20 hover:bg-macon-navy-700">
+            <TableHead className="text-white/90 text-lg">Date</TableHead>
+            <TableHead className="text-white/90 text-lg">Reason</TableHead>
+            <TableHead className="text-white/90 text-lg w-24">Actions</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
           {isLoading ? (
             <TableRow className="hover:bg-macon-navy-700">
               <TableCell colSpan={3} className="text-center py-8">
-                <Loader2 className="w-6 h-6 animate-spin mx-auto text-macon-navy-300" />
+                <Loader2 className="w-6 h-6 animate-spin mx-auto text-white/60" />
               </TableCell>
             </TableRow>
           ) : sortedBlackouts.length === 0 ? (
             <TableRow className="hover:bg-macon-navy-700">
-              <TableCell colSpan={3} className="text-center py-8 text-macon-navy-100 text-lg">
+              <TableCell colSpan={3} className="text-center py-8 text-white/90 text-lg">
                 No blackout dates set
               </TableCell>
             </TableRow>
           ) : (
             sortedBlackouts.map((blackout) => (
-              <TableRow key={blackout.id} className="border-macon-navy-600 hover:bg-macon-navy-700">
+              <TableRow key={blackout.id} className="border-white/20 hover:bg-macon-navy-700">
                 <TableCell className="font-medium">
                   <Badge
                     variant="outline"
-                    className="border-macon-navy-500 bg-macon-navy-700 text-macon-navy-200 text-base"
+                    className="border-white/30 bg-macon-navy-700 text-white/70 text-base"
                   >
                     {new Date(blackout.date).toLocaleDateString('en-US', {
                       year: 'numeric',
@@ -74,7 +74,7 @@ export function BlackoutsList({ blackouts, isLoading, onDeleteClick }: Blackouts
                     })}
                   </Badge>
                 </TableCell>
-                <TableCell className="text-macon-navy-100 text-base">
+                <TableCell className="text-white/90 text-base">
                   {blackout.reason || "—"}
                 </TableCell>
                 <TableCell>

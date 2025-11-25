@@ -64,7 +64,7 @@ export function TenantsTableSection({ tenants, isLoading }: TenantsTableSectionP
             placeholder="Search tenants by name, slug, or email..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="pl-10 border-neutral-300 focus:border-macon-navy-500"
+            className="pl-10 border-neutral-300 focus:border-white/30"
           />
         </div>
       </div>
@@ -102,8 +102,8 @@ export function TenantsTableSection({ tenants, isLoading }: TenantsTableSectionP
                 ) : (
                   <EmptyState
                     icon={Building2}
-                    title="No tenants yet"
-                    description="Get started by creating your first tenant to begin managing the platform."
+                    title="Ready to onboard your first client"
+                    description="Add your first tenant to start managing their packages and bookings."
                     action={{
                       label: "Add Tenant",
                       onClick: () => navigate("/admin/tenants/new")

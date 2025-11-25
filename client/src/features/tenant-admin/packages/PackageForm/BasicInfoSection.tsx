@@ -32,7 +32,7 @@ export function BasicInfoSection({
     <>
       {/* Title Field */}
       <div className="space-y-2">
-        <Label htmlFor="title" className="text-macon-navy-100 text-lg">
+        <Label htmlFor="title" className="text-white/90 text-lg">
           Title <span className="text-red-400">*</span>
         </Label>
         <Input
@@ -50,7 +50,7 @@ export function BasicInfoSection({
           onBlur={(e) => validateField('title', e.target.value)}
           placeholder="Romantic Sunset Package"
           disabled={isSaving}
-          className={`bg-macon-navy-900 border-macon-navy-600 text-macon-navy-50 placeholder:text-macon-navy-400 focus:border-macon-navy-500 text-lg h-12 ${
+          className={`bg-macon-navy-900 border-white/20 text-white placeholder:text-white/50 focus:border-white/30 text-lg h-12 ${
             fieldErrors.title ? 'border-danger-600' : ''
           }`}
           aria-invalid={!!fieldErrors.title}
@@ -67,7 +67,7 @@ export function BasicInfoSection({
 
       {/* Description Field */}
       <div className="space-y-2">
-        <Label htmlFor="description" className="text-macon-navy-100 text-lg">
+        <Label htmlFor="description" className="text-white/90 text-lg">
           Description <span className="text-red-400">*</span>
         </Label>
         <Textarea
@@ -84,7 +84,7 @@ export function BasicInfoSection({
           rows={3}
           placeholder="A beautiful sunset ceremony..."
           disabled={isSaving}
-          className={`bg-macon-navy-900 border-macon-navy-600 text-macon-navy-50 placeholder:text-macon-navy-400 focus:border-macon-navy-500 text-lg ${
+          className={`bg-macon-navy-900 border-white/20 text-white placeholder:text-white/50 focus:border-white/30 text-lg ${
             fieldErrors.description ? 'border-danger-600' : ''
           }`}
           aria-invalid={!!fieldErrors.description}

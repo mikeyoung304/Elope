@@ -26,7 +26,7 @@ export function SettingsFields({
     <>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div className="space-y-2">
-          <Label htmlFor="sortOrder" className="text-macon-navy-100 text-lg">
+          <Label htmlFor="sortOrder" className="text-white/90 text-lg">
             Sort Order
           </Label>
           <Input
@@ -36,9 +36,9 @@ export function SettingsFields({
             onChange={(e) => onSortOrderChange(parseInt(e.target.value, 10) || 0)}
             placeholder="0"
             disabled={disabled}
-            className="bg-macon-navy-900 border-macon-navy-600 text-macon-navy-50 placeholder:text-macon-navy-400 focus:border-macon-navy-500 text-lg h-12"
+            className="bg-macon-navy-900 border-white/20 text-white placeholder:text-white/50 focus:border-white/30 text-lg h-12"
           />
-          <p className="text-base text-macon-navy-200">
+          <p className="text-base text-white/70">
             Lower numbers appear first in navigation
           </p>
         </div>
@@ -52,13 +52,13 @@ export function SettingsFields({
             checked={active}
             onChange={(e) => onActiveChange(e.target.checked)}
             disabled={disabled}
-            className="w-4 h-4 text-macon-navy-500 bg-macon-navy-900 border-macon-navy-600 rounded focus:ring-macon-navy-500"
+            className="w-4 h-4 text-white0 bg-macon-navy-900 border-white/20 rounded focus:ring-macon-navy-500"
           />
-          <Label htmlFor="active" className="text-macon-navy-100 text-lg cursor-pointer">
+          <Label htmlFor="active" className="text-white/90 text-lg cursor-pointer">
             Active
           </Label>
         </div>
-        <p className="text-base text-macon-navy-200">
+        <p className="text-base text-white/70">
           Inactive segments are hidden from public view
         </p>
       </div>

@@ -24,9 +24,9 @@ export function BrandingPreview({
   logoUrl
 }: BrandingPreviewProps) {
   return (
-    <Card className="p-6 bg-macon-navy-800 border-macon-navy-600">
-      <h2 className="text-2xl font-semibold mb-4 text-macon-navy-50">Live Preview</h2>
-      <p className="text-base text-macon-navy-200 mb-6">
+    <Card className="p-6 bg-macon-navy-800 border-white/20">
+      <h2 className="text-2xl font-semibold mb-4 text-white">Live Preview</h2>
+      <p className="text-base text-white/70 mb-6">
         See how your branding will appear in the booking widget
       </p>
 
@@ -138,36 +138,36 @@ export function BrandingPreview({
       {/* Color Reference */}
       <div className="mt-6 grid grid-cols-2 gap-3">
         <div>
-          <p className="text-xs text-macon-navy-200 mb-1">Primary</p>
+          <p className="text-xs text-white/70 mb-1">Primary</p>
           <div
-            className="h-10 rounded border border-macon-navy-600"
+            className="h-10 rounded border border-white/20"
             style={{ backgroundColor: primaryColor }}
           />
-          <p className="text-xs text-macon-navy-100 mt-1 font-mono">{primaryColor}</p>
+          <p className="text-xs text-white/90 mt-1 font-mono">{primaryColor}</p>
         </div>
         <div>
-          <p className="text-xs text-macon-navy-200 mb-1">Secondary</p>
+          <p className="text-xs text-white/70 mb-1">Secondary</p>
           <div
-            className="h-10 rounded border border-macon-navy-600"
+            className="h-10 rounded border border-white/20"
             style={{ backgroundColor: secondaryColor }}
           />
-          <p className="text-xs text-macon-navy-100 mt-1 font-mono">{secondaryColor}</p>
+          <p className="text-xs text-white/90 mt-1 font-mono">{secondaryColor}</p>
         </div>
         <div>
-          <p className="text-xs text-macon-navy-200 mb-1">Accent</p>
+          <p className="text-xs text-white/70 mb-1">Accent</p>
           <div
-            className="h-10 rounded border border-macon-navy-600"
+            className="h-10 rounded border border-white/20"
             style={{ backgroundColor: accentColor }}
           />
-          <p className="text-xs text-macon-navy-100 mt-1 font-mono">{accentColor}</p>
+          <p className="text-xs text-white/90 mt-1 font-mono">{accentColor}</p>
         </div>
         <div>
-          <p className="text-xs text-macon-navy-200 mb-1">Background</p>
+          <p className="text-xs text-white/70 mb-1">Background</p>
           <div
-            className="h-10 rounded border border-macon-navy-600"
+            className="h-10 rounded border border-white/20"
             style={{ backgroundColor: backgroundColor }}
           />
-          <p className="text-xs text-macon-navy-100 mt-1 font-mono">{backgroundColor}</p>
+          <p className="text-xs text-white/90 mt-1 font-mono">{backgroundColor}</p>
         </div>
       </div>
     </Card>

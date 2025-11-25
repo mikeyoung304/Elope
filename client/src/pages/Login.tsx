@@ -118,10 +118,10 @@ export function Login() {
           <Logo size="lg" linkTo="/" />
         </div>
 
-        <Card className="mx-auto bg-macon-navy-800 border-macon-navy-600">
+        <Card colorScheme="navy" className="mx-auto">
           <CardHeader>
-            <CardTitle className="text-center text-macon-navy-50 text-3xl">Login</CardTitle>
-            <p className="text-center text-macon-navy-200 text-sm mt-2">
+            <CardTitle className="text-center text-white text-3xl">Login</CardTitle>
+            <p className="text-center text-white/70 text-sm mt-2">
               Platform Admin or Tenant Admin
             </p>
           </CardHeader>
@@ -134,9 +134,9 @@ export function Login() {
 
           {/* Server Error */}
           {error && (
-            <div role="alert" className="mb-6 p-4 bg-macon-navy-700 border border-red-500 text-red-100 rounded">
+            <div role="alert" className="mb-6 p-4 bg-red-900/50 border border-red-400 text-red-100 rounded">
               <p className="text-lg mb-3">{error}</p>
-              <div className="space-y-2 pt-3 border-t border-red-500/30">
+              <div className="space-y-2 pt-3 border-t border-red-400/30">
                 <p className="text-sm text-red-200 font-medium">Need help?</p>
                 <div className="flex flex-col gap-2">
                   <a
@@ -163,8 +163,8 @@ export function Login() {
               onChange={(e) => handleChange('email', e.target.value)}
               label="Email"
               floatingLabel
-              leftIcon={<Mail className="w-5 h-5" />}
-              className="bg-macon-navy-900 border-macon-navy-600 text-macon-navy-50 placeholder:text-macon-navy-400 focus:border-macon-navy-500"
+              leftIcon={<Mail className="w-5 h-5 text-white/60" />}
+              className="bg-white/10 border-white/30 text-white placeholder:text-white/50 focus:border-white/60 focus:ring-white/30"
               required
               disabled={isLoading}
               autoComplete="email"
@@ -176,15 +176,15 @@ export function Login() {
               onChange={(e) => handleChange('password', e.target.value)}
               label="Password"
               floatingLabel
-              leftIcon={<Lock className="w-5 h-5" />}
-              className="bg-macon-navy-900 border-macon-navy-600 text-macon-navy-50 placeholder:text-macon-navy-400 focus:border-macon-navy-500"
+              leftIcon={<Lock className="w-5 h-5 text-white/60" />}
+              className="bg-white/10 border-white/30 text-white placeholder:text-white/50 focus:border-white/60 focus:ring-white/30"
               required
               disabled={isLoading}
               autoComplete="current-password"
             />
             <Button
               type="submit"
-              className="w-full bg-macon-navy hover:bg-macon-navy-dark text-xl h-14"
+              className="w-full bg-macon-orange hover:bg-macon-orange-dark text-white text-xl h-14"
               isLoading={isLoading}
               loadingText="Logging in..."
             >

@@ -47,13 +47,13 @@ export function PackagesList({
   const [expandedPackageId, setExpandedPackageId] = useState<string | null>(null);
 
   return (
-    <Card className="p-6 bg-macon-navy-800 border-macon-navy-600">
-      <h2 className="text-2xl font-semibold mb-4 text-macon-navy-50">Packages</h2>
+    <Card className="p-6 bg-macon-navy-800 border-white/20">
+      <h2 className="text-2xl font-semibold mb-4 text-white">Packages</h2>
       {packages.length === 0 ? (
         <EmptyState
           icon={Package}
-          title="No wedding packages yet"
-          description="Create your first package above to start accepting bookings"
+          title="Ready to showcase your services"
+          description="Create your first package to start accepting bookings. Your packages will appear here."
           className="py-8"
         />
       ) : (

@@ -35,7 +35,7 @@ export function PricingSection({
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {/* Price Field */}
         <div className="space-y-2">
-          <Label htmlFor="priceCents" className="text-macon-navy-100 text-lg">
+          <Label htmlFor="priceCents" className="text-white/90 text-lg">
             Price (cents) <span className="text-red-400">*</span>
           </Label>
           <Input
@@ -53,7 +53,7 @@ export function PricingSection({
             placeholder="50000"
             min="0"
             disabled={isSaving}
-            className={`bg-macon-navy-900 border-macon-navy-600 text-macon-navy-50 placeholder:text-macon-navy-400 focus:border-macon-navy-500 text-lg h-12 ${
+            className={`bg-macon-navy-900 border-white/20 text-white placeholder:text-white/50 focus:border-white/30 text-lg h-12 ${
               fieldErrors.priceCents ? 'border-danger-600' : ''
             }`}
             aria-invalid={!!fieldErrors.priceCents}
@@ -66,7 +66,7 @@ export function PricingSection({
               {fieldErrors.priceCents}
             </p>
           ) : (
-            <p id="priceCents-help" className="text-base text-macon-navy-200">
+            <p id="priceCents-help" className="text-base text-white/70">
               {form.priceCents && !isNaN(parseInt(form.priceCents, 10))
                 ? formatCurrency(parseInt(form.priceCents, 10))
                 : "Enter price in cents (e.g., 50000 = $500.00)"}
@@ -76,7 +76,7 @@ export function PricingSection({
 
         {/* Min Lead Days Field */}
         <div className="space-y-2">
-          <Label htmlFor="minLeadDays" className="text-macon-navy-100 text-lg">
+          <Label htmlFor="minLeadDays" className="text-white/90 text-lg">
             Min Lead Days
           </Label>
           <Input
@@ -87,9 +87,9 @@ export function PricingSection({
             placeholder="7"
             min="0"
             disabled={isSaving}
-            className="bg-macon-navy-900 border-macon-navy-600 text-macon-navy-50 placeholder:text-macon-navy-400 focus:border-macon-navy-500 text-lg h-12"
+            className="bg-macon-navy-900 border-white/20 text-white placeholder:text-white/50 focus:border-white/30 text-lg h-12"
           />
-          <p className="text-base text-macon-navy-200">Days before event date required</p>
+          <p className="text-base text-white/70">Days before event date required</p>
         </div>
       </div>
 
@@ -101,9 +101,9 @@ export function PricingSection({
           checked={form.isActive}
           onChange={(e) => setForm({ ...form, isActive: e.target.checked })}
           disabled={isSaving}
-          className="w-5 h-5 rounded border-macon-navy-600 bg-macon-navy-900 text-macon-navy-500 focus:ring-macon-navy-500"
+          className="w-5 h-5 rounded border-white/20 bg-macon-navy-900 text-white0 focus:ring-macon-navy-500"
         />
-        <Label htmlFor="isActive" className="text-macon-navy-100 text-lg cursor-pointer">
+        <Label htmlFor="isActive" className="text-white/90 text-lg cursor-pointer">
           Active (available for booking)
         </Label>
       </div>

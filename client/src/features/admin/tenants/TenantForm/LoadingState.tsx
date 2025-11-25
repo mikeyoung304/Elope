@@ -14,16 +14,16 @@ export function LoadingState() {
           <Button
             variant="ghost"
             onClick={() => navigate("/admin/dashboard")}
-            className="mb-4 text-macon-navy-200 hover:text-macon-navy-100"
+            className="mb-4 text-white/70 hover:text-white/90"
           >
             <ChevronLeft className="h-4 w-4 mr-2" />
             Back to Dashboard
           </Button>
-          <h1 className="text-3xl font-bold text-macon-navy-50">Edit Tenant</h1>
+          <h1 className="text-3xl font-bold text-white">Edit Tenant</h1>
         </div>
-        <Card className="bg-macon-navy-800 border-macon-navy-600">
+        <Card className="bg-macon-navy-800 border-white/20">
           <CardHeader>
-            <CardTitle className="text-macon-navy-50">Tenant Information</CardTitle>
+            <CardTitle className="text-white">Tenant Information</CardTitle>
           </CardHeader>
           <CardContent>
             <FormSkeleton fields={7} />

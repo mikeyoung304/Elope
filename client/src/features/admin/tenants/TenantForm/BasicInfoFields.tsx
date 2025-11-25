@@ -21,7 +21,7 @@ export function BasicInfoFields({
     <>
       {/* Business Name */}
       <div className="space-y-2">
-        <Label htmlFor="name" className="text-macon-navy-100">
+        <Label htmlFor="name" className="text-white/90">
           Business Name *
         </Label>
         <Input
@@ -29,7 +29,7 @@ export function BasicInfoFields({
           value={formData.name}
           onChange={(e) => onChange({ name: e.target.value })}
           onBlur={onGenerateSlug}
-          className="bg-macon-navy-900 border-macon-navy-600 text-macon-navy-50"
+          className="bg-macon-navy-900 border-white/20 text-white"
           placeholder="e.g., Bella Weddings"
           disabled={isSubmitting}
         />
@@ -40,18 +40,18 @@ export function BasicInfoFields({
 
       {/* Slug */}
       <div className="space-y-2">
-        <Label htmlFor="slug" className="text-macon-navy-100">
+        <Label htmlFor="slug" className="text-white/90">
           URL Slug *
         </Label>
         <Input
           id="slug"
           value={formData.slug}
           onChange={(e) => onChange({ slug: e.target.value })}
-          className="bg-macon-navy-900 border-macon-navy-600 text-macon-navy-50"
+          className="bg-macon-navy-900 border-white/20 text-white"
           placeholder="e.g., bella-weddings"
           disabled={isSubmitting}
         />
-        <p className="text-macon-navy-300 text-sm">
+        <p className="text-white/60 text-sm">
           This will be used in URLs and API keys
         </p>
         {errors.slug && (
@@ -61,7 +61,7 @@ export function BasicInfoFields({
 
       {/* Email */}
       <div className="space-y-2">
-        <Label htmlFor="email" className="text-macon-navy-100">
+        <Label htmlFor="email" className="text-white/90">
           Admin Email *
         </Label>
         <Input
@@ -69,7 +69,7 @@ export function BasicInfoFields({
           type="email"
           value={formData.email}
           onChange={(e) => onChange({ email: e.target.value })}
-          className="bg-macon-navy-900 border-macon-navy-600 text-macon-navy-50"
+          className="bg-macon-navy-900 border-white/20 text-white"
           placeholder="admin@bellaweddings.com"
           disabled={isSubmitting}
         />
@@ -80,7 +80,7 @@ export function BasicInfoFields({
 
       {/* Phone */}
       <div className="space-y-2">
-        <Label htmlFor="phone" className="text-macon-navy-100">
+        <Label htmlFor="phone" className="text-white/90">
           Phone Number
         </Label>
         <Input
@@ -88,7 +88,7 @@ export function BasicInfoFields({
           type="tel"
           value={formData.phone}
           onChange={(e) => onChange({ phone: e.target.value })}
-          className="bg-macon-navy-900 border-macon-navy-600 text-macon-navy-50"
+          className="bg-macon-navy-900 border-white/20 text-white"
           placeholder="(555) 123-4567"
           disabled={isSubmitting}
         />

@@ -50,8 +50,8 @@ export function BrandingForm({
 }: BrandingFormProps) {
   return (
     <TooltipProvider>
-      <Card className="p-6 bg-macon-navy-800 border-macon-navy-600">
-        <h2 className="text-2xl font-semibold mb-4 text-macon-navy-50">Customize Branding</h2>
+      <Card className="p-6 bg-macon-navy-800 border-white/20">
+        <h2 className="text-2xl font-semibold mb-4 text-white">Customize Branding</h2>
 
         <ErrorMessage error={error} />
 

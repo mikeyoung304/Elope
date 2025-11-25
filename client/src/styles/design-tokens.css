@@ -11,17 +11,20 @@
      ==================================== */
 
   /* Navy - Primary Brand Color */
-  --macon-navy-900: #0a1929;          /* Darkest - high contrast text */
-  --macon-navy-800: #0f2442;          /* Very dark - headings */
+  /* Standard scale: 50=lightest (backgrounds), 900=darkest (backgrounds) */
+  /* For TEXT on dark bg: use white, white/80, white/60 */
+  /* For TEXT on light bg: use 600, 700, 800, 900 */
+  --macon-navy-50: #f8fafc;           /* Lightest - subtle bg tint */
+  --macon-navy-100: #e2e8f0;          /* Very light bg */
+  --macon-navy-200: #cbd5e1;          /* Light bg */
+  --macon-navy-300: #94a3b8;          /* Medium light */
+  --macon-navy-400: #64748b;          /* Medium */
+  --macon-navy-500: #475569;          /* Medium dark */
+  --macon-navy-600: #334155;          /* Dark - good for text on light bg */
   --macon-navy: #1a365d;              /* Primary brand color */
-  --macon-navy-700: #1a365d;          /* Same as primary */
-  --macon-navy-600: #2d4a7c;          /* Light variant */
-  --macon-navy-500: #4a6fa5;          /* Medium light */
-  --macon-navy-400: #7894c2;          /* Soft blue */
-  --macon-navy-300: #a5b9d9;          /* Very light */
-  --macon-navy-200: #ccd9e7;          /* Pale blue */
-  --macon-navy-100: #e6ecf3;          /* Subtle tint */
-  --macon-navy-50: #f3f6fa;           /* Nearly white */
+  --macon-navy-700: #1e3a5f;          /* Navy dark - bg color */
+  --macon-navy-800: #152e4d;          /* Navy darker - bg color */
+  --macon-navy-900: #0c1f3a;          /* Navy darkest - bg color */
 
   /* Orange - Secondary Brand Color */
   --macon-orange-900: #7c2d12;        /* Darkest orange */

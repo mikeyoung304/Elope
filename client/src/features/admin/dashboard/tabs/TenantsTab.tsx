@@ -59,7 +59,7 @@ export function TenantsTab({ tenants, isLoading, onRefresh }: TenantsTabProps) {
   if (isLoading) {
     return (
       <div className="bg-macon-navy-900 rounded-lg p-8 text-center">
-        <p className="text-macon-navy-300">Loading tenants...</p>
+        <p className="text-white/60">Loading tenants...</p>
       </div>
     );
   }
@@ -68,8 +68,8 @@ export function TenantsTab({ tenants, isLoading, onRefresh }: TenantsTabProps) {
     return (
       <div className="bg-macon-navy-900 rounded-lg p-8 text-center">
         <Users className="w-12 h-12 text-macon-navy-600 mx-auto mb-4" />
-        <p className="text-macon-navy-300 text-lg">No tenants found</p>
-        <p className="text-macon-navy-500 text-sm mt-2">
+        <p className="text-white/60 text-lg">No tenants found</p>
+        <p className="text-white0 text-sm mt-2">
           Create a new tenant to get started
         </p>
       </div>
@@ -79,13 +79,13 @@ export function TenantsTab({ tenants, isLoading, onRefresh }: TenantsTabProps) {
   return (
     <div className="space-y-4">
       <div className="flex justify-between items-center">
-        <h2 className="text-2xl font-semibold text-macon-navy-50">
+        <h2 className="text-2xl font-semibold text-white">
           Tenants ({tenants.length})
         </h2>
         <Button
           onClick={onRefresh}
           variant="outline"
-          className="border-macon-navy-600 text-macon-navy-100 hover:bg-macon-navy-800"
+          className="border-white/20 text-white/90 hover:bg-macon-navy-800"
         >
           Refresh
         </Button>
@@ -100,7 +100,7 @@ export function TenantsTab({ tenants, isLoading, onRefresh }: TenantsTabProps) {
             <div className="flex items-start justify-between">
               <div className="flex-1">
                 <div className="flex items-center gap-3 mb-2">
-                  <h3 className="text-xl font-semibold text-macon-navy-50">
+                  <h3 className="text-xl font-semibold text-white">
                     {tenant.name}
                   </h3>
                   {!tenant.isActive && (
@@ -115,7 +115,7 @@ export function TenantsTab({ tenants, isLoading, onRefresh }: TenantsTabProps) {
                   )}
                 </div>
 
-                <div className="space-y-1 text-sm text-macon-navy-400">
+                <div className="space-y-1 text-sm text-white/50">
                   <p>
                     <span className="font-medium">Slug:</span> {tenant.slug}
                   </p>
@@ -131,7 +131,7 @@ export function TenantsTab({ tenants, isLoading, onRefresh }: TenantsTabProps) {
                   </p>
                 </div>
 
-                <div className="flex gap-4 mt-3 text-xs text-macon-navy-500">
+                <div className="flex gap-4 mt-3 text-xs text-white0">
                   <span>{tenant.stats.bookings} bookings</span>
                   <span>{tenant.stats.packages} packages</span>
                   <span>{tenant.stats.addOns} add-ons</span>

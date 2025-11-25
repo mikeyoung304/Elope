@@ -19,10 +19,10 @@ export function LogoSection({ logoUrl, disabled = false, onLogoUrlChange }: Logo
   return (
     <div className="space-y-2">
       <div className="flex items-center gap-2">
-        <Label className="text-macon-navy-100 text-lg">Logo (Optional)</Label>
+        <Label className="text-white/90 text-lg">Logo (Optional)</Label>
         <Tooltip>
           <TooltipTrigger asChild>
-            <HelpCircle className="w-4 h-4 text-macon-navy-400 cursor-help" />
+            <HelpCircle className="w-4 h-4 text-white/50 cursor-help" />
           </TooltipTrigger>
           <TooltipContent>
             <p>Upload your logo image (PNG, JPG, SVG, or WebP format, max 2MB)</p>

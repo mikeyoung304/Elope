@@ -30,7 +30,7 @@ export function HeroFields({
     <>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div className="space-y-2">
-          <Label htmlFor="heroTitle" className="text-macon-navy-100 text-lg">
+          <Label htmlFor="heroTitle" className="text-white/90 text-lg">
             Hero Title <span className="text-destructive">*</span>
           </Label>
           <Input
@@ -40,13 +40,13 @@ export function HeroFields({
             onChange={(e) => onHeroTitleChange(e.target.value)}
             placeholder="Welcome to Your Wellness Journey"
             disabled={disabled}
-            className="bg-macon-navy-900 border-macon-navy-600 text-macon-navy-50 placeholder:text-macon-navy-400 focus:border-macon-navy-500 text-lg h-12"
+            className="bg-macon-navy-900 border-white/20 text-white placeholder:text-white/50 focus:border-white/30 text-lg h-12"
             required
           />
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="heroSubtitle" className="text-macon-navy-100 text-lg">
+          <Label htmlFor="heroSubtitle" className="text-white/90 text-lg">
             Hero Subtitle
           </Label>
           <Input
@@ -56,14 +56,14 @@ export function HeroFields({
             onChange={(e) => onHeroSubtitleChange(e.target.value)}
             placeholder="Transform your special day"
             disabled={disabled}
-            className="bg-macon-navy-900 border-macon-navy-600 text-macon-navy-50 placeholder:text-macon-navy-400 focus:border-macon-navy-500 text-lg h-12"
+            className="bg-macon-navy-900 border-white/20 text-white placeholder:text-white/50 focus:border-white/30 text-lg h-12"
           />
         </div>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div className="space-y-2">
-          <Label htmlFor="heroImage" className="text-macon-navy-100 text-lg">
+          <Label htmlFor="heroImage" className="text-white/90 text-lg">
             Hero Image URL
           </Label>
           <Input
@@ -73,7 +73,7 @@ export function HeroFields({
             onChange={(e) => onHeroImageChange(e.target.value)}
             placeholder="https://example.com/hero.jpg"
             disabled={disabled}
-            className="bg-macon-navy-900 border-macon-navy-600 text-macon-navy-50 placeholder:text-macon-navy-400 focus:border-macon-navy-500 text-lg h-12"
+            className="bg-macon-navy-900 border-white/20 text-white placeholder:text-white/50 focus:border-white/30 text-lg h-12"
           />
         </div>
       </div>

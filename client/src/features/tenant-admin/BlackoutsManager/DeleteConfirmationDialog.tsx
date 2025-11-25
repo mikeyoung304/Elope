@@ -33,7 +33,7 @@ export function DeleteConfirmationDialog({
 }: DeleteConfirmationDialogProps) {
   return (
     <AlertDialog open={isOpen} onOpenChange={onOpenChange}>
-      <AlertDialogContent className="bg-white dark:bg-macon-navy-800 border-macon-navy-600">
+      <AlertDialogContent className="bg-white dark:bg-macon-navy-800 border-white/20">
         <AlertDialogHeader>
           <div className="flex items-center gap-3 mb-2">
             <div className="p-2 bg-danger-100 rounded-full">
@@ -41,9 +41,9 @@ export function DeleteConfirmationDialog({
             </div>
             <AlertDialogTitle className="text-2xl">Delete Blackout Date?</AlertDialogTitle>
           </div>
-          <AlertDialogDescription className="text-base text-macon-navy-600 dark:text-macon-navy-300">
+          <AlertDialogDescription className="text-base text-macon-navy-600 dark:text-white/60">
             Are you sure you want to delete the blackout date for{' '}
-            <strong className="font-semibold text-macon-navy-900 dark:text-macon-navy-50">
+            <strong className="font-semibold text-macon-navy-900 dark:text-white">
               {blackoutToDelete && new Date(blackoutToDelete.date).toLocaleDateString('en-US', {
                 year: 'numeric',
                 month: 'long',

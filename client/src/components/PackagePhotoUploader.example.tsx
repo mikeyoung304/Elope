@@ -46,8 +46,8 @@ export function PackageEditFormExample() {
 
   return (
     <div className="space-y-6">
-      <Card className="p-6 bg-macon-navy-800 border-macon-navy-600">
-        <h2 className="text-2xl font-semibold mb-4 text-macon-navy-50">
+      <Card className="p-6 bg-macon-navy-800 border-white/20">
+        <h2 className="text-2xl font-semibold mb-4 text-white">
           Edit Package
         </h2>
 
@@ -73,7 +73,7 @@ export function StandalonePhotoManagerExample() {
 
   return (
     <div className="max-w-5xl mx-auto p-6">
-      <h1 className="text-3xl font-bold text-macon-navy-50 mb-6">
+      <h1 className="text-3xl font-bold text-white mb-6">
         Manage Package Photos
       </h1>
 

@@ -25,22 +25,22 @@ export function AddOnManager({
     <div className="space-y-3">
       {/* Add-on Form */}
       {isAddingAddOn && (
-        <div className="bg-macon-navy-800 p-4 rounded-lg space-y-3 border border-macon-navy-600">
-          <h5 className="font-medium text-lg text-macon-navy-50">
+        <div className="bg-macon-navy-800 p-4 rounded-lg space-y-3 border border-white/20">
+          <h5 className="font-medium text-lg text-white">
             {editingAddOnId ? "Edit Add-on" : "New Add-on"}
           </h5>
 
           {error && (
-            <div role="alert" className="flex items-center gap-2 p-3 border border-macon-navy-600 bg-macon-navy-700 rounded">
-              <AlertCircle className="w-4 h-4 text-macon-navy-200" />
-              <span className="text-base text-macon-navy-100">{error}</span>
+            <div role="alert" className="flex items-center gap-2 p-3 border border-white/20 bg-macon-navy-700 rounded">
+              <AlertCircle className="w-4 h-4 text-white/70" />
+              <span className="text-base text-white/90">{error}</span>
             </div>
           )}
 
           <form onSubmit={onSubmit} className="space-y-3">
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
               <div className="space-y-2">
-                <Label htmlFor="addOnTitle" className="text-base text-macon-navy-100">
+                <Label htmlFor="addOnTitle" className="text-base text-white/90">
                   Title <span className="text-destructive">*</span>
                 </Label>
                 <Input
@@ -52,12 +52,12 @@ export function AddOnManager({
                   }
                   placeholder="Extra photography"
                   disabled={isSaving}
-                  className="bg-macon-navy-900 border-macon-navy-600 text-macon-navy-50 placeholder:text-macon-navy-400 focus:border-macon-navy-500 text-lg h-12"
+                  className="bg-macon-navy-900 border-white/20 text-white placeholder:text-white/50 focus:border-white/30 text-lg h-12"
                   required
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="addOnPrice" className="text-base text-macon-navy-100">
+                <Label htmlFor="addOnPrice" className="text-base text-white/90">
                   Price (cents) <span className="text-destructive">*</span>
                 </Label>
                 <Input
@@ -70,12 +70,12 @@ export function AddOnManager({
                   placeholder="10000"
                   min="0"
                   disabled={isSaving}
-                  className="bg-macon-navy-900 border-macon-navy-600 text-macon-navy-50 placeholder:text-macon-navy-400 focus:border-macon-navy-500 text-lg h-12"
+                  className="bg-macon-navy-900 border-white/20 text-white placeholder:text-white/50 focus:border-white/30 text-lg h-12"
                   required
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="addOnPhoto" className="text-base text-macon-navy-100">
+                <Label htmlFor="addOnPhoto" className="text-base text-white/90">
                   Photo URL
                 </Label>
                 <Input
@@ -87,12 +87,12 @@ export function AddOnManager({
                   }
                   placeholder="https://..."
                   disabled={isSaving}
-                  className="bg-macon-navy-900 border-macon-navy-600 text-macon-navy-50 placeholder:text-macon-navy-400 focus:border-macon-navy-500 text-lg h-12"
+                  className="bg-macon-navy-900 border-white/20 text-white placeholder:text-white/50 focus:border-white/30 text-lg h-12"
                 />
               </div>
             </div>
             <div className="space-y-2">
-              <Label htmlFor="segmentId" className="text-macon-navy-100 text-lg">
+              <Label htmlFor="segmentId" className="text-white/90 text-lg">
                 Segment Availability
               </Label>
               <Select
@@ -102,7 +102,7 @@ export function AddOnManager({
                 }
                 disabled={isSaving}
               >
-                <SelectTrigger className="bg-macon-navy-900 border-macon-navy-600 text-macon-navy-50 h-12 text-lg">
+                <SelectTrigger className="bg-macon-navy-900 border-white/20 text-white h-12 text-lg">
                   <SelectValue placeholder="Global (All Segments)" />
                 </SelectTrigger>
                 <SelectContent>
@@ -114,7 +114,7 @@ export function AddOnManager({
                   ))}
                 </SelectContent>
               </Select>
-              <p className="text-base text-macon-navy-200">
+              <p className="text-base text-white/70">
                 Global add-ons are available to all segments
               </p>
             </div>
@@ -132,7 +132,7 @@ export function AddOnManager({
                 variant="outline"
                 onClick={onCancel}
                 disabled={isSaving}
-                className="border-macon-navy-600 text-macon-navy-100 hover:bg-macon-navy-700 text-base h-10 px-4"
+                className="border-white/20 text-white/90 hover:bg-macon-navy-700 text-base h-10 px-4"
               >
                 Cancel
               </Button>
@@ -146,7 +146,7 @@ export function AddOnManager({
         <Button
           variant="outline"
           onClick={onStartAdding}
-          className="border-macon-navy-600 text-macon-navy-300 hover:bg-macon-navy-700 text-base h-10 px-4"
+          className="border-white/20 text-white/60 hover:bg-macon-navy-700 text-base h-10 px-4"
         >
           <Plus className="w-5 h-5 mr-2" />
           Add Add-on
@@ -159,11 +159,11 @@ export function AddOnManager({
           {pkg.addOns.map((addOn) => (
             <div
               key={addOn.id}
-              className="flex justify-between items-center bg-macon-navy-800 p-3 rounded border border-macon-navy-600 hover:border-macon-navy-500"
+              className="flex justify-between items-center bg-macon-navy-800 p-3 rounded border border-white/20 hover:border-white/30"
             >
               <div>
-                <div className="font-medium text-lg text-macon-navy-50">{addOn.title}</div>
-                <div className="text-lg text-macon-navy-300">
+                <div className="font-medium text-lg text-white">{addOn.title}</div>
+                <div className="text-lg text-white/60">
                   {formatCurrency(addOn.priceCents)}
                 </div>
               </div>
@@ -172,7 +172,7 @@ export function AddOnManager({
                   variant="ghost"
                   size="sm"
                   onClick={() => onEdit(addOn)}
-                  className="text-macon-navy-300 hover:bg-macon-navy-700"
+                  className="text-white/60 hover:bg-macon-navy-700"
                   aria-label={`Edit add-on: ${addOn.title}`}
                   title="Edit add-on"
                 >
@@ -195,7 +195,7 @@ export function AddOnManager({
       )}
 
       {pkg.addOns.length === 0 && !isAddingAddOn && (
-        <p className="text-base text-macon-navy-100">No add-ons yet</p>
+        <p className="text-base text-white/70">Add optional extras to increase your average booking value.</p>
       )}
     </div>
   );

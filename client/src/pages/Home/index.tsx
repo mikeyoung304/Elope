@@ -1,9 +1,12 @@
 import { HeroSection } from "./HeroSection";
+import { ProblemSection } from "./ProblemSection";
 import { ClubAdvantageSection } from "./ClubAdvantageSection";
 import { TargetAudienceSection } from "./TargetAudienceSection";
+import { LeadMagnetSection } from "./LeadMagnetSection";
 import { TestimonialsSection } from "./TestimonialsSection";
 import { SocialProofSection } from "./SocialProofSection";
 import { HowItWorksSection } from "./HowItWorksSection";
+import { FAQSection } from "./FAQSection";
 import { AboutSection } from "./AboutSection";
 import { FinalCTASection } from "./FinalCTASection";
 
@@ -24,11 +27,14 @@ export function Home() {
   return (
     <main>
       <HeroSection />
+      <ProblemSection />
       <ClubAdvantageSection />
       <TargetAudienceSection />
+      <LeadMagnetSection />
       <TestimonialsSection />
       <SocialProofSection />
       <HowItWorksSection />
+      <FAQSection />
       <AboutSection />
       <FinalCTASection />
     </main>

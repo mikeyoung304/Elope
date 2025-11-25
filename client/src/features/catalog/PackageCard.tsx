@@ -40,7 +40,7 @@ export function PackageCard({ package: pkg }: PackageCardProps) {
           </div>
         ) : (
           <div className="relative aspect-[4/3] overflow-hidden bg-gradient-to-br from-macon-navy/10 to-macon-navy/5 flex items-center justify-center">
-            <span className="text-lg text-macon-navy-400 font-medium">No image</span>
+            <span className="text-lg text-white/50 font-medium">No image</span>
           </div>
         )}
 

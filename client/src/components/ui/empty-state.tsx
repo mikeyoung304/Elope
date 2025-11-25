@@ -68,7 +68,7 @@ export function EmptyState({
       >
         <Icon
           className={cn(
-            "text-macon-navy dark:text-macon-navy-400",
+            "text-macon-navy dark:text-white/50",
             v.icon
           )}
           strokeWidth={1.5}

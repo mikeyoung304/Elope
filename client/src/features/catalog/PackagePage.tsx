@@ -175,6 +175,7 @@ export function PackagePage() {
         <Card className="bg-white border-neutral-200 shadow-elevation-1">
           <CardHeader>
             <CardTitle className="text-neutral-900 text-3xl">Your Details</CardTitle>
+            <p className="text-neutral-500 text-base mt-1">We'll send your confirmation here</p>
           </CardHeader>
           <CardContent>
             <div className="space-y-6">
@@ -238,16 +239,16 @@ export function PackagePage() {
               onClick={handleCheckout}
               disabled={!selectedDate || !coupleName.trim() || !email.trim()}
               isLoading={isCheckingOut}
-              loadingText="Creating checkout session..."
+              loadingText="Preparing your secure checkout..."
               className="w-full text-xl h-14"
               size="lg"
               data-testid="checkout"
             >
               {!selectedDate
-                ? "Select a date"
+                ? "Pick your perfect date above"
                 : !coupleName.trim() || !email.trim()
-                ? "Enter your details"
-                : "Proceed to Checkout"}
+                ? "Add your details to continue"
+                : "Secure Your Date →"}
             </Button>
           </div>
         </div>

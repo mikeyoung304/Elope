@@ -35,28 +35,28 @@ export function PackageCard({
   const formattedPrice = useMemo(() => formatCurrency(pkg.priceCents), [pkg.priceCents]);
 
   return (
-    <div className="border border-macon-navy-600 rounded-lg p-4 space-y-4 hover:border-macon-navy-500 transition-colors bg-macon-navy-900">
+    <div className="border border-white/20 rounded-lg p-4 space-y-4 hover:border-white/30 transition-colors bg-macon-navy-900">
       {/* Package Header */}
       <div className="flex justify-between items-start">
         <div className="flex-1">
           <div className="flex items-center gap-3 mb-2">
-            <h3 className="text-2xl font-semibold text-macon-navy-50">{pkg.title}</h3>
+            <h3 className="text-2xl font-semibold text-white">{pkg.title}</h3>
             <Badge
               variant="outline"
-              className="text-base border-macon-navy-500 bg-macon-navy-700 text-macon-navy-200"
+              className="text-base border-white/30 bg-macon-navy-700 text-white/70"
             >
               {pkg.slug}
             </Badge>
           </div>
-          <p className="text-macon-navy-100 text-lg mb-2">{pkg.description}</p>
-          <div className="text-2xl font-semibold text-macon-navy-300">{formattedPrice}</div>
+          <p className="text-white/90 text-lg mb-2">{pkg.description}</p>
+          <div className="text-2xl font-semibold text-white/60">{formattedPrice}</div>
         </div>
         <div className="flex gap-2">
           <Button
             variant="outline"
             size="sm"
             onClick={handleEdit}
-            className="border-macon-navy-600 text-macon-navy-300 hover:bg-macon-navy-700"
+            className="border-white/20 text-white/60 hover:bg-macon-navy-700"
             aria-label={`Edit package: ${pkg.title}`}
             title="Edit package"
           >
@@ -68,7 +68,7 @@ export function PackageCard({
               <Button
                 variant="outline"
                 size="sm"
-                className="border-macon-navy-600 text-destructive hover:bg-destructive/10"
+                className="border-white/20 text-destructive hover:bg-destructive/10"
                 aria-label={`Delete package: ${pkg.title}`}
                 title="Delete package"
               >
@@ -98,10 +98,10 @@ export function PackageCard({
       </div>
 
       {/* Add-ons Section */}
-      <div className="pt-3 border-t border-macon-navy-600">
+      <div className="pt-3 border-t border-white/20">
         <button
           onClick={onToggleExpand}
-          className="flex items-center gap-2 text-lg font-medium text-macon-navy-300 hover:text-macon-navy-200 transition-colors"
+          className="flex items-center gap-2 text-lg font-medium text-white/60 hover:text-white/70 transition-colors"
           aria-label={isExpanded ? `Collapse add-ons for ${pkg.title}` : `Expand add-ons for ${pkg.title}`}
           aria-expanded={isExpanded}
         >

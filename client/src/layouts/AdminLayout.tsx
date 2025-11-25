@@ -113,7 +113,7 @@ export function AdminLayout({ children, breadcrumbs }: AdminLayoutProps) {
             )}
             <button
               onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
-              className="text-macon-navy-300 hover:text-white transition-colors ml-auto"
+              className="text-white/60 hover:text-white transition-colors ml-auto"
               aria-label={sidebarCollapsed ? "Expand sidebar" : "Collapse sidebar"}
             >
               {sidebarCollapsed ? (
@@ -131,7 +131,7 @@ export function AdminLayout({ children, breadcrumbs }: AdminLayoutProps) {
             ) : (
               <div className="space-y-2">
                 {/* Collapsed icons only - you could enhance RoleBasedNav to support this */}
-                <div className="text-xs text-macon-navy-400 text-center">Menu</div>
+                <div className="text-xs text-white/50 text-center">Menu</div>
               </div>
             )}
           </div>
@@ -152,7 +152,7 @@ export function AdminLayout({ children, breadcrumbs }: AdminLayoutProps) {
                   onClick={handleLogout}
                   variant="outline"
                   size="default"
-                  className="w-full border-macon-navy-600 text-macon-navy-100 hover:bg-macon-navy-700 hover:text-white"
+                  className="w-full border-white/30 text-white/80 hover:bg-white/10 hover:text-white"
                 >
                   <LogOut className="w-4 h-4 mr-2" />
                   Logout
@@ -161,7 +161,7 @@ export function AdminLayout({ children, breadcrumbs }: AdminLayoutProps) {
             ) : (
               <button
                 onClick={handleLogout}
-                className="w-full flex justify-center text-macon-navy-300 hover:text-white transition-colors"
+                className="w-full flex justify-center text-white/60 hover:text-white transition-colors"
                 aria-label="Logout"
               >
                 <LogOut className="w-5 h-5" />

@@ -33,27 +33,27 @@ export function SegmentsList({
     <div className="overflow-x-auto">
       <Table>
         <TableHeader>
-          <TableRow className="border-macon-navy-600 hover:bg-macon-navy-700">
-            <TableHead className="text-macon-navy-100 text-lg">Name</TableHead>
-            <TableHead className="text-macon-navy-100 text-lg">Slug</TableHead>
-            <TableHead className="text-macon-navy-100 text-lg">Hero Title</TableHead>
-            <TableHead className="text-macon-navy-100 text-lg">Status</TableHead>
-            <TableHead className="text-macon-navy-100 text-lg">Sort Order</TableHead>
-            <TableHead className="text-macon-navy-100 text-lg">Actions</TableHead>
+          <TableRow className="border-white/20 hover:bg-macon-navy-700">
+            <TableHead className="text-white/90 text-lg">Name</TableHead>
+            <TableHead className="text-white/90 text-lg">Slug</TableHead>
+            <TableHead className="text-white/90 text-lg">Hero Title</TableHead>
+            <TableHead className="text-white/90 text-lg">Status</TableHead>
+            <TableHead className="text-white/90 text-lg">Sort Order</TableHead>
+            <TableHead className="text-white/90 text-lg">Actions</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
           {isLoading && (
             <TableRow>
               <TableCell colSpan={6} className="text-center py-8">
-                <Loader2 className="w-6 h-6 animate-spin mx-auto text-macon-navy-300" />
+                <Loader2 className="w-6 h-6 animate-spin mx-auto text-white/60" />
               </TableCell>
             </TableRow>
           )}
 
           {!isLoading && segments.length === 0 && (
             <TableRow>
-              <TableCell colSpan={6} className="text-center py-8 text-macon-navy-100">
+              <TableCell colSpan={6} className="text-center py-8 text-white/90">
                 No segments found. Create your first segment to get started.
               </TableCell>
             </TableRow>
@@ -61,14 +61,14 @@ export function SegmentsList({
 
           {!isLoading &&
             segments.map((segment) => (
-              <TableRow key={segment.id} className="border-macon-navy-600 hover:bg-macon-navy-700">
-                <TableCell className="font-medium text-macon-navy-50 text-base">
+              <TableRow key={segment.id} className="border-white/20 hover:bg-macon-navy-700">
+                <TableCell className="font-medium text-white text-base">
                   {segment.name}
                 </TableCell>
-                <TableCell className="text-macon-navy-200 text-base font-mono">
+                <TableCell className="text-white/70 text-base font-mono">
                   {segment.slug}
                 </TableCell>
-                <TableCell className="text-macon-navy-200 text-base">
+                <TableCell className="text-white/70 text-base">
                   {truncateText(segment.heroTitle, 50)}
                 </TableCell>
                 <TableCell>
@@ -77,12 +77,12 @@ export function SegmentsList({
                       Active
                     </Badge>
                   ) : (
-                    <Badge variant="secondary" className="bg-macon-navy-700 text-macon-navy-200 border-macon-navy-600">
+                    <Badge variant="secondary" className="bg-macon-navy-700 text-white/70 border-white/20">
                       Inactive
                     </Badge>
                   )}
                 </TableCell>
-                <TableCell className="text-macon-navy-200 text-base">
+                <TableCell className="text-white/70 text-base">
                   {segment.sortOrder}
                 </TableCell>
                 <TableCell>
@@ -91,7 +91,7 @@ export function SegmentsList({
                       variant="outline"
                       size="default"
                       onClick={() => onEdit(segment)}
-                      className="border-macon-navy-600 text-macon-navy-200 hover:bg-macon-navy-700"
+                      className="border-white/20 text-white/70 hover:bg-macon-navy-700"
                     >
                       <Edit className="w-4 h-4 mr-1" />
                       Edit

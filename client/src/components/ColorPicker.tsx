@@ -87,14 +87,14 @@ export function ColorPicker({ label, value = '#d97706', onChange, className = ''
 
   return (
     <div className={`space-y-2 ${className}`}>
-      <Label className="text-macon-navy-100">{label}</Label>
+      <Label className="text-white/90">{label}</Label>
 
       <div className="flex gap-3 items-center">
         {/* Color preview button */}
         <button
           type="button"
           onClick={() => setIsPickerOpen(!isPickerOpen)}
-          className="w-12 h-12 rounded-md border-2 border-macon-navy-600 cursor-pointer transition-all hover:border-macon-navy-500 focus:outline-none focus:ring-2 focus:ring-macon-navy-500 focus:ring-offset-2 focus:ring-offset-navy-900"
+          className="w-12 h-12 rounded-md border-2 border-white/20 cursor-pointer transition-all hover:border-white/30 focus:outline-none focus:ring-2 focus:ring-macon-navy-500 focus:ring-offset-2 focus:ring-offset-navy-900"
           style={{ backgroundColor: color }}
           aria-label="Open color picker"
         />
@@ -106,7 +106,7 @@ export function ColorPicker({ label, value = '#d97706', onChange, className = ''
           onChange={handleInputChange}
           onBlur={handleInputBlur}
           placeholder="#d97706"
-          className="flex-1 bg-macon-navy-900 border-macon-navy-600 text-macon-navy-50 placeholder:text-macon-navy-400 focus:border-macon-navy-500 focus:ring-macon-navy-500"
+          className="flex-1 bg-macon-navy-900 border-white/20 text-white placeholder:text-white/50 focus:border-white/30 focus:ring-macon-navy-500"
           maxLength={7}
         />
       </div>
@@ -114,7 +114,7 @@ export function ColorPicker({ label, value = '#d97706', onChange, className = ''
       {/* Color picker popover */}
       {isPickerOpen && (
         <div className="relative">
-          <div className="absolute z-10 mt-2 p-4 bg-macon-navy-800 border border-macon-navy-600 rounded-lg shadow-xl">
+          <div className="absolute z-10 mt-2 p-4 bg-macon-navy-800 border border-white/20 rounded-lg shadow-xl">
             <HexColorPicker color={color} onChange={handlePickerChange} />
             <button
               type="button"

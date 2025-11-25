@@ -13,7 +13,7 @@ const CharCount = ({ current, max }: { current: number; max: number }) => (
   <p
     className={cn(
       "text-sm",
-      current > max ? "text-destructive" : "text-macon-navy-300"
+      current > max ? "text-destructive" : "text-white/60"
     )}
   >
     {current} / {max} characters
@@ -42,7 +42,7 @@ export function MetaFields({
   return (
     <>
       <div className="space-y-2">
-        <Label htmlFor="description" className="text-macon-navy-100 text-lg">
+        <Label htmlFor="description" className="text-white/90 text-lg">
           Description
         </Label>
         <Textarea
@@ -52,13 +52,13 @@ export function MetaFields({
           rows={3}
           placeholder="A comprehensive description for SEO..."
           disabled={disabled}
-          className="bg-macon-navy-900 border-macon-navy-600 text-macon-navy-50 placeholder:text-macon-navy-400 focus:border-macon-navy-500 text-lg"
+          className="bg-macon-navy-900 border-white/20 text-white placeholder:text-white/50 focus:border-white/30 text-lg"
         />
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div className="space-y-2">
-          <Label htmlFor="metaTitle" className="text-macon-navy-100 text-lg">
+          <Label htmlFor="metaTitle" className="text-white/90 text-lg">
             Meta Title
           </Label>
           <Input
@@ -68,14 +68,14 @@ export function MetaFields({
             onChange={(e) => onMetaTitleChange(e.target.value)}
             placeholder="Wellness Retreat Packages | Your Company"
             disabled={disabled}
-            className="bg-macon-navy-900 border-macon-navy-600 text-macon-navy-50 placeholder:text-macon-navy-400 focus:border-macon-navy-500 text-lg h-12"
+            className="bg-macon-navy-900 border-white/20 text-white placeholder:text-white/50 focus:border-white/30 text-lg h-12"
           />
           <CharCount current={metaTitle.length} max={60} />
         </div>
       </div>
 
       <div className="space-y-2">
-        <Label htmlFor="metaDescription" className="text-macon-navy-100 text-lg">
+        <Label htmlFor="metaDescription" className="text-white/90 text-lg">
           Meta Description
         </Label>
         <Textarea
@@ -85,7 +85,7 @@ export function MetaFields({
           rows={3}
           placeholder="Discover our wellness retreat packages..."
           disabled={disabled}
-          className="bg-macon-navy-900 border-macon-navy-600 text-macon-navy-50 placeholder:text-macon-navy-400 focus:border-macon-navy-500 text-lg"
+          className="bg-macon-navy-900 border-white/20 text-white placeholder:text-white/50 focus:border-white/30 text-lg"
         />
         <CharCount current={metaDescription.length} max={160} />
       </div>
