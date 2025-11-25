@@ -771,4 +771,67 @@ export const Contracts = c.router({
     },
     summary: 'Get segment statistics (requires tenant admin authentication)',
   },
+
+  // =========================================================================
+  // PUBLIC SEGMENT ENDPOINTS (for customer-facing storefront)
+  // Requires X-Tenant-Key header for tenant context
+  // =========================================================================
+
+  /**
+   * Get all active segments for the tenant
+   * Used on home page to show segment selector
+   */
+  getSegments: {
+    method: 'GET',
+    path: '/v1/segments',
+    responses: {
+      200: z.array(SegmentDtoSchema),
+      401: UnauthorizedErrorSchema,
+      500: InternalServerErrorSchema,
+    },
+    summary: 'Get all active segments (public, requires X-Tenant-Key)',
+  },
+
+  /**
+   * Get segment metadata by slug
+   * Used for segment landing page hero section
+   */
+  getSegmentBySlug: {
+    method: 'GET',
+    path: '/v1/segments/:slug',
+    pathParams: z.object({
+      slug: z.string(),
+    }),
+    responses: {
+      200: SegmentDtoSchema,
+      400: BadRequestErrorSchema,
+      401: UnauthorizedErrorSchema,
+      404: NotFoundErrorSchema,
+      500: InternalServerErrorSchema,
+    },
+    summary: 'Get segment by slug (public, requires X-Tenant-Key)',
+  },
+
+  /**
+   * Get segment with packages and add-ons
+   * Used for segment landing page to display filtered packages
+   */
+  getSegmentWithPackages: {
+    method: 'GET',
+    path: '/v1/segments/:slug/packages',
+    pathParams: z.object({
+      slug: z.string(),
+    }),
+    responses: {
+      200: SegmentDtoSchema.extend({
+        packages: z.array(PackageDtoSchema),
+        addOns: z.array(AddOnDtoSchema),
+      }),
+      400: BadRequestErrorSchema,
+      401: UnauthorizedErrorSchema,
+      404: NotFoundErrorSchema,
+      500: InternalServerErrorSchema,
+    },
+    summary: 'Get segment with packages (public, requires X-Tenant-Key)',
+  },
 });

@@ -1,4 +1,5 @@
 import { HeroSection } from "./HeroSection";
+import { SegmentSection } from "./SegmentSection";
 import { StorySection } from "./StorySection";
 import { ValueSection } from "./ValueSection";
 import { CustomerStorySection } from "./CustomerStorySection";
@@ -18,6 +19,7 @@ export function Home() {
   return (
     <main>
       <HeroSection />
+      <SegmentSection />
       <StorySection />
       <ValueSection />
       <CustomerStorySection />

@@ -289,7 +289,8 @@ export function createV1Router(
   // Register tenant authentication routes (login, /me)
   if (services) {
     const tenantAuthRoutes = createTenantAuthRoutes(services.tenantAuth);
-    const tenantAuthMiddleware = createTenantAuthMiddleware(services.tenantAuth);
+    // Pass identityService to enable platform admin impersonation on tenant routes
+    const tenantAuthMiddleware = createTenantAuthMiddleware(services.tenantAuth, identityService);
 
     // Mount tenant auth routes under /v1/tenant-auth
     // /v1/tenant-auth/login - public
@@ -306,7 +307,7 @@ export function createV1Router(
       services.booking,
       blackoutRepo
     );
-    app.use('/v1/tenant/admin', tenantAuthMiddleware, tenantAdminRoutes);
+    app.use('/v1/tenant-admin', tenantAuthMiddleware, tenantAdminRoutes);
 
     // Register unified authentication routes (RECOMMENDED)
     // /v1/auth/login - public - unified login for both platform admins and tenant admins
@@ -327,7 +328,7 @@ export function createV1Router(
     // Register tenant admin segment routes (for segment CRUD)
     // Requires tenant admin authentication
     const tenantAdminSegmentsRouter = createTenantAdminSegmentsRouter(services.segment);
-    app.use('/v1/tenant/admin/segments', tenantAuthMiddleware, tenantAdminSegmentsRouter);
-    logger.info('✅ Tenant admin segment routes mounted at /v1/tenant/admin/segments');
+    app.use('/v1/tenant-admin/segments', tenantAuthMiddleware, tenantAdminSegmentsRouter);
+    logger.info('✅ Tenant admin segment routes mounted at /v1/tenant-admin/segments');
   }
 }

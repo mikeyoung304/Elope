@@ -24,8 +24,9 @@ export const baseUrl = raw.replace(/\/+$/, "");
 /**
  * Global tenant API key for multi-tenant widget mode
  * Set via api.setTenantKey() when widget loads
+ * Also restored from localStorage for impersonation persistence across page loads
  */
-let tenantApiKey: string | null = null;
+let tenantApiKey: string | null = localStorage.getItem("impersonationTenantKey");
 
 /**
  * Global tenant JWT token for tenant admin dashboard
@@ -131,8 +132,28 @@ export const api = initClient(Contracts, {
       }
     }
 
-    // Inject auth token for tenant routes
-    if (path.includes("/v1/tenant")) {
+    // Inject auth token for tenant-admin routes
+    // During impersonation, use adminToken (which contains impersonation context)
+    // Otherwise use tenantToken for normal tenant admin access
+    if (path.includes("/v1/tenant-admin")) {
+      // Check if we're impersonating (impersonationTenantKey is set)
+      const isImpersonating = localStorage.getItem("impersonationTenantKey");
+      if (isImpersonating) {
+        // Use admin token with impersonation context
+        const token = localStorage.getItem("adminToken");
+        if (token) {
+          requestHeaders["Authorization"] = `Bearer ${token}`;
+        }
+      } else {
+        // Normal tenant admin - use tenant token
+        const token = tenantToken || localStorage.getItem("tenantToken");
+        if (token) {
+          requestHeaders["Authorization"] = `Bearer ${token}`;
+        }
+      }
+    }
+    // Inject auth token for other tenant routes (not tenant-admin)
+    else if (path.includes("/v1/tenant") && !path.includes("/v1/tenant-admin")) {
       const token = tenantToken || localStorage.getItem("tenantToken");
       if (token) {
         requestHeaders["Authorization"] = `Bearer ${token}`;
@@ -228,6 +249,12 @@ api.adminImpersonate = async (tenantId: string) => {
   // Update admin token to impersonation token
   if (response.status === 200 && body?.token) {
     localStorage.setItem("adminToken", body.token);
+
+    // Set tenant API key for public routes to work during impersonation
+    if (body.apiKeyPublic) {
+      tenantApiKey = body.apiKeyPublic;
+      localStorage.setItem("impersonationTenantKey", body.apiKeyPublic);
+    }
   }
 
   return {
@@ -255,6 +282,10 @@ api.adminStopImpersonation = async () => {
   if (response.status === 200 && body?.token) {
     localStorage.setItem("adminToken", body.token);
   }
+
+  // Clear impersonation tenant key
+  tenantApiKey = null;
+  localStorage.removeItem("impersonationTenantKey");
 
   return {
     status: response.status,

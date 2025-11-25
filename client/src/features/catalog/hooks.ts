@@ -27,3 +27,40 @@ export function usePackage(slug: string) {
     enabled: !!slug,
   });
 }
+
+/**
+ * Fetch all active segments for the current tenant
+ * Used by Home page to show segment selector cards
+ */
+export function useSegments() {
+  return useQuery({
+    queryKey: ["segments"],
+    queryFn: async () => {
+      const response = await api.getSegments();
+      if (response.status !== 200) {
+        throw new Error("Failed to fetch segments");
+      }
+      return response.body;
+    },
+    staleTime: 15 * 60 * 1000, // 15 minutes - segments change rarely
+  });
+}
+
+/**
+ * Fetch a segment by slug with its packages and add-ons
+ * Used by SegmentLanding page
+ */
+export function useSegmentWithPackages(slug: string) {
+  return useQuery({
+    queryKey: ["segment", slug, "packages"],
+    queryFn: async () => {
+      const response = await api.getSegmentWithPackages({ params: { slug } });
+      if (response.status !== 200) {
+        throw new Error("Failed to fetch segment");
+      }
+      return response.body;
+    },
+    enabled: !!slug,
+    staleTime: 5 * 60 * 1000, // 5 minutes
+  });
+}

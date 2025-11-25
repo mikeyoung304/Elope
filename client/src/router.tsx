@@ -14,6 +14,7 @@ import type { UserRole } from "./contexts/AuthContext";
 const Home = lazy(() => import("./pages/Home").then(m => ({ default: m.Home })));
 const Package = lazy(() => import("./pages/Package").then(m => ({ default: m.Package })));
 const PackageCatalog = lazy(() => import("./pages/PackageCatalog").then(m => ({ default: m.PackageCatalog })));
+const SegmentLanding = lazy(() => import("./pages/SegmentLanding").then(m => ({ default: m.SegmentLanding })));
 const Success = lazy(() => import("./pages/success").then(m => ({ default: m.Success })));
 const Login = lazy(() => import("./pages/Login").then(m => ({ default: m.Login })));
 const PlatformAdminDashboard = lazy(() => import("./pages/admin/PlatformAdminDashboard").then(m => ({ default: m.PlatformAdminDashboard })));
@@ -56,6 +57,10 @@ export const router = createBrowserRouter([
       {
         path: "packages",
         element: <SuspenseWrapper><PackageCatalog /></SuspenseWrapper>,
+      },
+      {
+        path: "segments/:slug",
+        element: <SuspenseWrapper><SegmentLanding /></SuspenseWrapper>,
       },
       {
         path: "package/:slug",
