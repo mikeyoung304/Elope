@@ -90,16 +90,17 @@ const InputEnhanced = React.forwardRef<HTMLInputElement, InputEnhancedProps>(
             className={cn(
               'peer flex h-14 w-full rounded-lg border bg-white px-4 py-2.5 text-base',
               'shadow-sm hover:shadow-elevation-1',
-              'transition-all duration-300 ease-spring',
-              'hover:border-macon-orange/30',
-              'focus:border-macon-orange/50 focus:shadow-elevation-2',
-              'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-macon-orange/20 focus-visible:ring-offset-2',
-              'placeholder:text-neutral-400 placeholder:transition-opacity focus:placeholder:opacity-70',
+              'transition-all duration-200 ease-out',
+              'hover:border-macon-navy/40',
+              'focus:border-macon-orange focus:shadow-elevation-2',
+              'focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-macon-orange/30 focus-visible:ring-offset-0',
+              'placeholder:text-neutral-500 placeholder:transition-opacity focus:placeholder:opacity-70',
               'disabled:cursor-not-allowed disabled:opacity-50 disabled:shadow-none disabled:hover:border-neutral-200',
               'bg-gradient-to-b from-white to-neutral-50/50',
+              'text-neutral-900',
               error
-                ? 'border-danger-500 focus:border-danger-600 focus:ring-danger-200'
-                : 'border-neutral-200/80',
+                ? 'border-danger-500 focus:border-danger-600 focus-visible:ring-danger-500/30'
+                : 'border-neutral-300',
               showFloatingLabel && 'pt-6 pb-2',
               leftIcon && 'pl-10',
               (rightIcon || clearable) && 'pr-10',
@@ -121,17 +122,17 @@ const InputEnhanced = React.forwardRef<HTMLInputElement, InputEnhancedProps>(
             <label
               htmlFor={inputId}
               className={cn(
-                'absolute left-4 text-neutral-500 pointer-events-none',
+                'absolute left-4 pointer-events-none',
                 'transition-all duration-200 ease-in-out',
                 isLabelFloating
-                  ? 'top-2 text-xs font-medium text-macon-orange'
-                  : 'top-1/2 -translate-y-1/2 text-base',
+                  ? 'top-2 text-xs font-semibold text-macon-navy'
+                  : 'top-1/2 -translate-y-1/2 text-base text-neutral-600',
                 leftIcon && (isLabelFloating ? 'left-4' : 'left-10'),
-                error && isLabelFloating && 'text-danger-600'
+                error && isLabelFloating && 'text-danger-700'
               )}
             >
               {label}
-              {required && <span className="ml-1 text-danger-500">*</span>}
+              {required && <span className="ml-1 text-danger-600">*</span>}
             </label>
           )}
 
@@ -139,10 +140,10 @@ const InputEnhanced = React.forwardRef<HTMLInputElement, InputEnhancedProps>(
           {!showFloatingLabel && label && (
             <label
               htmlFor={inputId}
-              className="block text-sm font-medium text-neutral-700 mb-2"
+              className="block text-sm font-semibold text-neutral-800 mb-2"
             >
               {label}
-              {required && <span className="ml-1 text-danger-500">*</span>}
+              {required && <span className="ml-1 text-danger-600">*</span>}
             </label>
           )}
 

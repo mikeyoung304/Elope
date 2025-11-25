@@ -27,10 +27,12 @@ export function AppShell() {
         </a>
 
         {isMockMode && (
-          <div className="bg-macon-navy-800 border-b border-macon-navy-700 py-2">
+          <div className="bg-warning-100 border-b-2 border-warning-400 py-2.5">
             <Container>
-              <p className="text-base text-macon-navy-100 text-center tracking-wide uppercase">
-                Mock Mode - Using mock data
+              <p className="text-sm font-semibold text-warning-800 text-center tracking-wide uppercase flex items-center justify-center gap-2">
+                <span className="inline-block w-2 h-2 bg-warning-500 rounded-full animate-pulse" aria-hidden="true" />
+                Development Mode - Using Mock Data
+                <span className="inline-block w-2 h-2 bg-warning-500 rounded-full animate-pulse" aria-hidden="true" />
               </p>
             </Container>
           </div>

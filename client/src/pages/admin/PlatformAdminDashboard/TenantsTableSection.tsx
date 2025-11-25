@@ -17,7 +17,7 @@ import {
   TableHeader,
   TableRow,
 } from "../../../components/ui/table";
-import { Badge } from "../../../components/ui/badge";
+import { Badge, StatusBadge } from "../../../components/ui/badge";
 import { EmptyState } from "../../../components/ui/empty-state";
 import type { TenantDto } from "./types";
 
@@ -114,40 +114,33 @@ export function TenantsTableSection({ tenants, isLoading }: TenantsTableSectionP
             </TableRow>
           ) : (
             filteredTenants.map((tenant) => (
-              <TableRow key={tenant.id} className="border-neutral-200 hover:bg-neutral-50">
-                <TableCell className="font-medium text-neutral-900">
+              <TableRow
+                key={tenant.id}
+                className="border-neutral-200 hover:bg-macon-navy-50/50 transition-colors duration-150"
+              >
+                <TableCell className="font-semibold text-neutral-900">
                   {tenant.name}
                 </TableCell>
-                <TableCell className="text-neutral-600">
+                <TableCell className="text-neutral-600 font-mono text-sm">
                   {tenant.slug}
                 </TableCell>
                 <TableCell className="text-neutral-600">
-                  {tenant.email || "—"}
+                  {tenant.email || <span className="text-neutral-400">Not set</span>}
                 </TableCell>
-                <TableCell className="text-neutral-600">
+                <TableCell className="text-neutral-700 font-medium">
                   {tenant._count?.packages || 0}
                 </TableCell>
-                <TableCell className="text-neutral-600">
+                <TableCell className="text-neutral-700 font-medium">
                   {tenant._count?.bookings || 0}
                 </TableCell>
-                <TableCell className="text-neutral-600">
+                <TableCell className="text-neutral-700 font-medium">
                   {tenant.commissionPercent}%
                 </TableCell>
                 <TableCell>
                   <div className="flex gap-2">
-                    {tenant.isActive ? (
-                      <Badge variant="outline" className="border-green-600 bg-green-50 text-green-700">
-                        Active
-                      </Badge>
-                    ) : (
-                      <Badge variant="outline" className="border-red-600 bg-red-50 text-red-700">
-                        Inactive
-                      </Badge>
-                    )}
+                    <StatusBadge status={tenant.isActive ? 'active' : 'inactive'} />
                     {tenant.stripeOnboarded && (
-                      <Badge variant="outline" className="border-macon-teal bg-macon-teal/10 text-macon-teal">
-                        Stripe
-                      </Badge>
+                      <Badge variant="info">Stripe</Badge>
                     )}
                   </div>
                 </TableCell>
@@ -156,7 +149,7 @@ export function TenantsTableSection({ tenants, isLoading }: TenantsTableSectionP
                     variant="outline"
                     size="default"
                     onClick={() => navigate(`/admin/tenants/${tenant.id}`)}
-                    className="border-neutral-300 text-neutral-700 hover:bg-neutral-50"
+                    className="border-macon-navy/20 text-macon-navy hover:bg-macon-navy-50"
                   >
                     View Details
                   </Button>

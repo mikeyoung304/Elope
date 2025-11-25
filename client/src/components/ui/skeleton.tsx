@@ -1,16 +1,23 @@
 import { cn } from "@/lib/utils";
 
-interface SkeletonProps extends React.HTMLAttributes<HTMLDivElement> {}
+interface SkeletonProps extends React.HTMLAttributes<HTMLDivElement> {
+  /** Accessible label for screen readers */
+  label?: string;
+}
 
-export function Skeleton({ className, ...props }: SkeletonProps) {
+export function Skeleton({ className, label = "Loading...", ...props }: SkeletonProps) {
   return (
     <div
+      role="status"
+      aria-label={label}
       className={cn(
-        "animate-pulse rounded-md bg-macon-navy-100 dark:bg-macon-navy-800",
+        "animate-pulse rounded-md bg-neutral-200 dark:bg-neutral-700",
         className
       )}
       {...props}
-    />
+    >
+      <span className="sr-only">{label}</span>
+    </div>
   );
 }
 
@@ -18,16 +25,19 @@ export function Skeleton({ className, ...props }: SkeletonProps) {
  * Shimmer effect skeleton with gradient animation
  * Use this for a more polished loading experience
  */
-export function SkeletonShimmer({ className, ...props }: SkeletonProps) {
+export function SkeletonShimmer({ className, label = "Loading...", ...props }: SkeletonProps) {
   return (
     <div
+      role="status"
+      aria-label={label}
       className={cn(
-        "relative overflow-hidden rounded-md bg-macon-navy-100 dark:bg-macon-navy-800",
+        "relative overflow-hidden rounded-md bg-neutral-200 dark:bg-neutral-700",
         className
       )}
       {...props}
     >
-      <div className="absolute inset-0 -translate-x-full animate-[shimmer_2s_infinite] bg-gradient-to-r from-transparent via-white/20 to-transparent" />
+      <div className="absolute inset-0 -translate-x-full animate-[shimmer_1.5s_infinite] bg-gradient-to-r from-transparent via-white/40 to-transparent" />
+      <span className="sr-only">{label}</span>
     </div>
   );
 }
