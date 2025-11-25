@@ -4,8 +4,11 @@ import {
   Building2,
   Plus,
   Loader2,
-  Search
+  Search,
+  LogIn,
+  Settings
 } from "lucide-react";
+import { api } from "../../../lib/api";
 import { Card } from "../../../components/ui/card";
 import { Button } from "../../../components/ui/button";
 import { Input } from "../../../components/ui/input";
@@ -34,6 +37,26 @@ interface TenantsTableSectionProps {
 export function TenantsTableSection({ tenants, isLoading }: TenantsTableSectionProps) {
   const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState("");
+  const [impersonatingId, setImpersonatingId] = useState<string | null>(null);
+
+  const handleImpersonate = async (tenantId: string) => {
+    setImpersonatingId(tenantId);
+    try {
+      const result = await api.adminImpersonate(tenantId);
+      if (result.status === 200 && result.body) {
+        // Token is stored by api.adminImpersonate, reload to reinitialize with impersonation context
+        window.location.reload();
+      } else {
+        console.error("Impersonation failed:", result.status);
+        alert("Failed to sign in as tenant. Please try again.");
+      }
+    } catch (error) {
+      console.error("Impersonation error:", error);
+      alert("An error occurred while signing in as tenant.");
+    } finally {
+      setImpersonatingId(null);
+    }
+  };
 
   const filteredTenants = tenants.filter((tenant) =>
     tenant.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -145,14 +168,32 @@ export function TenantsTableSection({ tenants, isLoading }: TenantsTableSectionP
                   </div>
                 </TableCell>
                 <TableCell>
-                  <Button
-                    variant="outline"
-                    size="default"
-                    onClick={() => navigate(`/admin/tenants/${tenant.id}`)}
-                    className="border-macon-navy/20 text-macon-navy hover:bg-macon-navy-50"
-                  >
-                    View Details
-                  </Button>
+                  <div className="flex gap-2">
+                    <Button
+                      size="default"
+                      onClick={() => handleImpersonate(tenant.id)}
+                      disabled={!tenant.isActive || impersonatingId === tenant.id}
+                      className="bg-macon-orange hover:bg-macon-orange/90 text-white"
+                    >
+                      {impersonatingId === tenant.id ? (
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                      ) : (
+                        <>
+                          <LogIn className="w-4 h-4 mr-2" />
+                          Sign In As
+                        </>
+                      )}
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="icon"
+                      onClick={() => navigate(`/admin/tenants/${tenant.id}`)}
+                      className="border-macon-navy/20 text-macon-navy hover:bg-macon-navy-50"
+                      title="Edit tenant settings"
+                    >
+                      <Settings className="w-4 h-4" />
+                    </Button>
+                  </div>
                 </TableCell>
               </TableRow>
             ))

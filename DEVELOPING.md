@@ -1,8 +1,8 @@
 # Developing
 
-## Platform Status (January 2025)
+## Platform Status (November 2025)
 
-**Current Version:** Sprint 10 Complete
+**Current Version:** Sprint 10 Complete + Platform Admin Enhancements
 **Maturity:** 9.8/10 (Production-Ready)
 **Deployment:** Preparing for demo user production deployment
 
@@ -18,6 +18,12 @@
 - Security: OWASP 70% compliance, input sanitization, custom CSP
 - Performance: Redis caching (97.5% faster), 16 database indexes
 - Test coverage: 752/752 passing (100%), 3 skipped, 12 todo, +42 new tests
+
+**November 2025 Updates:**
+- Platform admin "Sign In As" impersonation for tenant management
+- Fixed tenant API to include email field in responses
+- Cleaned up broken navigation routes
+- Streamlined admin dashboard with dual-action buttons (Sign In As + Settings)
 
 **Next:** Production deployment for demo users
 
@@ -65,6 +71,35 @@ When implementing new tenant-facing features, follow these principles:
 6. **Security**: All input sanitized via `sanitizeObject()` middleware
 7. **Performance**: Cache read-heavy data with tenant-scoped keys (`catalog:${tenantId}:...`)
 8. **Testing**: Use retry helpers for integration tests (`withDatabaseRetry`, `withConcurrencyRetry`)
+
+## Platform Admin Features
+
+### Tenant Impersonation
+
+Platform admins can "sign in as" any tenant to manage their account with full editing capabilities.
+
+**How it works:**
+1. Go to Platform Admin Dashboard (`/admin/dashboard`)
+2. Click "Sign In As" button on any tenant row
+3. System generates a special JWT with impersonation metadata
+4. Page reloads - you're now operating as that tenant
+5. An impersonation banner appears at the top
+6. Click "Exit Impersonation" to return to admin view
+
+**API Endpoints:**
+- `POST /v1/auth/impersonate` - Start impersonation (requires platform admin token)
+- `POST /v1/auth/stop-impersonation` - Return to admin mode
+
+**Security:**
+- Only PLATFORM_ADMIN users can impersonate
+- All impersonation actions are audit-logged
+- Token includes `impersonating.startedAt` timestamp
+- Original admin identity preserved for accountability
+
+**Files:**
+- Backend: `server/src/routes/auth.routes.ts` (lines 140-181)
+- Frontend: `client/src/pages/admin/PlatformAdminDashboard/TenantsTableSection.tsx`
+- Banner: `client/src/features/admin/dashboard/components/ImpersonationBanner.tsx`
 
 ## Commands
 

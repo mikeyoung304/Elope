@@ -36,19 +36,13 @@ export function RoleBasedNav({ variant = "sidebar" }: { variant?: "sidebar" | "h
       label: "Dashboard",
       path: "/admin/dashboard",
       icon: <Building2 className="w-5 h-5" />,
-      description: "System overview"
+      description: "System overview & tenants"
     },
     {
-      label: "Tenants",
-      path: "/admin/tenants",
+      label: "Segments",
+      path: "/admin/segments",
       icon: <Users className="w-5 h-5" />,
-      description: "Manage all tenants"
-    },
-    {
-      label: "System Settings",
-      path: "/admin/settings",
-      icon: <Settings className="w-5 h-5" />,
-      description: "Platform configuration"
+      description: "Manage customer segments"
     }
   ];
 
@@ -58,37 +52,38 @@ export function RoleBasedNav({ variant = "sidebar" }: { variant?: "sidebar" | "h
       path: "/tenant/dashboard",
       icon: <Building2 className="w-5 h-5" />,
       description: "Tenant overview"
-    },
-    {
-      label: "Packages",
-      path: "/tenant/packages",
-      icon: <Package className="w-5 h-5" />,
-      description: "Manage packages"
-    },
-    {
-      label: "Bookings",
-      path: "/tenant/bookings",
-      icon: <Calendar className="w-5 h-5" />,
-      description: "View bookings"
-    },
-    {
-      label: "Blackouts",
-      path: "/tenant/blackouts",
-      icon: <XCircle className="w-5 h-5" />,
-      description: "Blackout dates"
-    },
-    {
-      label: "Branding",
-      path: "/tenant/branding",
-      icon: <Palette className="w-5 h-5" />,
-      description: "Customize branding"
-    },
-    {
-      label: "Settings",
-      path: "/tenant/settings",
-      icon: <Settings className="w-5 h-5" />,
-      description: "Tenant settings"
     }
+    // TODO: Uncomment routes as they are implemented
+    // {
+    //   label: "Packages",
+    //   path: "/tenant/packages",
+    //   icon: <Package className="w-5 h-5" />,
+    //   description: "Manage packages"
+    // },
+    // {
+    //   label: "Bookings",
+    //   path: "/tenant/bookings",
+    //   icon: <Calendar className="w-5 h-5" />,
+    //   description: "View bookings"
+    // },
+    // {
+    //   label: "Blackouts",
+    //   path: "/tenant/blackouts",
+    //   icon: <XCircle className="w-5 h-5" />,
+    //   description: "Blackout dates"
+    // },
+    // {
+    //   label: "Branding",
+    //   path: "/tenant/branding",
+    //   icon: <Palette className="w-5 h-5" />,
+    //   description: "Customize branding"
+    // },
+    // {
+    //   label: "Settings",
+    //   path: "/tenant/settings",
+    //   icon: <Settings className="w-5 h-5" />,
+    //   description: "Tenant settings"
+    // }
   ];
 
   const navItems = user.role === "PLATFORM_ADMIN" ? platformAdminNav : tenantAdminNav;
