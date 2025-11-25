@@ -8,8 +8,8 @@ import { Menu } from 'lucide-react';
 import { AnimatePresence } from 'framer-motion';
 import { Container } from '@/ui/Container';
 import { cn } from '@/lib/utils';
-import { AuthProvider } from '@/contexts/AuthContext';
 import { Logo } from '@/components/brand/Logo';
+import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetTrigger, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 import { PageTransition } from '@/components/transitions/PageTransition';
 import '@/styles/a11y.css';
@@ -22,7 +22,6 @@ export function AppShell() {
   const location = useLocation();
 
   return (
-    <AuthProvider>
       <div className="min-h-screen bg-white flex flex-col" data-e2e={isE2EMode ? '1' : undefined}>
         {/* Skip link for keyboard navigation */}
         <a className="skip-link" href="#main">
@@ -50,37 +49,43 @@ export function AppShell() {
                   to="/"
                   className={cn(
                     'text-3xl tracking-tight text-white font-semibold',
-                    'hover:text-macon-navy-200 transition-colors'
+                    'hover:text-white/70 transition-colors'
                   )}
                 >
                   Macon AI Solutions
                 </Link>
               </div>
               {/* Desktop Navigation */}
-              <nav aria-label="Primary navigation" className="hidden md:flex gap-8">
+              <nav aria-label="Primary navigation" className="hidden md:flex items-center gap-8">
+                <a
+                  href="#how-it-works"
+                  className="text-lg tracking-wide text-white hover:text-white/90 transition-colors"
+                >
+                  How It Works
+                </a>
                 <Link
                   to="/packages"
-                  className="text-lg tracking-wide text-macon-navy-100 hover:text-white transition-colors"
+                  className="text-lg tracking-wide text-white hover:text-white/90 transition-colors"
                 >
-                  Browse Packages
+                  Pricing
                 </Link>
                 <Link
                   to="/login"
-                  className="text-lg tracking-wide text-macon-navy-100 hover:text-white transition-colors"
+                  className="text-lg tracking-wide text-white hover:text-white/90 transition-colors"
                 >
                   Log In
                 </Link>
-                <a
-                  href="#contact"
-                  className="text-lg tracking-wide text-macon-navy-100 hover:text-white transition-colors"
+                <Button
+                  asChild
+                  className="bg-macon-orange hover:bg-macon-orange-dark text-white font-semibold px-6"
                 >
-                  Contact Support
-                </a>
+                  <Link to="/packages">Get Started</Link>
+                </Button>
               </nav>
 
               {/* Mobile Menu */}
               <Sheet>
-                <SheetTrigger className="md:hidden p-2 text-macon-navy-100 hover:text-white transition-colors">
+                <SheetTrigger className="md:hidden p-2 text-white/90 hover:text-white transition-colors">
                   <Menu className="w-6 h-6" />
                   <span className="sr-only">Open menu</span>
                 </SheetTrigger>
@@ -95,11 +100,17 @@ export function AppShell() {
                     >
                       Home
                     </Link>
+                    <a
+                      href="#how-it-works"
+                      className="text-xl text-neutral-900 hover:text-macon-orange transition-colors font-medium"
+                    >
+                      How It Works
+                    </a>
                     <Link
                       to="/packages"
                       className="text-xl text-neutral-900 hover:text-macon-orange transition-colors font-medium"
                     >
-                      Browse Packages
+                      Pricing
                     </Link>
                     <Link
                       to="/login"
@@ -107,18 +118,12 @@ export function AppShell() {
                     >
                       Log In
                     </Link>
-                    <a
-                      href="#about"
-                      className="text-xl text-neutral-900 hover:text-macon-orange transition-colors font-medium"
+                    <Button
+                      asChild
+                      className="bg-macon-orange hover:bg-macon-orange-dark text-white font-semibold w-full mt-4"
                     >
-                      About
-                    </a>
-                    <a
-                      href="#contact"
-                      className="text-xl text-neutral-900 hover:text-macon-orange transition-colors font-medium"
-                    >
-                      Contact Support
-                    </a>
+                      <Link to="/packages">Get Started</Link>
+                    </Button>
                   </nav>
                 </SheetContent>
               </Sheet>
@@ -142,16 +147,15 @@ export function AppShell() {
                   <h3 className="text-3xl font-semibold text-white mb-4 tracking-tight">
                     Macon AI Solutions
                   </h3>
-                  <p className="text-lg text-macon-navy-200 leading-relaxed max-w-md">
-                    Making tenant management effortless through AI-powered automation.
-                    Onboard faster, automate smarter, and delight your tenants.
+                  <p className="text-lg text-white/90 leading-relaxed max-w-md">
+                    Helping business owners escape the admin trap and focus on what they do best. Scheduling, websites, and marketing—handled.
                   </p>
                 </div>
                 <div>
                   <h4 className="text-base font-medium text-white mb-4 tracking-wide uppercase">
                     Company
                   </h4>
-                  <ul className="space-y-3 text-lg text-macon-navy-200">
+                  <ul className="space-y-3 text-lg text-white/90">
                     <li>
                       <a href="#about" className="hover:text-white transition-colors">
                         About Us
@@ -173,7 +177,7 @@ export function AppShell() {
                   <h4 className="text-base font-medium text-white mb-4 tracking-wide uppercase">
                     Support
                   </h4>
-                  <ul className="space-y-3 text-lg text-macon-navy-200">
+                  <ul className="space-y-3 text-lg text-white/90">
                     <li>
                       <a href="#contact" className="hover:text-white transition-colors">
                         Contact Support
@@ -193,7 +197,7 @@ export function AppShell() {
                 </div>
               </div>
               <div className="border-t border-macon-navy-800 mt-12 pt-8 text-center">
-                <p className="text-base text-macon-navy-300 tracking-wide">
+                <p className="text-base text-white/80 tracking-wide">
                   &copy; 2025 Macon AI Solutions. All rights reserved.
                 </p>
               </div>
@@ -201,6 +205,5 @@ export function AppShell() {
           </Container>
         </footer>
       </div>
-    </AuthProvider>
   );
 }
