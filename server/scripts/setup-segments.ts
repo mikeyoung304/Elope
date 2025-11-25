@@ -1,8 +1,8 @@
 /**
- * Setup Segments for Little Bit Farm
+ * Setup Segments for Demo Tenant
  *
  * Creates 3 customer segments and assigns existing packages to them.
- * Also fixes the Barn Ceremony price bug (1500000 -> 150000 cents = $1,500).
+ * Uses business-agnostic categories suitable for the MAIS platform homepage.
  *
  * Run with: npx tsx scripts/setup-segments.ts
  */
@@ -13,48 +13,48 @@ const prisma = new PrismaClient();
 
 const TENANT_SLUG = 'little-bit-farm';
 
-// Segment definitions with stock wedding/farm images from Unsplash
+// Business-agnostic segment definitions for multi-sector platform
 const SEGMENTS = [
   {
-    slug: 'elopements',
-    name: 'Elopements',
-    heroTitle: 'Just the Two of You',
-    heroSubtitle: 'Intimate ceremonies in our most beautiful settings',
-    heroImage: 'https://images.unsplash.com/photo-1519741497674-611481863552?w=1600&q=80',
-    description: 'Perfect for couples who want to focus on each other. Our elopement packages include a private ceremony spot, an officiant, and professional photography to capture your special moment.',
-    metaTitle: 'Elopement Packages | Little Bit Farm',
-    metaDescription: 'Intimate elopement ceremonies at Little Bit Farm. Just the two of you in a beautiful rustic setting.',
+    slug: 'starter',
+    name: 'Starter',
+    heroTitle: 'Get Started Fast',
+    heroSubtitle: 'Essential services for solopreneurs',
+    heroImage: 'https://images.unsplash.com/photo-1553877522-43269d4ea984?w=1600&q=80',
+    description: 'Perfect for solo business owners ready to offload admin work. Our Starter packages include scheduling, basic marketing automation, and a professional web presence to help you focus on your craft.',
+    metaTitle: 'Starter Packages | Macon AI Solutions',
+    metaDescription: 'Essential business services for solopreneurs. AI-powered scheduling, marketing, and web presence.',
     sortOrder: 0,
   },
   {
-    slug: 'intimate-weddings',
-    name: 'Intimate Weddings',
-    heroTitle: 'Share It With Those Who Matter Most',
-    heroSubtitle: 'Small gatherings of up to 30 guests',
-    heroImage: 'https://images.unsplash.com/photo-1464366400600-7168b8af9bc3?w=1600&q=80',
-    description: 'Invite your closest family and friends to witness your union. Our intimate wedding packages include ceremony and reception space, catering options, and all the details to make your day perfect.',
-    metaTitle: 'Intimate Wedding Packages | Little Bit Farm',
-    metaDescription: 'Intimate weddings for up to 30 guests at Little Bit Farm. Beautiful rustic venue with full service.',
+    slug: 'growth',
+    name: 'Growth',
+    heroTitle: 'Scale With Confidence',
+    heroSubtitle: 'Full-service support for growing businesses',
+    heroImage: 'https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=1600&q=80',
+    description: 'Ready to scale? Our Growth packages include advanced marketing automation, CRM integration, client onboarding systems, and data-driven insights to help you grow sustainably.',
+    metaTitle: 'Growth Packages | Macon AI Solutions',
+    metaDescription: 'Full-service business support for growing companies. Marketing automation, CRM, and data-driven growth.',
     sortOrder: 1,
   },
   {
-    slug: 'full-celebrations',
-    name: 'Full Celebrations',
-    heroTitle: 'A Day to Remember',
-    heroSubtitle: 'Grand celebrations for up to 100 guests',
-    heroImage: 'https://images.unsplash.com/photo-1519225421980-715cb0215aed?w=1600&q=80',
-    description: 'Go all out with a full celebration. Our comprehensive packages include our stunning barn venue, full catering, bar service, entertainment coordination, and a dedicated wedding planner.',
-    metaTitle: 'Full Wedding Celebrations | Little Bit Farm',
-    metaDescription: 'Full wedding celebrations for up to 100 guests at Little Bit Farm. Complete venue and service packages.',
+    slug: 'enterprise',
+    name: 'Enterprise',
+    heroTitle: 'Your Complete Back Office',
+    heroSubtitle: 'Comprehensive solutions for established businesses',
+    heroImage: 'https://images.unsplash.com/photo-1497366216548-37526070297c?w=1600&q=80',
+    description: 'Go all out with enterprise-level support. Our comprehensive packages include dedicated account management, custom integrations, multi-location support, and white-glove service.',
+    metaTitle: 'Enterprise Solutions | Macon AI Solutions',
+    metaDescription: 'Enterprise business solutions with dedicated support, custom integrations, and white-glove service.',
     sortOrder: 2,
   },
 ];
 
 // Map existing packages to segments
 const PACKAGE_SEGMENT_MAP: Record<string, string> = {
-  'garden-gathering': 'intimate-weddings',
-  'farmhouse-reception': 'full-celebrations',
-  'barn-ceremony': 'elopements',
+  'garden-gathering': 'growth',
+  'farmhouse-reception': 'enterprise',
+  'barn-ceremony': 'starter',
 };
 
 async function main() {

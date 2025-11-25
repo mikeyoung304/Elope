@@ -63,11 +63,11 @@ export function BrandingPreview({
             className="text-2xl font-bold mb-3"
             style={{ color: primaryColor }}
           >
-            Romantic Sunset Package
+            Premium Consulting Package
           </h3>
           <p className="text-base mb-4 opacity-80">
-            A beautiful ceremony on the beach at sunset with professional photography
-            and personalized vows.
+            A comprehensive service session with professional guidance
+            and personalized recommendations.
           </p>
 
           {/* Price */}

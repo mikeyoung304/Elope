@@ -14,7 +14,7 @@ interface FontOption {
 }
 
 /**
- * Curated list of wedding-appropriate Google Fonts
+ * Curated list of professional Google Fonts
  */
 const FONT_OPTIONS: FontOption[] = [
   {
@@ -197,10 +197,10 @@ export function FontSelector({ value = 'Inter', onChange, className = '' }: Font
       >
         <p className="text-white/90 text-lg mb-2">Preview:</p>
         <h3 className="text-2xl font-semibold text-white mb-1">
-          Your Wedding Package
+          Your Business Package
         </h3>
         <p className="text-white/70">
-          Experience an unforgettable celebration with our exclusive wedding packages.
+          Experience growth with our professional service packages.
         </p>
       </div>
     </div>

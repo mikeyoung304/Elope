@@ -30,7 +30,7 @@ export function BasicInfoFields({
           onChange={(e) => onChange({ name: e.target.value })}
           onBlur={onGenerateSlug}
           className="bg-macon-navy-900 border-white/20 text-white"
-          placeholder="e.g., Bella Weddings"
+          placeholder="e.g., Acme Consulting"
           disabled={isSubmitting}
         />
         {errors.name && (
@@ -48,7 +48,7 @@ export function BasicInfoFields({
           value={formData.slug}
           onChange={(e) => onChange({ slug: e.target.value })}
           className="bg-macon-navy-900 border-white/20 text-white"
-          placeholder="e.g., bella-weddings"
+          placeholder="e.g., acme-consulting"
           disabled={isSubmitting}
         />
         <p className="text-white/60 text-sm">
@@ -70,7 +70,7 @@ export function BasicInfoFields({
           value={formData.email}
           onChange={(e) => onChange({ email: e.target.value })}
           className="bg-macon-navy-900 border-white/20 text-white"
-          placeholder="admin@bellaweddings.com"
+          placeholder="admin@acmeconsulting.com"
           disabled={isSubmitting}
         />
         {errors.email && (

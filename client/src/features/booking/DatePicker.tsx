@@ -116,7 +116,7 @@ export function DatePicker({ selected, onSelect }: DatePickerProps) {
       <div className="mb-6 flex items-start gap-2">
         <Calendar className="h-5 w-5 mt-0.5 text-neutral-600" />
         <p className="text-lg text-neutral-700">
-          Select a date for your ceremony. Unavailable dates are pre-loaded for your
+          Select a date for your appointment. Unavailable dates are pre-loaded for your
           convenience.
         </p>
       </div>

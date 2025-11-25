@@ -66,19 +66,19 @@ async function main() {
   console.log(`✅ Created test tenant: ${tenant.name} (${tenant.slug})`);
   console.log(`   API Key: ${testTenantApiKey}`);
 
-  // Create packages for the test tenant
-  const [classic, garden, luxury] = await Promise.all([
+  // Create packages for the test tenant (business-agnostic)
+  const [starter, growth, enterprise] = await Promise.all([
     prisma.package.upsert({
-      where: { tenantId_slug: { slug: 'classic', tenantId: tenant.id } },
+      where: { tenantId_slug: { slug: 'starter', tenantId: tenant.id } },
       update: {},
       create: {
-        slug: 'classic',
-        name: 'Classic Micro Wedding',
-        description: 'An intimate ceremony with essential services for a memorable day.',
-        basePrice: 250000,
+        slug: 'starter',
+        name: 'Starter Package',
+        description: 'Essential business services to get you started. Perfect for solopreneurs ready to focus on their craft.',
+        basePrice: 25000,
         photos: JSON.stringify([{
-          url: 'https://images.unsplash.com/photo-1519741497674-611481863552',
-          filename: 'classic.jpg',
+          url: 'https://images.unsplash.com/photo-1553877522-43269d4ea984',
+          filename: 'starter.jpg',
           size: 0,
           order: 0,
         }]),
@@ -86,16 +86,16 @@ async function main() {
       },
     }),
     prisma.package.upsert({
-      where: { tenantId_slug: { slug: 'garden', tenantId: tenant.id } },
+      where: { tenantId_slug: { slug: 'growth', tenantId: tenant.id } },
       update: {},
       create: {
-        slug: 'garden',
-        name: 'Garden Elopement',
-        description: 'A romantic outdoor ceremony in a beautiful garden setting.',
-        basePrice: 350000,
+        slug: 'growth',
+        name: 'Growth Package',
+        description: 'Full-service support for growing businesses. Scale with confidence.',
+        basePrice: 50000,
         photos: JSON.stringify([{
-          url: 'https://images.unsplash.com/photo-1464366400600-7168b8af9bc3',
-          filename: 'garden.jpg',
+          url: 'https://images.unsplash.com/photo-1460925895917-afdab827c52f',
+          filename: 'growth.jpg',
           size: 0,
           order: 0,
         }]),
@@ -103,16 +103,16 @@ async function main() {
       },
     }),
     prisma.package.upsert({
-      where: { tenantId_slug: { slug: 'luxury', tenantId: tenant.id } },
+      where: { tenantId_slug: { slug: 'enterprise', tenantId: tenant.id } },
       update: {},
       create: {
-        slug: 'luxury',
-        name: 'Luxury Elopement',
-        description: 'Premium experience with exclusive venue and top-tier services.',
-        basePrice: 550000,
+        slug: 'enterprise',
+        name: 'Enterprise Package',
+        description: 'Comprehensive solutions for established businesses. Your complete back office.',
+        basePrice: 100000,
         photos: JSON.stringify([{
-          url: 'https://images.unsplash.com/photo-1465495976277-4387d4b0b4c6',
-          filename: 'luxury.jpg',
+          url: 'https://images.unsplash.com/photo-1497366216548-37526070297c',
+          filename: 'enterprise.jpg',
           size: 0,
           order: 0,
         }]),
@@ -121,70 +121,70 @@ async function main() {
     }),
   ]);
 
-  // Create add-ons for packages
-  const photography = await prisma.addOn.create({
+  // Create add-ons for packages (business-agnostic)
+  const socialMedia = await prisma.addOn.create({
     data: {
       tenantId: tenant.id,
-      slug: 'photography-2hr',
-      name: 'Photography (2 hrs)',
-      description: 'Professional photography service for 2 hours',
-      price: 60000,
-    },
-  });
-
-  const officiant = await prisma.addOn.create({
-    data: {
-      tenantId: tenant.id,
-      slug: 'officiant',
-      name: 'Licensed Officiant',
-      description: 'Certified officiant for your ceremony',
-      price: 30000,
-    },
-  });
-
-  const bouquet = await prisma.addOn.create({
-    data: {
-      tenantId: tenant.id,
-      slug: 'bouquet',
-      name: 'Bouquet & Boutonniere',
-      description: 'Beautiful floral arrangements',
+      slug: 'social-media-management',
+      name: 'Social Media Management',
+      description: 'Monthly social media content and posting',
       price: 15000,
     },
   });
 
-  const violinist = await prisma.addOn.create({
+  const emailMarketing = await prisma.addOn.create({
     data: {
       tenantId: tenant.id,
-      slug: 'violinist',
-      name: 'Ceremony Violinist',
-      description: 'Live violin music for your ceremony',
+      slug: 'email-marketing',
+      name: 'Email Marketing',
+      description: 'Automated email sequences and campaigns',
+      price: 10000,
+    },
+  });
+
+  const crmSetup = await prisma.addOn.create({
+    data: {
+      tenantId: tenant.id,
+      slug: 'crm-setup',
+      name: 'CRM Setup & Training',
+      description: 'Custom CRM configuration and onboarding',
       price: 25000,
+    },
+  });
+
+  const dedicatedManager = await prisma.addOn.create({
+    data: {
+      tenantId: tenant.id,
+      slug: 'dedicated-account-manager',
+      name: 'Dedicated Account Manager',
+      description: 'Personal point of contact for all your needs',
+      price: 50000,
     },
   });
 
   // Link add-ons to packages using the junction table
   await Promise.all([
     prisma.packageAddOn.create({
-      data: { packageId: classic.id, addOnId: photography.id },
+      data: { packageId: starter.id, addOnId: socialMedia.id },
     }),
     prisma.packageAddOn.create({
-      data: { packageId: classic.id, addOnId: officiant.id },
+      data: { packageId: starter.id, addOnId: emailMarketing.id },
     }),
     prisma.packageAddOn.create({
-      data: { packageId: garden.id, addOnId: bouquet.id },
+      data: { packageId: growth.id, addOnId: socialMedia.id },
     }),
     prisma.packageAddOn.create({
-      data: { packageId: garden.id, addOnId: photography.id },
+      data: { packageId: growth.id, addOnId: crmSetup.id },
     }),
     prisma.packageAddOn.create({
-      data: { packageId: luxury.id, addOnId: violinist.id },
+      data: { packageId: enterprise.id, addOnId: dedicatedManager.id },
     }),
     prisma.packageAddOn.create({
-      data: { packageId: luxury.id, addOnId: photography.id },
+      data: { packageId: enterprise.id, addOnId: crmSetup.id },
     }),
   ]);
 
-  console.log(`✅ Created ${[classic, garden, luxury].length} packages with add-ons`);
+  console.log(`✅ Created ${[starter, growth, enterprise].length} packages with add-ons`);
 
   // Create blackout date for the test tenant
   await prisma.blackoutDate.upsert({

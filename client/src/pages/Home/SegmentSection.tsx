@@ -31,10 +31,10 @@ export function SegmentSection() {
             id="segments-heading"
             className="font-heading text-3xl sm:text-4xl font-bold text-macon-navy mb-4"
           >
-            Find Your Perfect Fit
+            Find Your Solution
           </h2>
           <p className="text-lg text-neutral-600 max-w-2xl mx-auto">
-            Every celebration is unique. Choose the path that feels right for you.
+            Every business is unique. Choose the path that matches your needs.
           </p>
         </div>
 

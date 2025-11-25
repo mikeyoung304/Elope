@@ -20,7 +20,7 @@ export function HeroSection() {
         <div className="max-w-4xl">
           {/* The Hook - Creates tension */}
           <p className="text-macon-orange font-medium text-lg mb-6 tracking-wide">
-            For business owners who are tired of doing everything themselves
+            For business owners who want AI working for them—not the other way around
           </p>
 
           {/* The Promise - Resolution */}
@@ -35,8 +35,8 @@ export function HeroSection() {
 
           {/* The Value Proposition - Simple, clear */}
           <p className="text-xl sm:text-2xl text-neutral-600 mb-12 leading-relaxed max-w-2xl">
-            We become your back office. You keep doing what you love.
-            No employees. No software to learn. Just growth.
+            We become your AI-powered back office. You keep doing what you love.
+            No employees. No tech stack to master. Just growth.
           </p>
 
           {/* Single, Clear CTA */}

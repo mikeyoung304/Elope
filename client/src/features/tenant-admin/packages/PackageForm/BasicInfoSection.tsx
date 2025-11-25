@@ -48,7 +48,7 @@ export function BasicInfoSection({
             }
           }}
           onBlur={(e) => validateField('title', e.target.value)}
-          placeholder="Romantic Sunset Package"
+          placeholder="Premium Consulting Package"
           disabled={isSaving}
           className={`bg-macon-navy-900 border-white/20 text-white placeholder:text-white/50 focus:border-white/30 text-lg h-12 ${
             fieldErrors.title ? 'border-danger-600' : ''
@@ -82,7 +82,7 @@ export function BasicInfoSection({
           }}
           onBlur={(e) => validateField('description', e.target.value)}
           rows={3}
-          placeholder="A beautiful sunset ceremony..."
+          placeholder="A premium service that transforms your clients' experience..."
           disabled={isSaving}
           className={`bg-macon-navy-900 border-white/20 text-white placeholder:text-white/50 focus:border-white/30 text-lg ${
             fieldErrors.description ? 'border-danger-600' : ''

@@ -14,21 +14,21 @@ export function ValueSection() {
       before: "15+ hours/week on admin",
       after: "Your weekends back",
       description:
-        "We handle scheduling, invoicing, and follow-ups. You show up and do your work.",
+        "AI handles scheduling, invoicing, and follow-ups automatically. You show up and do your work.",
     },
     {
       icon: Calendar,
       before: "Feast or famine bookings",
       after: "Consistent pipeline",
       description:
-        "Automated marketing that works while you sleep. No more scrambling for clients.",
+        "AI-driven marketing that learns and improves while you sleep. No more scrambling for clients.",
     },
     {
       icon: TrendingUp,
       before: "Guessing what works",
       after: "Data-driven growth",
       description:
-        "We track what's working and do more of it. Average partner sees 30% revenue increase.",
+        "Our AI tracks what's working and doubles down—automatically. Average partner sees 30% revenue increase.",
     },
   ];
 

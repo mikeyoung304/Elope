@@ -32,7 +32,7 @@ export function PackagePage() {
   // Progress steps for booking flow
   const bookingSteps = useMemo(() => [
     { label: "Package", description: "Choose your package" },
-    { label: "Date", description: "Select ceremony date" },
+    { label: "Date", description: "Select appointment date" },
     { label: "Extras", description: "Add-ons & details" },
     { label: "Checkout", description: "Complete booking" }
   ], []);
