@@ -35,13 +35,25 @@ export interface TenantAdminUser {
 export type User = PlatformAdminUser | TenantAdminUser;
 
 /**
+ * Impersonation data in JWT token
+ * Present when platform admin is impersonating a tenant
+ */
+export interface ImpersonationData {
+  tenantId: string;
+  tenantSlug: string;
+  tenantEmail: string;
+  startedAt: string;
+}
+
+/**
  * JWT token payload for platform admin
  * Maps to backend TokenPayload interface
  */
 export interface PlatformAdminTokenPayload {
   userId: string;
   email: string;
-  role: 'admin';
+  role: 'admin' | 'ADMIN' | 'PLATFORM_ADMIN';
+  impersonating?: ImpersonationData; // Present when impersonating a tenant
   iat?: number; // Issued at (Unix timestamp)
   exp?: number; // Expiration (Unix timestamp)
 }
@@ -74,6 +86,7 @@ export interface AuthState {
   token: string | null;
   isAuthenticated: boolean;
   isLoading: boolean;
+  impersonation: ImpersonationData | null; // Present when admin is impersonating
 }
 
 /**
@@ -87,6 +100,7 @@ export interface AuthContextType extends AuthState {
   isTenantAdmin: () => boolean;
   hasRole: (role: UserRole) => boolean;
   refreshAuth: () => void;
+  isImpersonating: () => boolean; // True if admin is impersonating a tenant
 }
 
 /**

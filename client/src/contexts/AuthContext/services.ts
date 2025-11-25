@@ -13,8 +13,9 @@ import {
   getActiveUser,
   isTokenExpired,
   getTenantIdFromToken,
+  getImpersonationFromToken,
 } from '../../lib/auth';
-import type { User, UserRole } from '../../types/auth';
+import type { User, UserRole, ImpersonationData } from '../../types/auth';
 
 /**
  * Login result after successful authentication
@@ -24,6 +25,7 @@ export interface LoginResult {
   token: string;
   role: UserRole;
   tenantId: string | null;
+  impersonation: ImpersonationData | null;
 }
 
 /**
@@ -86,6 +88,7 @@ export async function authenticateUser(
       targetRole === 'TENANT_ADMIN' && userData.role === 'TENANT_ADMIN'
         ? userData.tenantId
         : null,
+    impersonation: null, // Normal login never has impersonation
   };
 }
 
@@ -110,6 +113,7 @@ export function restoreAuthState(): {
   token: string;
   role: UserRole;
   tenantId: string | null;
+  impersonation: ImpersonationData | null;
 } | null {
   const activeUser = getActiveUser();
 
@@ -127,14 +131,19 @@ export function restoreAuthState(): {
       token: activeUser.token,
       role: activeUser.role,
       tenantId,
+      impersonation: null, // Tenant admins don't impersonate
     };
   }
+
+  // Check for impersonation state in platform admin token
+  const impersonation = getImpersonationFromToken(activeUser.token);
 
   return {
     user: activeUser.user,
     token: activeUser.token,
     role: activeUser.role,
-    tenantId: null,
+    tenantId: impersonation?.tenantId || null, // Use impersonated tenant ID if present
+    impersonation,
   };
 }
 

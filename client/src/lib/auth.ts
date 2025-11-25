@@ -9,6 +9,7 @@ import {
   TokenPayload,
   PlatformAdminTokenPayload,
   TenantAdminTokenPayload,
+  ImpersonationData,
   User,
   UserRole,
   AuthError,
@@ -184,6 +185,24 @@ export function getTenantIdFromToken(token: string): string | null {
     const payload = decodeJWT(token);
     if (isTenantAdminPayload(payload)) {
       return payload.tenantId;
+    }
+    return null;
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Get impersonation data from token (if platform admin impersonating)
+ *
+ * @param token - JWT token string
+ * @returns Impersonation data or null if not impersonating
+ */
+export function getImpersonationFromToken(token: string): ImpersonationData | null {
+  try {
+    const payload = decodeJWT(token);
+    if (isPlatformAdminPayload(payload) && payload.impersonating) {
+      return payload.impersonating;
     }
     return null;
   } catch {

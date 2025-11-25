@@ -14,7 +14,7 @@ import {
   restoreAuthState,
 } from './services';
 import { useTokenExpiration } from './useTokenExpiration';
-import type { User, UserRole, AuthContextType } from '../../types/auth';
+import type { User, UserRole, AuthContextType, ImpersonationData } from '../../types/auth';
 
 /**
  * Auth Provider Props
@@ -31,6 +31,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const [token, setToken] = useState<string | null>(null);
   const [role, setRole] = useState<UserRole | null>(null);
   const [tenantId, setTenantId] = useState<string | null>(null);
+  const [impersonation, setImpersonation] = useState<ImpersonationData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
   /**
@@ -45,11 +46,13 @@ export function AuthProvider({ children }: AuthProviderProps) {
       setToken(authState.token);
       setRole(authState.role);
       setTenantId(authState.tenantId);
+      setImpersonation(authState.impersonation);
     } else {
       setUser(null);
       setToken(null);
       setRole(null);
       setTenantId(null);
+      setImpersonation(null);
     }
 
     setIsLoading(false);
@@ -77,6 +80,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
         setToken(result.token);
         setRole(result.role);
         setTenantId(result.tenantId);
+        setImpersonation(result.impersonation);
       } finally {
         setIsLoading(false);
       }
@@ -95,6 +99,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
     setToken(null);
     setRole(null);
     setTenantId(null);
+    setImpersonation(null);
   }, []);
 
   /**
@@ -122,6 +127,13 @@ export function AuthProvider({ children }: AuthProviderProps) {
   );
 
   /**
+   * Check if currently impersonating a tenant
+   */
+  const isImpersonating = useCallback((): boolean => {
+    return impersonation !== null;
+  }, [impersonation]);
+
+  /**
    * Periodically check for token expiration
    */
   useTokenExpiration(token, logout);
@@ -133,12 +145,14 @@ export function AuthProvider({ children }: AuthProviderProps) {
     token,
     isAuthenticated: !!user && !!token,
     isLoading,
+    impersonation,
     login,
     logout,
     isPlatformAdmin,
     isTenantAdmin,
     hasRole,
     refreshAuth,
+    isImpersonating,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

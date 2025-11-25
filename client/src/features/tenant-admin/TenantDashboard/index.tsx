@@ -2,6 +2,7 @@
  * TenantDashboard Component
  *
  * Main dashboard for tenant administrators with modular sub-components
+ * Shows impersonation banner when platform admin is impersonating a tenant
  */
 
 import { useState } from "react";
@@ -13,6 +14,8 @@ import { AdminLayout } from "../../../layouts/AdminLayout";
 import { MetricsCards } from "./MetricsCards";
 import { TabNavigation, type DashboardTab } from "./TabNavigation";
 import { useDashboardData } from "./useDashboardData";
+import { ImpersonationBanner } from "../../admin/dashboard/components/ImpersonationBanner";
+import { useAuth } from "../../../contexts/AuthContext";
 import type { TenantDto } from "./types";
 
 interface TenantDashboardProps {
@@ -21,6 +24,7 @@ interface TenantDashboardProps {
 
 export function TenantDashboard({ tenantInfo }: TenantDashboardProps) {
   const [activeTab, setActiveTab] = useState<DashboardTab>("packages");
+  const { isImpersonating, impersonation } = useAuth();
 
   const {
     packages,
@@ -36,6 +40,17 @@ export function TenantDashboard({ tenantInfo }: TenantDashboardProps) {
   return (
     <AdminLayout breadcrumbs={[{ label: "Dashboard" }]}>
       <div className="max-w-7xl mx-auto space-y-6">
+        {/* Impersonation Banner */}
+        {isImpersonating() && impersonation && (
+          <ImpersonationBanner
+            tenantName={tenantInfo?.name || impersonation.tenantSlug}
+            tenantSlug={impersonation.tenantSlug}
+            onStopImpersonation={() => {
+              // Banner handles the API call and page reload
+            }}
+          />
+        )}
+
         {/* Header */}
         <div>
           <h1 className="text-3xl font-bold text-neutral-900">Tenant Dashboard</h1>
