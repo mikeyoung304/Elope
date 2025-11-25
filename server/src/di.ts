@@ -173,20 +173,34 @@ export function buildContainer(config: Config): Container {
     throw new Error('DATABASE_URL required for real adapters mode');
   }
 
-  // Initialize Prisma Client
+  // Initialize Prisma Client with serverless-optimized connection pooling
+  // Append connection pool parameters to DATABASE_URL
+  const databaseUrl = new URL(config.DATABASE_URL!);
+
+  // Add Prisma connection pool parameters for serverless optimization
+  // See: https://www.prisma.io/docs/orm/prisma-client/setup-and-configuration/databases-connections/connection-pool
+  databaseUrl.searchParams.set('connection_limit', String(config.DATABASE_CONNECTION_LIMIT));
+  databaseUrl.searchParams.set('pool_timeout', String(config.DATABASE_POOL_TIMEOUT));
+
+  // For Supabase with Supavisor (pgbouncer), use transaction mode
+  // This requires adding ?pgbouncer=true to the URL
+  if (databaseUrl.host.includes('supabase')) {
+    databaseUrl.searchParams.set('pgbouncer', 'true');
+    logger.info('🔌 Using Supabase Supavisor (pgbouncer) for connection pooling');
+  }
+
   const prisma = new PrismaClient({
     datasources: {
       db: {
-        url: config.DATABASE_URL,
+        url: databaseUrl.toString(),
       },
     },
     log: process.env.NODE_ENV === 'production'
       ? ['error', 'warn']
       : ['query', 'error', 'warn'],
-    // Connection pool handled by Prisma/Supabase automatically
-    // Recommended for serverless: 1-5 connections per instance
-    // Prisma default: (num_physical_cpus * 2) + effective_spindle_count
   });
+
+  logger.info(`📊 Prisma connection pool: limit=${config.DATABASE_CONNECTION_LIMIT}, timeout=${config.DATABASE_POOL_TIMEOUT}s`);
 
   // Add slow query monitoring
   if (process.env.NODE_ENV !== 'production') {
