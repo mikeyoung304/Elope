@@ -415,8 +415,9 @@ jobs:
           vercel-args: '--prod --env VITE_API_URL=${{ env.PRODUCTION_API_URL }}'
           working-directory: ./client
           alias-domains: |
-            mais.app
-            www.mais.app
+            maconaisolutions.com
+            www.maconaisolutions.com
+            app.maconaisolutions.com
 
       - name: Wait for Vercel deployment
         run: |

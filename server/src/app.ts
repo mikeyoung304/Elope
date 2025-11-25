@@ -95,8 +95,10 @@ export function createApp(
         const allowed = [
           'http://localhost:5173',
           'http://localhost:3000',
-          'https://mais.com',
-          'https://widget.mais.com',
+          'https://maconaisolutions.com',
+          'https://www.maconaisolutions.com',
+          'https://app.maconaisolutions.com',
+          'https://widget.maconaisolutions.com',
         ];
 
         // Allow whitelisted origins or any HTTPS origin in production (for widget embedding)
