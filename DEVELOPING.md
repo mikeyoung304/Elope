@@ -150,7 +150,7 @@ JWT_SECRET=change-me  # Generate: openssl rand -hex 32
 TENANT_SECRETS_ENCRYPTION_KEY=...  # Generate: openssl rand -hex 32
 
 # Real mode - Database (✅ IMPLEMENTED)
-DATABASE_URL=postgresql://username:password@localhost:5432/elope_dev?schema=public
+DATABASE_URL=postgresql://username:password@localhost:5432/mais_dev?schema=public
 
 # Real mode - Stripe (✅ IMPLEMENTED)
 STRIPE_SECRET_KEY=sk_test_xxx

@@ -36,8 +36,8 @@ async function createMaconTenant() {
     const tenant = await prisma.tenant.create({
       data: {
         slug: 'macon',
-        name: 'Elope to Macon, GA',
-        email: 'elope@macon.com',
+        name: 'MAIS Demo Tenant',
+        email: 'demo@maconaisolutions.com',
         passwordHash,
         apiKeyPublic,
         apiKeySecret,
@@ -62,7 +62,7 @@ async function createMaconTenant() {
     console.log('   Commission:', tenant.commissionPercent + '%');
     console.log('');
     console.log('🔑 Login Credentials:');
-    console.log('   Email: elope@macon.com');
+    console.log('   Email: demo@maconaisolutions.com');
     console.log('   Password:', password);
     console.log('');
     console.log('🎨 Branding:');
@@ -74,7 +74,7 @@ async function createMaconTenant() {
     console.log('   Public Key:', tenant.apiKeyPublic);
     console.log('');
     console.log('🌐 Storefront URL: http://localhost:5173/?tenant=macon');
-    console.log('🎛️  Admin Dashboard: http://localhost:5173/login → use elope@macon.com');
+    console.log('🎛️  Admin Dashboard: http://localhost:5173/login → use demo@maconaisolutions.com');
   } catch (error) {
     console.error('❌ Failed to create tenant:', error);
     throw error;

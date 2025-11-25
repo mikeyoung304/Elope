@@ -7,17 +7,17 @@
 import type { OpenAPIV3 } from 'openapi-types';
 
 /**
- * OpenAPI 3.0 specification for Elope API
+ * OpenAPI 3.0 specification for MAIS API
  */
 export const openApiSpec: OpenAPIV3.Document = {
   openapi: '3.0.0',
   info: {
-    title: 'Elope Wedding Booking API',
+    title: 'MAIS API',
     version: '1.0.0',
     description: `
-# Elope Wedding Booking API
+# MAIS API
 
-API for managing wedding bookings, packages, add-ons, and payments.
+API for managing business growth packages, bookings, add-ons, and payments.
 
 ## Authentication
 
@@ -60,8 +60,8 @@ All error responses follow this format:
 The \`POST /v1/webhooks/stripe\` endpoint handles Stripe payment events. It requires a raw body and validates the Stripe signature.
     `.trim(),
     contact: {
-      name: 'Elope Support',
-      email: 'support@macon.example.com',
+      name: 'MAIS Support',
+      email: 'support@maconaisolutions.com',
     },
   },
   servers: [
@@ -70,7 +70,7 @@ The \`POST /v1/webhooks/stripe\` endpoint handles Stripe payment events. It requ
       description: 'Local development server',
     },
     {
-      url: 'https://api.elope.example.com',
+      url: 'https://api.maconaisolutions.com',
       description: 'Production server',
     },
   ],

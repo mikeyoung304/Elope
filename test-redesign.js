@@ -21,7 +21,7 @@ const path = require('path');
 
   const page = await browser.newPage();
 
-  console.log('📸 Testing redesigned Elope application...\n');
+  console.log('📸 Testing redesigned MAIS application...\n');
 
   // Test 1: Home Page
   console.log('1. Testing Home Page...');
@@ -54,7 +54,7 @@ const path = require('path');
 
   // Log in to admin
   console.log('   ✓ Attempting admin login...');
-  await page.type('input[type="email"]', 'admin@elope.com');
+  await page.type('input[type="email"]', 'admin@maconaisolutions.com');
   await page.type('input[type="password"]', 'admin123');
   await page.click('button[type="submit"]');
   await page.waitForNavigation({ waitUntil: 'networkidle0' });

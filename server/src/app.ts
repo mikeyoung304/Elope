@@ -185,7 +185,7 @@ export function createApp(
     swaggerUi.serve,
     swaggerUi.setup(openApiSpec, {
       customCss: '.swagger-ui .topbar { display: none }',
-      customSiteTitle: 'Elope API Documentation',
+      customSiteTitle: 'MAIS API Documentation',
       customfavIcon: '/favicon.ico',
       swaggerOptions: {
         persistAuthorization: true,

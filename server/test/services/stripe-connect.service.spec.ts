@@ -177,16 +177,16 @@ describe('StripeConnectService', () => {
       // Act
       const url = await service.createOnboardingLink(
         tenantId,
-        'https://app.elope.com/onboarding/refresh',
-        'https://app.elope.com/onboarding/success'
+        'https://app.maconaisolutions.com/onboarding/refresh',
+        'https://app.maconaisolutions.com/onboarding/success'
       );
 
       // Assert
       expect(url).toBe('https://connect.stripe.com/setup/s/acct_test123');
       expect(mockStripe.accountLinks.create).toHaveBeenCalledWith({
         account: stripeAccountId,
-        refresh_url: 'https://app.elope.com/onboarding/refresh',
-        return_url: 'https://app.elope.com/onboarding/success',
+        refresh_url: 'https://app.maconaisolutions.com/onboarding/refresh',
+        return_url: 'https://app.maconaisolutions.com/onboarding/success',
         type: 'account_onboarding',
       });
     });
