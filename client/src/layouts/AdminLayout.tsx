@@ -67,7 +67,10 @@ export function AdminLayout({ children, breadcrumbs }: AdminLayoutProps) {
       {/* Mobile Header */}
       <div className="lg:hidden fixed top-0 left-0 right-0 z-50 bg-macon-navy-900 border-b border-macon-navy-700">
         <div className="flex items-center justify-between px-4 py-3">
-          <Logo size="sm" linkTo="/" className="max-w-[80px]" />
+          <div className="flex items-center gap-2">
+            <Logo size="sm" linkTo="/" className="w-8 h-8" />
+            <span className="text-white font-semibold text-base tracking-tight">MACON</span>
+          </div>
           <div className="flex items-center gap-3">
             <Badge variant={roleVariant} className="text-xs">
               {roleLabel}
@@ -105,15 +108,18 @@ export function AdminLayout({ children, breadcrumbs }: AdminLayoutProps) {
       >
         <div className="flex flex-col h-full">
           {/* Desktop Logo & Toggle */}
-          <div className="hidden lg:flex items-center justify-between px-4 py-5 border-b border-macon-navy-700">
+          <div className="hidden lg:flex items-center justify-between px-4 py-4 border-b border-macon-navy-700">
             {!sidebarCollapsed ? (
-              <Logo size="sm" linkTo="/" className="max-w-[100px]" />
+              <div className="flex items-center gap-3">
+                <Logo size="sm" linkTo="/" className="w-10 h-10" />
+                <span className="text-white font-semibold text-lg tracking-tight">MACON</span>
+              </div>
             ) : (
-              <Logo size="sm" linkTo="/" className="max-w-[50px] mx-auto" />
+              <Logo size="sm" linkTo="/" className="w-10 h-10 mx-auto" />
             )}
             <button
               onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
-              className="text-white/60 hover:text-white transition-colors ml-auto"
+              className="text-white/60 hover:text-white transition-colors"
               aria-label={sidebarCollapsed ? "Expand sidebar" : "Collapse sidebar"}
             >
               {sidebarCollapsed ? (
