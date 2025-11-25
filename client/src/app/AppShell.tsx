@@ -3,13 +3,15 @@
  * Features: Skip link, ARIA landmarks, focus management, clean typography, mobile menu
  */
 
-import { Outlet, Link } from 'react-router-dom';
+import { Outlet, Link, useLocation } from 'react-router-dom';
 import { Menu } from 'lucide-react';
+import { AnimatePresence } from 'framer-motion';
 import { Container } from '@/ui/Container';
 import { cn } from '@/lib/utils';
 import { AuthProvider } from '@/contexts/AuthContext';
 import { Logo } from '@/components/brand/Logo';
 import { Sheet, SheetContent, SheetTrigger, SheetHeader, SheetTitle } from '@/components/ui/sheet';
+import { PageTransition } from '@/components/transitions/PageTransition';
 import '@/styles/a11y.css';
 
 const appMode = import.meta.env.VITE_APP_MODE;
@@ -17,6 +19,7 @@ const isE2EMode = import.meta.env.VITE_E2E === '1';
 
 export function AppShell() {
   const isMockMode = appMode === 'mock';
+  const location = useLocation();
 
   return (
     <AuthProvider>
@@ -124,7 +127,11 @@ export function AppShell() {
         </header>
 
         <main id="main" tabIndex={-1} className="flex-1">
-          <Outlet />
+          <AnimatePresence mode="wait">
+            <PageTransition key={location.pathname}>
+              <Outlet />
+            </PageTransition>
+          </AnimatePresence>
         </main>
 
         <footer className="bg-macon-navy-900 border-t border-macon-navy-800 mt-24">

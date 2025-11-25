@@ -29,7 +29,7 @@ async function main() {
   // Create test tenant for E2E tests with known API key
   // This tenant is used by the client app in E2E mode
   const testTenantSlug = 'elope-e2e';
-  const testTenantApiKey = 'pk_live_elope-e2e_000000000000'; // Fixed key for E2E tests
+  const testTenantApiKey = 'pk_live_elope-e2e_0000000000000000'; // Fixed key for E2E tests (16 hex chars)
   const testTenantSecretKey = 'sk_live_elope-e2e_00000000000000000000000000000000'; // 32 hex chars
 
   const tenant = await prisma.tenant.upsert({
