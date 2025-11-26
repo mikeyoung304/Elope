@@ -42,4 +42,6 @@ export type {
   AuthContextType,
   PlatformAdminUser,
   TenantAdminUser,
+  SignupResponse,
+  SignupCredentials,
 } from '../../types/auth';

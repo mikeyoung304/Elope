@@ -17,6 +17,7 @@ const PackageCatalog = lazy(() => import("./pages/PackageCatalog").then(m => ({ 
 const SegmentLanding = lazy(() => import("./pages/SegmentLanding").then(m => ({ default: m.SegmentLanding })));
 const Success = lazy(() => import("./pages/success").then(m => ({ default: m.Success })));
 const Login = lazy(() => import("./pages/Login").then(m => ({ default: m.Login })));
+const SignupPage = lazy(() => import("./features/auth/SignupPage").then(m => ({ default: m.SignupPage })));
 const PlatformAdminDashboard = lazy(() => import("./pages/admin/PlatformAdminDashboard").then(m => ({ default: m.PlatformAdminDashboard })));
 const TenantAdminDashboard = lazy(() => import("./pages/tenant/TenantAdminDashboard").then(m => ({ default: m.TenantAdminDashboard })));
 const SegmentsManager = lazy(() =>
@@ -73,6 +74,10 @@ export const router = createBrowserRouter([
       {
         path: "login",
         element: <SuspenseWrapper><Login /></SuspenseWrapper>,
+      },
+      {
+        path: "signup",
+        element: <SuspenseWrapper><SignupPage /></SuspenseWrapper>,
       },
       // Legacy routes - redirect to unified login
       {

@@ -95,6 +95,7 @@ export interface AuthState {
  */
 export interface AuthContextType extends AuthState {
   login: (email: string, password: string, role: UserRole) => Promise<void>;
+  signup: (email: string, password: string, businessName: string) => Promise<SignupResponse>;
   logout: () => void;
   isPlatformAdmin: () => boolean;
   isTenantAdmin: () => boolean;
@@ -116,6 +117,27 @@ export interface LoginCredentials {
  */
 export interface LoginResponse {
   token: string;
+}
+
+/**
+ * Signup credentials
+ */
+export interface SignupCredentials {
+  email: string;
+  password: string;
+  businessName: string;
+}
+
+/**
+ * Signup response from backend
+ */
+export interface SignupResponse {
+  token: string;
+  tenantId: string;
+  slug: string;
+  email: string;
+  apiKeyPublic: string;
+  secretKey: string;
 }
 
 /**

@@ -15,7 +15,7 @@ import {
   getTenantIdFromToken,
   getImpersonationFromToken,
 } from '../../lib/auth';
-import type { User, UserRole, ImpersonationData } from '../../types/auth';
+import type { User, UserRole, ImpersonationData, SignupResponse } from '../../types/auth';
 
 /**
  * Login result after successful authentication
@@ -89,6 +89,64 @@ export async function authenticateUser(
         ? userData.tenantId
         : null,
     impersonation: null, // Normal login never has impersonation
+  };
+}
+
+/**
+ * Register new tenant with email, password, and business name
+ *
+ * @param email - Tenant admin email
+ * @param password - Tenant admin password (min 8 characters)
+ * @param businessName - Business name (min 2 characters, max 100)
+ * @returns Signup response with token, tenant ID, slug, and API credentials
+ * @throws Error if signup fails
+ */
+export async function signupTenant(
+  email: string,
+  password: string,
+  businessName: string
+): Promise<SignupResponse> {
+  // Call tenant signup endpoint
+  const result = await api.tenantSignup({
+    body: { email, password, businessName },
+  });
+
+  // Check if signup was successful
+  if (result.status !== 201) {
+    // Handle specific error cases
+    if (result.status === 409) {
+      throw new Error('An account with this email already exists');
+    }
+    if (result.status === 429) {
+      throw new Error('Too many signup attempts. Please try again later');
+    }
+    throw new Error('Signup failed. Please try again');
+  }
+
+  const { token, tenantId, slug, email: userEmail, apiKeyPublic, secretKey } = result.body;
+
+  // Decode and validate token
+  const payload = decodeJWT(token);
+  const userData = payloadToUser(payload);
+
+  // Verify the role is tenant admin
+  if (userData.role !== 'TENANT_ADMIN') {
+    throw new Error('Invalid signup response');
+  }
+
+  // Store token
+  storeToken(token, 'TENANT_ADMIN');
+
+  // Set tenant token in API client
+  api.setTenantToken(token);
+
+  return {
+    token,
+    tenantId,
+    slug,
+    email: userEmail,
+    apiKeyPublic,
+    secretKey,
   };
 }
 

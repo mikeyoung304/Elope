@@ -10,11 +10,12 @@ import { useState, useEffect, useCallback, ReactNode } from 'react';
 import { AuthContext } from './context';
 import {
   authenticateUser,
+  signupTenant,
   logoutUser,
   restoreAuthState,
 } from './services';
 import { useTokenExpiration } from './useTokenExpiration';
-import type { User, UserRole, AuthContextType, ImpersonationData } from '../../types/auth';
+import type { User, UserRole, AuthContextType, ImpersonationData, SignupResponse } from '../../types/auth';
 
 /**
  * Auth Provider Props
@@ -89,6 +90,27 @@ export function AuthProvider({ children }: AuthProviderProps) {
   );
 
   /**
+   * Signup method
+   */
+  const signup = useCallback(
+    async (email: string, password: string, businessName: string): Promise<SignupResponse> => {
+      setIsLoading(true);
+
+      try {
+        const result = await signupTenant(email, password, businessName);
+
+        // Refresh auth state after signup to populate user data
+        refreshAuth();
+
+        return result;
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    [refreshAuth]
+  );
+
+  /**
    * Logout method
    */
   const logout = useCallback(() => {
@@ -147,6 +169,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
     isLoading,
     impersonation,
     login,
+    signup,
     logout,
     isPlatformAdmin,
     isTenantAdmin,
