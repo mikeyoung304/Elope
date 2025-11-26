@@ -8,7 +8,6 @@ import { Menu } from 'lucide-react';
 import { AnimatePresence } from 'framer-motion';
 import { Container } from '@/ui/Container';
 import { cn } from '@/lib/utils';
-import { Logo } from '@/components/brand/Logo';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetTrigger, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 import { PageTransition } from '@/components/transitions/PageTransition';
@@ -43,18 +42,12 @@ export function AppShell() {
         <header className="bg-macon-navy-900 border-b border-macon-navy-800">
           <Container>
             <div className="flex items-center justify-between py-6">
-              <div className="flex items-center gap-4">
-                <Logo size="sm" linkTo="/" />
-                <Link
-                  to="/"
-                  className={cn(
-                    'text-3xl tracking-tight text-white font-semibold',
-                    'hover:text-white/70 transition-colors'
-                  )}
-                >
-                  Macon AI Solutions
-                </Link>
-              </div>
+              <Link
+                to="/"
+                className="text-2xl tracking-tight text-white font-semibold hover:text-white/80 transition-colors"
+              >
+                Macon AI Solutions
+              </Link>
               {/* Desktop Navigation */}
               <nav aria-label="Primary navigation" className="hidden md:flex items-center gap-8">
                 <a
