@@ -7,7 +7,6 @@ import { ArrowRight } from "lucide-react";
  * HeroSection - AI-Powered Storefronts for High-Value Service Businesses
  *
  * Editorial design with Playfair Display headlines and earth tone palette.
- * Targeting horse farms, elopement agencies, wedding photographers, event planners.
  */
 export function HeroSection() {
   return (
@@ -18,11 +17,6 @@ export function HeroSection() {
     >
       <Container className="relative z-10">
         <div className="max-w-4xl">
-          {/* Context line */}
-          <p className="text-sage font-medium text-lg mb-6 tracking-wide">
-            Built for horse farm rentals, elopement agencies, wedding photographers, and event planners.
-          </p>
-
           {/* Headline - Serif for editorial feel */}
           <h1
             id="hero-heading"
