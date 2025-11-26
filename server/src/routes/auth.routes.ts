@@ -5,12 +5,14 @@
  */
 
 import { Router, type Request, type Response, type NextFunction } from 'express';
+import crypto from 'node:crypto';
 import type { IdentityService } from '../services/identity.service';
 import type { TenantAuthService } from '../services/tenant-auth.service';
 import type { PrismaTenantRepository } from '../adapters/prisma/tenant.repository';
-import { loginLimiter } from '../middleware/rateLimiter';
+import type { ApiKeyService } from '../lib/api-key.service';
+import { loginLimiter, signupLimiter } from '../middleware/rateLimiter';
 import { logger } from '../lib/core/logger';
-import { UnauthorizedError } from '../lib/errors';
+import { UnauthorizedError, ConflictError, ValidationError } from '../lib/errors';
 
 /**
  * Unified login DTO
@@ -31,6 +33,7 @@ export interface UnifiedLoginResponse {
   email: string;
   userId?: string; // Platform admin ID
   slug?: string; // Tenant slug
+  apiKeyPublic?: string; // Tenant public API key (for impersonation)
 }
 
 /**
@@ -177,6 +180,7 @@ export class UnifiedAuthController {
       userId: payload.userId,
       tenantId: tenant.id,
       slug: tenant.slug,
+      apiKeyPublic: tenant.apiKeyPublic,
     };
   }
 
@@ -222,7 +226,8 @@ export class UnifiedAuthController {
 export function createUnifiedAuthRoutes(
   identityService: IdentityService,
   tenantAuthService: TenantAuthService,
-  tenantRepo: PrismaTenantRepository
+  tenantRepo: PrismaTenantRepository,
+  apiKeyService: ApiKeyService
 ): Router {
   const router = Router();
   const controller = new UnifiedAuthController(identityService, tenantAuthService, tenantRepo);
@@ -284,6 +289,253 @@ export function createUnifiedAuthRoutes(
         error: error instanceof Error ? error.message : 'Unknown error',
       }, 'Failed login attempt');
 
+      next(error);
+    }
+  });
+
+  /**
+   * POST /signup
+   * Self-service tenant signup
+   * Creates new tenant with API keys and returns JWT token
+   *
+   * Request body:
+   * {
+   *   "email": "owner@business.com",
+   *   "password": "securepass123",
+   *   "businessName": "My Business"
+   * }
+   *
+   * Response:
+   * {
+   *   "token": "eyJhbGc...",
+   *   "tenantId": "tenant_123",
+   *   "slug": "my-business-1234567890",
+   *   "email": "owner@business.com",
+   *   "apiKeyPublic": "pk_live_...",
+   *   "secretKey": "sk_live_..." // Shown ONCE, never stored in plaintext
+   * }
+   */
+  router.post('/signup', signupLimiter, async (req: Request, res: Response, next: NextFunction) => {
+    const ipAddress = req.ip || req.socket.remoteAddress || 'unknown';
+
+    try {
+      const { email, password, businessName } = req.body;
+
+      // Validate required fields
+      if (!email || !password || !businessName) {
+        throw new ValidationError('Email, password, and business name are required');
+      }
+
+      // Validate email format
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(email)) {
+        throw new ValidationError('Invalid email format');
+      }
+
+      // Validate password length
+      if (password.length < 8) {
+        throw new ValidationError('Password must be at least 8 characters');
+      }
+
+      // Validate business name
+      if (businessName.length < 2 || businessName.length > 100) {
+        throw new ValidationError('Business name must be between 2 and 100 characters');
+      }
+
+      const normalizedEmail = email.toLowerCase().trim();
+
+      // Check email uniqueness
+      const existingTenant = await tenantRepo.findByEmail(normalizedEmail);
+      if (existingTenant) {
+        throw new ConflictError('Email already registered');
+      }
+
+      // Generate unique slug from business name with timestamp
+      const baseSlug = businessName
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, '-')
+        .replace(/^-|-$/g, '')
+        .slice(0, 50);
+      const slug = `${baseSlug}-${Date.now()}`;
+
+      // Check slug uniqueness (should always be unique due to timestamp, but verify)
+      const existingSlug = await tenantRepo.findBySlug(slug);
+      if (existingSlug) {
+        throw new ConflictError('Please try again');
+      }
+
+      // Generate API keys
+      const publicKey = apiKeyService.generatePublicKey(slug);
+      const secretKey = apiKeyService.generateSecretKey(slug);
+      const secretKeyHash = apiKeyService.hashSecretKey(secretKey);
+
+      // Hash password
+      const passwordHash = await tenantAuthService.hashPassword(password);
+
+      // Create tenant
+      const tenant = await tenantRepo.create({
+        slug,
+        name: businessName,
+        email: normalizedEmail,
+        passwordHash,
+        apiKeyPublic: publicKey,
+        apiKeySecret: secretKeyHash,
+        commissionPercent: 10.0,
+        emailVerified: false,
+      });
+
+      // Generate JWT token
+      const { token } = await tenantAuthService.login(normalizedEmail, password);
+
+      // Log successful signup
+      logger.info({
+        event: 'tenant_signup_success',
+        endpoint: '/v1/auth/signup',
+        tenantId: tenant.id,
+        slug: tenant.slug,
+        email: tenant.email,
+        ipAddress,
+        timestamp: new Date().toISOString(),
+      }, 'New tenant signup');
+
+      res.status(201).json({
+        token,
+        tenantId: tenant.id,
+        slug: tenant.slug,
+        email: tenant.email,
+        apiKeyPublic: tenant.apiKeyPublic,
+        secretKey, // Shown ONCE, not stored in DB
+      });
+    } catch (error) {
+      // Log failed signup attempts
+      logger.warn({
+        event: 'tenant_signup_failed',
+        endpoint: '/v1/auth/signup',
+        email: req.body.email,
+        ipAddress,
+        timestamp: new Date().toISOString(),
+        error: error instanceof Error ? error.message : 'Unknown error',
+      }, 'Failed signup attempt');
+
+      next(error);
+    }
+  });
+
+  /**
+   * POST /forgot-password
+   * Request password reset email
+   *
+   * Request body:
+   * {
+   *   "email": "owner@business.com"
+   * }
+   *
+   * Response:
+   * {
+   *   "message": "If an account exists, a reset link has been sent"
+   * }
+   */
+  router.post('/forgot-password', signupLimiter, async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const { email } = req.body;
+
+      if (!email) {
+        throw new ValidationError('Email is required');
+      }
+
+      const normalizedEmail = email.toLowerCase().trim();
+      const tenant = await tenantRepo.findByEmail(normalizedEmail);
+
+      if (tenant) {
+        // Generate reset token
+        const resetToken = crypto.randomBytes(32).toString('hex');
+        const expires = new Date(Date.now() + 60 * 60 * 1000); // 1 hour
+
+        // Store reset token
+        await tenantRepo.update(tenant.id, {
+          passwordResetToken: resetToken,
+          passwordResetExpires: expires,
+        });
+
+        // TODO: Send email with reset link
+        // For now, log the token (in development only)
+        logger.info({
+          event: 'password_reset_requested',
+          tenantId: tenant.id,
+          email: tenant.email,
+          // In production, don't log token - send email instead
+          resetToken: process.env.NODE_ENV === 'development' ? resetToken : '[redacted]',
+        }, 'Password reset requested');
+      }
+
+      // Always return success (don't leak email existence)
+      res.status(200).json({
+        message: 'If an account exists, a reset link has been sent',
+      });
+    } catch (error) {
+      next(error);
+    }
+  });
+
+  /**
+   * POST /reset-password
+   * Reset password with token
+   *
+   * Request body:
+   * {
+   *   "token": "reset_token_here",
+   *   "password": "newSecurePassword123"
+   * }
+   *
+   * Response:
+   * {
+   *   "message": "Password updated successfully"
+   * }
+   */
+  router.post('/reset-password', async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const { token, password } = req.body;
+
+      if (!token || !password) {
+        throw new ValidationError('Token and password are required');
+      }
+
+      if (password.length < 8) {
+        throw new ValidationError('Password must be at least 8 characters');
+      }
+
+      // Find tenant by reset token
+      const tenant = await tenantRepo.findByResetToken(token);
+
+      if (!tenant) {
+        throw new ValidationError('Invalid or expired reset token');
+      }
+
+      // Check if token has expired
+      if (!tenant.passwordResetExpires || tenant.passwordResetExpires < new Date()) {
+        throw new ValidationError('Reset token has expired');
+      }
+
+      // Hash new password
+      const passwordHash = await tenantAuthService.hashPassword(password);
+
+      // Update password and clear reset token
+      await tenantRepo.update(tenant.id, {
+        passwordHash,
+        passwordResetToken: null,
+        passwordResetExpires: null,
+      });
+
+      logger.info({
+        event: 'password_reset_success',
+        tenantId: tenant.id,
+        email: tenant.email,
+      }, 'Password reset successful');
+
+      res.status(200).json({
+        message: 'Password updated successfully',
+      });
+    } catch (error) {
       next(error);
     }
   });

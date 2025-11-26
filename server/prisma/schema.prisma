@@ -69,6 +69,13 @@ model Tenant {
   // Encrypted Secrets Storage
   secrets Json @default("{}") // {stripe: {ciphertext, iv, authTag}}
 
+  // Email verification
+  emailVerified Boolean @default(false)
+
+  // Password reset
+  passwordResetToken   String?   @unique
+  passwordResetExpires DateTime?
+
   // Status
   isActive  Boolean  @default(true)
   createdAt DateTime @default(now())

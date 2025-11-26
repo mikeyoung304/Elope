@@ -12,6 +12,10 @@ export interface CreateTenantInput {
   apiKeySecret: string;
   commissionPercent: number;
   branding?: any;
+  // Optional fields for self-service signup
+  email?: string;
+  passwordHash?: string;
+  emailVerified?: boolean;
 }
 
 export interface UpdateTenantInput {
@@ -22,6 +26,12 @@ export interface UpdateTenantInput {
   stripeOnboarded?: boolean;
   secrets?: any;
   isActive?: boolean;
+  // Password reset fields
+  email?: string;
+  passwordHash?: string;
+  emailVerified?: boolean;
+  passwordResetToken?: string | null;
+  passwordResetExpires?: Date | null;
 }
 
 /**
@@ -82,6 +92,19 @@ export class PrismaTenantRepository {
   }
 
   /**
+   * Find tenant by password reset token
+   * Used for password reset flow
+   *
+   * @param token - Password reset token
+   * @returns Tenant or null if not found
+   */
+  async findByResetToken(token: string): Promise<Tenant | null> {
+    return await this.prisma.tenant.findUnique({
+      where: { passwordResetToken: token },
+    });
+  }
+
+  /**
    * Create new tenant
    *
    * @param data - Tenant creation data
@@ -96,6 +119,10 @@ export class PrismaTenantRepository {
         apiKeySecret: data.apiKeySecret,
         commissionPercent: data.commissionPercent,
         branding: data.branding || {},
+        // Self-service signup fields
+        email: data.email,
+        passwordHash: data.passwordHash,
+        emailVerified: data.emailVerified ?? false,
       },
     });
   }

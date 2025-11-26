@@ -9,6 +9,10 @@ import {
   AvailabilityDtoSchema,
   CreateCheckoutDtoSchema,
   AdminLoginDtoSchema,
+  TenantSignupDtoSchema,
+  TenantSignupResponseSchema,
+  ForgotPasswordDtoSchema,
+  ResetPasswordDtoSchema,
   BookingDtoSchema,
   CreatePackageDtoSchema,
   UpdatePackageDtoSchema,
@@ -38,6 +42,7 @@ import {
   ForbiddenErrorSchema,
   NotFoundErrorSchema,
   ConflictErrorSchema,
+  TooManyRequestsErrorSchema,
   UnprocessableEntityErrorSchema,
   InternalServerErrorSchema,
 } from './dto';
@@ -174,6 +179,52 @@ export const Contracts = c.router({
       500: InternalServerErrorSchema,
     },
     summary: 'Tenant admin login',
+  },
+
+  // Tenant self-service signup
+  tenantSignup: {
+    method: 'POST',
+    path: '/v1/auth/signup',
+    body: TenantSignupDtoSchema,
+    responses: {
+      201: TenantSignupResponseSchema,
+      400: BadRequestErrorSchema,
+      409: ConflictErrorSchema, // Email already exists
+      429: TooManyRequestsErrorSchema, // Rate limited
+      500: InternalServerErrorSchema,
+    },
+    summary: 'Self-service tenant signup',
+  },
+
+  // Password reset - request reset link
+  forgotPassword: {
+    method: 'POST',
+    path: '/v1/auth/forgot-password',
+    body: ForgotPasswordDtoSchema,
+    responses: {
+      200: z.object({
+        message: z.string(),
+      }),
+      400: BadRequestErrorSchema,
+      429: TooManyRequestsErrorSchema,
+      500: InternalServerErrorSchema,
+    },
+    summary: 'Request password reset email',
+  },
+
+  // Password reset - set new password
+  resetPassword: {
+    method: 'POST',
+    path: '/v1/auth/reset-password',
+    body: ResetPasswordDtoSchema,
+    responses: {
+      200: z.object({
+        message: z.string(),
+      }),
+      400: BadRequestErrorSchema,
+      500: InternalServerErrorSchema,
+    },
+    summary: 'Reset password with token',
   },
 
   // ============================================================================

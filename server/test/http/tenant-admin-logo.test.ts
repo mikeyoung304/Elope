@@ -1,6 +1,6 @@
 /**
  * HTTP Integration Tests for Tenant Admin Logo Upload
- * Tests the POST /v1/tenant/admin/logo endpoint
+ * Tests the POST /v1/tenant-admin/logo endpoint
  *
  * Test Coverage:
  * - Authentication (JWT token required)
@@ -23,7 +23,7 @@ import { loadConfig } from '../../src/lib/core/config';
 import { createApp } from '../../src/app';
 import { buildContainer } from '../../src/di';
 
-describe('POST /v1/tenant/admin/logo - Logo Upload HTTP Tests', () => {
+describe('POST /v1/tenant-admin/logo - Logo Upload HTTP Tests', () => {
   let app: Express;
   let prisma: PrismaClient;
   let testTenantId: string;
@@ -162,7 +162,7 @@ describe('POST /v1/tenant/admin/logo - Logo Upload HTTP Tests', () => {
   describe('Authentication', () => {
     it('should return 401 when Authorization header is missing', async () => {
       const res = await request(app)
-        .post('/v1/tenant/admin/logo')
+        .post('/v1/tenant-admin/logo')
         .attach('logo', validPngBuffer, 'test-logo.png')
         .expect(401);
 
@@ -173,7 +173,7 @@ describe('POST /v1/tenant/admin/logo - Logo Upload HTTP Tests', () => {
 
     it('should return 401 when Bearer token is malformed', async () => {
       const res = await request(app)
-        .post('/v1/tenant/admin/logo')
+        .post('/v1/tenant-admin/logo')
         .set('Authorization', 'InvalidFormat token123')
         .attach('logo', validPngBuffer, 'test-logo.png')
         .expect(401);
@@ -184,7 +184,7 @@ describe('POST /v1/tenant/admin/logo - Logo Upload HTTP Tests', () => {
 
     it('should return 401 when JWT token is invalid', async () => {
       const res = await request(app)
-        .post('/v1/tenant/admin/logo')
+        .post('/v1/tenant-admin/logo')
         .set('Authorization', 'Bearer invalid.jwt.token')
         .attach('logo', validPngBuffer, 'test-logo.png')
         .expect(401);
@@ -205,7 +205,7 @@ describe('POST /v1/tenant/admin/logo - Logo Upload HTTP Tests', () => {
       );
 
       const res = await request(app)
-        .post('/v1/tenant/admin/logo')
+        .post('/v1/tenant-admin/logo')
         .set('Authorization', `Bearer ${expiredToken}`)
         .attach('logo', validPngBuffer, 'test-logo.png')
         .expect(401);
@@ -225,7 +225,7 @@ describe('POST /v1/tenant/admin/logo - Logo Upload HTTP Tests', () => {
       );
 
       const res = await request(app)
-        .post('/v1/tenant/admin/logo')
+        .post('/v1/tenant-admin/logo')
         .set('Authorization', `Bearer ${adminToken}`)
         .attach('logo', validPngBuffer, 'test-logo.png')
         .expect(401);
@@ -247,7 +247,7 @@ describe('POST /v1/tenant/admin/logo - Logo Upload HTTP Tests', () => {
       );
 
       const res = await request(app)
-        .post('/v1/tenant/admin/logo')
+        .post('/v1/tenant-admin/logo')
         .set('Authorization', `Bearer ${incompleteToken}`)
         .attach('logo', validPngBuffer, 'test-logo.png')
         .expect(401);
@@ -264,7 +264,7 @@ describe('POST /v1/tenant/admin/logo - Logo Upload HTTP Tests', () => {
   describe('File Upload Validation', () => {
     it('should return 400 when no file is uploaded', async () => {
       const res = await request(app)
-        .post('/v1/tenant/admin/logo')
+        .post('/v1/tenant-admin/logo')
         .set('Authorization', `Bearer ${validToken}`)
         .expect(400);
 
@@ -274,7 +274,7 @@ describe('POST /v1/tenant/admin/logo - Logo Upload HTTP Tests', () => {
 
     it('should reject file over 2MB size limit', async () => {
       const res = await request(app)
-        .post('/v1/tenant/admin/logo')
+        .post('/v1/tenant-admin/logo')
         .set('Authorization', `Bearer ${validToken}`)
         .attach('logo', largePdfBuffer, 'large-file.pdf');
 
@@ -289,7 +289,7 @@ describe('POST /v1/tenant/admin/logo - Logo Upload HTTP Tests', () => {
       const pdfBuffer = Buffer.from('%PDF-1.4 test content');
 
       const res = await request(app)
-        .post('/v1/tenant/admin/logo')
+        .post('/v1/tenant-admin/logo')
         .set('Authorization', `Bearer ${validToken}`)
         .attach('logo', pdfBuffer, 'document.pdf')
         .set('Content-Type', 'multipart/form-data')
@@ -303,7 +303,7 @@ describe('POST /v1/tenant/admin/logo - Logo Upload HTTP Tests', () => {
       const exeBuffer = Buffer.from('MZ\x90\x00'); // EXE file header
 
       const res = await request(app)
-        .post('/v1/tenant/admin/logo')
+        .post('/v1/tenant-admin/logo')
         .set('Authorization', `Bearer ${validToken}`)
         .attach('logo', exeBuffer, 'malware.exe')
         .set('Content-Type', 'multipart/form-data')
@@ -315,7 +315,7 @@ describe('POST /v1/tenant/admin/logo - Logo Upload HTTP Tests', () => {
 
     it('should accept valid PNG file', async () => {
       const res = await request(app)
-        .post('/v1/tenant/admin/logo')
+        .post('/v1/tenant-admin/logo')
         .set('Authorization', `Bearer ${validToken}`)
         .attach('logo', validPngBuffer, 'test-logo.png')
         .expect(200);
@@ -331,7 +331,7 @@ describe('POST /v1/tenant/admin/logo - Logo Upload HTTP Tests', () => {
 
     it('should accept valid JPEG file', async () => {
       const res = await request(app)
-        .post('/v1/tenant/admin/logo')
+        .post('/v1/tenant-admin/logo')
         .set('Authorization', `Bearer ${validToken}`)
         .attach('logo', validJpegBuffer, 'test-logo.jpg')
         .expect(200);
@@ -349,7 +349,7 @@ describe('POST /v1/tenant/admin/logo - Logo Upload HTTP Tests', () => {
   describe('Business Logic', () => {
     it('should successfully upload logo and update tenant branding', async () => {
       const res = await request(app)
-        .post('/v1/tenant/admin/logo')
+        .post('/v1/tenant-admin/logo')
         .set('Authorization', `Bearer ${validToken}`)
         .attach('logo', validPngBuffer, 'company-logo.png')
         .expect(200);
@@ -375,7 +375,7 @@ describe('POST /v1/tenant/admin/logo - Logo Upload HTTP Tests', () => {
 
     it('should create physical file in uploads directory', async () => {
       const res = await request(app)
-        .post('/v1/tenant/admin/logo')
+        .post('/v1/tenant-admin/logo')
         .set('Authorization', `Bearer ${validToken}`)
         .attach('logo', validPngBuffer, 'physical-test.png')
         .expect(200);
@@ -394,7 +394,7 @@ describe('POST /v1/tenant/admin/logo - Logo Upload HTTP Tests', () => {
     it('should replace existing logo when uploading new one', async () => {
       // Upload first logo
       const res1 = await request(app)
-        .post('/v1/tenant/admin/logo')
+        .post('/v1/tenant-admin/logo')
         .set('Authorization', `Bearer ${validToken}`)
         .attach('logo', validPngBuffer, 'first-logo.png')
         .expect(200);
@@ -403,7 +403,7 @@ describe('POST /v1/tenant/admin/logo - Logo Upload HTTP Tests', () => {
 
       // Upload second logo
       const res2 = await request(app)
-        .post('/v1/tenant/admin/logo')
+        .post('/v1/tenant-admin/logo')
         .set('Authorization', `Bearer ${validToken}`)
         .attach('logo', validJpegBuffer, 'second-logo.jpg')
         .expect(200);
@@ -424,15 +424,15 @@ describe('POST /v1/tenant/admin/logo - Logo Upload HTTP Tests', () => {
       // Simulate concurrent uploads
       const [res1, res2, res3] = await Promise.all([
         request(app)
-          .post('/v1/tenant/admin/logo')
+          .post('/v1/tenant-admin/logo')
           .set('Authorization', `Bearer ${validToken}`)
           .attach('logo', validPngBuffer, 'concurrent1.png'),
         request(app)
-          .post('/v1/tenant/admin/logo')
+          .post('/v1/tenant-admin/logo')
           .set('Authorization', `Bearer ${validToken}`)
           .attach('logo', validPngBuffer, 'concurrent2.png'),
         request(app)
-          .post('/v1/tenant/admin/logo')
+          .post('/v1/tenant-admin/logo')
           .set('Authorization', `Bearer ${validToken}`)
           .attach('logo', validPngBuffer, 'concurrent3.png'),
       ]);
@@ -460,7 +460,7 @@ describe('POST /v1/tenant/admin/logo - Logo Upload HTTP Tests', () => {
 
       // Tenant A uploads logo
       const resA = await request(app)
-        .post('/v1/tenant/admin/logo')
+        .post('/v1/tenant-admin/logo')
         .set('Authorization', `Bearer ${validToken}`)
         .attach('logo', validPngBuffer, 'tenant-a-logo.png')
         .expect(200);
@@ -469,7 +469,7 @@ describe('POST /v1/tenant/admin/logo - Logo Upload HTTP Tests', () => {
 
       // Tenant B uploads logo with their own token
       const resB = await request(app)
-        .post('/v1/tenant/admin/logo')
+        .post('/v1/tenant-admin/logo')
         .set('Authorization', `Bearer ${anotherTenantToken}`)
         .attach('logo', validJpegBuffer, 'tenant-b-logo.jpg')
         .expect(200);
@@ -505,7 +505,7 @@ describe('POST /v1/tenant/admin/logo - Logo Upload HTTP Tests', () => {
       );
 
       const res = await request(app)
-        .post('/v1/tenant/admin/logo')
+        .post('/v1/tenant-admin/logo')
         .set('Authorization', `Bearer ${nonExistentToken}`)
         .attach('logo', validPngBuffer, 'test-logo.png')
         .expect(404);
@@ -524,7 +524,7 @@ describe('POST /v1/tenant/admin/logo - Logo Upload HTTP Tests', () => {
       const emptyBuffer = Buffer.alloc(0);
 
       const res = await request(app)
-        .post('/v1/tenant/admin/logo')
+        .post('/v1/tenant-admin/logo')
         .set('Authorization', `Bearer ${validToken}`)
         .attach('logo', emptyBuffer, 'empty.png')
         .expect(400);
@@ -535,7 +535,7 @@ describe('POST /v1/tenant/admin/logo - Logo Upload HTTP Tests', () => {
 
     it('should handle special characters in filename', async () => {
       const res = await request(app)
-        .post('/v1/tenant/admin/logo')
+        .post('/v1/tenant-admin/logo')
         .set('Authorization', `Bearer ${validToken}`)
         .attach('logo', validPngBuffer, 'logo-with-special-chars-@#$.png')
         .expect(200);
@@ -550,7 +550,7 @@ describe('POST /v1/tenant/admin/logo - Logo Upload HTTP Tests', () => {
       const webpBuffer = Buffer.from('RIFF____WEBPVP8 ', 'utf8');
 
       const res = await request(app)
-        .post('/v1/tenant/admin/logo')
+        .post('/v1/tenant-admin/logo')
         .set('Authorization', `Bearer ${validToken}`)
         .attach('logo', webpBuffer, 'modern-logo.webp')
         .set('Content-Type', 'multipart/form-data');
@@ -569,7 +569,7 @@ describe('POST /v1/tenant/admin/logo - Logo Upload HTTP Tests', () => {
       const svgBuffer = Buffer.from('<svg xmlns="http://www.w3.org/2000/svg"></svg>');
 
       const res = await request(app)
-        .post('/v1/tenant/admin/logo')
+        .post('/v1/tenant-admin/logo')
         .set('Authorization', `Bearer ${validToken}`)
         .attach('logo', svgBuffer, 'vector-logo.svg')
         .set('Content-Type', 'multipart/form-data');
@@ -601,7 +601,7 @@ describe('POST /v1/tenant/admin/logo - Logo Upload HTTP Tests', () => {
 
       // Upload logo
       await request(app)
-        .post('/v1/tenant/admin/logo')
+        .post('/v1/tenant-admin/logo')
         .set('Authorization', `Bearer ${validToken}`)
         .attach('logo', validPngBuffer, 'preserve-test.png')
         .expect(200);

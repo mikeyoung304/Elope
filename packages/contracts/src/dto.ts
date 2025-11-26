@@ -49,6 +49,10 @@ export const ConflictErrorSchema = ErrorResponseSchema.extend({
   statusCode: z.literal(409),
 });
 
+export const TooManyRequestsErrorSchema = ErrorResponseSchema.extend({
+  statusCode: z.literal(429),
+});
+
 export const UnprocessableEntityErrorSchema = ErrorResponseSchema.extend({
   statusCode: z.literal(422),
 });
@@ -143,6 +147,42 @@ export const AdminLoginDtoSchema = z.object({
 });
 
 export type AdminLoginDto = z.infer<typeof AdminLoginDtoSchema>;
+
+// Tenant Signup DTO (request body)
+export const TenantSignupDtoSchema = z.object({
+  email: z.string().email(),
+  password: z.string().min(8, 'Password must be at least 8 characters'),
+  businessName: z.string().min(2, 'Business name must be at least 2 characters').max(100),
+});
+
+export type TenantSignupDto = z.infer<typeof TenantSignupDtoSchema>;
+
+// Tenant Signup Response
+export const TenantSignupResponseSchema = z.object({
+  token: z.string(),
+  tenantId: z.string(),
+  slug: z.string(),
+  email: z.string().email(),
+  apiKeyPublic: z.string(),
+  secretKey: z.string(), // Shown once, never stored in plaintext
+});
+
+export type TenantSignupResponse = z.infer<typeof TenantSignupResponseSchema>;
+
+// Password Reset Request DTO
+export const ForgotPasswordDtoSchema = z.object({
+  email: z.string().email(),
+});
+
+export type ForgotPasswordDto = z.infer<typeof ForgotPasswordDtoSchema>;
+
+// Password Reset DTO
+export const ResetPasswordDtoSchema = z.object({
+  token: z.string().min(1),
+  password: z.string().min(8, 'Password must be at least 8 characters'),
+});
+
+export type ResetPasswordDto = z.infer<typeof ResetPasswordDtoSchema>;
 
 // Admin Package CRUD DTOs
 export const CreatePackageDtoSchema = z.object({

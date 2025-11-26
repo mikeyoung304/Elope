@@ -13,7 +13,9 @@ MAIS (Macon AI Solutions) is a business growth club platform that partners with 
 - Testing: Vitest (unit/integration), Playwright (E2E)
 
 **Current Status:**
-- Sprint 10 Phase 3 complete (100% test pass rate - 752 passing, 3 skipped, 12 todo)
+- MVP Sprint Day 1 complete (759 tests passing, 3 skipped, 12 todo)
+- Tenant self-signup implemented (`POST /v1/auth/signup`)
+- Password reset flow scaffolded (forgot-password, reset-password endpoints)
 - Phase 5.1 complete (package photo uploads)
 - Multi-tenant architecture: 95% complete
 - Current branch: `main` (production-ready)
@@ -393,36 +395,38 @@ packages/
 
 ## Current Sprint Goals
 
-**Sprint 9 Status:** Complete
-- Fixed connection pool exhaustion with proper cleanup
-- Resolved P2034 deadlocks with advisory locks
-- Fixed critical security issue in segment repository
-- Improved P2002 error handling in webhook repository
+**MVP Sprint Status:** In Progress (5-day aggressive timeline)
 
-**Sprint 10 Phase 2 Status:** Complete (100% test pass rate - 752 tests passing)
-- ✅ Fixed booking race condition test (server/test/integration/booking-race-conditions.spec.ts)
-- ✅ Fixed encryption service test (server/test/lib/encryption.service.spec.ts)
-- ✅ Achieved 100% test pass rate (752 passing, 3 skipped, 12 todo)
+**Day 1 Status:** ✅ COMPLETE (November 25, 2025)
+- ✅ Tenant self-signup backend (`POST /v1/auth/signup`)
+- ✅ Password reset scaffolding (forgot-password, reset-password endpoints)
+- ✅ Schema updates: emailVerified, passwordResetToken, passwordResetExpires
+- ✅ API contracts: TenantSignupDto, TenantSignupResponse, ForgotPasswordDto, ResetPasswordDto
+- ✅ Rate limiting: signupLimiter (5/hour per IP)
+- ✅ 759 tests passing (up from 752)
 
-**Sprint 10 Phase 3 Status:** ✅ COMPLETE (100% - November 24, 2025)
-- ✅ Refactored all 9 god components to modular structure
-- ✅ Maintained 100% test pass rate (752 passing tests)
-- ✅ Zero regressions after refactoring
-- ✅ Components: Home, TenantForm, PackageForm, PlatformAdminDashboard, BlackoutsManager, AuthContext, BrandingForm, SegmentForm, TenantDashboard
-- ✅ Average size reduction: 70-90% per component
-- ✅ Full test suite verification completed (4 test runs)
+**Day 2 Goals:** Password Reset + Stripe Connect
+- Implement password reset email flow with Postmark
+- Complete Stripe Connect onboarding UI
+- Stripe account status dashboard
+
+**Day 3 Goals:** Signup Frontend
+- Signup form component
+- Integration with backend
+- Success flow with API key display
+
+**Day 4 Goals:** E2E Testing + Polish
+- Playwright E2E tests for signup flow
+- Error handling improvements
+- UX polish
+
+**Day 5 Goals:** Deploy + Documentation
+- Production deployment
+- User documentation
+- Monitoring setup
 
 **Known Issues:**
-- 3 flaky tests identified (pass in isolation, resource contention in full suite)
-- Pre-existing TypeScript compilation errors (unrelated to refactoring, no runtime impact)
-
-**Sprint 10 Next Steps:** Production Ready
-- ✅ Code quality: All god components refactored
-- ✅ Test coverage: 752 passing tests, 100% pass rate
-- ✅ Zero regressions: All functionality maintained
-- 🎯 **Ready for production deployment**
-- Optional: Implement Phase 5.2 (Add-ons and Content Editor) if needed
-- Recommended: Address TypeScript errors in separate technical debt sprint
+- Pre-existing TypeScript compilation errors in contracts (Zod/ts-rest version mismatch, no runtime impact)
 
 ## Troubleshooting Guide
 

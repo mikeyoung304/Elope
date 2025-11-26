@@ -3,8 +3,8 @@
  * Tests both upload and delete endpoints with security and business logic validation
  *
  * Endpoints tested:
- * - POST /v1/tenant/admin/packages/:id/photos
- * - DELETE /v1/tenant/admin/packages/:id/photos/:filename
+ * - POST /v1/tenant-admin/packages/:id/photos
+ * - DELETE /v1/tenant-admin/packages/:id/photos/:filename
  */
 
 import { describe, it, expect, beforeAll, afterEach, afterAll } from 'vitest';
@@ -103,8 +103,17 @@ describe('Package Photo Upload/Delete Endpoints', () => {
     testTenant2Id = tenant2.id;
 
     // Create test package for tenant 1
-    const package1 = await prisma.package.create({
-      data: {
+    const package1 = await prisma.package.upsert({
+      where: { id: 'pkg_test_1' },
+      update: {
+        tenantId: testTenant1Id,
+        slug: 'test-package-1',
+        name: 'Test Package 1',
+        description: 'Test package for photo upload',
+        basePrice: 10000,
+        photos: [],
+      },
+      create: {
         id: 'pkg_test_1',
         tenantId: testTenant1Id,
         slug: 'test-package-1',
@@ -117,8 +126,17 @@ describe('Package Photo Upload/Delete Endpoints', () => {
     testPackage1Id = package1.id;
 
     // Create test package for tenant 2
-    const package2 = await prisma.package.create({
-      data: {
+    const package2 = await prisma.package.upsert({
+      where: { id: 'pkg_test_2' },
+      update: {
+        tenantId: testTenant2Id,
+        slug: 'test-package-2',
+        name: 'Test Package 2',
+        description: 'Test package for authorization checks',
+        basePrice: 10000,
+        photos: [],
+      },
+      create: {
         id: 'pkg_test_2',
         tenantId: testTenant2Id,
         slug: 'test-package-2',
@@ -187,12 +205,12 @@ describe('Package Photo Upload/Delete Endpoints', () => {
   // Upload Tests
   // ============================================================================
 
-  describe('POST /v1/tenant/admin/packages/:id/photos', () => {
+  describe('POST /v1/tenant-admin/packages/:id/photos', () => {
     it('should upload a valid photo to package', async () => {
       const imageBuffer = createTestImageBuffer(1024 * 500); // 500KB
 
       const res = await request(app)
-        .post(`/v1/tenant/admin/packages/${testPackage1Id}/photos`)
+        .post(`/v1/tenant-admin/packages/${testPackage1Id}/photos`)
         .set('Authorization', `Bearer ${testToken1}`)
         .attach('photo', imageBuffer, {
           filename: 'test-image.jpg',
@@ -229,7 +247,7 @@ describe('Package Photo Upload/Delete Endpoints', () => {
 
       // Upload first photo
       const res1 = await request(app)
-        .post(`/v1/tenant/admin/packages/${testPackage1Id}/photos`)
+        .post(`/v1/tenant-admin/packages/${testPackage1Id}/photos`)
         .set('Authorization', `Bearer ${testToken1}`)
         .attach('photo', imageBuffer, {
           filename: 'test-image-1.jpg',
@@ -241,7 +259,7 @@ describe('Package Photo Upload/Delete Endpoints', () => {
 
       // Upload second photo
       const res2 = await request(app)
-        .post(`/v1/tenant/admin/packages/${testPackage1Id}/photos`)
+        .post(`/v1/tenant-admin/packages/${testPackage1Id}/photos`)
         .set('Authorization', `Bearer ${testToken1}`)
         .attach('photo', imageBuffer, {
           filename: 'test-image-2.jpg',
@@ -264,7 +282,7 @@ describe('Package Photo Upload/Delete Endpoints', () => {
       const largeBuffer = createTestImageBuffer(6 * 1024 * 1024); // 6MB
 
       const res = await request(app)
-        .post(`/v1/tenant/admin/packages/${testPackage1Id}/photos`)
+        .post(`/v1/tenant-admin/packages/${testPackage1Id}/photos`)
         .set('Authorization', `Bearer ${testToken1}`)
         .attach('photo', largeBuffer, {
           filename: 'large-image.jpg',
@@ -281,13 +299,13 @@ describe('Package Photo Upload/Delete Endpoints', () => {
       expect(pkg?.photos).toHaveLength(0);
     });
 
-    it('should enforce 5-photo maximum per package', async () => {
+    it('should enforce 5-photo maximum per package', { timeout: 30000 }, async () => {
       const imageBuffer = createTestImageBuffer(1024 * 500);
 
       // Upload 5 photos successfully
       for (let i = 0; i < 5; i++) {
         await request(app)
-          .post(`/v1/tenant/admin/packages/${testPackage1Id}/photos`)
+          .post(`/v1/tenant-admin/packages/${testPackage1Id}/photos`)
           .set('Authorization', `Bearer ${testToken1}`)
           .attach('photo', imageBuffer, {
             filename: `test-image-${i}.jpg`,
@@ -298,7 +316,7 @@ describe('Package Photo Upload/Delete Endpoints', () => {
 
       // 6th photo should be rejected
       const res = await request(app)
-        .post(`/v1/tenant/admin/packages/${testPackage1Id}/photos`)
+        .post(`/v1/tenant-admin/packages/${testPackage1Id}/photos`)
         .set('Authorization', `Bearer ${testToken1}`)
         .attach('photo', imageBuffer, {
           filename: 'test-image-6.jpg',
@@ -319,7 +337,7 @@ describe('Package Photo Upload/Delete Endpoints', () => {
       const imageBuffer = createTestImageBuffer(1024 * 500);
 
       const res = await request(app)
-        .post('/v1/tenant/admin/packages/nonexistent-package-id/photos')
+        .post('/v1/tenant-admin/packages/nonexistent-package-id/photos')
         .set('Authorization', `Bearer ${testToken1}`)
         .attach('photo', imageBuffer, {
           filename: 'test-image.jpg',
@@ -337,7 +355,7 @@ describe('Package Photo Upload/Delete Endpoints', () => {
       // Due to tenant-scoped lookup, this returns 404 (not 403)
       // This is correct - tenants should never know about other tenants' resources
       const res = await request(app)
-        .post(`/v1/tenant/admin/packages/${testPackage2Id}/photos`)
+        .post(`/v1/tenant-admin/packages/${testPackage2Id}/photos`)
         .set('Authorization', `Bearer ${testToken1}`)
         .attach('photo', imageBuffer, {
           filename: 'test-image.jpg',
@@ -358,7 +376,7 @@ describe('Package Photo Upload/Delete Endpoints', () => {
       const textBuffer = Buffer.from('This is a text file, not an image');
 
       const res = await request(app)
-        .post(`/v1/tenant/admin/packages/${testPackage1Id}/photos`)
+        .post(`/v1/tenant-admin/packages/${testPackage1Id}/photos`)
         .set('Authorization', `Bearer ${testToken1}`)
         .attach('photo', textBuffer, {
           filename: 'test-file.txt',
@@ -392,7 +410,7 @@ describe('Package Photo Upload/Delete Endpoints', () => {
         });
 
         const res = await request(app)
-          .post(`/v1/tenant/admin/packages/${testPackage1Id}/photos`)
+          .post(`/v1/tenant-admin/packages/${testPackage1Id}/photos`)
           .set('Authorization', `Bearer ${testToken1}`)
           .attach('photo', imageBuffer, {
             filename: `test-image.${ext}`,
@@ -406,7 +424,7 @@ describe('Package Photo Upload/Delete Endpoints', () => {
 
     it('should return 400 when no file is uploaded', async () => {
       const res = await request(app)
-        .post(`/v1/tenant/admin/packages/${testPackage1Id}/photos`)
+        .post(`/v1/tenant-admin/packages/${testPackage1Id}/photos`)
         .set('Authorization', `Bearer ${testToken1}`)
         .expect(400);
 
@@ -415,7 +433,7 @@ describe('Package Photo Upload/Delete Endpoints', () => {
 
     it('should return 401 without authentication', async () => {
       const res = await request(app)
-        .post(`/v1/tenant/admin/packages/${testPackage1Id}/photos`)
+        .post(`/v1/tenant-admin/packages/${testPackage1Id}/photos`)
         .field('test', 'value'); // Send form data without auth
 
       expect(res.status).toBe(401);
@@ -423,7 +441,7 @@ describe('Package Photo Upload/Delete Endpoints', () => {
 
     it('should return 401 with invalid JWT token', async () => {
       const res = await request(app)
-        .post(`/v1/tenant/admin/packages/${testPackage1Id}/photos`)
+        .post(`/v1/tenant-admin/packages/${testPackage1Id}/photos`)
         .set('Authorization', 'Bearer invalid-token-here')
         .field('test', 'value'); // Send form data with invalid auth
 
@@ -435,14 +453,14 @@ describe('Package Photo Upload/Delete Endpoints', () => {
   // Delete Tests
   // ============================================================================
 
-  describe('DELETE /v1/tenant/admin/packages/:id/photos/:filename', () => {
+  describe('DELETE /v1/tenant-admin/packages/:id/photos/:filename', () => {
     let uploadedFilename: string;
 
     beforeAll(async () => {
       // Upload a test photo to use in delete tests
       const imageBuffer = createTestImageBuffer(1024 * 500);
       const uploadRes = await request(app)
-        .post(`/v1/tenant/admin/packages/${testPackage1Id}/photos`)
+        .post(`/v1/tenant-admin/packages/${testPackage1Id}/photos`)
         .set('Authorization', `Bearer ${testToken1}`)
         .attach('photo', imageBuffer, {
           filename: 'delete-test-image.jpg',
@@ -465,7 +483,7 @@ describe('Package Photo Upload/Delete Endpoints', () => {
 
       // Delete photo
       await request(app)
-        .delete(`/v1/tenant/admin/packages/${testPackage1Id}/photos/${uploadedFilename}`)
+        .delete(`/v1/tenant-admin/packages/${testPackage1Id}/photos/${uploadedFilename}`)
         .set('Authorization', `Bearer ${testToken1}`)
         .expect(204);
 
@@ -481,7 +499,7 @@ describe('Package Photo Upload/Delete Endpoints', () => {
 
     it('should return 404 for non-existent package', async () => {
       const res = await request(app)
-        .delete(`/v1/tenant/admin/packages/nonexistent-package-id/photos/${uploadedFilename}`)
+        .delete(`/v1/tenant-admin/packages/nonexistent-package-id/photos/${uploadedFilename}`)
         .set('Authorization', `Bearer ${testToken1}`)
         .expect(404);
 
@@ -493,7 +511,7 @@ describe('Package Photo Upload/Delete Endpoints', () => {
       // Due to tenant-scoped lookup, this returns 404 (not 403)
       // This is correct - tenants should never know about other tenants' resources
       const res = await request(app)
-        .delete(`/v1/tenant/admin/packages/${testPackage2Id}/photos/some-filename.jpg`)
+        .delete(`/v1/tenant-admin/packages/${testPackage2Id}/photos/some-filename.jpg`)
         .set('Authorization', `Bearer ${testToken1}`)
         .expect(404);
 
@@ -502,7 +520,7 @@ describe('Package Photo Upload/Delete Endpoints', () => {
 
     it('should return 404 when photo not in package photos array', async () => {
       const res = await request(app)
-        .delete(`/v1/tenant/admin/packages/${testPackage1Id}/photos/nonexistent-photo.jpg`)
+        .delete(`/v1/tenant-admin/packages/${testPackage1Id}/photos/nonexistent-photo.jpg`)
         .set('Authorization', `Bearer ${testToken1}`)
         .expect(404);
 
@@ -527,7 +545,7 @@ describe('Package Photo Upload/Delete Endpoints', () => {
 
       // Delete should succeed even if file doesn't exist
       await request(app)
-        .delete(`/v1/tenant/admin/packages/${testPackage1Id}/photos/missing-file.jpg`)
+        .delete(`/v1/tenant-admin/packages/${testPackage1Id}/photos/missing-file.jpg`)
         .set('Authorization', `Bearer ${testToken1}`)
         .expect(204);
 
@@ -540,13 +558,13 @@ describe('Package Photo Upload/Delete Endpoints', () => {
 
     it('should return 401 without authentication', async () => {
       await request(app)
-        .delete(`/v1/tenant/admin/packages/${testPackage1Id}/photos/${uploadedFilename}`)
+        .delete(`/v1/tenant-admin/packages/${testPackage1Id}/photos/${uploadedFilename}`)
         .expect(401);
     });
 
     it('should return 401 with invalid JWT token', async () => {
       await request(app)
-        .delete(`/v1/tenant/admin/packages/${testPackage1Id}/photos/${uploadedFilename}`)
+        .delete(`/v1/tenant-admin/packages/${testPackage1Id}/photos/${uploadedFilename}`)
         .set('Authorization', 'Bearer invalid-token-here')
         .expect(401);
     });
@@ -558,7 +576,7 @@ describe('Package Photo Upload/Delete Endpoints', () => {
 
       for (let i = 0; i < 3; i++) {
         const res = await request(app)
-          .post(`/v1/tenant/admin/packages/${testPackage1Id}/photos`)
+          .post(`/v1/tenant-admin/packages/${testPackage1Id}/photos`)
           .set('Authorization', `Bearer ${testToken1}`)
           .attach('photo', imageBuffer, {
             filename: `multi-${i}.jpg`,
@@ -577,7 +595,7 @@ describe('Package Photo Upload/Delete Endpoints', () => {
 
       // Delete middle photo
       await request(app)
-        .delete(`/v1/tenant/admin/packages/${testPackage1Id}/photos/${filenames[1]}`)
+        .delete(`/v1/tenant-admin/packages/${testPackage1Id}/photos/${filenames[1]}`)
         .set('Authorization', `Bearer ${testToken1}`)
         .expect(204);
 

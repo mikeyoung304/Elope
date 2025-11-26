@@ -27,7 +27,6 @@ describe('GET /v1/packages', () => {
         isActive: true,
       },
       create: {
-        id: 'tenant_default_legacy',
         slug: 'mais-test',
         name: 'MAIS (Test)',
         apiKeyPublic: 'pk_live_mais-test_0123456789abcdef',
@@ -92,7 +91,6 @@ describe('GET /v1/packages/:slug', () => {
         isActive: true,
       },
       create: {
-        id: 'tenant_default_legacy',
         slug: 'mais-test',
         name: 'MAIS (Test)',
         apiKeyPublic: 'pk_live_mais-test_0123456789abcdef',

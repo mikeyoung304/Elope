@@ -33,6 +33,7 @@ import { createSegmentsRouter } from './segments.routes';
 import { createTenantAdminSegmentsRouter } from './tenant-admin-segments.routes';
 import { loginLimiter } from '../middleware/rateLimiter';
 import { logger } from '../lib/core/logger';
+import { apiKeyService } from '../lib/api-key.service';
 
 interface Controllers {
   packages: PackagesController;
@@ -312,10 +313,14 @@ export function createV1Router(
     // Register unified authentication routes (RECOMMENDED)
     // /v1/auth/login - public - unified login for both platform admins and tenant admins
     // /v1/auth/verify - requires token - verify token and get user info
+    // /v1/auth/signup - public - self-service tenant signup
+    // /v1/auth/forgot-password - public - request password reset
+    // /v1/auth/reset-password - public - complete password reset
     const unifiedAuthRoutes = createUnifiedAuthRoutes(
       identityService,
       services.tenantAuth,
-      tenantRepo
+      tenantRepo,
+      apiKeyService
     );
     app.use('/v1/auth', unifiedAuthRoutes);
 

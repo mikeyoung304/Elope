@@ -38,6 +38,19 @@ export const loginLimiter = rateLimit({
     }),
 });
 
+export const signupLimiter = rateLimit({
+  windowMs: 60 * 60 * 1000, // 1 hour
+  // Allow more signups in test environment for testing
+  max: process.env.NODE_ENV === 'test' ? 100 : 5,
+  standardHeaders: true,
+  legacyHeaders: false,
+  handler: (_req: Request, res: Response) =>
+    res.status(429).json({
+      error: 'too_many_signup_attempts',
+      message: 'Too many signup attempts. Please try again in an hour.',
+    }),
+});
+
 export const skipIfHealth = (req: Request, _res: Response, next: NextFunction) => {
   if (req.path === '/health' || req.path === '/ready') {
     return next();
