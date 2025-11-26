@@ -57,12 +57,6 @@ export function AppShell() {
                   How It Works
                 </a>
                 <Link
-                  to="/packages"
-                  className="text-lg tracking-wide text-white hover:text-white/90 transition-colors"
-                >
-                  Pricing
-                </Link>
-                <Link
                   to="/login"
                   className="text-lg tracking-wide text-white hover:text-white/90 transition-colors"
                 >
@@ -72,7 +66,7 @@ export function AppShell() {
                   asChild
                   className="bg-macon-orange hover:bg-macon-orange-dark text-white font-semibold px-6"
                 >
-                  <Link to="/packages">Get Started</Link>
+                  <Link to="/contact">Book Discovery Call</Link>
                 </Button>
               </nav>
 
@@ -100,12 +94,6 @@ export function AppShell() {
                       How It Works
                     </a>
                     <Link
-                      to="/packages"
-                      className="text-xl text-neutral-900 hover:text-macon-orange transition-colors font-medium"
-                    >
-                      Pricing
-                    </Link>
-                    <Link
                       to="/login"
                       className="text-xl text-neutral-900 hover:text-macon-orange transition-colors font-medium"
                     >
@@ -115,7 +103,7 @@ export function AppShell() {
                       asChild
                       className="bg-macon-orange hover:bg-macon-orange-dark text-white font-semibold w-full mt-4"
                     >
-                      <Link to="/packages">Get Started</Link>
+                      <Link to="/contact">Book Discovery Call</Link>
                     </Button>
                   </nav>
                 </SheetContent>
