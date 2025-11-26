@@ -16,8 +16,14 @@ const tier1Schema = z.object({
   API_PORT: z.coerce.number().optional(), // Alias for PORT
 
   // Database (Supabase)
-  DATABASE_URL: z.string().url('DATABASE_URL must be a valid PostgreSQL connection string'),
-  DIRECT_URL: z.string().url().optional(),
+  DATABASE_URL: z.string().refine(
+    (url) => url.startsWith('postgresql://') || url.startsWith('postgres://'),
+    'DATABASE_URL must be a valid PostgreSQL connection string'
+  ),
+  DIRECT_URL: z.string().refine(
+    (url) => url.startsWith('postgresql://') || url.startsWith('postgres://'),
+    'DIRECT_URL must be a valid PostgreSQL connection string'
+  ).optional(),
 
   // Supabase
   SUPABASE_URL: z.string().url('SUPABASE_URL must be a valid URL'),
@@ -39,10 +45,10 @@ const tier1Schema = z.object({
  */
 const tier2Schema = z.object({
   // Stripe (required in production)
-  STRIPE_SECRET_KEY: z.string().startsWith('sk_').optional(),
-  STRIPE_WEBHOOK_SECRET: z.string().startsWith('whsec_').optional(),
-  STRIPE_SUCCESS_URL: z.string().url().optional(),
-  STRIPE_CANCEL_URL: z.string().url().optional(),
+  STRIPE_SECRET_KEY: z.string().startsWith('sk_').optional().or(z.literal('')),
+  STRIPE_WEBHOOK_SECRET: z.string().startsWith('whsec_').optional().or(z.literal('')),
+  STRIPE_SUCCESS_URL: z.string().url().optional().or(z.literal('')),
+  STRIPE_CANCEL_URL: z.string().url().optional().or(z.literal('')),
 
   // Email (optional - falls back to file-sink)
   POSTMARK_SERVER_TOKEN: z.string().optional(),
