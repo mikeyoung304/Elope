@@ -127,11 +127,11 @@ const GCAL_CHECKS: EnvCheck[] = [
 ];
 
 function loadEnvFile(): Record<string, string> {
-  const envPath = path.join(process.cwd(), 'apps', 'api', '.env');
+  const envPath = path.join(process.cwd(), '.env');
 
   if (!fs.existsSync(envPath)) {
-    console.log(color('\n⚠️  .env file not found at apps/api/.env', colors.yellow));
-    console.log(color('   Copy apps/api/.env.example to apps/api/.env to get started.\n', colors.yellow));
+    console.log(color('\n⚠️  .env file not found at server/.env', colors.yellow));
+    console.log(color('   Copy server/.env.example to server/.env to get started.\n', colors.yellow));
     return {};
   }
 
@@ -206,7 +206,7 @@ function main() {
   const env = loadEnvFile();
 
   if (Object.keys(env).length === 0) {
-    console.log(color('No environment variables found. Create apps/api/.env to continue.\n', colors.yellow));
+    console.log(color('No environment variables found. Create server/.env to continue.\n', colors.yellow));
     process.exit(1);
   }
 
@@ -269,7 +269,7 @@ function main() {
     }
   }
 
-  console.log(color('\n💡 Run `pnpm -C apps/api run dev` to start the API server', colors.cyan));
+  console.log(color('\n💡 Run `npm run dev:api` to start the API server', colors.cyan));
   console.log(color('   See RUNBOOK.md for more troubleshooting help.\n', colors.cyan));
 }
 

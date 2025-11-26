@@ -13,7 +13,7 @@ MAIS (Macon AI Solutions) is a business growth club platform that partners with 
 - Testing: Vitest (unit/integration), Playwright (E2E)
 
 **Current Status:**
-- MVP Sprint Day 4 complete (773 server tests + 21 E2E tests)
+- MVP Sprint Day 4 complete (771 server tests + 21 E2E tests)
 - Tenant self-signup: Backend + Frontend complete (`/signup` → `/tenant/dashboard`)
 - Password reset flow: Complete with Postmark email integration
 - Stripe Connect onboarding: Backend routes + StripeConnectCard.tsx
@@ -53,6 +53,7 @@ npm run test:watch                 # Watch mode
 npm run test:coverage              # With coverage report
 npm run test:e2e                   # Playwright E2E (requires API + client running)
 npm run test:e2e:ui                # Interactive E2E mode
+npm run test:e2e:headed            # E2E with visible browser
 ```
 
 ### Database (Prisma)
@@ -411,7 +412,7 @@ packages/
 - ✅ Stripe Connect onboarding backend routes (`/v1/tenant-admin/stripe/*`)
 - ✅ StripeConnectCard.tsx component with status dashboard
 - ✅ 14 password reset tests added
-- ✅ 773 tests passing
+- ✅ 771 tests passing
 
 **Day 3 Status:** ✅ COMPLETE
 - ✅ SignupPage.tsx at `/signup` route
@@ -422,7 +423,7 @@ packages/
 **Day 4 Status:** ✅ COMPLETE
 - ✅ tenant-signup.spec.ts (12 E2E test cases)
 - ✅ password-reset.spec.ts (9 E2E test cases)
-- ✅ Total: 773 server tests + 21 new E2E tests
+- ✅ Total: 771 server tests + 21 new E2E tests
 
 **Day 5 Goals:** Deploy + Documentation
 - Production deployment
