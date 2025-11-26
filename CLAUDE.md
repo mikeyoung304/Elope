@@ -13,9 +13,10 @@ MAIS (Macon AI Solutions) is a business growth club platform that partners with 
 - Testing: Vitest (unit/integration), Playwright (E2E)
 
 **Current Status:**
-- MVP Sprint Day 1 complete (759 tests passing, 3 skipped, 12 todo)
-- Tenant self-signup implemented (`POST /v1/auth/signup`)
-- Password reset flow scaffolded (forgot-password, reset-password endpoints)
+- MVP Sprint Day 4 complete (773 server tests + 21 E2E tests)
+- Tenant self-signup: Backend + Frontend complete (`/signup` → `/tenant/dashboard`)
+- Password reset flow: Complete with Postmark email integration
+- Stripe Connect onboarding: Backend routes + StripeConnectCard.tsx
 - Phase 5.1 complete (package photo uploads)
 - Multi-tenant architecture: 95% complete
 - Current branch: `main` (production-ready)
@@ -395,7 +396,7 @@ packages/
 
 ## Current Sprint Goals
 
-**MVP Sprint Status:** In Progress (5-day aggressive timeline)
+**MVP Sprint Status:** Day 4 Complete (5-day aggressive timeline)
 
 **Day 1 Status:** ✅ COMPLETE (November 25, 2025)
 - ✅ Tenant self-signup backend (`POST /v1/auth/signup`)
@@ -405,20 +406,23 @@ packages/
 - ✅ Rate limiting: signupLimiter (5/hour per IP)
 - ✅ 759 tests passing (up from 752)
 
-**Day 2 Goals:** Password Reset + Stripe Connect
-- Implement password reset email flow with Postmark
-- Complete Stripe Connect onboarding UI
-- Stripe account status dashboard
+**Day 2 Status:** ✅ COMPLETE
+- ✅ Password reset email flow with Postmark (HTML template, SHA-256 token hashing)
+- ✅ Stripe Connect onboarding backend routes (`/v1/tenant-admin/stripe/*`)
+- ✅ StripeConnectCard.tsx component with status dashboard
+- ✅ 14 password reset tests added
+- ✅ 773 tests passing
 
-**Day 3 Goals:** Signup Frontend
-- Signup form component
-- Integration with backend
-- Success flow with API key display
+**Day 3 Status:** ✅ COMPLETE
+- ✅ SignupPage.tsx at `/signup` route
+- ✅ SignupForm.tsx with full validation (business name, email, password)
+- ✅ AuthContext integration with signup() method
+- ✅ Success flow: JWT storage → redirect to tenant dashboard
 
-**Day 4 Goals:** E2E Testing + Polish
-- Playwright E2E tests for signup flow
-- Error handling improvements
-- UX polish
+**Day 4 Status:** ✅ COMPLETE
+- ✅ tenant-signup.spec.ts (12 E2E test cases)
+- ✅ password-reset.spec.ts (9 E2E test cases)
+- ✅ Total: 773 server tests + 21 new E2E tests
 
 **Day 5 Goals:** Deploy + Documentation
 - Production deployment
