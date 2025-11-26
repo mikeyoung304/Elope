@@ -2,7 +2,7 @@
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "framework": "vite",
   "installCommand": "npm ci --workspaces --include-workspace-root",
-  "buildCommand": "npm run build --workspace=@macon/contracts && npm run build --workspace=@macon/shared && npm run build --workspace=client",
+  "buildCommand": "npm run build --workspace=@macon/contracts && npm run build --workspace=@macon/shared && npm run build --workspace=@macon/web",
   "outputDirectory": "client/dist",
   "rewrites": [
     { "source": "/widget/(.*)", "destination": "/widget/$1" },
