@@ -47,3 +47,4 @@ yarn-error.log*
 .claude/todos/
 *.jsonl
 MAIS/
+.vercel

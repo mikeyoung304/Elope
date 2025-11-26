@@ -1,15 +1,15 @@
 # Incident Response Runbook
 
-**Elope Wedding Booking Platform**
-**Last Updated:** October 31, 2025
+**MAIS - Macon AI Solutions Platform**
+**Last Updated:** November 26, 2025
 **Owner:** Operations Team
-**Escalation:** engineering@elope.example.com
+**Escalation:** support@maconaisolutions.com
 
 ---
 
 ## Overview
 
-This runbook provides step-by-step incident response procedures for the Elope wedding booking platform. Each section contains symptom identification, diagnostic steps, and resolution procedures.
+This runbook provides step-by-step incident response procedures for the MAIS business growth platform. Each section contains symptom identification, diagnostic steps, and resolution procedures.
 
 **Emergency Contacts:**
 - On-call Engineer: [Your on-call rotation]
@@ -17,7 +17,7 @@ This runbook provides step-by-step incident response procedures for the Elope we
 - Payment Provider: Stripe Support (https://support.stripe.com)
 
 **Key Resources:**
-- Production Dashboard: https://supabase.com/dashboard/project/gpyvdknhmevcfdbgtqir
+- Production Dashboard: Supabase Dashboard (credentials in password manager)
 - Stripe Dashboard: https://dashboard.stripe.com
 - Application Logs: [Your logging service URL]
 

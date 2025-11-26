@@ -1,7 +1,7 @@
 # Tenant Admin User Guide
 
 **Version**: 1.0
-**Last Updated**: November 6, 2025
+**Last Updated**: November 26, 2025
 
 ---
 
@@ -20,9 +20,9 @@
 
 ## Getting Started
 
-### What is Elope?
+### What is MAIS?
 
-Elope is a multi-tenant SaaS platform that enables wedding professionals to offer online booking for their packages and services. As a tenant administrator, you have full control over your branding, packages, availability, and booking management.
+MAIS (Macon AI Solutions) is a multi-tenant SaaS platform that enables entrepreneurs and small businesses to offer online booking for their packages and services. As a tenant administrator, you have full control over your branding, packages, availability, and booking management.
 
 ### Your Tenant Account
 

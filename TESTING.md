@@ -60,7 +60,7 @@ Before running E2E tests, ensure the API server is running in mock mode:
 
 ```bash
 # Terminal 1: Start API server
-cd /Users/mikeyoung/CODING/Elope
+cd /Users/mikeyoung/CODING/MAIS
 npm run --workspace=server dev
 ```
 
