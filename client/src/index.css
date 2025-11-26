@@ -10,6 +10,17 @@
     --font-body: 'Inter', system-ui, -apple-system, sans-serif;
   }
 
+  html {
+    scroll-behavior: smooth;
+    scroll-padding-top: 120px; /* Fixed header offset (~96px + buffer) */
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    html {
+      scroll-behavior: auto;
+    }
+  }
+
   * {
     @apply border-navy-700;
   }

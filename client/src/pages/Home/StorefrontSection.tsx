@@ -10,7 +10,7 @@ import { Sparkles } from "lucide-react";
 export function StorefrontSection() {
   return (
     <section
-      id="storefront"
+      id="how-it-works"
       aria-labelledby="storefront-heading"
       className="py-24 sm:py-32 bg-surface"
     >
