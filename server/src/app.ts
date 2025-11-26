@@ -204,7 +204,8 @@ export function createApp(
     booking: container.services.booking,
     tenantAuth: container.services.tenantAuth,
     segment: container.services.segment,
-  });
+    stripeConnect: container.services.stripeConnect,
+  }, container.mailProvider);
 
   // Mount dev routes (mock mode only)
   if (config.ADAPTERS_PRESET === 'mock' && container.controllers.dev) {

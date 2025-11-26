@@ -1,18 +1,24 @@
 /**
  * Tenant authentication middleware
  * Verifies tenant JWT tokens and attaches tenant context to res.locals
+ * Also supports platform admin impersonation tokens
  */
 
 import type { Request, Response, NextFunction } from 'express';
 import { UnauthorizedError } from '../lib/errors';
 import type { TenantAuthService } from '../services/tenant-auth.service';
-import type { TenantTokenPayload } from '../lib/ports';
+import type { TenantTokenPayload, UnifiedTokenPayload } from '../lib/ports';
+import type { IdentityService } from '../services/identity.service';
 
 /**
  * Creates tenant auth middleware that verifies JWT tokens
  * This is separate from platform admin auth and API key auth
+ * Also supports platform admin impersonation tokens for admin-as-tenant access
  */
-export function createTenantAuthMiddleware(tenantAuthService: TenantAuthService) {
+export function createTenantAuthMiddleware(
+  tenantAuthService: TenantAuthService,
+  identityService?: IdentityService
+) {
   return (req: Request, res: Response, next: NextFunction): void => {
     const reqLogger = res.locals.logger;
 
@@ -34,7 +40,43 @@ export function createTenantAuthMiddleware(tenantAuthService: TenantAuthService)
         throw new UnauthorizedError('Missing token');
       }
 
-      // Verify token and extract payload
+      // First, try to verify as platform admin impersonation token
+      if (identityService) {
+        try {
+          const adminPayload = identityService.verifyToken(token) as UnifiedTokenPayload;
+
+          // Check if this is an impersonation token
+          if (adminPayload.role === 'PLATFORM_ADMIN' && adminPayload.impersonating) {
+            // Platform admin is impersonating a tenant - extract tenant context
+            const impersonation = adminPayload.impersonating;
+
+            // Create tenant context from impersonation data
+            res.locals.tenantAuth = {
+              tenantId: impersonation.tenantId,
+              slug: impersonation.tenantSlug,
+              email: impersonation.tenantEmail,
+              type: 'impersonation' as const,
+              impersonatedBy: adminPayload.email,
+            };
+
+            reqLogger?.info(
+              {
+                tenantId: impersonation.tenantId,
+                slug: impersonation.tenantSlug,
+                adminEmail: adminPayload.email,
+              },
+              'Platform admin impersonating tenant'
+            );
+
+            next();
+            return;
+          }
+        } catch {
+          // Not an admin token, continue to tenant token verification
+        }
+      }
+
+      // Try to verify as tenant token
       const payload: TenantTokenPayload = tenantAuthService.verifyToken(token);
 
       // SECURITY: Validate token type - reject admin tokens on tenant routes

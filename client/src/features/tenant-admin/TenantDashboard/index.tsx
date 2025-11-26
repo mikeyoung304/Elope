@@ -6,10 +6,13 @@
  */
 
 import { useState } from "react";
+import { Link } from "react-router-dom";
+import { ExternalLink } from "lucide-react";
 import { TenantPackagesManager } from "../TenantPackagesManager";
 import { BlackoutsManager } from "../BlackoutsManager";
 import { TenantBookingList } from "../TenantBookingList";
 import { BrandingEditor } from "../BrandingEditor";
+import { StripeConnectCard } from "./StripeConnectCard";
 import { AdminLayout } from "../../../layouts/AdminLayout";
 import { MetricsCards } from "./MetricsCards";
 import { TabNavigation, type DashboardTab } from "./TabNavigation";
@@ -52,13 +55,22 @@ export function TenantDashboard({ tenantInfo }: TenantDashboardProps) {
         )}
 
         {/* Header */}
-        <div>
-          <h1 className="text-3xl font-bold text-neutral-900">Tenant Dashboard</h1>
-          {tenantInfo && (
-            <p className="text-neutral-600 mt-1">
-              {tenantInfo.name} ({tenantInfo.slug})
-            </p>
-          )}
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-3xl font-bold text-neutral-900">Tenant Dashboard</h1>
+            {tenantInfo && (
+              <p className="text-neutral-600 mt-1">
+                {tenantInfo.name} ({tenantInfo.slug})
+              </p>
+            )}
+          </div>
+          <Link
+            to="/packages"
+            className="inline-flex items-center gap-2 px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors"
+          >
+            <ExternalLink className="w-4 h-4" />
+            View Storefront
+          </Link>
         </div>
 
         {/* Metrics Cards */}
@@ -95,6 +107,10 @@ export function TenantDashboard({ tenantInfo }: TenantDashboardProps) {
             isLoading={isLoading}
             onBrandingChange={loadBranding}
           />
+        )}
+
+        {activeTab === "payments" && (
+          <StripeConnectCard />
         )}
       </div>
     </AdminLayout>

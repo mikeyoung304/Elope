@@ -227,7 +227,8 @@ export function createUnifiedAuthRoutes(
   identityService: IdentityService,
   tenantAuthService: TenantAuthService,
   tenantRepo: PrismaTenantRepository,
-  apiKeyService: ApiKeyService
+  apiKeyService: ApiKeyService,
+  mailProvider?: { sendPasswordReset: (to: string, resetToken: string, resetUrl: string) => Promise<void> }
 ): Router {
   const router = Router();
   const controller = new UnifiedAuthController(identityService, tenantAuthService, tenantRepo);
@@ -447,25 +448,49 @@ export function createUnifiedAuthRoutes(
       const tenant = await tenantRepo.findByEmail(normalizedEmail);
 
       if (tenant) {
-        // Generate reset token
+        // Generate secure random token (32 bytes = 64 hex chars)
         const resetToken = crypto.randomBytes(32).toString('hex');
+
+        // Hash the token before storing (SHA-256)
+        const tokenHash = crypto.createHash('sha256').update(resetToken).digest('hex');
         const expires = new Date(Date.now() + 60 * 60 * 1000); // 1 hour
 
-        // Store reset token
+        // Store hashed token in database
         await tenantRepo.update(tenant.id, {
-          passwordResetToken: resetToken,
+          passwordResetToken: tokenHash,
           passwordResetExpires: expires,
         });
 
-        // TODO: Send email with reset link
-        // For now, log the token (in development only)
-        logger.info({
-          event: 'password_reset_requested',
-          tenantId: tenant.id,
-          email: tenant.email,
-          // In production, don't log token - send email instead
-          resetToken: process.env.NODE_ENV === 'development' ? resetToken : '[redacted]',
-        }, 'Password reset requested');
+        // Generate reset URL for frontend
+        const resetUrl = `${process.env.CORS_ORIGIN || 'http://localhost:5173'}/reset-password?token=${resetToken}`;
+
+        // Send password reset email
+        if (mailProvider) {
+          try {
+            await mailProvider.sendPasswordReset(normalizedEmail, resetToken, resetUrl);
+            logger.info({
+              event: 'password_reset_email_sent',
+              tenantId: tenant.id,
+              email: tenant.email,
+            }, 'Password reset email sent');
+          } catch (emailError) {
+            logger.error({
+              event: 'password_reset_email_failed',
+              tenantId: tenant.id,
+              email: tenant.email,
+              error: emailError instanceof Error ? emailError.message : 'Unknown error',
+            }, 'Failed to send password reset email');
+            // Continue - don't leak error to user
+          }
+        } else {
+          // Development mode - log the token
+          logger.info({
+            event: 'password_reset_requested',
+            tenantId: tenant.id,
+            email: tenant.email,
+            resetUrl: process.env.NODE_ENV === 'development' ? resetUrl : '[redacted]',
+          }, 'Password reset requested (no mail provider configured)');
+        }
       }
 
       // Always return success (don't leak email existence)
@@ -500,12 +525,20 @@ export function createUnifiedAuthRoutes(
         throw new ValidationError('Token and password are required');
       }
 
+      // Validate token format (should be 64 hex characters)
+      if (!/^[a-f0-9]{64}$/i.test(token)) {
+        throw new ValidationError('Invalid reset token format');
+      }
+
       if (password.length < 8) {
         throw new ValidationError('Password must be at least 8 characters');
       }
 
-      // Find tenant by reset token
-      const tenant = await tenantRepo.findByResetToken(token);
+      // Hash the token to match database storage
+      const tokenHash = crypto.createHash('sha256').update(token).digest('hex');
+
+      // Find tenant by hashed reset token
+      const tenant = await tenantRepo.findByResetToken(tokenHash);
 
       if (!tenant) {
         throw new ValidationError('Invalid or expired reset token');

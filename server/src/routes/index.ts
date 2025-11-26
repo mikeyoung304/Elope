@@ -27,6 +27,7 @@ import { PrismaTenantRepository, PrismaBlackoutRepository } from '../adapters/pr
 import adminTenantsRoutes from './admin/tenants.routes';
 import adminStripeRoutes from './admin/stripe.routes';
 import { createTenantAdminRoutes } from './tenant-admin.routes';
+import { createTenantAdminStripeRoutes } from './tenant-admin-stripe.routes';
 import { createTenantAuthRoutes } from './tenant-auth.routes';
 import { createUnifiedAuthRoutes } from './auth.routes';
 import { createSegmentsRouter } from './segments.routes';
@@ -52,13 +53,15 @@ interface Services {
   booking: BookingService;
   tenantAuth: TenantAuthService;
   segment: SegmentService;
+  stripeConnect?: any; // StripeConnectService
 }
 
 export function createV1Router(
   controllers: Controllers,
   identityService: IdentityService,
   app: Application,
-  services?: Services
+  services?: Services,
+  mailProvider?: { sendPasswordReset: (to: string, resetToken: string, resetUrl: string) => Promise<void> }
 ): void {
   // Create Prisma instance for tenant middleware
   const prisma = new PrismaClient();
@@ -320,7 +323,8 @@ export function createV1Router(
       identityService,
       services.tenantAuth,
       tenantRepo,
-      apiKeyService
+      apiKeyService,
+      mailProvider
     );
     app.use('/v1/auth', unifiedAuthRoutes);
 
@@ -335,5 +339,13 @@ export function createV1Router(
     const tenantAdminSegmentsRouter = createTenantAdminSegmentsRouter(services.segment);
     app.use('/v1/tenant-admin/segments', tenantAuthMiddleware, tenantAdminSegmentsRouter);
     logger.info('✅ Tenant admin segment routes mounted at /v1/tenant-admin/segments');
+
+    // Register tenant admin Stripe Connect routes (for payment setup)
+    // Requires tenant admin authentication
+    if (services.stripeConnect) {
+      const tenantAdminStripeRoutes = createTenantAdminStripeRoutes(services.stripeConnect);
+      app.use('/v1/tenant-admin/stripe', tenantAuthMiddleware, tenantAdminStripeRoutes);
+      logger.info('✅ Tenant admin Stripe Connect routes mounted at /v1/tenant-admin/stripe');
+    }
   }
 }

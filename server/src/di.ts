@@ -68,6 +68,7 @@ export interface Container {
     audit: AuditService;
     segment: SegmentService;
   };
+  mailProvider?: PostmarkMailAdapter; // Export mail provider for password reset emails
   cacheAdapter: CacheServicePort; // Export cache adapter for health checks
   prisma?: PrismaClient; // Export Prisma instance for shutdown
 }
@@ -163,7 +164,7 @@ export function buildContainer(config: Config): Container {
       segment: segmentService,
     };
 
-    return { controllers, services, cacheAdapter, prisma: undefined };
+    return { controllers, services, mailProvider: adapters.mailProvider, cacheAdapter, prisma: undefined };
   }
 
   // Real adapters mode
@@ -335,5 +336,5 @@ export function buildContainer(config: Config): Container {
     segment: segmentService,
   };
 
-  return { controllers, services, cacheAdapter, prisma };
+  return { controllers, services, mailProvider, cacheAdapter, prisma };
 }

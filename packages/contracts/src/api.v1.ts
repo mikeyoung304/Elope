@@ -36,6 +36,7 @@ import {
   UpdateTenantDtoSchema,
   TenantDetailDtoSchema,
   PlatformStatsSchema,
+  StripeAccountStatusDtoSchema,
   // Error response schemas
   BadRequestErrorSchema,
   UnauthorizedErrorSchema,
@@ -884,5 +885,96 @@ export const Contracts = c.router({
       500: InternalServerErrorSchema,
     },
     summary: 'Get segment with packages (public, requires X-Tenant-Key)',
+  },
+
+  // =========================================================================
+  // TENANT ADMIN STRIPE CONNECT ENDPOINTS
+  // =========================================================================
+
+  /**
+   * Create Stripe Connect account for authenticated tenant
+   * POST /v1/tenant-admin/stripe/connect
+   */
+  tenantAdminCreateStripeAccount: {
+    method: 'POST',
+    path: '/v1/tenant-admin/stripe/connect',
+    body: z.object({
+      email: z.string().email(),
+      businessName: z.string().min(2),
+      country: z.string().length(2).default('US'),
+    }),
+    responses: {
+      201: z.object({
+        accountId: z.string(),
+        message: z.string(),
+      }),
+      400: BadRequestErrorSchema,
+      401: UnauthorizedErrorSchema,
+      403: ForbiddenErrorSchema,
+      409: ConflictErrorSchema, // Account already exists
+      500: InternalServerErrorSchema,
+    },
+    summary: 'Create Stripe Connect account for tenant (requires tenant admin authentication)',
+  },
+
+  /**
+   * Get Stripe Connect onboarding link for authenticated tenant
+   * POST /v1/tenant-admin/stripe/onboard
+   */
+  tenantAdminGetStripeOnboardingLink: {
+    method: 'POST',
+    path: '/v1/tenant-admin/stripe/onboard',
+    body: z.object({
+      refreshUrl: z.string().url(),
+      returnUrl: z.string().url(),
+    }),
+    responses: {
+      200: z.object({
+        url: z.string().url(),
+      }),
+      400: BadRequestErrorSchema,
+      401: UnauthorizedErrorSchema,
+      403: ForbiddenErrorSchema,
+      404: NotFoundErrorSchema, // No Stripe account exists
+      500: InternalServerErrorSchema,
+    },
+    summary: 'Generate Stripe Connect onboarding link (requires tenant admin authentication)',
+  },
+
+  /**
+   * Get Stripe Connect account status for authenticated tenant
+   * GET /v1/tenant-admin/stripe/status
+   */
+  tenantAdminGetStripeStatus: {
+    method: 'GET',
+    path: '/v1/tenant-admin/stripe/status',
+    responses: {
+      200: StripeAccountStatusDtoSchema,
+      401: UnauthorizedErrorSchema,
+      403: ForbiddenErrorSchema,
+      404: NotFoundErrorSchema, // No Stripe account exists
+      500: InternalServerErrorSchema,
+    },
+    summary: 'Get Stripe Connect account status (requires tenant admin authentication)',
+  },
+
+  /**
+   * Get Stripe Express dashboard login link for authenticated tenant
+   * POST /v1/tenant-admin/stripe/dashboard
+   */
+  tenantAdminGetStripeDashboardLink: {
+    method: 'POST',
+    path: '/v1/tenant-admin/stripe/dashboard',
+    body: z.undefined(),
+    responses: {
+      200: z.object({
+        url: z.string().url(),
+      }),
+      401: UnauthorizedErrorSchema,
+      403: ForbiddenErrorSchema,
+      404: NotFoundErrorSchema,
+      500: InternalServerErrorSchema,
+    },
+    summary: 'Get Stripe Express dashboard login link (requires tenant admin authentication)',
   },
 });

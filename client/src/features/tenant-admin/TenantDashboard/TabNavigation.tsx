@@ -6,7 +6,7 @@
 
 import { cn } from "@/lib/utils";
 
-export type DashboardTab = "packages" | "blackouts" | "bookings" | "branding";
+export type DashboardTab = "packages" | "blackouts" | "bookings" | "branding" | "payments";
 
 interface TabNavigationProps {
   activeTab: DashboardTab;
@@ -19,6 +19,7 @@ export function TabNavigation({ activeTab, onTabChange }: TabNavigationProps) {
     { id: "blackouts", label: "Blackouts" },
     { id: "bookings", label: "Bookings" },
     { id: "branding", label: "Branding" },
+    { id: "payments", label: "Payments" },
   ];
 
   return (
