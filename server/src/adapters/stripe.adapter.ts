@@ -219,7 +219,7 @@ export class StripePaymentAdapter implements PaymentProvider {
 
     return {
       refundId: refund.id,
-      status: refund.status, // 'pending', 'succeeded', 'failed', 'canceled'
+      status: refund.status || 'pending', // 'pending', 'succeeded', 'failed', 'canceled'
       amountCents: refund.amount,
     };
   }

@@ -15,10 +15,15 @@
  */
 
 import Stripe from 'stripe';
-import { PrismaClient } from '../generated/prisma';
-import { encryptionService } from '../lib/encryption.service';
+import { Prisma, PrismaClient } from '../generated/prisma';
+import { encryptionService, type EncryptedData } from '../lib/encryption.service';
 import { logger } from '../lib/core/logger';
-import type { TenantSecrets, PrismaJson } from '../types/prisma-json';
+
+// TenantSecrets type - Stripe encrypted secret storage
+interface TenantSecrets {
+  stripe?: EncryptedData; // Encrypted Stripe restricted key
+  [key: string]: unknown;
+}
 
 /**
  * Service for managing Stripe Connect accounts (tenant payment processing)
@@ -223,7 +228,7 @@ export class StripeConnectService {
     const encrypted = encryptionService.encryptStripeSecret(restrictedKey);
 
     // Merge with existing secrets
-    const existingSecrets: TenantSecrets = (tenant.secrets as PrismaJson<TenantSecrets>) || {};
+    const existingSecrets: TenantSecrets = (tenant.secrets as TenantSecrets) || {};
     const updatedSecrets: TenantSecrets = {
       ...existingSecrets,
       stripe: encrypted,
@@ -233,7 +238,7 @@ export class StripeConnectService {
     await this.prisma.tenant.update({
       where: { id: tenantId },
       data: {
-        secrets: updatedSecrets,
+        secrets: updatedSecrets as Prisma.InputJsonValue,
       },
     });
 
@@ -261,7 +266,7 @@ export class StripeConnectService {
       return null;
     }
 
-    const secrets = tenant.secrets as PrismaJson<TenantSecrets>;
+    const secrets = tenant.secrets as TenantSecrets | null;
     if (!secrets || !secrets.stripe) {
       logger.debug({ tenantId }, 'No Stripe key found in tenant secrets');
       return null;

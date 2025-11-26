@@ -88,7 +88,8 @@ export class BookingService {
     const cachedResponse = await this.idempotencyService.getStoredResponse(idempotencyKey);
     if (cachedResponse) {
       // Return cached checkout session URL
-      return { checkoutUrl: cachedResponse.data.url };
+      const data = cachedResponse.data as { url: string };
+      return { checkoutUrl: data.url };
     }
 
     // Store idempotency key before making Stripe call
@@ -99,7 +100,8 @@ export class BookingService {
       await new Promise(resolve => setTimeout(resolve, 100));
       const retryResponse = await this.idempotencyService.getStoredResponse(idempotencyKey);
       if (retryResponse) {
-        return { checkoutUrl: retryResponse.data.url };
+        const retryData = retryResponse.data as { url: string };
+        return { checkoutUrl: retryData.url };
       }
       // If still no response, proceed anyway (edge case)
     }

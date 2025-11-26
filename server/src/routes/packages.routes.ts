@@ -17,6 +17,16 @@ export class PackagesController {
       description: pkg.description,
       priceCents: pkg.priceCents,
       photoUrl: pkg.photoUrl,
+      isActive: pkg.active ?? true,
+      photos: (pkg.photos ?? []).map((photo, idx) => ({
+        url: photo.url,
+        filename: photo.filename ?? `photo-${idx}`,
+        size: photo.size ?? 0,
+        order: photo.order ?? idx,
+      })),
+      segmentId: pkg.segmentId ?? null,
+      grouping: pkg.grouping ?? null,
+      groupingOrder: pkg.groupingOrder ?? null,
       addOns: pkg.addOns.map((addOn): AddOnDto => ({
         id: addOn.id,
         packageId: addOn.packageId,
@@ -36,6 +46,16 @@ export class PackagesController {
       description: pkg.description,
       priceCents: pkg.priceCents,
       photoUrl: pkg.photoUrl,
+      isActive: pkg.active ?? true,
+      photos: (pkg.photos ?? []).map((photo, idx) => ({
+        url: photo.url,
+        filename: photo.filename ?? `photo-${idx}`,
+        size: photo.size ?? 0,
+        order: photo.order ?? idx,
+      })),
+      segmentId: pkg.segmentId ?? null,
+      grouping: pkg.grouping ?? null,
+      groupingOrder: pkg.groupingOrder ?? null,
       addOns: pkg.addOns.map((addOn): AddOnDto => ({
         id: addOn.id,
         packageId: addOn.packageId,

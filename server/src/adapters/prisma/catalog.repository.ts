@@ -13,7 +13,7 @@ import type {
 } from '../lib/ports';
 import type { Package, AddOn } from '../lib/entities';
 import { DomainError } from '../lib/errors';
-import type { PrismaJson } from '../types/prisma-json';
+import type { Prisma } from '../../generated/prisma';
 
 export class PrismaCatalogRepository implements CatalogRepository {
   constructor(private readonly prisma: PrismaClient) {}
@@ -145,7 +145,7 @@ export class PrismaCatalogRepository implements CatalogRepository {
         ...(data.title !== undefined && { name: data.title }),
         ...(data.description !== undefined && { description: data.description }),
         ...(data.priceCents !== undefined && { basePrice: data.priceCents }),
-        ...(data.photos !== undefined && { photos: data.photos }),
+        ...(data.photos !== undefined && { photos: data.photos as unknown as Prisma.InputJsonValue }),
       },
     });
 
@@ -406,7 +406,7 @@ export class PrismaCatalogRepository implements CatalogRepository {
     segmentId?: string | null;
     grouping?: string | null;
     groupingOrder?: number | null;
-    photos?: PrismaJson<PackagePhoto[]>;
+    photos?: Prisma.JsonValue;
   }): Package {
     return {
       id: pkg.id,
@@ -416,7 +416,7 @@ export class PrismaCatalogRepository implements CatalogRepository {
       description: pkg.description || '',
       priceCents: pkg.basePrice,
       photoUrl: undefined,
-      photos: (pkg.photos as PackagePhoto[]) || [],
+      photos: (pkg.photos as unknown as PackagePhoto[]) || [],
       active: pkg.active,
       segmentId: pkg.segmentId,
       grouping: pkg.grouping,

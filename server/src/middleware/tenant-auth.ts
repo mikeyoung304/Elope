@@ -43,7 +43,7 @@ export function createTenantAuthMiddleware(
       // First, try to verify as platform admin impersonation token
       if (identityService) {
         try {
-          const adminPayload = identityService.verifyToken(token) as UnifiedTokenPayload;
+          const adminPayload = identityService.verifyToken(token) as unknown as UnifiedTokenPayload;
 
           // Check if this is an impersonation token
           if (adminPayload.role === 'PLATFORM_ADMIN' && adminPayload.impersonating) {
@@ -51,13 +51,16 @@ export function createTenantAuthMiddleware(
             const impersonation = adminPayload.impersonating;
 
             // Create tenant context from impersonation data
+            // Store impersonation context separately to avoid type conflict
             res.locals.tenantAuth = {
               tenantId: impersonation.tenantId,
               slug: impersonation.tenantSlug,
               email: impersonation.tenantEmail,
-              type: 'impersonation' as const,
-              impersonatedBy: adminPayload.email,
-            };
+              type: 'tenant' as const, // Use 'tenant' type for consistent downstream handling
+            } as TenantTokenPayload;
+
+            // Track who is impersonating (for audit logs)
+            res.locals.impersonatedBy = adminPayload.email;
 
             reqLogger?.info(
               {

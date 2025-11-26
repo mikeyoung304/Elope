@@ -358,6 +358,28 @@ export class MockCatalogRepository implements CatalogRepository {
     }
     addOns.delete(id);
   }
+
+  // Segment-scoped methods (Phase A - Segment Implementation)
+  async getPackagesBySegment(tenantId: string, segmentId: string): Promise<Package[]> {
+    // Mock mode: Return all packages (mock doesn't support segments)
+    return Array.from(packages.values()).filter((p) => p.segmentId === segmentId);
+  }
+
+  async getPackagesBySegmentWithAddOns(tenantId: string, segmentId: string): Promise<Array<Package & { addOns: AddOn[] }>> {
+    // Mock mode: Return packages with their add-ons
+    const segmentPackages = await this.getPackagesBySegment(tenantId, segmentId);
+    return segmentPackages.map((pkg) => ({
+      ...pkg,
+      addOns: Array.from(addOns.values()).filter((a) => a.packageId === pkg.id),
+    }));
+  }
+
+  async getAddOnsForSegment(tenantId: string, segmentId: string): Promise<AddOn[]> {
+    // Mock mode: Return all add-ons for packages in segment
+    const segmentPackages = await this.getPackagesBySegment(tenantId, segmentId);
+    const packageIds = new Set(segmentPackages.map((p) => p.id));
+    return Array.from(addOns.values()).filter((a) => packageIds.has(a.packageId));
+  }
 }
 
 // Mock Booking Repository

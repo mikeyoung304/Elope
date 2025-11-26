@@ -48,7 +48,8 @@ export function createAuthMiddleware(identityService: IdentityService) {
 
       // SECURITY: Validate admin role is present (support both old and new token formats)
       const isOldFormat = payload.role === 'admin';
-      const isNewFormat = 'role' in payload && (payload as UnifiedTokenPayload).role === 'PLATFORM_ADMIN';
+      const payloadAsUnified = payload as unknown as UnifiedTokenPayload;
+      const isNewFormat = payloadAsUnified.role === 'PLATFORM_ADMIN';
 
       if (!isOldFormat && !isNewFormat) {
         throw new UnauthorizedError(
@@ -60,7 +61,7 @@ export function createAuthMiddleware(identityService: IdentityService) {
       res.locals.admin = payload;
 
       // If impersonation token, also attach impersonation context
-      const unifiedPayload = payload as UnifiedTokenPayload;
+      const unifiedPayload = payloadAsUnified;
       if (unifiedPayload.impersonating) {
         res.locals.impersonating = unifiedPayload.impersonating;
         reqLogger?.info({

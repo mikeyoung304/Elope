@@ -8,9 +8,10 @@
 
 export interface PackagePhoto {
   url: string;
-  filename: string;
-  size: number;
-  order: number;
+  filename?: string;
+  size?: number;
+  order?: number;
+  altText?: string; // Alt text for accessibility
 }
 
 export interface Package {

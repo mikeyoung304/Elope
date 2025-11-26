@@ -164,7 +164,7 @@ export function buildContainer(config: Config): Container {
       segment: segmentService,
     };
 
-    return { controllers, services, mailProvider: adapters.mailProvider, cacheAdapter, prisma: undefined };
+    return { controllers, services, mailProvider: undefined, cacheAdapter, prisma: undefined };
   }
 
   // Real adapters mode

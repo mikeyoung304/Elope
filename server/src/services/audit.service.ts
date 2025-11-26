@@ -9,7 +9,7 @@
  * - trackLegacyChange() - For legacy CRUD during migration (Package, Tenant, BlackoutDate)
  */
 
-import type { PrismaClient } from '../generated/prisma';
+import { Prisma, type PrismaClient } from '../generated/prisma';
 
 export interface AuditServiceDeps {
   prisma: PrismaClient;
@@ -133,10 +133,16 @@ export class AuditService {
         agentId: input.agentId ?? null,
         email: input.email,
         role: input.role,
-        beforeSnapshot: input.beforeSnapshot ?? null,
-        afterSnapshot: input.afterSnapshot,
+        beforeSnapshot: input.beforeSnapshot !== undefined && input.beforeSnapshot !== null
+          ? (input.beforeSnapshot as Prisma.InputJsonValue)
+          : Prisma.JsonNull,
+        afterSnapshot: input.afterSnapshot !== undefined && input.afterSnapshot !== null
+          ? (input.afterSnapshot as Prisma.InputJsonValue)
+          : Prisma.JsonNull,
         reason: input.reason ?? null,
-        metadata: input.metadata ?? null,
+        metadata: input.metadata !== undefined && input.metadata !== null
+          ? (input.metadata as Prisma.InputJsonValue)
+          : Prisma.JsonNull,
       },
     });
   }
@@ -177,10 +183,16 @@ export class AuditService {
         agentId: null, // Legacy operations don't have agents
         email: input.email,
         role: input.role,
-        beforeSnapshot: input.beforeSnapshot ?? null,
-        afterSnapshot: input.afterSnapshot,
+        beforeSnapshot: input.beforeSnapshot !== undefined && input.beforeSnapshot !== null
+          ? (input.beforeSnapshot as Prisma.InputJsonValue)
+          : Prisma.JsonNull,
+        afterSnapshot: input.afterSnapshot !== undefined && input.afterSnapshot !== null
+          ? (input.afterSnapshot as Prisma.InputJsonValue)
+          : Prisma.JsonNull,
         reason: input.reason ?? null,
-        metadata: input.metadata ?? null,
+        metadata: input.metadata !== undefined && input.metadata !== null
+          ? (input.metadata as Prisma.InputJsonValue)
+          : Prisma.JsonNull,
       },
     });
   }

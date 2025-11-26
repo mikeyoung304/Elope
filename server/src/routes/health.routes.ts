@@ -53,11 +53,12 @@ export function registerHealthRoutes(app: Express, deps: HealthCheckDeps): void 
 
     // Mock mode - always ready (no external dependencies)
     if (mode === 'mock') {
-      return res.status(200).json({
+      res.status(200).json({
         status: 'ready',
         timestamp: new Date().toISOString(),
         checks,
       });
+      return;
     }
 
     // Real mode - check database connectivity

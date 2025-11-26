@@ -5,7 +5,7 @@
 
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { AuditService } from './audit.service';
-import type { PrismaClient } from '../generated/prisma';
+import { Prisma, type PrismaClient } from '../generated/prisma';
 
 // Mock Prisma Client
 const mockPrisma = {
@@ -92,10 +92,10 @@ describe('AuditService', () => {
           agentId: null, // Should default to null
           email: input.email,
           role: input.role,
-          beforeSnapshot: null, // Not provided
+          beforeSnapshot: Prisma.JsonNull, // Not provided - uses JsonNull
           afterSnapshot: input.afterSnapshot,
           reason: null, // Not provided
-          metadata: null, // Not provided
+          metadata: Prisma.JsonNull, // Not provided - uses JsonNull
         },
       });
     });
@@ -156,7 +156,7 @@ describe('AuditService', () => {
           beforeSnapshot: input.beforeSnapshot,
           afterSnapshot: input.afterSnapshot,
           reason: input.reason,
-          metadata: null,
+          metadata: Prisma.JsonNull, // Uses JsonNull for null metadata
         },
       });
     });
@@ -219,7 +219,8 @@ describe('AuditService', () => {
       await auditService.trackLegacyChange(input);
 
       const call = (mockPrisma.configChangeLog.create as any).mock.calls[0][0];
-      expect(call.data.beforeSnapshot).toBeNull();
+      // Null values are converted to Prisma.JsonNull for JSON fields
+      expect(call.data.beforeSnapshot).toEqual(Prisma.JsonNull);
       expect(call.data.afterSnapshot).toBeDefined();
     });
 
@@ -242,7 +243,8 @@ describe('AuditService', () => {
 
       const call = (mockPrisma.configChangeLog.create as any).mock.calls[0][0];
       expect(call.data.beforeSnapshot).toBeDefined();
-      expect(call.data.afterSnapshot).toBeNull();
+      // Null values are converted to Prisma.JsonNull for JSON fields
+      expect(call.data.afterSnapshot).toEqual(Prisma.JsonNull);
     });
   });
 

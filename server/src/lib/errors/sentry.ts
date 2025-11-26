@@ -170,23 +170,30 @@ export function isSentryEnabled(): boolean {
 /**
  * Sentry request handler middleware
  * Call this BEFORE your routes
+ * Note: In Sentry v8+, this is replaced by expressIntegration() in init()
+ * This function is kept for backwards compatibility but is now a no-op
  */
 export function sentryRequestHandler() {
-  if (!sentryInitialized) {
-    return (_req: any, _res: any, next: any) => next();
-  }
-
-  return Sentry.Handlers.requestHandler();
+  // In Sentry v8+, request handling is done via expressIntegration()
+  // which should be added to the integrations array in init()
+  return (_req: unknown, _res: unknown, next: (err?: unknown) => void) => next();
 }
 
 /**
  * Sentry error handler middleware
  * Call this AFTER your routes but BEFORE other error handlers
+ * Note: In Sentry v8+, use setupExpressErrorHandler(app) instead
  */
 export function sentryErrorHandler() {
   if (!sentryInitialized) {
-    return (_err: any, _req: any, _res: any, next: any) => next(_err);
+    return (_err: unknown, _req: unknown, _res: unknown, next: (err?: unknown) => void) => next(_err);
   }
 
-  return Sentry.Handlers.errorHandler();
+  // Return a middleware that captures errors to Sentry
+  return (err: unknown, _req: unknown, _res: unknown, next: (err?: unknown) => void) => {
+    if (err instanceof Error) {
+      Sentry.captureException(err);
+    }
+    next(err);
+  };
 }
