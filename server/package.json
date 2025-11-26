@@ -12,7 +12,7 @@
     "dev:mock": "cross-env ADAPTERS_PRESET=mock tsx watch src/index.ts",
     "dev:real": "cross-env ADAPTERS_PRESET=real tsx watch src/index.ts",
     "build": "tsc -b",
-    "start": "node dist/server/src/index.js",
+    "start": "tsx src/index.ts",
     "typecheck": "tsc -b --noEmit",
     "test": "vitest run --reporter=verbose",
     "test:watch": "vitest",
@@ -65,7 +65,8 @@
     "swagger-ui-express": "^5.0.1",
     "validator": "^13.15.23",
     "xss": "^1.0.15",
-    "zod": "^3.24.0"
+    "zod": "^3.24.0",
+    "tsx": "^4.7.0"
   },
   "devDependencies": {
     "@types/bcryptjs": "^3.0.0",
@@ -77,7 +78,6 @@
     "pino-pretty": "^13.1.2",
     "supertest": "^7.1.4",
     "ts-node": "^10.9.2",
-    "tsx": "^4.7.0",
     "vitest": "^3.2.4"
   },
   "prisma": {
