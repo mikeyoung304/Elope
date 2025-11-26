@@ -1,29 +1,39 @@
 import { HeroSection } from "./HeroSection";
-import { SegmentSection } from "./SegmentSection";
-import { StorySection } from "./StorySection";
-import { ValueSection } from "./ValueSection";
-import { CustomerStorySection } from "./CustomerStorySection";
-import { CTASection } from "./CTASection";
+import { ProblemSection } from "./ProblemSection";
+import { StorefrontSection } from "./StorefrontSection";
+import { PsychologySection } from "./PsychologySection";
+import { CollectiveSection } from "./CollectiveSection";
+import { PartnershipSection } from "./PartnershipSection";
+import { FutureStateSection } from "./FutureStateSection";
+import { FinalCTASection } from "./FinalCTASection";
 
 /**
- * Home page - Stories That Stick Framework
+ * Home page - Managed Storefronts & The Collective
  *
- * Minimal, impactful landing page using Kindra Hall's storytelling patterns:
- * 1. Hero - The Hook (provocative question, creates tension)
- * 2. Story - Founder + Purpose (emotional connection)
- * 3. Value - Three transformations (before/after benefits)
- * 4. Customer Story - Single powerful testimonial (proof)
- * 5. CTA - Clear next step (resolution)
+ * Premium editorial landing page targeting high-value service businesses:
+ * horse farms, elopement agencies, wedding photographers, event planners.
+ *
+ * Section flow:
+ * 1. Hero - AI-powered storefronts headline
+ * 2. Problem - Pain points they recognize
+ * 3. Storefront - 3-tier model explanation
+ * 4. Psychology - Why 3 tiers work
+ * 5. Collective - AI + team capabilities
+ * 6. Partnership - Revenue-share model
+ * 7. FutureState - Transformation narrative
+ * 8. FinalCTA - Book a discovery call
  */
 export function Home() {
   return (
     <main>
       <HeroSection />
-      <SegmentSection />
-      <StorySection />
-      <ValueSection />
-      <CustomerStorySection />
-      <CTASection />
+      <ProblemSection />
+      <StorefrontSection />
+      <PsychologySection />
+      <CollectiveSection />
+      <PartnershipSection />
+      <FutureStateSection />
+      <FinalCTASection />
     </main>
   );
 }

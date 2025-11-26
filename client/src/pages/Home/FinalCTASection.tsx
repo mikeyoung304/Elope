@@ -1,47 +1,47 @@
 import { Link } from "react-router-dom";
 import { Container } from "@/ui/Container";
 import { Button } from "@/components/ui/button";
-import { Check } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 
+/**
+ * FinalCTASection - Final Call to Action
+ *
+ * Clean, focused CTA section with earth tone styling.
+ * Links to contact/discovery call form.
+ */
 export function FinalCTASection() {
   return (
-    <section id="final-cta" aria-labelledby="final-cta-heading" className="relative py-28 bg-gradient-to-br from-macon-navy via-neutral-900 to-black text-white overflow-hidden">
-      {/* Animated gradient orbs */}
-      <div className="absolute top-0 left-1/4 w-96 h-96 bg-macon-orange/20 rounded-full blur-3xl animate-pulse"></div>
-      <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-macon-teal/15 rounded-full blur-3xl animate-pulse" style={{animationDelay: '1s'}}></div>
-      {/* Grid overlay */}
-      <div className="absolute inset-0 opacity-10 bg-[linear-gradient(rgba(255,255,255,0.03)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.03)_1px,transparent_1px)] bg-[size:60px_60px]"></div>
-
-      <Container className="relative z-10">
+    <section
+      id="final-cta"
+      aria-labelledby="final-cta-heading"
+      className="py-24 sm:py-32 bg-sage"
+    >
+      <Container>
         <div className="max-w-4xl mx-auto text-center">
-          <h2 id="final-cta-heading" className="font-heading text-5xl md:text-7xl lg:text-8xl font-extrabold mb-8 leading-tight text-white drop-shadow-2xl">
-            Ready to Stop Doing Everything Yourself?
+          {/* Headline */}
+          <h2
+            id="final-cta-heading"
+            className="font-serif text-4xl sm:text-5xl md:text-6xl font-bold text-white mb-6"
+          >
+            Ready for a storefront that sells while you serve?
           </h2>
-          <p className="text-2xl md:text-3xl mb-12 text-white/90 leading-relaxed font-light max-w-3xl mx-auto">
-            Join 50+ business owners who've traded admin chaos for automated growth. Your dedicated strategist is waiting.
+
+          {/* Body */}
+          <p className="text-xl text-white/90 mb-12 max-w-2xl mx-auto">
+            If you're a service business owner who's serious about growth but done with duct-taped systems, MaconAI can help.
           </p>
-          <div className="flex flex-col sm:flex-row gap-6 justify-center items-center mb-12">
-            <Button
-              className="bg-macon-orange hover:bg-macon-orange-dark text-white font-extrabold text-2xl px-16 py-8 shadow-[0_0_60px_rgba(255,107,53,0.5)] hover:shadow-[0_0_80px_rgba(255,107,53,0.7)] hover:scale-110 w-full sm:w-auto sm:min-w-[340px] rounded-2xl transition-all duration-300 border-4 border-macon-orange-light"
-              asChild
-            >
-              <Link to="/packages">Start My Free Growth Audit</Link>
-            </Button>
-          </div>
-          <div className="flex flex-wrap justify-center gap-6">
-            <div className="flex items-center gap-2 px-6 py-3 bg-white/10 backdrop-blur-md rounded-xl border border-white/20">
-              <Check className="w-6 h-6 text-macon-orange" />
-              <span className="text-base text-white font-medium">Free strategy call</span>
-            </div>
-            <div className="flex items-center gap-2 px-6 py-3 bg-white/10 backdrop-blur-md rounded-xl border border-white/20">
-              <Check className="w-6 h-6 text-macon-orange" />
-              <span className="text-base text-white font-medium">No credit card</span>
-            </div>
-            <div className="flex items-center gap-2 px-6 py-3 bg-white/10 backdrop-blur-md rounded-xl border border-white/20">
-              <Check className="w-6 h-6 text-macon-orange" />
-              <span className="text-base text-white font-medium">Cancel anytime</span>
-            </div>
-          </div>
+
+          {/* CTA Button */}
+          <Button
+            asChild
+            size="lg"
+            className="bg-white text-sage hover:bg-white/90 font-semibold text-lg px-10 py-6 rounded-full group transition-all duration-300"
+          >
+            <Link to="/contact" className="flex items-center gap-2">
+              Book a Discovery Call
+              <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+            </Link>
+          </Button>
         </div>
       </Container>
     </section>

@@ -1,66 +1,80 @@
 import { Container } from "@/ui/Container";
-import { AnimatedSection } from "@/components/AnimatedSection";
-import { Clock, TrendingDown, Flame } from "lucide-react";
+import { Mail, Clock, HelpCircle } from "lucide-react";
 
-const problems = [
-  {
-    icon: Clock,
-    title: "Drowning in Admin",
-    description:
-      "You started a business to do what you love—not to spend 60 hours a week on scheduling, invoices, and follow-ups.",
-  },
-  {
-    icon: TrendingDown,
-    title: "Losing Leads",
-    description:
-      "While you're juggling tasks, potential clients are booking with competitors who have better systems.",
-  },
-  {
-    icon: Flame,
-    title: "Burning Out",
-    description:
-      "Wearing every hat isn't sustainable. Something has to give—and it's usually your sanity or your growth.",
-  },
-];
-
+/**
+ * ProblemSection - Empathy section showing pain points
+ *
+ * Uses earth tone palette with alternating surface background.
+ * Pain bullets with icons for visual scanning.
+ */
 export function ProblemSection() {
   return (
-    <section className="py-20 bg-neutral-950">
+    <section
+      id="problem"
+      aria-labelledby="problem-heading"
+      className="py-24 sm:py-32 bg-surface-alt"
+    >
       <Container>
-        <AnimatedSection>
-          <h2 className="text-4xl md:text-5xl font-bold text-center text-white mb-4">
-            Sound Familiar?
+        <div className="max-w-4xl mx-auto">
+          {/* Section headline */}
+          <h2
+            id="problem-heading"
+            className="font-serif text-4xl sm:text-5xl font-bold text-text-primary text-center mb-8"
+          >
+            Your services are premium. Your systems shouldn't feel homemade.
           </h2>
-        </AnimatedSection>
 
-        <div className="grid md:grid-cols-3 gap-8 mt-12 max-w-5xl mx-auto">
-          {problems.map((problem, idx) => (
-            <AnimatedSection key={idx} delay={idx * 100}>
-              <div className="bg-neutral-900 border border-neutral-800 rounded-2xl p-8 text-center hover:border-neutral-700 transition-colors h-full">
-                <div className="w-16 h-16 bg-red-500/10 rounded-full flex items-center justify-center mx-auto mb-6">
-                  <problem.icon className="w-8 h-8 text-red-400" />
-                </div>
-                <h3 className="text-xl font-semibold text-white mb-3">
-                  {problem.title}
-                </h3>
-                <p className="text-neutral-400 leading-relaxed">
-                  {problem.description}
-                </p>
-              </div>
-            </AnimatedSection>
-          ))}
-        </div>
-
-        <AnimatedSection delay={400}>
-          <div className="text-center mt-16">
-            <p className="text-2xl md:text-3xl text-neutral-300 italic font-light">
-              "You didn't start a business for this."
+          {/* Body text */}
+          <div className="text-xl text-text-muted leading-relaxed mb-12 text-center max-w-3xl mx-auto space-y-4">
+            <p>
+              Your clients are ready to buy. They've found the right venue, date, or package.
             </p>
-            <p className="text-macon-orange mt-4 font-medium text-lg">
-              There's a better way
+            <p>
+              Then things slow down: emails, DMs, questions, invoices, contracts, payment links.
+            </p>
+            <p>
+              You know AI and automation could streamline this, but you don't have the time—or interest—to become a tech team. Meanwhile, opportunities leak out of your pipeline every week.
             </p>
           </div>
-        </AnimatedSection>
+
+          {/* Pain bullets */}
+          <div className="grid sm:grid-cols-3 gap-6 mb-12">
+            <div className="flex items-start gap-4 p-6 bg-surface rounded-xl">
+              <div className="w-12 h-12 bg-sage-light/20 rounded-full flex items-center justify-center flex-shrink-0">
+                <Mail className="w-6 h-6 text-sage" />
+              </div>
+              <div>
+                <h3 className="font-semibold text-text-primary mb-1">Bookings scattered</h3>
+                <p className="text-text-muted text-sm">Across email, Instagram, and text</p>
+              </div>
+            </div>
+
+            <div className="flex items-start gap-4 p-6 bg-surface rounded-xl">
+              <div className="w-12 h-12 bg-sage-light/20 rounded-full flex items-center justify-center flex-shrink-0">
+                <Clock className="w-6 h-6 text-sage" />
+              </div>
+              <div>
+                <h3 className="font-semibold text-text-primary mb-1">Payments delayed</h3>
+                <p className="text-text-muted text-sm">By manual back-and-forth</p>
+              </div>
+            </div>
+
+            <div className="flex items-start gap-4 p-6 bg-surface rounded-xl">
+              <div className="w-12 h-12 bg-sage-light/20 rounded-full flex items-center justify-center flex-shrink-0">
+                <HelpCircle className="w-6 h-6 text-sage" />
+              </div>
+              <div>
+                <h3 className="font-semibold text-text-primary mb-1">Clients unsure</h3>
+                <p className="text-text-muted text-sm">Which option to choose or what happens next</p>
+              </div>
+            </div>
+          </div>
+
+          {/* Close */}
+          <p className="text-xl text-text-primary text-center font-medium">
+            MaconAI turns that chaos into a clean, trustworthy storefront your clients can actually buy from.
+          </p>
+        </div>
       </Container>
     </section>
   );

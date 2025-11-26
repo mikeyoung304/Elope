@@ -7,6 +7,15 @@ export default {
   theme: {
     extend: {
       colors: {
+        // Earth tone palette for landing page redesign (WCAG AA compliant)
+        surface: '#FFFBF8',           // soft cream - primary background
+        'surface-alt': '#F5F1EE',     // warm cream - alternating sections
+        'sage': '#4A7C6F',            // accent (4.6:1 on cream)
+        'sage-hover': '#3D6B5F',      // interactive states
+        'sage-light': '#8FAA9E',      // decorative only (borders, backgrounds)
+        'text-primary': '#1A1815',    // deep charcoal (11.8:1 on cream)
+        'text-muted': '#4A4440',      // medium charcoal (7.2:1 on cream)
+
         // Macon Brand Colors - New Default Palette
         'macon-navy': {
           DEFAULT: '#1a365d',
@@ -156,6 +165,7 @@ export default {
       fontFamily: {
         heading: ['Inter', 'system-ui', '-apple-system', 'sans-serif'],
         body: ['Inter', 'system-ui', '-apple-system', 'sans-serif'],
+        serif: ['Playfair Display', 'Georgia', 'serif'],
       },
       fontSize: {
         // Typography scale - ENHANCED for better readability (rem units for accessibility)
