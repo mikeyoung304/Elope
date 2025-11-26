@@ -20,10 +20,13 @@ const tier1Schema = z.object({
     (url) => url.startsWith('postgresql://') || url.startsWith('postgres://'),
     'DATABASE_URL must be a valid PostgreSQL connection string'
   ),
-  DIRECT_URL: z.string().refine(
-    (url) => !url || url.startsWith('postgresql://') || url.startsWith('postgres://'),
-    'DIRECT_URL must be a valid PostgreSQL connection string'
-  ).optional(),
+  DIRECT_URL: z.preprocess(
+    (val) => (val === '' ? undefined : val),
+    z.string().refine(
+      (url) => url.startsWith('postgresql://') || url.startsWith('postgres://'),
+      'DIRECT_URL must be a valid PostgreSQL connection string'
+    ).optional()
+  ),
 
   // Supabase
   SUPABASE_URL: z.string().url('SUPABASE_URL must be a valid URL'),
