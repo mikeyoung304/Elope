@@ -12,7 +12,7 @@
     "dev:mock": "cross-env ADAPTERS_PRESET=mock tsx watch src/index.ts",
     "dev:real": "cross-env ADAPTERS_PRESET=real tsx watch src/index.ts",
     "build": "tsc -b",
-    "start": "node dist/index.js",
+    "start": "node dist/server/src/index.js",
     "typecheck": "tsc -b --noEmit",
     "test": "vitest run --reporter=verbose",
     "test:watch": "vitest",
