@@ -21,7 +21,7 @@ const tier1Schema = z.object({
     'DATABASE_URL must be a valid PostgreSQL connection string'
   ),
   DIRECT_URL: z.string().refine(
-    (url) => url.startsWith('postgresql://') || url.startsWith('postgres://'),
+    (url) => !url || url.startsWith('postgresql://') || url.startsWith('postgres://'),
     'DIRECT_URL must be a valid PostgreSQL connection string'
   ).optional(),
 
@@ -45,10 +45,23 @@ const tier1Schema = z.object({
  */
 const tier2Schema = z.object({
   // Stripe (required in production)
-  STRIPE_SECRET_KEY: z.string().startsWith('sk_').optional().or(z.literal('')),
-  STRIPE_WEBHOOK_SECRET: z.string().startsWith('whsec_').optional().or(z.literal('')),
-  STRIPE_SUCCESS_URL: z.string().url().optional().or(z.literal('')),
-  STRIPE_CANCEL_URL: z.string().url().optional().or(z.literal('')),
+  // Use preprocess to convert empty strings to undefined, then validate
+  STRIPE_SECRET_KEY: z.preprocess(
+    (val) => (val === '' ? undefined : val),
+    z.string().startsWith('sk_').optional()
+  ),
+  STRIPE_WEBHOOK_SECRET: z.preprocess(
+    (val) => (val === '' ? undefined : val),
+    z.string().startsWith('whsec_').optional()
+  ),
+  STRIPE_SUCCESS_URL: z.preprocess(
+    (val) => (val === '' ? undefined : val),
+    z.string().url().optional()
+  ),
+  STRIPE_CANCEL_URL: z.preprocess(
+    (val) => (val === '' ? undefined : val),
+    z.string().url().optional()
+  ),
 
   // Email (optional - falls back to file-sink)
   POSTMARK_SERVER_TOKEN: z.string().optional(),
