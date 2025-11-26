@@ -1,0 +1,50 @@
+# Render Blueprint for MAIS API
+# https://render.com/docs/blueprint-spec
+
+services:
+  # Production API Service
+  - type: web
+    name: mais-api
+    runtime: node
+    region: oregon
+    plan: free
+    branch: main
+    rootDir: server
+    buildCommand: cd .. && npm ci --ignore-scripts && cd server && npm run build && npx prisma generate
+    startCommand: npm start
+    healthCheckPath: /health/live
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: ADAPTERS_PRESET
+        value: real
+      - key: PORT
+        value: 10000
+      - key: CORS_ORIGIN
+        sync: false  # Set manually in dashboard
+      - key: JWT_SECRET
+        sync: false  # Set manually in dashboard (sensitive)
+      - key: TENANT_SECRETS_ENCRYPTION_KEY
+        sync: false  # Set manually in dashboard (sensitive)
+      - key: DATABASE_URL
+        sync: false  # Set manually in dashboard (from Supabase)
+      - key: DIRECT_URL
+        sync: false  # Set manually in dashboard (from Supabase)
+      - key: SUPABASE_URL
+        sync: false
+      - key: SUPABASE_ANON_KEY
+        sync: false
+      - key: SUPABASE_SERVICE_KEY
+        sync: false
+      - key: STRIPE_SECRET_KEY
+        sync: false  # Set manually in dashboard (sensitive)
+      - key: STRIPE_WEBHOOK_SECRET
+        sync: false  # Set manually in dashboard (sensitive)
+      - key: STRIPE_SUCCESS_URL
+        sync: false
+      - key: STRIPE_CANCEL_URL
+        sync: false
+      - key: POSTMARK_SERVER_TOKEN
+        sync: false  # Set manually in dashboard (optional)
+      - key: POSTMARK_FROM_EMAIL
+        sync: false
