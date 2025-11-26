@@ -10,7 +10,8 @@ export default defineConfig({
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./src"),
-      // Resolve workspace packages to their dist entry files for Vercel builds
+      // Resolve workspace packages to their built index files
+      // Must use .js extension for ESM modules
       "@macon/contracts": path.resolve(__dirname, "../packages/contracts/dist/index.js"),
       "@macon/shared": path.resolve(__dirname, "../packages/shared/dist/index.js"),
     },
@@ -53,3 +54,4 @@ export default defineConfig({
     },
   },
 });
+
