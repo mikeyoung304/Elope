@@ -10,7 +10,7 @@ services:
     plan: free
     branch: main
     rootDir: server
-    buildCommand: cd .. && npm ci --ignore-scripts && cd server && npm run build && npx prisma generate
+    buildCommand: cd .. && npm ci && npm run build --workspace=@macon/contracts && npm run build --workspace=@macon/shared && cd server && npx prisma generate && npm run build
     startCommand: npm start
     healthCheckPath: /health/live
     envVars:

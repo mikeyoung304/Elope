@@ -21,9 +21,10 @@
     "baseUrl": ".",
     "paths": {
       "@macon/contracts": ["../packages/contracts/src"],
-      "@macon/shared": ["../packages/shared/src"]
+      "@macon/shared": ["../packages/shared/src"],
+      "@generated/prisma": ["./src/generated/prisma"]
     }
   },
   "include": ["src/**/*"],
-  "exclude": ["node_modules", "dist", "test"]
+  "exclude": ["node_modules", "dist", "test", "src/**/*.test.ts", "src/**/*.spec.ts"]
 }
