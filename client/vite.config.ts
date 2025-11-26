@@ -10,7 +10,14 @@ export default defineConfig({
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./src"),
+      // Resolve workspace packages to their dist directories for Vercel builds
+      "@macon/contracts": path.resolve(__dirname, "../packages/contracts/dist"),
+      "@macon/shared": path.resolve(__dirname, "../packages/shared/dist"),
     },
+  },
+  optimizeDeps: {
+    // Pre-bundle workspace packages to avoid resolution issues
+    include: ["@macon/contracts", "@macon/shared"],
   },
   server: {
     port: 5173,
