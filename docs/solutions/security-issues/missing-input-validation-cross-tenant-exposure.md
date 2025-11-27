@@ -120,9 +120,81 @@ if (data.segmentId && segmentService) {
 4. **Fail-Safe Design**: Returns clear errors without exposing internal details
 5. **Consistent with Architecture**: Follows existing tenant-scoping patterns
 
+### 4. Add Tier Fields to API Response
+
+**File**: `server/src/routes/tenant-admin.routes.ts`
+
+**Issue Discovered During Testing**: The GET `/packages` endpoint wasn't returning tier fields.
+
+**Changes**:
+```typescript
+const packagesDto = packages.map((pkg) => ({
+  id: pkg.id,
+  slug: pkg.slug,
+  title: pkg.title,
+  description: pkg.description,
+  priceCents: pkg.priceCents,
+  photoUrl: pkg.photoUrl,
+  photos: pkg.photos,
+  // Tier/segment organization fields
+  segmentId: pkg.segmentId,
+  grouping: pkg.grouping,
+  groupingOrder: pkg.groupingOrder,
+}));
+```
+
+### 5. Fix Segments Endpoint URL in Contracts
+
+**File**: `packages/contracts/src/api.v1.ts`
+
+**Issue Discovered During Testing**: Contract paths used `/v1/tenant/admin/segments` but server routes are mounted at `/v1/tenant-admin/segments`.
+
+**Changes**: Updated all segment endpoint paths from `/v1/tenant/admin/segments` to `/v1/tenant-admin/segments`.
+
+### 6. Add Tier Fields to Repository Methods
+
+**File**: `server/src/adapters/prisma/catalog.repository.ts`
+
+**Issue Discovered During Testing**: The `createPackage` and `updatePackage` methods weren't saving tier fields to the database.
+
+**Changes to `createPackage`**:
+```typescript
+const pkg = await this.prisma.package.create({
+  data: {
+    tenantId,
+    slug: data.slug,
+    name: data.title,
+    description: data.description,
+    basePrice: data.priceCents,
+    // Tier/segment organization fields
+    segmentId: data.segmentId ?? null,
+    grouping: data.grouping ?? null,
+    groupingOrder: data.groupingOrder ?? null,
+  },
+});
+```
+
+**Changes to `updatePackage`**:
+```typescript
+const pkg = await this.prisma.package.update({
+  where: { id, tenantId },
+  data: {
+    ...(data.slug !== undefined && { slug: data.slug }),
+    ...(data.title !== undefined && { name: data.title }),
+    ...(data.description !== undefined && { description: data.description }),
+    ...(data.priceCents !== undefined && { basePrice: data.priceCents }),
+    ...(data.photos !== undefined && { photos: data.photos }),
+    // Tier/segment organization fields
+    ...(data.segmentId !== undefined && { segmentId: data.segmentId }),
+    ...(data.grouping !== undefined && { grouping: data.grouping }),
+    ...(data.groupingOrder !== undefined && { groupingOrder: data.groupingOrder }),
+  },
+});
+```
+
 ## Testing Verification
 
-**Server Tests**: All 772 tests pass, including:
+**Server Tests**: All 773 tests pass, including:
 - Existing package creation/update tests continue to work
 - Validation catches invalid `segmentId`, `grouping`, and `groupingOrder` values
 - Ownership validation prevents cross-tenant segment assignment
@@ -136,6 +208,8 @@ if (data.segmentId && segmentService) {
 - Create package with grouping > 100 chars -> 400 error
 - Create package with negative groupingOrder -> 400 error
 - Create package without segmentId -> Success (optional field)
+- Edit existing package, tier fields load correctly -> Success
+- Update tier fields and save, changes persist -> Success
 
 ## Prevention Strategies
 
