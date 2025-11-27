@@ -28,6 +28,13 @@ const TenantForm = lazy(() =>
   import("./features/admin/tenants/TenantForm").then((m) => ({ default: m.TenantForm }))
 );
 
+// Storefront tier pages
+const StorefrontHome = lazy(() => import("./pages/StorefrontHome").then(m => ({ default: m.StorefrontHome })));
+const SegmentTiers = lazy(() => import("./pages/SegmentTiers").then(m => ({ default: m.SegmentTiers })));
+const RootTiers = lazy(() => import("./pages/RootTiers").then(m => ({ default: m.RootTiers })));
+const SegmentTierDetail = lazy(() => import("./pages/TierDetailPage").then(m => ({ default: m.SegmentTierDetail })));
+const RootTierDetail = lazy(() => import("./pages/TierDetailPage").then(m => ({ default: m.RootTierDetail })));
+
 // Wrapper with Suspense
 const SuspenseWrapper = ({ children }: { children: React.ReactNode }) => (
   <Suspense fallback={<Loading label="Loading page" />}>{children}</Suspense>
@@ -56,6 +63,28 @@ export const router = createBrowserRouter([
         index: true,
         element: <SuspenseWrapper><Home /></SuspenseWrapper>,
       },
+      // New storefront tier routes
+      {
+        path: "storefront",
+        element: <SuspenseWrapper><StorefrontHome /></SuspenseWrapper>,
+      },
+      {
+        path: "s/:slug",
+        element: <SuspenseWrapper><SegmentTiers /></SuspenseWrapper>,
+      },
+      {
+        path: "s/:slug/:tier",
+        element: <SuspenseWrapper><SegmentTierDetail /></SuspenseWrapper>,
+      },
+      {
+        path: "tiers",
+        element: <SuspenseWrapper><RootTiers /></SuspenseWrapper>,
+      },
+      {
+        path: "tiers/:tier",
+        element: <SuspenseWrapper><RootTierDetail /></SuspenseWrapper>,
+      },
+      // Legacy catalog routes
       {
         path: "packages",
         element: <SuspenseWrapper><PackageCatalog /></SuspenseWrapper>,

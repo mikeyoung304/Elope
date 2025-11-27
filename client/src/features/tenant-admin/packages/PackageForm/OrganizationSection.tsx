@@ -1,4 +1,3 @@
-import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
   Select,
@@ -9,6 +8,13 @@ import {
 } from "@/components/ui/select";
 import type { PackageFormData } from "../hooks/usePackageForm";
 import type { SegmentDto } from "@macon/contracts";
+
+/** Tier levels for the 3-tier pricing model */
+const TIER_OPTIONS = [
+  { value: "budget", label: "Budget (Essential)", order: 0 },
+  { value: "middle", label: "Middle (Popular)", order: 1 },
+  { value: "luxury", label: "Luxury (Premium)", order: 2 },
+] as const;
 
 interface OrganizationSectionProps {
   form: PackageFormData;
@@ -22,9 +28,11 @@ interface OrganizationSectionProps {
  * OrganizationSection Component
  *
  * Handles the tier/segment organization fields for the package form:
- * - Segment (business category) dropdown
- * - Tier/Grouping text input (e.g., "Solo", "Couple", "Group")
- * - Display order number
+ * - Segment (customer type) dropdown
+ * - Tier Level dropdown (Budget/Middle/Luxury)
+ *
+ * The groupingOrder is automatically set based on tier selection:
+ * - Budget = 0, Middle = 1, Luxury = 2
  */
 export function OrganizationSection({
   form,
@@ -33,6 +41,22 @@ export function OrganizationSection({
   isLoadingSegments,
   isSaving,
 }: OrganizationSectionProps) {
+  /**
+   * Handle tier selection - also sets the groupingOrder automatically
+   */
+  const handleTierChange = (value: string) => {
+    if (value === "none") {
+      setForm({ ...form, grouping: "", groupingOrder: "" });
+    } else {
+      const tier = TIER_OPTIONS.find(t => t.value === value);
+      setForm({
+        ...form,
+        grouping: value,
+        groupingOrder: tier ? String(tier.order) : "",
+      });
+    }
+  };
+
   return (
     <div className="space-y-4 pt-4 border-t border-white/10">
       <h3 className="text-lg font-medium text-white/90">Organization</h3>
@@ -40,7 +64,7 @@ export function OrganizationSection({
       {/* Segment Dropdown */}
       <div className="space-y-2">
         <Label htmlFor="segmentId" className="text-white/90">
-          Business Category
+          Customer Segment
         </Label>
         <Select
           value={form.segmentId || "none"}
@@ -53,10 +77,10 @@ export function OrganizationSection({
             id="segmentId"
             className="bg-macon-navy-900 border-white/20 text-white h-12"
           >
-            <SelectValue placeholder="Select a category (optional)" />
+            <SelectValue placeholder="Select a segment (optional)" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="none">None</SelectItem>
+            <SelectItem value="none">None (Root level)</SelectItem>
             {segments.map((seg) => (
               <SelectItem key={seg.id} value={seg.id}>
                 {seg.name}
@@ -65,50 +89,51 @@ export function OrganizationSection({
           </SelectContent>
         </Select>
         <p className="text-sm text-white/50">
-          Assign this package to a business category
+          Which customer type is this package for?
         </p>
       </div>
 
-      {/* Tier/Grouping Text Input */}
+      {/* Tier Level Dropdown */}
       <div className="space-y-2">
         <Label htmlFor="grouping" className="text-white/90">
-          Tier/Grouping
+          Pricing Tier
         </Label>
-        <Input
-          id="grouping"
-          type="text"
-          value={form.grouping}
-          onChange={(e) => setForm({ ...form, grouping: e.target.value })}
-          placeholder="e.g., Solo, Couple, Group, Budget, Premium"
-          maxLength={100}
+        <Select
+          value={form.grouping || "none"}
+          onValueChange={handleTierChange}
           disabled={isSaving}
-          className="bg-macon-navy-900 border-white/20 text-white placeholder:text-white/50 focus:border-white/30 h-12"
-        />
+        >
+          <SelectTrigger
+            id="grouping"
+            className="bg-macon-navy-900 border-white/20 text-white h-12"
+          >
+            <SelectValue placeholder="Select a tier" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="none">Not a tier package</SelectItem>
+            {TIER_OPTIONS.map((tier) => (
+              <SelectItem key={tier.value} value={tier.value}>
+                {tier.label}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
         <p className="text-sm text-white/50">
-          Packages with the same grouping appear together on your storefront
+          Tier packages appear in the 3-tier pricing display on your storefront
         </p>
       </div>
 
-      {/* Display Order Number */}
-      <div className="space-y-2">
-        <Label htmlFor="groupingOrder" className="text-white/90">
-          Display Order
-        </Label>
-        <Input
-          id="groupingOrder"
-          type="number"
-          value={form.groupingOrder}
-          onChange={(e) => setForm({ ...form, groupingOrder: e.target.value })}
-          placeholder="1"
-          min="0"
-          max="1000"
-          disabled={isSaving}
-          className="bg-macon-navy-900 border-white/20 text-white placeholder:text-white/50 focus:border-white/30 h-12 w-32"
-        />
-        <p className="text-sm text-white/50">
-          Lower numbers appear first within the tier
-        </p>
-      </div>
+      {/* Tier Info Banner */}
+      {form.grouping && TIER_OPTIONS.some(t => t.value === form.grouping) && (
+        <div className="p-3 bg-macon-orange/10 border border-macon-orange/20 rounded-lg">
+          <p className="text-sm text-white/80">
+            <span className="font-medium text-macon-orange">Tip:</span>{" "}
+            {form.grouping === "budget" && "Budget tier should be your most affordable option - the entry point for price-conscious customers."}
+            {form.grouping === "middle" && "Middle tier is highlighted as 'Most Popular' - this should be your best value for most customers."}
+            {form.grouping === "luxury" && "Luxury tier should be your premium offering - maximum features and personalization."}
+          </p>
+        </div>
+      )}
     </div>
   );
 }
