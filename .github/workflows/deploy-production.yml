@@ -213,8 +213,14 @@ jobs:
       - name: Generate Prisma Client
         run: npx prisma generate --schema=./server/prisma/schema.prisma
 
-      - name: Build all packages
-        run: npm run build --workspaces --if-present
+      - name: Build packages in dependency order
+        run: |
+          # Build contracts first (client depends on it)
+          npm run build --workspace=packages/contracts
+          npm run build --workspace=packages/shared
+          # Then build server and client
+          npm run build --workspace=server
+          npm run build --workspace=client
         env:
           NODE_ENV: production
 
