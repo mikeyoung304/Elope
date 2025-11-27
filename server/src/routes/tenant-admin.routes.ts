@@ -15,6 +15,7 @@ import type { PrismaTenantRepository } from '../adapters/prisma/tenant.repositor
 import type { CatalogService } from '../services/catalog.service';
 import type { BookingService } from '../services/booking.service';
 import type { BlackoutRepository } from '../lib/ports';
+import type { SegmentService } from '../services/segment.service';
 import {
   createPackageSchema,
   updatePackageSchema,
@@ -231,7 +232,8 @@ export function createTenantAdminRoutes(
   tenantRepository: PrismaTenantRepository,
   catalogService: CatalogService,
   bookingService: BookingService,
-  blackoutRepo: BlackoutRepository
+  blackoutRepo: BlackoutRepository,
+  segmentService?: SegmentService
 ): Router {
   const router = Router();
   const controller = new TenantAdminController(tenantRepository);
@@ -295,6 +297,17 @@ export function createTenantAdminRoutes(
       const tenantId = tenantAuth.tenantId;
 
       const data = createPackageSchema.parse(req.body);
+
+      // SECURITY: Validate segment ownership if segmentId is provided
+      if (data.segmentId && segmentService) {
+        try {
+          await segmentService.getSegmentById(tenantId, data.segmentId);
+        } catch {
+          res.status(400).json({ error: 'Invalid segment: segment not found or does not belong to this tenant' });
+          return;
+        }
+      }
+
       const pkg = await catalogService.createPackage(tenantId, data);
 
       res.status(201).json({
@@ -332,6 +345,17 @@ export function createTenantAdminRoutes(
 
       const { id } = req.params;
       const data = updatePackageSchema.parse(req.body);
+
+      // SECURITY: Validate segment ownership if segmentId is provided
+      if (data.segmentId && segmentService) {
+        try {
+          await segmentService.getSegmentById(tenantId, data.segmentId);
+        } catch {
+          res.status(400).json({ error: 'Invalid segment: segment not found or does not belong to this tenant' });
+          return;
+        }
+      }
+
       const pkg = await catalogService.updatePackage(tenantId, id, data);
 
       res.json({
