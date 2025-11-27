@@ -86,8 +86,9 @@ export class PrismaTenantRepository {
    * @returns Tenant or null if not found
    */
   async findByEmail(email: string): Promise<Tenant | null> {
+    // Normalize email to lowercase for case-insensitive lookup
     return await this.prisma.tenant.findUnique({
-      where: { email },
+      where: { email: email.toLowerCase() },
     });
   }
 
@@ -120,7 +121,8 @@ export class PrismaTenantRepository {
         commissionPercent: data.commissionPercent,
         branding: data.branding || {},
         // Self-service signup fields
-        email: data.email,
+        // Normalize email to lowercase for case-insensitive uniqueness
+        email: data.email?.toLowerCase(),
         passwordHash: data.passwordHash,
         emailVerified: data.emailVerified ?? false,
       },

@@ -24,8 +24,8 @@ export class TenantAuthService {
    * @throws UnauthorizedError if credentials are invalid
    */
   async login(email: string, password: string): Promise<{ token: string }> {
-    // Find tenant by email
-    const tenant = await this.tenantRepo.findByEmail(email);
+    // Find tenant by email (normalized to lowercase)
+    const tenant = await this.tenantRepo.findByEmail(email.toLowerCase());
     if (!tenant) {
       throw new UnauthorizedError('Invalid credentials');
     }
