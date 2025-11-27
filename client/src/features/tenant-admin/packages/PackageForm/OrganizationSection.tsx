@@ -80,6 +80,7 @@ export function OrganizationSection({
           value={form.grouping}
           onChange={(e) => setForm({ ...form, grouping: e.target.value })}
           placeholder="e.g., Solo, Couple, Group, Budget, Premium"
+          maxLength={100}
           disabled={isSaving}
           className="bg-macon-navy-900 border-white/20 text-white placeholder:text-white/50 focus:border-white/30 h-12"
         />
@@ -100,6 +101,7 @@ export function OrganizationSection({
           onChange={(e) => setForm({ ...form, groupingOrder: e.target.value })}
           placeholder="1"
           min="0"
+          max="1000"
           disabled={isSaving}
           className="bg-macon-navy-900 border-white/20 text-white placeholder:text-white/50 focus:border-white/30 h-12 w-32"
         />

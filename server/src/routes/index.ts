@@ -309,7 +309,8 @@ export function createV1Router(
       tenantRepo,
       services.catalog,
       services.booking,
-      blackoutRepo
+      blackoutRepo,
+      services.segment
     );
     app.use('/v1/tenant-admin', tenantAuthMiddleware, tenantAdminRoutes);
 

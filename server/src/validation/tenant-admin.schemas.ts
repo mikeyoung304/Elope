@@ -15,6 +15,10 @@ export const createPackageSchema = z.object({
   description: z.string().min(1, 'Description is required'),
   priceCents: z.number().int().min(0, 'Price must be non-negative'),
   photoUrl: z.string().url().optional(),
+  // Tier/segment organization fields (added for security validation)
+  segmentId: z.string().min(1).nullable().optional(),
+  grouping: z.string().min(1).max(100, 'Grouping must be 100 characters or less').nullable().optional(),
+  groupingOrder: z.number().int().min(0).max(1000, 'Display order must be between 0 and 1000').nullable().optional(),
 });
 
 export const updatePackageSchema = z.object({
@@ -23,6 +27,10 @@ export const updatePackageSchema = z.object({
   description: z.string().min(1).optional(),
   priceCents: z.number().int().min(0).optional(),
   photoUrl: z.string().url().optional(),
+  // Tier/segment organization fields (added for security validation)
+  segmentId: z.string().min(1).nullable().optional(),
+  grouping: z.string().min(1).max(100, 'Grouping must be 100 characters or less').nullable().optional(),
+  groupingOrder: z.number().int().min(0).max(1000, 'Display order must be between 0 and 1000').nullable().optional(),
 });
 
 // Blackout Management Schemas
