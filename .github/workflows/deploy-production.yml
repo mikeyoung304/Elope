@@ -155,9 +155,11 @@ jobs:
         continue-on-error: true  # Integration tests may have flaky DB connections in CI
         env:
           NODE_ENV: test
-          DATABASE_URL_TEST: postgresql://postgres:postgres@localhost:5432/mais_test?connection_limit=10&pool_timeout=20
+          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/mais_test?connection_limit=10&pool_timeout=20
+          DIRECT_URL: postgresql://postgres:postgres@localhost:5432/mais_test
           JWT_SECRET: test-jwt-secret-production
           TENANT_SECRETS_ENCRYPTION_KEY: 0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef
+          STRIPE_SECRET_KEY: sk_test_placeholder_for_ci_integration
 
       - name: Install Playwright browsers
         run: npx playwright install --with-deps chromium
@@ -179,10 +181,11 @@ jobs:
 
       - name: Upload coverage reports
         uses: codecov/codecov-action@v4
+        continue-on-error: true  # Don't block deploy on coverage upload issues
         with:
           files: ./server/coverage/lcov.info
           flags: production-pre-deploy
-          fail_ci_if_error: true
+          fail_ci_if_error: false
         env:
           CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
 
