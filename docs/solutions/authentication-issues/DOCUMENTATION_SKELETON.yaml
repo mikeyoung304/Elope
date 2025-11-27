@@ -1,0 +1,58 @@
+---
+title: Invalid Credentials Error on Login - Case-Sensitive Email Lookup
+category: authentication-issues
+severity: medium
+affected_components:
+  - Login.tsx
+  - TenantAuthService
+  - TenantRepository
+symptoms:
+  - Login page displays "Invalid credentials" error for valid user accounts
+  - Users with correct email and password cannot authenticate
+  - Email addresses with uppercase letters fail to match database records
+  - Misleading demo credentials in auto-fill fields
+  - Multiple root causes discovered
+error_messages:
+  - "Invalid credentials. Please check your email and password."
+  - "Tenant account not configured for login"
+  - "Tenant account is inactive"
+tags:
+  - authentication
+  - email-lookup
+  - case-sensitivity
+  - tenant-login
+  - usability
+  - email-normalization
+date_solved: 2025-11-27
+root_causes:
+  - Misleading demo credentials (admin@macon.com / admin123) that don't exist
+  - Case-sensitive email lookup in database queries
+  - No email normalization in authentication service
+  - No email normalization in repository layer
+solution_approach:
+  - Update demo credentials to use real seeded test data
+  - Add lowercase normalization to authentication service
+  - Add lowercase normalization to repository layer
+  - Double normalization for defense-in-depth
+files_modified:
+  - client/src/pages/Login.tsx
+  - server/src/services/tenant-auth.service.ts
+  - server/src/adapters/prisma/tenant.repository.ts
+implementation_complexity: low
+testing_required:
+  - Case-insensitive email matching (uppercase, lowercase, mixed)
+  - Demo credentials functionality
+  - Password validation still works
+  - Error messages unchanged
+related_prs: []
+related_documentation:
+  - docs/security/SECURITY.md
+  - docs/multi-tenant/MULTI_TENANT_IMPLEMENTATION_GUIDE.md
+  - docs/archive/2025-11/analysis/LOGIN_FIX_REPORT.md
+lessons_learned:
+  - Email normalization should be automatic and consistent
+  - Demo credentials must reference real seeded data
+  - Defense-in-depth normalization prevents subtle bugs
+  - Users expect email to be case-insensitive (RFC 5321)
+  - Test with case variations for email fields
+---
