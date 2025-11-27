@@ -3,7 +3,7 @@
  * Displays all active packages with search, filter, and sort capabilities
  */
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { Container } from '@/ui/Container';
 import { PackageCard } from '@/features/catalog/PackageCard';
 import { CatalogFilters } from '@/features/catalog/CatalogFilters';
@@ -53,6 +53,34 @@ function PackageCatalogContent() {
       }
       return 0;
     });
+
+  // Group packages by tier for storefront display
+  const packagesByTier = useMemo(() => {
+    if (!filteredAndSortedPackages) return {};
+
+    const grouped = filteredAndSortedPackages.reduce((acc, pkg) => {
+      const tier = pkg.grouping || 'Featured';
+      if (!acc[tier]) acc[tier] = [];
+      acc[tier].push(pkg);
+      return acc;
+    }, {} as Record<string, PackageDto[]>);
+
+    // Sort within each tier by groupingOrder, then by title
+    Object.values(grouped).forEach(tierPackages => {
+      tierPackages.sort((a, b) => {
+        const orderA = a.groupingOrder ?? Infinity;
+        const orderB = b.groupingOrder ?? Infinity;
+        if (orderA !== orderB) return orderA - orderB;
+        return a.title.localeCompare(b.title);
+      });
+    });
+
+    return grouped;
+  }, [filteredAndSortedPackages]);
+
+  // Check if we have multiple tiers (show tier headers) or just one
+  const tierNames = Object.keys(packagesByTier);
+  const hasTiers = tierNames.length > 1 || (tierNames.length === 1 && tierNames[0] !== 'Featured');
 
   // Loading state
   if (isLoading) {
@@ -183,11 +211,29 @@ function PackageCatalogContent() {
         <p className="text-lg text-neutral-600 mb-6">
           Showing {filteredAndSortedPackages.length} {filteredAndSortedPackages.length === 1 ? 'package' : 'packages'}
         </p>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
-          {filteredAndSortedPackages.map((pkg: PackageDto) => (
-            <PackageCard key={pkg.id} package={pkg} />
-          ))}
-        </div>
+
+        {hasTiers ? (
+          // Grouped by tier display
+          <div className="space-y-12">
+            {Object.entries(packagesByTier).map(([tier, tierPackages]) => (
+              <section key={tier}>
+                <h2 className="text-2xl md:text-3xl font-bold text-macon-navy mb-6">{tier}</h2>
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
+                  {tierPackages.map((pkg: PackageDto) => (
+                    <PackageCard key={pkg.id} package={pkg} />
+                  ))}
+                </div>
+              </section>
+            ))}
+          </div>
+        ) : (
+          // Flat display (no tiers or only "Featured")
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
+            {filteredAndSortedPackages.map((pkg: PackageDto) => (
+              <PackageCard key={pkg.id} package={pkg} />
+            ))}
+          </div>
+        )}
       </div>
     </Container>
   );

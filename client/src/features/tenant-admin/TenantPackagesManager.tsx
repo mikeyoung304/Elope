@@ -1,7 +1,9 @@
+import { useState, useEffect } from "react";
 import { Plus, CheckCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import type { PackageDto } from "@macon/contracts";
+import type { PackageDto, SegmentDto } from "@macon/contracts";
 import { PackagePhotoUploader } from "@/components/PackagePhotoUploader";
+import { api } from "@/lib/api";
 import { usePackageForm } from "./packages/hooks/usePackageForm";
 import { usePackageManager } from "./packages/hooks/usePackageManager";
 import { PackageForm } from "./packages/PackageForm";
@@ -19,6 +21,10 @@ interface TenantPackagesManagerProps {
  * Refactored to use custom hooks and smaller components.
  */
 export function TenantPackagesManager({ packages, onPackagesChange }: TenantPackagesManagerProps) {
+  // Segment state for organization dropdown
+  const [segments, setSegments] = useState<SegmentDto[]>([]);
+  const [isLoadingSegments, setIsLoadingSegments] = useState(false);
+
   // Package management state and handlers
   const packageManager = usePackageManager(onPackagesChange);
 
@@ -27,6 +33,25 @@ export function TenantPackagesManager({ packages, onPackagesChange }: TenantPack
     onSuccess: packageManager.handleFormSuccess,
     onPackagesChange,
   });
+
+  // Fetch segments on mount
+  useEffect(() => {
+    async function fetchSegments() {
+      setIsLoadingSegments(true);
+      try {
+        const result = await api.tenantAdminGetSegments();
+        if (result.status === 200) {
+          setSegments(result.body);
+        }
+      } catch (error) {
+        // Segments are optional - fail silently
+        console.error("Failed to fetch segments:", error);
+      } finally {
+        setIsLoadingSegments(false);
+      }
+    }
+    fetchSegments();
+  }, []);
 
   // Handle edit - load package into form and fetch photos
   const handleEdit = async (pkg: PackageDto) => {
@@ -73,6 +98,8 @@ export function TenantPackagesManager({ packages, onPackagesChange }: TenantPack
           editingPackageId={packageManager.editingPackageId}
           onSubmit={handleSubmit}
           onCancel={packageManager.handleCancel}
+          segments={segments}
+          isLoadingSegments={isLoadingSegments}
         />
       )}
 

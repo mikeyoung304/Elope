@@ -3,10 +3,12 @@ import { Card } from "@/components/ui/card";
 import { useUnsavedChanges } from "@/hooks/useUnsavedChanges";
 import type { FormError } from "@/components/ui/ErrorSummary";
 import type { PackageFormData } from "../hooks/usePackageForm";
+import type { SegmentDto } from "@macon/contracts";
 import { ValidationService } from "./ValidationService";
 import { FormHeader } from "./FormHeader";
 import { BasicInfoSection } from "./BasicInfoSection";
 import { PricingSection } from "./PricingSection";
+import { OrganizationSection } from "./OrganizationSection";
 import { FormActions } from "./FormActions";
 
 interface PackageFormProps {
@@ -17,6 +19,9 @@ interface PackageFormProps {
   editingPackageId: string | null;
   onSubmit: (e: React.FormEvent) => void;
   onCancel: () => void;
+  // Segment data for organization section
+  segments?: SegmentDto[];
+  isLoadingSegments?: boolean;
 }
 
 /**
@@ -33,7 +38,9 @@ export function PackageForm({
   error,
   editingPackageId,
   onSubmit,
-  onCancel
+  onCancel,
+  segments = [],
+  isLoadingSegments = false,
 }: PackageFormProps) {
   const [validationErrors, setValidationErrors] = useState<FormError[]>([]);
   const [showSuccess, setShowSuccess] = useState(false);
@@ -121,6 +128,14 @@ export function PackageForm({
             fieldErrors={fieldErrors}
             setFieldErrors={setFieldErrors}
             validateField={validateField}
+            isSaving={isSaving}
+          />
+
+          <OrganizationSection
+            form={form}
+            setForm={setForm}
+            segments={segments}
+            isLoadingSegments={isLoadingSegments}
             isSaving={isSaving}
           />
 

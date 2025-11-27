@@ -8,6 +8,10 @@ export interface PackageFormData {
   priceCents: string;
   minLeadDays: string;
   isActive: boolean;
+  // Tier/segment organization fields
+  segmentId: string;      // Empty string = no segment
+  grouping: string;       // Free-form tier label (e.g., "Solo", "Couple", "Group")
+  groupingOrder: string;  // Number as string for input field
 }
 
 interface UsePackageFormProps {
@@ -22,6 +26,9 @@ export function usePackageForm({ onSuccess, onPackagesChange }: UsePackageFormPr
     priceCents: "",
     minLeadDays: "7",
     isActive: true,
+    segmentId: "",
+    grouping: "",
+    groupingOrder: "",
   });
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -33,6 +40,9 @@ export function usePackageForm({ onSuccess, onPackagesChange }: UsePackageFormPr
       priceCents: "",
       minLeadDays: "7",
       isActive: true,
+      segmentId: "",
+      grouping: "",
+      groupingOrder: "",
     });
     setError(null);
   }, []);
@@ -45,6 +55,9 @@ export function usePackageForm({ onSuccess, onPackagesChange }: UsePackageFormPr
       // TODO: Add minLeadDays to backend schema
       minLeadDays: "7", // Default value until backend supports this field
       isActive: pkg.isActive !== false,
+      segmentId: pkg.segmentId ?? "",
+      grouping: pkg.grouping ?? "",
+      groupingOrder: pkg.groupingOrder?.toString() ?? "",
     });
   }, []);
 
@@ -83,11 +96,20 @@ export function usePackageForm({ onSuccess, onPackagesChange }: UsePackageFormPr
       // Generate slug from title (lowercase, replace spaces with hyphens)
       const slug = form.title.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
 
+      // Parse groupingOrder - convert to number or null
+      const groupingOrder = form.groupingOrder
+        ? parseInt(form.groupingOrder, 10)
+        : null;
+
       const data = {
         slug,
         title: form.title,
         description: form.description,
         priceCents: parseInt(form.priceCents, 10),
+        // Tier/segment organization fields - null if empty
+        segmentId: form.segmentId || null,
+        grouping: form.grouping || null,
+        groupingOrder: isNaN(groupingOrder as number) ? null : groupingOrder,
       };
 
       if (editingPackageId) {

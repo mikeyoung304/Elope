@@ -191,6 +191,10 @@ export const CreatePackageDtoSchema = z.object({
   description: z.string().min(1),
   priceCents: z.number().int().min(0),
   photoUrl: z.string().url().optional(),
+  // Tier/segment organization fields
+  segmentId: z.string().nullable().optional(),
+  grouping: z.string().nullable().optional(),
+  groupingOrder: z.number().int().nullable().optional(),
 });
 
 export type CreatePackageDto = z.infer<typeof CreatePackageDtoSchema>;
@@ -201,6 +205,10 @@ export const UpdatePackageDtoSchema = z.object({
   description: z.string().min(1).optional(),
   priceCents: z.number().int().min(0).optional(),
   photoUrl: z.string().url().optional(),
+  // Tier/segment organization fields
+  segmentId: z.string().nullable().optional(),
+  grouping: z.string().nullable().optional(),
+  groupingOrder: z.number().int().nullable().optional(),
 });
 
 export type UpdatePackageDto = z.infer<typeof UpdatePackageDtoSchema>;
