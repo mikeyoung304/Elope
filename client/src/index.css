@@ -50,6 +50,11 @@
     @apply text-h3;
   }
 
+  /* Anchor scroll offset - provides breathing room when jumping to sections */
+  [id] {
+    scroll-margin-top: 2rem;
+  }
+
   code {
     font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New', monospace;
   }
