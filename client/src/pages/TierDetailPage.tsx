@@ -12,16 +12,13 @@
  * 3. Customer can book or navigate to other tiers
  */
 
+import { useMemo } from 'react';
 import { useParams, Navigate } from 'react-router-dom';
-import { TierDetail } from '@/features/storefront/TierDetail';
+import { TierDetail, TIER_LEVELS, type TierLevel } from '@/features/storefront';
 import { Loading } from '@/ui/Loading';
 import { FeatureErrorBoundary } from '@/components/errors';
 import { useSegmentWithPackages, usePackages } from '@/features/catalog/hooks';
 import type { PackageDto } from '@macon/contracts';
-
-/** Valid tier levels */
-const VALID_TIERS = ['budget', 'middle', 'luxury'] as const;
-type TierLevel = typeof VALID_TIERS[number];
 
 /**
  * Segment Tier Detail - /s/:slug/:tier
@@ -37,7 +34,7 @@ function SegmentTierDetailContent() {
 
   // Validate tier level
   const tierLevel = tier.toLowerCase();
-  if (!VALID_TIERS.includes(tierLevel as TierLevel)) {
+  if (!TIER_LEVELS.includes(tierLevel as TierLevel)) {
     return <Navigate to={`/s/${slug}`} replace />;
   }
 
@@ -85,7 +82,7 @@ function RootTierDetailContent() {
 
   // Validate tier level
   const tierLevel = tier.toLowerCase();
-  if (!VALID_TIERS.includes(tierLevel as TierLevel)) {
+  if (!TIER_LEVELS.includes(tierLevel as TierLevel)) {
     return <Navigate to="/tiers" replace />;
   }
 
@@ -99,11 +96,16 @@ function RootTierDetailContent() {
     return <Navigate to="/tiers" replace />;
   }
 
-  // Filter to root packages (no segment) with valid tier groupings
-  const rootPackages = packages.filter((p: PackageDto) =>
-    !p.segmentId &&
-    p.grouping &&
-    VALID_TIERS.includes(p.grouping.toLowerCase() as TierLevel)
+  // Filter to root packages (no segment) with valid tier groupings - memoized
+  const rootPackages = useMemo(
+    () =>
+      packages.filter(
+        (p: PackageDto) =>
+          !p.segmentId &&
+          p.grouping &&
+          TIER_LEVELS.includes(p.grouping.toLowerCase() as TierLevel)
+      ),
+    [packages]
   );
 
   // Find the package matching this tier

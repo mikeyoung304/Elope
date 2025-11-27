@@ -17,10 +17,7 @@ import { ArrowLeft, AlertCircle } from 'lucide-react';
 import { Container } from '@/ui/Container';
 import { TierCard } from './TierCard';
 import type { PackageDto } from '@macon/contracts';
-
-/** Standard tier levels in display order */
-const TIER_LEVELS = ['budget', 'middle', 'luxury'] as const;
-type TierLevel = typeof TIER_LEVELS[number];
+import { TIER_LEVELS, extractTiers } from './utils';
 
 interface TierSelectorProps {
   /** All packages for this segment (or root) */
@@ -35,27 +32,6 @@ interface TierSelectorProps {
   backLink?: string;
   /** Back link text */
   backLinkText?: string;
-}
-
-/**
- * Extract tiers from packages based on grouping field
- * Returns an object with budget, middle, luxury keys
- */
-function extractTiers(packages: PackageDto[]): Record<TierLevel, PackageDto | undefined> {
-  const tiers: Record<TierLevel, PackageDto | undefined> = {
-    budget: undefined,
-    middle: undefined,
-    luxury: undefined,
-  };
-
-  for (const pkg of packages) {
-    const grouping = pkg.grouping?.toLowerCase();
-    if (grouping && TIER_LEVELS.includes(grouping as TierLevel)) {
-      tiers[grouping as TierLevel] = pkg;
-    }
-  }
-
-  return tiers;
 }
 
 export function TierSelector({

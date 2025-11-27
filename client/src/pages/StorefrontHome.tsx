@@ -14,6 +14,7 @@
  * 4. If no segments: redirect to /tiers for direct tier selection
  */
 
+import { memo } from 'react';
 import { Navigate, Link } from 'react-router-dom';
 import { Container } from '@/ui/Container';
 import { Card, CardContent } from '@/components/ui/card';
@@ -25,8 +26,9 @@ import type { SegmentDto } from '@macon/contracts';
 /**
  * Segment Card Component
  * Displays a clickable card for each customer segment
+ * Memoized to prevent unnecessary re-renders
  */
-function SegmentCard({ segment }: { segment: SegmentDto }) {
+const SegmentCard = memo(function SegmentCard({ segment }: { segment: SegmentDto }) {
   return (
     <Link to={`/s/${segment.slug}`}>
       <Card
@@ -80,7 +82,7 @@ function SegmentCard({ segment }: { segment: SegmentDto }) {
       </Card>
     </Link>
   );
-}
+});
 
 function StorefrontHomeContent() {
   const { data: segments, isLoading, error } = useSegments();

@@ -10,48 +10,31 @@
  * - Consistent sizing for 3-up layout
  */
 
+import { memo } from 'react';
 import { Link } from 'react-router-dom';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import type { PackageDto } from '@macon/contracts';
 import { formatCurrency } from '@/lib/utils';
+import {
+  getTierDisplayName,
+  truncateText,
+  CARD_DESCRIPTION_MAX_LENGTH,
+  type TierLevel,
+} from './utils';
 
 interface TierCardProps {
   package: PackageDto;
   /** The tier level: budget, middle, or luxury */
-  tierLevel: 'budget' | 'middle' | 'luxury';
+  tierLevel: TierLevel;
   /** Optional segment slug for routing */
   segmentSlug?: string;
   /** Whether to highlight this tier (typically middle tier) */
   highlighted?: boolean;
 }
 
-/**
- * Get tier display name based on tier level
- */
-function getTierDisplayName(tierLevel: string): string {
-  switch (tierLevel) {
-    case 'budget':
-      return 'Essential';
-    case 'middle':
-      return 'Popular';
-    case 'luxury':
-      return 'Premium';
-    default:
-      return tierLevel.charAt(0).toUpperCase() + tierLevel.slice(1);
-  }
-}
-
-/**
- * Truncate text to specified length with ellipsis
- */
-function truncate(text: string, maxLength: number): string {
-  if (text.length <= maxLength) return text;
-  return text.slice(0, maxLength) + '...';
-}
-
-export function TierCard({
+export const TierCard = memo(function TierCard({
   package: pkg,
   tierLevel,
   segmentSlug,
@@ -125,7 +108,7 @@ export function TierCard({
 
           {/* Package Description (truncated to 150 chars) */}
           <p className="text-lg text-neutral-600 mb-6 line-clamp-3 leading-relaxed flex-1">
-            {truncate(pkg.description, 150)}
+            {truncateText(pkg.description, CARD_DESCRIPTION_MAX_LENGTH)}
           </p>
 
           {/* CTA Button */}
@@ -147,4 +130,4 @@ export function TierCard({
       </Link>
     </Card>
   );
-}
+});

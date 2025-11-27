@@ -21,10 +21,12 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import type { PackageDto } from '@macon/contracts';
 import { formatCurrency } from '@/lib/utils';
-
-/** Standard tier levels in display order */
-const TIER_LEVELS = ['budget', 'middle', 'luxury'] as const;
-type TierLevel = typeof TIER_LEVELS[number];
+import {
+  TIER_LEVELS,
+  getTierDisplayName,
+  extractTiers,
+  type TierLevel,
+} from './utils';
 
 interface TierDetailProps {
   /** The package/tier to display */
@@ -37,42 +39,6 @@ interface TierDetailProps {
   segmentSlug?: string;
   /** Optional segment name for display */
   segmentName?: string;
-}
-
-/**
- * Get tier display name based on tier level
- */
-function getTierDisplayName(tierLevel: string): string {
-  switch (tierLevel) {
-    case 'budget':
-      return 'Essential';
-    case 'middle':
-      return 'Popular';
-    case 'luxury':
-      return 'Premium';
-    default:
-      return tierLevel.charAt(0).toUpperCase() + tierLevel.slice(1);
-  }
-}
-
-/**
- * Extract tiers from packages based on grouping field
- */
-function extractTiers(packages: PackageDto[]): Record<TierLevel, PackageDto | undefined> {
-  const tiers: Record<TierLevel, PackageDto | undefined> = {
-    budget: undefined,
-    middle: undefined,
-    luxury: undefined,
-  };
-
-  for (const pkg of packages) {
-    const grouping = pkg.grouping?.toLowerCase();
-    if (grouping && TIER_LEVELS.includes(grouping as TierLevel)) {
-      tiers[grouping as TierLevel] = pkg;
-    }
-  }
-
-  return tiers;
 }
 
 export function TierDetail({
@@ -192,7 +158,7 @@ export function TierDetail({
                             {getTierDisplayName(navigation.prev.level)}
                           </div>
                           <div className="text-sm text-macon-orange">
-                            {formatCurrency(navigation.prev.pkg!.priceCents)}
+                            {navigation.prev.pkg && formatCurrency(navigation.prev.pkg.priceCents)}
                           </div>
                         </div>
                       </Link>
@@ -216,7 +182,7 @@ export function TierDetail({
                             {getTierDisplayName(navigation.next.level)}
                           </div>
                           <div className="text-sm text-macon-orange">
-                            {formatCurrency(navigation.next.pkg!.priceCents)}
+                            {navigation.next.pkg && formatCurrency(navigation.next.pkg.priceCents)}
                           </div>
                         </div>
                         <ArrowRight className="w-5 h-5 text-neutral-400 group-hover:text-macon-orange transition-colors" />

@@ -10,15 +10,13 @@
  * 3. Customer clicks a tier to see TierDetailPage
  */
 
+import { useMemo } from 'react';
 import { Container } from '@/ui/Container';
-import { TierSelector } from '@/features/storefront/TierSelector';
+import { TierSelector, TIER_LEVELS, type TierLevel } from '@/features/storefront';
 import { PackageCardSkeleton } from '@/components/ui/skeleton';
 import { FeatureErrorBoundary } from '@/components/errors';
 import { usePackages } from '@/features/catalog/hooks';
 import type { PackageDto } from '@macon/contracts';
-
-/** Valid tier levels */
-const VALID_TIERS = ['budget', 'middle', 'luxury'] as const;
 
 function RootTiersContent() {
   const { data: packages, isLoading, error, refetch } = usePackages();
@@ -65,11 +63,16 @@ function RootTiersContent() {
     );
   }
 
-  // Filter to root packages (no segment) with valid tier groupings
-  const rootPackages = (packages || []).filter((p: PackageDto) =>
-    !p.segmentId &&
-    p.grouping &&
-    VALID_TIERS.includes(p.grouping.toLowerCase() as typeof VALID_TIERS[number])
+  // Filter to root packages (no segment) with valid tier groupings - memoized
+  const rootPackages = useMemo(
+    () =>
+      (packages || []).filter(
+        (p: PackageDto) =>
+          !p.segmentId &&
+          p.grouping &&
+          TIER_LEVELS.includes(p.grouping.toLowerCase() as TierLevel)
+      ),
+    [packages]
   );
 
   return (
