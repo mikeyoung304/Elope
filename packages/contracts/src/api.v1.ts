@@ -37,6 +37,15 @@ import {
   TenantDetailDtoSchema,
   PlatformStatsSchema,
   StripeAccountStatusDtoSchema,
+  // Scheduling DTOs
+  ServiceDtoSchema,
+  CreateServiceDtoSchema,
+  UpdateServiceDtoSchema,
+  AvailabilityRuleDtoSchema,
+  CreateAvailabilityRuleDtoSchema,
+  TimeSlotDtoSchema,
+  AvailableSlotsQuerySchema,
+  AppointmentDtoSchema,
   // Error response schemas
   BadRequestErrorSchema,
   UnauthorizedErrorSchema,
@@ -726,7 +735,7 @@ export const Contracts = c.router({
   // Tenant Admin Segment CRUD endpoints
   tenantAdminGetSegments: {
     method: 'GET',
-    path: '/v1/tenant/admin/segments',
+    path: '/v1/tenant-admin/segments',
     responses: {
       200: z.array(SegmentDtoSchema),
       401: UnauthorizedErrorSchema,
@@ -738,7 +747,7 @@ export const Contracts = c.router({
 
   tenantAdminCreateSegment: {
     method: 'POST',
-    path: '/v1/tenant/admin/segments',
+    path: '/v1/tenant-admin/segments',
     body: CreateSegmentDtoSchema,
     responses: {
       200: SegmentDtoSchema,
@@ -754,7 +763,7 @@ export const Contracts = c.router({
 
   tenantAdminGetSegment: {
     method: 'GET',
-    path: '/v1/tenant/admin/segments/:id',
+    path: '/v1/tenant-admin/segments/:id',
     pathParams: z.object({
       id: z.string(),
     }),
@@ -770,7 +779,7 @@ export const Contracts = c.router({
 
   tenantAdminUpdateSegment: {
     method: 'PUT',
-    path: '/v1/tenant/admin/segments/:id',
+    path: '/v1/tenant-admin/segments/:id',
     pathParams: z.object({
       id: z.string(),
     }),
@@ -790,7 +799,7 @@ export const Contracts = c.router({
 
   tenantAdminDeleteSegment: {
     method: 'DELETE',
-    path: '/v1/tenant/admin/segments/:id',
+    path: '/v1/tenant-admin/segments/:id',
     pathParams: z.object({
       id: z.string(),
     }),
@@ -807,7 +816,7 @@ export const Contracts = c.router({
 
   tenantAdminGetSegmentStats: {
     method: 'GET',
-    path: '/v1/tenant/admin/segments/:id/stats',
+    path: '/v1/tenant-admin/segments/:id/stats',
     pathParams: z.object({
       id: z.string(),
     }),
@@ -976,5 +985,238 @@ export const Contracts = c.router({
       500: InternalServerErrorSchema,
     },
     summary: 'Get Stripe Express dashboard login link (requires tenant admin authentication)',
+  },
+
+  // =========================================================================
+  // PUBLIC SCHEDULING ENDPOINTS (Customer-facing)
+  // Requires X-Tenant-Key header for tenant context
+  // =========================================================================
+
+  /**
+   * Get all active services for a tenant
+   * GET /v1/public/services
+   */
+  getServices: {
+    method: 'GET',
+    path: '/v1/public/services',
+    responses: {
+      200: z.array(ServiceDtoSchema),
+      400: BadRequestErrorSchema,
+      401: UnauthorizedErrorSchema,
+      500: InternalServerErrorSchema,
+    },
+    summary: 'Get all active services (public, requires X-Tenant-Key)',
+  },
+
+  /**
+   * Get service details by slug
+   * GET /v1/public/services/:slug
+   */
+  getServiceBySlug: {
+    method: 'GET',
+    path: '/v1/public/services/:slug',
+    pathParams: z.object({
+      slug: z.string(),
+    }),
+    responses: {
+      200: ServiceDtoSchema,
+      400: BadRequestErrorSchema,
+      401: UnauthorizedErrorSchema,
+      404: NotFoundErrorSchema,
+      500: InternalServerErrorSchema,
+    },
+    summary: 'Get service by slug (public, requires X-Tenant-Key)',
+  },
+
+  /**
+   * Get available time slots for a service on a specific date
+   * GET /v1/public/availability/slots?serviceId=xxx&date=2025-11-27
+   */
+  getAvailableSlots: {
+    method: 'GET',
+    path: '/v1/public/availability/slots',
+    query: AvailableSlotsQuerySchema,
+    responses: {
+      200: z.object({
+        date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
+        serviceId: z.string(),
+        timezone: z.string(),
+        slots: z.array(TimeSlotDtoSchema),
+      }),
+      400: BadRequestErrorSchema,
+      401: UnauthorizedErrorSchema,
+      404: NotFoundErrorSchema,
+      500: InternalServerErrorSchema,
+    },
+    summary: 'Get available time slots for a service on a date (public, requires X-Tenant-Key)',
+  },
+
+  // =========================================================================
+  // TENANT ADMIN SCHEDULING ENDPOINTS
+  // Requires tenant admin authentication
+  // =========================================================================
+
+  /**
+   * Get all services for authenticated tenant
+   * GET /v1/tenant-admin/services
+   */
+  tenantAdminGetServices: {
+    method: 'GET',
+    path: '/v1/tenant-admin/services',
+    responses: {
+      200: z.array(ServiceDtoSchema),
+      401: UnauthorizedErrorSchema,
+      403: ForbiddenErrorSchema,
+      500: InternalServerErrorSchema,
+    },
+    summary: 'Get all services for tenant (requires tenant admin authentication)',
+  },
+
+  /**
+   * Create a new service
+   * POST /v1/tenant-admin/services
+   */
+  tenantAdminCreateService: {
+    method: 'POST',
+    path: '/v1/tenant-admin/services',
+    body: CreateServiceDtoSchema,
+    responses: {
+      201: ServiceDtoSchema,
+      400: BadRequestErrorSchema,
+      401: UnauthorizedErrorSchema,
+      403: ForbiddenErrorSchema,
+      409: ConflictErrorSchema,
+      422: UnprocessableEntityErrorSchema,
+      500: InternalServerErrorSchema,
+    },
+    summary: 'Create new service (requires tenant admin authentication)',
+  },
+
+  /**
+   * Update a service
+   * PUT /v1/tenant-admin/services/:id
+   */
+  tenantAdminUpdateService: {
+    method: 'PUT',
+    path: '/v1/tenant-admin/services/:id',
+    pathParams: z.object({
+      id: z.string(),
+    }),
+    body: UpdateServiceDtoSchema,
+    responses: {
+      200: ServiceDtoSchema,
+      400: BadRequestErrorSchema,
+      401: UnauthorizedErrorSchema,
+      403: ForbiddenErrorSchema,
+      404: NotFoundErrorSchema,
+      409: ConflictErrorSchema,
+      422: UnprocessableEntityErrorSchema,
+      500: InternalServerErrorSchema,
+    },
+    summary: 'Update service (requires tenant admin authentication)',
+  },
+
+  /**
+   * Delete a service
+   * DELETE /v1/tenant-admin/services/:id
+   */
+  tenantAdminDeleteService: {
+    method: 'DELETE',
+    path: '/v1/tenant-admin/services/:id',
+    pathParams: z.object({
+      id: z.string(),
+    }),
+    body: z.undefined(),
+    responses: {
+      204: z.void(),
+      401: UnauthorizedErrorSchema,
+      403: ForbiddenErrorSchema,
+      404: NotFoundErrorSchema,
+      500: InternalServerErrorSchema,
+    },
+    summary: 'Delete service (requires tenant admin authentication)',
+  },
+
+  /**
+   * Get all availability rules for authenticated tenant
+   * GET /v1/tenant-admin/availability-rules
+   */
+  tenantAdminGetAvailabilityRules: {
+    method: 'GET',
+    path: '/v1/tenant-admin/availability-rules',
+    query: z.object({
+      serviceId: z.string().optional(), // Filter by service
+    }).optional(),
+    responses: {
+      200: z.array(AvailabilityRuleDtoSchema),
+      401: UnauthorizedErrorSchema,
+      403: ForbiddenErrorSchema,
+      500: InternalServerErrorSchema,
+    },
+    summary: 'Get all availability rules for tenant (requires tenant admin authentication)',
+  },
+
+  /**
+   * Create a new availability rule
+   * POST /v1/tenant-admin/availability-rules
+   */
+  tenantAdminCreateAvailabilityRule: {
+    method: 'POST',
+    path: '/v1/tenant-admin/availability-rules',
+    body: CreateAvailabilityRuleDtoSchema,
+    responses: {
+      201: AvailabilityRuleDtoSchema,
+      400: BadRequestErrorSchema,
+      401: UnauthorizedErrorSchema,
+      403: ForbiddenErrorSchema,
+      409: ConflictErrorSchema,
+      422: UnprocessableEntityErrorSchema,
+      500: InternalServerErrorSchema,
+    },
+    summary: 'Create availability rule (requires tenant admin authentication)',
+  },
+
+  /**
+   * Delete an availability rule
+   * DELETE /v1/tenant-admin/availability-rules/:id
+   */
+  tenantAdminDeleteAvailabilityRule: {
+    method: 'DELETE',
+    path: '/v1/tenant-admin/availability-rules/:id',
+    pathParams: z.object({
+      id: z.string(),
+    }),
+    body: z.undefined(),
+    responses: {
+      204: z.void(),
+      401: UnauthorizedErrorSchema,
+      403: ForbiddenErrorSchema,
+      404: NotFoundErrorSchema,
+      500: InternalServerErrorSchema,
+    },
+    summary: 'Delete availability rule (requires tenant admin authentication)',
+  },
+
+  /**
+   * Get all time-slot appointments for authenticated tenant
+   * GET /v1/tenant-admin/appointments
+   */
+  tenantAdminGetAppointments: {
+    method: 'GET',
+    path: '/v1/tenant-admin/appointments',
+    query: z.object({
+      status: z.enum(['PENDING', 'CONFIRMED', 'CANCELED', 'FULFILLED']).optional(),
+      serviceId: z.string().optional(),
+      startDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional(),
+      endDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional(),
+    }).optional(),
+    responses: {
+      200: z.array(AppointmentDtoSchema),
+      400: BadRequestErrorSchema,
+      401: UnauthorizedErrorSchema,
+      403: ForbiddenErrorSchema,
+      500: InternalServerErrorSchema,
+    },
+    summary: 'Get all appointments (time-slot bookings) for tenant with optional filters (requires tenant admin authentication)',
   },
 });

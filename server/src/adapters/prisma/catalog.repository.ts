@@ -108,6 +108,10 @@ export class PrismaCatalogRepository implements CatalogRepository {
         name: data.title,
         description: data.description,
         basePrice: data.priceCents,
+        // Tier/segment organization fields
+        segmentId: data.segmentId ?? null,
+        grouping: data.grouping ?? null,
+        groupingOrder: data.groupingOrder ?? null,
       },
     });
 
@@ -146,6 +150,10 @@ export class PrismaCatalogRepository implements CatalogRepository {
         ...(data.description !== undefined && { description: data.description }),
         ...(data.priceCents !== undefined && { basePrice: data.priceCents }),
         ...(data.photos !== undefined && { photos: data.photos as unknown as Prisma.InputJsonValue }),
+        // Tier/segment organization fields
+        ...(data.segmentId !== undefined && { segmentId: data.segmentId }),
+        ...(data.grouping !== undefined && { grouping: data.grouping }),
+        ...(data.groupingOrder !== undefined && { groupingOrder: data.groupingOrder }),
       },
     });
 

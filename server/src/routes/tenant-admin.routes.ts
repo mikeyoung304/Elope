@@ -275,6 +275,10 @@ export function createTenantAdminRoutes(
         priceCents: pkg.priceCents,
         photoUrl: pkg.photoUrl,
         photos: pkg.photos,
+        // Tier/segment organization fields
+        segmentId: pkg.segmentId,
+        grouping: pkg.grouping,
+        groupingOrder: pkg.groupingOrder,
       }));
 
       res.json(packagesDto);

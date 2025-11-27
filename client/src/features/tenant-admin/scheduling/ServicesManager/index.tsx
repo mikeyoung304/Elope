@@ -1,0 +1,137 @@
+/**
+ * ServicesManager Component
+ *
+ * Main orchestrator for tenant admin service management.
+ * Allows tenant admins to create, edit, delete, and manage their scheduling services.
+ *
+ * Features:
+ * - List all services in a table
+ * - Create new service with auto-slug generation
+ * - Edit existing services inline
+ * - Delete services with confirmation dialog
+ * - Toggle active/inactive status
+ * - Success/error message display
+ *
+ * API Endpoints:
+ * - GET /v1/tenant-admin/services - List all services
+ * - POST /v1/tenant-admin/services - Create service
+ * - PUT /v1/tenant-admin/services/:id - Update service
+ * - DELETE /v1/tenant-admin/services/:id - Delete service
+ */
+
+import { useState, useEffect, useCallback } from "react";
+import type { ServiceDto } from "@macon/contracts";
+import { api } from "@/lib/api";
+import { ServiceForm } from "./ServiceForm";
+import { ServicesList } from "./ServicesList";
+import { CreateServiceButton } from "./CreateServiceButton";
+import { DeleteConfirmationDialog } from "./DeleteConfirmationDialog";
+import { SuccessMessage } from "./SuccessMessage";
+import { useServicesManager } from "./useServicesManager";
+
+function useSuccessMessage() {
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
+
+  const showSuccess = useCallback((message: string) => {
+    setSuccessMessage(message);
+    setTimeout(() => setSuccessMessage(null), 3000);
+  }, []);
+
+  return { successMessage, showSuccess };
+}
+
+export function ServicesManager() {
+  const [services, setServices] = useState<ServiceDto[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const { successMessage, showSuccess } = useSuccessMessage();
+
+  const fetchServices = useCallback(async () => {
+    setIsLoading(true);
+    try {
+      const result = await api.tenantAdminGetServices();
+      if (result.status === 200) {
+        // Sort services by sortOrder ascending
+        const sortedServices = [...result.body].sort((a, b) => a.sortOrder - b.sortOrder);
+        setServices(sortedServices);
+      }
+    } catch (error) {
+      console.error("Failed to fetch services:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchServices();
+  }, [fetchServices]);
+
+  const {
+    isCreatingService,
+    editingServiceId,
+    isSaving,
+    error,
+    serviceForm,
+    setServiceForm,
+    deleteDialogOpen,
+    setDeleteDialogOpen,
+    serviceToDelete,
+    handleCreateService,
+    handleEditService,
+    handleSaveService,
+    handleDeleteClick,
+    confirmDelete,
+    cancelDelete,
+    handleToggleActive,
+    handleCancelServiceForm,
+    handleNameChange,
+  } = useServicesManager({ onServicesChange: fetchServices, showSuccess });
+
+  // Wrap handleNameChange to work with ServiceForm
+  const handleFormChange = useCallback((form: typeof serviceForm) => {
+    // If name changed, use handleNameChange for auto-slug (it will update both name and slug)
+    if (form.name !== serviceForm.name) {
+      handleNameChange(form.name);
+      // Then update other fields (excluding name and slug which handleNameChange already set)
+      const { name, slug, ...otherFields } = form;
+      setServiceForm(prev => ({ ...prev, ...otherFields }));
+    } else {
+      setServiceForm(form);
+    }
+  }, [serviceForm, handleNameChange, setServiceForm]);
+
+  return (
+    <div className="space-y-6">
+      <SuccessMessage message={successMessage} />
+
+      {!isCreatingService && <CreateServiceButton onClick={handleCreateService} />}
+
+      {isCreatingService && (
+        <ServiceForm
+          serviceForm={serviceForm}
+          editingServiceId={editingServiceId}
+          isSaving={isSaving}
+          error={error}
+          onFormChange={handleFormChange}
+          onSubmit={handleSaveService}
+          onCancel={handleCancelServiceForm}
+        />
+      )}
+
+      <ServicesList
+        services={services}
+        onEdit={handleEditService}
+        onDelete={handleDeleteClick}
+        onToggleActive={handleToggleActive}
+        isLoading={isLoading}
+      />
+
+      <DeleteConfirmationDialog
+        isOpen={deleteDialogOpen}
+        onOpenChange={setDeleteDialogOpen}
+        serviceToDelete={serviceToDelete}
+        onConfirm={confirmDelete}
+        onCancel={cancelDelete}
+      />
+    </div>
+  );
+}

@@ -93,6 +93,8 @@ model Tenant {
   blackoutDates    BlackoutDate[]
   webhookEvents    WebhookEvent[]
   configChangeLogs ConfigChangeLog[] // Audit trail for config changes
+  services         Service[] // Scheduling services (e.g., "30-Minute Consultation")
+  availabilityRules AvailabilityRule[] // Scheduling availability rules
 
   @@index([slug])
   @@index([apiKeyPublic])
@@ -169,6 +171,7 @@ model Segment {
   tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   packages Package[] // Packages within this segment
   addOns AddOn[] // Segment-specific add-ons
+  services Service[] // Segment-specific services (for scheduling)
 
   // Constraints & Indexes
   @@unique([tenantId, slug]) // Each tenant has unique segment slugs
@@ -258,9 +261,21 @@ model Booking {
   customerId String
   packageId  String
   venueId    String?
+
+  // Scheduling fields - supports both date-only (legacy) and time-slot bookings
   date       DateTime      @db.Date
-  startTime  DateTime?
-  endTime    DateTime?
+  startTime  DateTime?     // UTC - for time-slot bookings
+  endTime    DateTime?     // UTC - for time-slot bookings
+
+  // Booking type: DATE for legacy wedding bookings, TIMESLOT for scheduling
+  bookingType BookingType @default(DATE)
+
+  // Service reference (for time-slot bookings)
+  serviceId  String?
+
+  // Client timezone for display purposes (e.g., "America/New_York")
+  clientTimezone String?
+
   status     BookingStatus @default(PENDING)
   totalPrice Int
   notes      String?
@@ -272,26 +287,37 @@ model Booking {
   // Stripe Payment
   stripePaymentIntentId String? @unique // Stripe PaymentIntent ID
 
+  // Google Calendar sync
+  googleEventId String? // Google Calendar event ID for sync
+
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
   confirmedAt DateTime? // When payment completed
+  cancelledAt DateTime? // When cancelled
 
   tenant   Tenant         @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   customer Customer       @relation(fields: [customerId], references: [id])
   package  Package        @relation(fields: [packageId], references: [id])
   venue    Venue?         @relation(fields: [venueId], references: [id])
+  service  Service?       @relation(fields: [serviceId], references: [id])
   addOns   BookingAddOn[]
   payments Payment[]
 
-  @@unique([tenantId, date]) // Each tenant can only have one booking per date
+  // Unique constraints:
+  // - For DATE bookings: one per tenant per date (legacy behavior)
+  // - For TIMESLOT bookings: uniqueness handled by application + advisory lock on startTime
+  @@unique([tenantId, date, bookingType]) // Composite unique for date-only bookings
   @@index([tenantId, status])
   @@index([tenantId, date])
+  @@index([tenantId, startTime]) // For time-slot queries
   @@index([tenantId, status, date])
   @@index([tenantId])
   @@index([customerId])
   @@index([packageId])
+  @@index([serviceId])
   @@index([venueId])
   @@index([stripePaymentIntentId])
+  @@index([googleEventId])
   @@index([createdAt])
   @@index([tenantId, confirmedAt])
 }
@@ -301,6 +327,70 @@ enum BookingStatus {
   CONFIRMED
   CANCELED
   FULFILLED
+}
+
+enum BookingType {
+  DATE     // Legacy date-only bookings (weddings)
+  TIMESLOT // Time-slot based scheduling
+}
+
+// ============================================================================
+// Scheduling Models (MVP - Single Provider)
+// ============================================================================
+
+// Service Model - Represents bookable services/appointment types
+model Service {
+  id               String   @id @default(cuid())
+  tenantId         String   // Tenant isolation
+  slug             String   // URL-safe identifier (e.g., "consultation", "haircut")
+  name             String   // Display name (e.g., "30-Minute Consultation")
+  description      String?  @db.Text
+  durationMinutes  Int      // Service duration (e.g., 30, 60, 90)
+  bufferMinutes    Int      @default(0) // Buffer time after service
+  priceCents       Int      // Service price in cents
+  timezone         String   @default("America/New_York") // Tenant's timezone for availability
+  active           Boolean  @default(true)
+  sortOrder        Int      @default(0)
+
+  // Optional segment association
+  segmentId        String?
+
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  // Relations
+  tenant           Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  segment          Segment? @relation(fields: [segmentId], references: [id], onDelete: SetNull)
+  availabilityRules AvailabilityRule[]
+  bookings         Booking[]
+
+  @@unique([tenantId, slug])
+  @@index([tenantId, active])
+  @@index([tenantId])
+  @@index([segmentId])
+}
+
+// AvailabilityRule Model - Defines when services are available
+model AvailabilityRule {
+  id            String    @id @default(cuid())
+  tenantId      String    // Tenant isolation
+  serviceId     String?   // NULL = applies to all services (default availability)
+  dayOfWeek     Int       // 0=Sunday, 1=Monday, ..., 6=Saturday
+  startTime     String    // "09:00" (in tenant timezone)
+  endTime       String    // "17:00" (in tenant timezone)
+  effectiveFrom DateTime  @default(now())
+  effectiveTo   DateTime? // NULL = indefinite
+
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  // Relations
+  tenant        Tenant    @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  service       Service?  @relation(fields: [serviceId], references: [id], onDelete: Cascade)
+
+  @@unique([tenantId, serviceId, dayOfWeek, startTime])
+  @@index([tenantId, dayOfWeek])
+  @@index([serviceId])
 }
 
 model BookingAddOn {

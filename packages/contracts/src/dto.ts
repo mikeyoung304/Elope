@@ -494,3 +494,123 @@ export const PlatformStatsSchema = z.object({
 });
 
 export type PlatformStats = z.infer<typeof PlatformStatsSchema>;
+
+// ============================================================================
+// Scheduling DTOs
+// ============================================================================
+
+// Service DTOs
+export const ServiceDtoSchema = z.object({
+  id: z.string(),
+  tenantId: z.string(),
+  slug: z.string(),
+  name: z.string(),
+  description: z.string().nullable(),
+  durationMinutes: z.number().int().positive(),
+  bufferMinutes: z.number().int().min(0).default(0),
+  priceCents: z.number().int().min(0),
+  timezone: z.string().default('America/New_York'),
+  active: z.boolean().default(true),
+  sortOrder: z.number().int().default(0),
+  segmentId: z.string().nullable(),
+  createdAt: z.string(), // ISO date string
+  updatedAt: z.string(), // ISO date string
+});
+
+export type ServiceDto = z.infer<typeof ServiceDtoSchema>;
+
+export const CreateServiceDtoSchema = z.object({
+  slug: z.string().min(1).max(100).regex(/^[a-z0-9-]+$/, 'Lowercase alphanumeric + hyphens only'),
+  name: z.string().min(1).max(100),
+  description: z.string().max(2000).optional(),
+  durationMinutes: z.number().int().positive().min(5).max(480), // 5 min to 8 hours
+  bufferMinutes: z.number().int().min(0).max(120).default(0), // 0 to 2 hours
+  priceCents: z.number().int().min(0),
+  timezone: z.string().default('America/New_York'),
+  sortOrder: z.number().int().default(0),
+  segmentId: z.string().nullable().optional(),
+});
+
+export type CreateServiceDto = z.infer<typeof CreateServiceDtoSchema>;
+
+export const UpdateServiceDtoSchema = z.object({
+  slug: z.string().min(1).max(100).regex(/^[a-z0-9-]+$/, 'Lowercase alphanumeric + hyphens only').optional(),
+  name: z.string().min(1).max(100).optional(),
+  description: z.string().max(2000).optional(),
+  durationMinutes: z.number().int().positive().min(5).max(480).optional(),
+  bufferMinutes: z.number().int().min(0).max(120).optional(),
+  priceCents: z.number().int().min(0).optional(),
+  timezone: z.string().optional(),
+  active: z.boolean().optional(),
+  sortOrder: z.number().int().optional(),
+  segmentId: z.string().nullable().optional(),
+});
+
+export type UpdateServiceDto = z.infer<typeof UpdateServiceDtoSchema>;
+
+// Availability Rule DTOs
+export const AvailabilityRuleDtoSchema = z.object({
+  id: z.string(),
+  tenantId: z.string(),
+  serviceId: z.string().nullable(), // NULL = applies to all services
+  dayOfWeek: z.number().int().min(0).max(6), // 0=Sunday, 6=Saturday
+  startTime: z.string().regex(/^([0-1][0-9]|2[0-3]):[0-5][0-9]$/, 'Format: HH:MM'), // "09:00"
+  endTime: z.string().regex(/^([0-1][0-9]|2[0-3]):[0-5][0-9]$/, 'Format: HH:MM'), // "17:00"
+  effectiveFrom: z.string(), // ISO date string
+  effectiveTo: z.string().nullable(), // NULL = indefinite
+  createdAt: z.string(), // ISO date string
+  updatedAt: z.string(), // ISO date string
+});
+
+export type AvailabilityRuleDto = z.infer<typeof AvailabilityRuleDtoSchema>;
+
+export const CreateAvailabilityRuleDtoSchema = z.object({
+  serviceId: z.string().nullable().optional(), // NULL = default availability for all services
+  dayOfWeek: z.number().int().min(0).max(6),
+  startTime: z.string().regex(/^([0-1][0-9]|2[0-3]):[0-5][0-9]$/, 'Format: HH:MM (e.g., 09:00)'),
+  endTime: z.string().regex(/^([0-1][0-9]|2[0-3]):[0-5][0-9]$/, 'Format: HH:MM (e.g., 17:00)'),
+  effectiveFrom: z.string().datetime().optional(), // ISO datetime, defaults to now
+  effectiveTo: z.string().datetime().nullable().optional(), // NULL = indefinite
+});
+
+export type CreateAvailabilityRuleDto = z.infer<typeof CreateAvailabilityRuleDtoSchema>;
+
+// Time Slot DTOs
+export const TimeSlotDtoSchema = z.object({
+  startTime: z.string().datetime(), // ISO datetime (UTC)
+  endTime: z.string().datetime(), // ISO datetime (UTC)
+  available: z.boolean(),
+});
+
+export type TimeSlotDto = z.infer<typeof TimeSlotDtoSchema>;
+
+// Available Slots Query Schema
+export const AvailableSlotsQuerySchema = z.object({
+  serviceId: z.string().min(1, 'Service ID is required'),
+  date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Date must be YYYY-MM-DD format'),
+  timezone: z.string().optional(), // Optional client timezone (e.g., "America/New_York")
+});
+
+export type AvailableSlotsQuery = z.infer<typeof AvailableSlotsQuerySchema>;
+
+// Appointment DTO (time-slot booking)
+export const AppointmentDtoSchema = z.object({
+  id: z.string(),
+  tenantId: z.string(),
+  customerId: z.string(),
+  serviceId: z.string(),
+  packageId: z.string().nullable(),
+  date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/), // Date component
+  startTime: z.string().datetime(), // Full UTC datetime
+  endTime: z.string().datetime(), // Full UTC datetime
+  clientTimezone: z.string().nullable(),
+  status: z.enum(['PENDING', 'CONFIRMED', 'CANCELED', 'FULFILLED']),
+  totalPrice: z.number().int(),
+  notes: z.string().nullable(),
+  createdAt: z.string().datetime(),
+  updatedAt: z.string().datetime(),
+  confirmedAt: z.string().datetime().nullable(),
+  cancelledAt: z.string().datetime().nullable(),
+});
+
+export type AppointmentDto = z.infer<typeof AppointmentDtoSchema>;

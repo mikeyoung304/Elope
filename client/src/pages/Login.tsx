@@ -182,6 +182,14 @@ export function Login() {
               disabled={isLoading}
               autoComplete="current-password"
             />
+            <div className="flex justify-end">
+              <Link
+                to="/forgot-password"
+                className="text-white/70 text-sm hover:text-white transition-colors underline"
+              >
+                Forgot password?
+              </Link>
+            </div>
             <Button
               type="submit"
               className="w-full bg-macon-orange hover:bg-macon-orange-dark text-white text-xl h-14"

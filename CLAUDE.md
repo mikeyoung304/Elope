@@ -306,6 +306,8 @@ Optional (graceful fallbacks in real mode):
 - **DECISIONS.md** - Architectural Decision Records (ADRs)
 - **docs/multi-tenant/MULTI_TENANT_IMPLEMENTATION_GUIDE.md** - Multi-tenant patterns
 - **docs/security/SECRET_ROTATION_GUIDE.md** - Secret rotation procedures
+- **docs/solutions/PREVENTION-STRATEGIES-INDEX.md** - Prevention strategies for avoiding critical issues
+- **docs/solutions/PREVENTION-QUICK-REFERENCE.md** - Quick reference cheat sheet (print and pin!)
 
 ## Code Patterns to Follow
 

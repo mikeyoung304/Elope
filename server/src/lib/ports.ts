@@ -2,7 +2,7 @@
  * Port interfaces for repositories and external adapters
  */
 
-import type { Package, AddOn, Booking } from './entities';
+import type { Package, AddOn, Booking, Service } from './entities';
 import type Stripe from 'stripe';
 
 // ============================================================================
@@ -40,6 +40,7 @@ export interface BookingRepository {
   findAll(tenantId: string): Promise<Booking[]>;
   isDateBooked(tenantId: string, date: string): Promise<boolean>;
   getUnavailableDates(tenantId: string, startDate: Date, endDate: Date): Promise<Date[]>;
+  updateGoogleEventId(tenantId: string, bookingId: string, googleEventId: string): Promise<void>;
 }
 
 /**
@@ -75,6 +76,60 @@ export interface WebhookRepository {
   isDuplicate(tenantId: string, eventId: string): Promise<boolean>;
 }
 
+/**
+ * Service Repository - Scheduling service management
+ */
+export interface ServiceRepository {
+  getAll(tenantId: string, includeInactive?: boolean): Promise<Service[]>;
+  getActiveServices(tenantId: string): Promise<Service[]>;
+  getBySlug(tenantId: string, slug: string): Promise<Service | null>;
+  getById(tenantId: string, id: string): Promise<Service | null>;
+  create(tenantId: string, data: CreateServiceInput): Promise<Service>;
+  update(tenantId: string, id: string, data: UpdateServiceInput): Promise<Service>;
+  delete(tenantId: string, id: string): Promise<void>;
+}
+
+/**
+ * AvailabilityRule Repository - Scheduling availability rules
+ */
+export interface AvailabilityRuleRepository {
+  getAll(tenantId: string): Promise<AvailabilityRule[]>;
+  getByService(tenantId: string, serviceId: string | null): Promise<AvailabilityRule[]>;
+  getByDayOfWeek(tenantId: string, dayOfWeek: number, serviceId?: string | null): Promise<AvailabilityRule[]>;
+  getEffectiveRules(tenantId: string, date: Date, serviceId?: string | null): Promise<AvailabilityRule[]>;
+  create(tenantId: string, data: CreateAvailabilityRuleData): Promise<AvailabilityRule>;
+  delete(tenantId: string, id: string): Promise<void>;
+  deleteByService(tenantId: string, serviceId: string): Promise<void>;
+}
+
+/**
+ * Domain entity for AvailabilityRule
+ */
+export interface AvailabilityRule {
+  id: string;
+  tenantId: string;
+  serviceId: string | null;
+  dayOfWeek: number;
+  startTime: string;
+  endTime: string;
+  effectiveFrom: Date;
+  effectiveTo: Date | null;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+/**
+ * Input for creating a new availability rule
+ */
+export interface CreateAvailabilityRuleData {
+  serviceId?: string | null;
+  dayOfWeek: number;
+  startTime: string;
+  endTime: string;
+  effectiveFrom?: Date;
+  effectiveTo?: Date | null;
+}
+
 // ============================================================================
 // Provider Ports
 // ============================================================================
@@ -84,6 +139,26 @@ export interface WebhookRepository {
  */
 export interface CalendarProvider {
   isDateAvailable(date: string): Promise<boolean>;
+
+  /**
+   * Create a calendar event (optional - for one-way sync)
+   * Returns null if calendar provider doesn't support event creation
+   */
+  createEvent?(input: {
+    tenantId: string;
+    summary: string;
+    description?: string;
+    startTime: Date;
+    endTime: Date;
+    attendees?: { email: string; name?: string }[];
+    metadata?: Record<string, string>;
+  }): Promise<{ eventId: string } | null>;
+
+  /**
+   * Delete a calendar event (optional - for one-way sync)
+   * Returns true if successfully deleted, false otherwise
+   */
+  deleteEvent?(tenantId: string, eventId: string): Promise<boolean>;
 }
 
 /**
@@ -222,6 +297,10 @@ export interface CreatePackageInput {
   description: string;
   priceCents: number;
   photoUrl?: string;
+  // Tier/segment organization fields
+  segmentId?: string | null;
+  grouping?: string | null;
+  groupingOrder?: number | null;
 }
 
 /**
@@ -243,6 +322,10 @@ export interface UpdatePackageInput {
   priceCents?: number;
   photoUrl?: string;
   photos?: PackagePhoto[]; // Photo gallery JSON array
+  // Tier/segment organization fields
+  segmentId?: string | null;
+  grouping?: string | null;
+  groupingOrder?: number | null;
 }
 
 /**
@@ -263,6 +346,38 @@ export interface UpdateAddOnInput {
   title?: string;
   priceCents?: number;
   photoUrl?: string;
+}
+
+/**
+ * Input for creating a new service
+ */
+export interface CreateServiceInput {
+  slug: string;
+  name: string;
+  description?: string;
+  durationMinutes: number;
+  bufferMinutes?: number;
+  priceCents: number;
+  timezone?: string;
+  active?: boolean;
+  sortOrder?: number;
+  segmentId?: string | null;
+}
+
+/**
+ * Input for updating an existing service
+ */
+export interface UpdateServiceInput {
+  slug?: string;
+  name?: string;
+  description?: string;
+  durationMinutes?: number;
+  bufferMinutes?: number;
+  priceCents?: number;
+  timezone?: string;
+  active?: boolean;
+  sortOrder?: number;
+  segmentId?: string | null;
 }
 
 // ============================================================================

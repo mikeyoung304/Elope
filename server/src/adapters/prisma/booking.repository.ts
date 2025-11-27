@@ -369,6 +369,33 @@ export class PrismaBookingRepository implements BookingRepository {
     return bookings.map(b => b.date);
   }
 
+  /**
+   * Update Google Calendar event ID for a booking
+   *
+   * Stores the Google Calendar event ID after successful calendar sync.
+   * This allows future cancellation of the calendar event.
+   *
+   * @param tenantId - Tenant ID for data isolation
+   * @param bookingId - Booking identifier
+   * @param googleEventId - Google Calendar event ID
+   *
+   * @example
+   * ```typescript
+   * await repository.updateGoogleEventId('tenant_123', 'booking_abc', 'google_event_xyz');
+   * ```
+   */
+  async updateGoogleEventId(tenantId: string, bookingId: string, googleEventId: string): Promise<void> {
+    await this.prisma.booking.updateMany({
+      where: {
+        tenantId,
+        id: bookingId,
+      },
+      data: {
+        googleEventId,
+      },
+    });
+  }
+
   // Mappers
   private mapToPrismaStatus(status: string): 'PENDING' | 'CONFIRMED' | 'CANCELED' | 'FULFILLED' {
     switch (status) {

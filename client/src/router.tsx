@@ -18,6 +18,8 @@ const SegmentLanding = lazy(() => import("./pages/SegmentLanding").then(m => ({ 
 const Success = lazy(() => import("./pages/success").then(m => ({ default: m.Success })));
 const Login = lazy(() => import("./pages/Login").then(m => ({ default: m.Login })));
 const SignupPage = lazy(() => import("./features/auth/SignupPage").then(m => ({ default: m.SignupPage })));
+const ForgotPasswordPage = lazy(() => import("./features/auth/ForgotPasswordPage").then(m => ({ default: m.ForgotPasswordPage })));
+const ResetPasswordPage = lazy(() => import("./features/auth/ResetPasswordPage").then(m => ({ default: m.ResetPasswordPage })));
 const Contact = lazy(() => import("./pages/Contact").then(m => ({ default: m.Contact })));
 const PlatformAdminDashboard = lazy(() => import("./pages/admin/PlatformAdminDashboard").then(m => ({ default: m.PlatformAdminDashboard })));
 const TenantAdminDashboard = lazy(() => import("./pages/tenant/TenantAdminDashboard").then(m => ({ default: m.TenantAdminDashboard })));
@@ -34,6 +36,12 @@ const SegmentTiers = lazy(() => import("./pages/SegmentTiers").then(m => ({ defa
 const RootTiers = lazy(() => import("./pages/RootTiers").then(m => ({ default: m.RootTiers })));
 const SegmentTierDetail = lazy(() => import("./pages/TierDetailPage").then(m => ({ default: m.SegmentTierDetail })));
 const RootTierDetail = lazy(() => import("./pages/TierDetailPage").then(m => ({ default: m.RootTierDetail })));
+
+// Scheduling pages (public booking + tenant admin)
+const AppointmentBookingPage = lazy(() => import("./pages/AppointmentBooking").then(m => ({ default: m.AppointmentBookingPage })));
+const TenantSchedulingServicesPage = lazy(() => import("./pages/tenant/TenantSchedulingServices").then(m => ({ default: m.TenantSchedulingServicesPage })));
+const TenantSchedulingAvailabilityPage = lazy(() => import("./pages/tenant/TenantSchedulingAvailability").then(m => ({ default: m.TenantSchedulingAvailabilityPage })));
+const TenantSchedulingAppointmentsPage = lazy(() => import("./pages/tenant/TenantSchedulingAppointments").then(m => ({ default: m.TenantSchedulingAppointmentsPage })));
 
 // Wrapper with Suspense
 const SuspenseWrapper = ({ children }: { children: React.ReactNode }) => (
@@ -110,8 +118,21 @@ export const router = createBrowserRouter([
         element: <SuspenseWrapper><SignupPage /></SuspenseWrapper>,
       },
       {
+        path: "forgot-password",
+        element: <SuspenseWrapper><ForgotPasswordPage /></SuspenseWrapper>,
+      },
+      {
+        path: "reset-password",
+        element: <SuspenseWrapper><ResetPasswordPage /></SuspenseWrapper>,
+      },
+      {
         path: "contact",
         element: <SuspenseWrapper><Contact /></SuspenseWrapper>,
+      },
+      // Public appointment booking route
+      {
+        path: "book",
+        element: <SuspenseWrapper><AppointmentBookingPage /></SuspenseWrapper>,
       },
       // Legacy routes - redirect to unified login
       {
@@ -168,6 +189,31 @@ export const router = createBrowserRouter([
     element: (
       <ProtectedSuspenseWrapper allowedRoles={["TENANT_ADMIN"]}>
         <TenantAdminDashboard />
+      </ProtectedSuspenseWrapper>
+    ),
+  },
+  // Tenant admin scheduling routes
+  {
+    path: "tenant/scheduling/services",
+    element: (
+      <ProtectedSuspenseWrapper allowedRoles={["TENANT_ADMIN"]}>
+        <TenantSchedulingServicesPage />
+      </ProtectedSuspenseWrapper>
+    ),
+  },
+  {
+    path: "tenant/scheduling/availability",
+    element: (
+      <ProtectedSuspenseWrapper allowedRoles={["TENANT_ADMIN"]}>
+        <TenantSchedulingAvailabilityPage />
+      </ProtectedSuspenseWrapper>
+    ),
+  },
+  {
+    path: "tenant/scheduling/appointments",
+    element: (
+      <ProtectedSuspenseWrapper allowedRoles={["TENANT_ADMIN"]}>
+        <TenantSchedulingAppointmentsPage />
       </ProtectedSuspenseWrapper>
     ),
   },

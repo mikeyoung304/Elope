@@ -76,3 +76,24 @@ export interface Blackout {
   date: string; // YYYY-MM-DD format
   reason?: string;
 }
+
+// ============================================================================
+// Scheduling Entities
+// ============================================================================
+
+export interface Service {
+  id: string;
+  tenantId: string;
+  slug: string;
+  name: string;
+  description: string | null;
+  durationMinutes: number;
+  bufferMinutes: number;
+  priceCents: number;
+  timezone: string;
+  active: boolean;
+  sortOrder: number;
+  segmentId: string | null;
+  createdAt: Date;
+  updatedAt: Date;
+}

@@ -24,14 +24,16 @@ import type { SegmentService } from '../services/segment.service';
 import { resolveTenant, requireTenant, getTenantId, type TenantRequest } from '../middleware/tenant';
 import { PrismaClient } from '../generated/prisma';
 import { PrismaTenantRepository, PrismaBlackoutRepository } from '../adapters/prisma';
-import adminTenantsRoutes from './admin/tenants.routes';
-import adminStripeRoutes from './admin/stripe.routes';
+import { createAdminTenantsRoutes } from './admin/tenants.routes';
+import { createAdminStripeRoutes } from './admin/stripe.routes';
 import { createTenantAdminRoutes } from './tenant-admin.routes';
 import { createTenantAdminStripeRoutes } from './tenant-admin-stripe.routes';
 import { createTenantAuthRoutes } from './tenant-auth.routes';
 import { createUnifiedAuthRoutes } from './auth.routes';
 import { createSegmentsRouter } from './segments.routes';
 import { createTenantAdminSegmentsRouter } from './tenant-admin-segments.routes';
+import { createPublicSchedulingRoutes } from './public-scheduling.routes';
+import { createTenantAdminSchedulingRoutes } from './tenant-admin-scheduling.routes';
 import { loginLimiter } from '../middleware/rateLimiter';
 import { logger } from '../lib/core/logger';
 import { apiKeyService } from '../lib/api-key.service';
@@ -54,6 +56,12 @@ interface Services {
   tenantAuth: TenantAuthService;
   segment: SegmentService;
   stripeConnect?: any; // StripeConnectService
+  schedulingAvailability?: any; // SchedulingAvailabilityService
+}
+
+interface Repositories {
+  service?: any; // ServiceRepository
+  availabilityRule?: any; // AvailabilityRuleRepository
 }
 
 export function createV1Router(
@@ -61,13 +69,15 @@ export function createV1Router(
   identityService: IdentityService,
   app: Application,
   services?: Services,
-  mailProvider?: { sendPasswordReset: (to: string, resetToken: string, resetUrl: string) => Promise<void> }
+  mailProvider?: { sendPasswordReset: (to: string, resetToken: string, resetUrl: string) => Promise<void> },
+  prisma?: PrismaClient,
+  repositories?: Repositories
 ): void {
-  // Create Prisma instance for tenant middleware
-  const prisma = new PrismaClient();
+  // Use shared Prisma instance from DI, or create one for backward compatibility
+  const prismaClient = prisma ?? new PrismaClient();
 
   // Create tenant middleware for multi-tenant data isolation
-  const tenantMiddleware = resolveTenant(prisma);
+  const tenantMiddleware = resolveTenant(prismaClient);
 
   // Create auth middleware for admin endpoints
   const authMiddleware = createAuthMiddleware(identityService);
@@ -285,10 +295,12 @@ export function createV1Router(
   });
 
   // Register admin tenant management routes (Express router, not ts-rest)
-  app.use('/v1/admin/tenants', authMiddleware, adminTenantsRoutes);
+  // Use factory function with shared prisma instance to avoid connection pool exhaustion
+  app.use('/v1/admin/tenants', authMiddleware, createAdminTenantsRoutes(prismaClient));
 
   // Register admin Stripe Connect routes (Express router, not ts-rest)
-  app.use('/v1/admin/tenants', authMiddleware, adminStripeRoutes);
+  // Use factory function with shared prisma instance to avoid connection pool exhaustion
+  app.use('/v1/admin/tenants', authMiddleware, createAdminStripeRoutes(prismaClient));
 
   // Register tenant authentication routes (login, /me)
   if (services) {
@@ -303,8 +315,8 @@ export function createV1Router(
 
     // Register tenant admin routes (for tenant self-service)
     // These routes use tenant auth middleware for authentication and authorization
-    const tenantRepo = new PrismaTenantRepository(prisma);
-    const blackoutRepo = new PrismaBlackoutRepository(prisma);
+    const tenantRepo = new PrismaTenantRepository(prismaClient);
+    const blackoutRepo = new PrismaBlackoutRepository(prismaClient);
     const tenantAdminRoutes = createTenantAdminRoutes(
       tenantRepo,
       services.catalog,
@@ -347,6 +359,29 @@ export function createV1Router(
       const tenantAdminStripeRoutes = createTenantAdminStripeRoutes(services.stripeConnect);
       app.use('/v1/tenant-admin/stripe', tenantAuthMiddleware, tenantAdminStripeRoutes);
       logger.info('✅ Tenant admin Stripe Connect routes mounted at /v1/tenant-admin/stripe');
+    }
+
+    // Register public scheduling routes (for customer booking widget)
+    // Requires tenant context via X-Tenant-Key header
+    if (services.schedulingAvailability && repositories?.service) {
+      const publicSchedulingRouter = createPublicSchedulingRoutes(
+        repositories.service,
+        services.schedulingAvailability
+      );
+      app.use('/v1/public', tenantMiddleware, requireTenant, publicSchedulingRouter);
+      logger.info('✅ Public scheduling routes mounted at /v1/public');
+
+      // Register tenant admin scheduling routes (for service and availability management)
+      // Requires tenant admin authentication
+      if (repositories.availabilityRule) {
+        const tenantAdminSchedulingRouter = createTenantAdminSchedulingRoutes(
+          repositories.service,
+          repositories.availabilityRule,
+          services.booking
+        );
+        app.use('/v1/tenant-admin', tenantAuthMiddleware, tenantAdminSchedulingRouter);
+        logger.info('✅ Tenant admin scheduling routes mounted at /v1/tenant-admin');
+      }
     }
   }
 }

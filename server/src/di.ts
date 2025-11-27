@@ -18,6 +18,8 @@ import { TenantAuthService } from './services/tenant-auth.service';
 import { AuditService } from './services/audit.service';
 import { IdempotencyService } from './services/idempotency.service';
 import { SegmentService } from './services/segment.service';
+import { GoogleCalendarService } from './services/google-calendar.service';
+import { SchedulingAvailabilityService } from './services/scheduling-availability.service';
 import { PackagesController } from './routes/packages.routes';
 import { AvailabilityController } from './routes/availability.routes';
 import { BookingsController } from './routes/bookings.routes';
@@ -39,10 +41,13 @@ import {
   PrismaWebhookRepository,
   PrismaTenantRepository,
   PrismaSegmentRepository,
+  PrismaServiceRepository,
+  PrismaAvailabilityRuleRepository,
 } from './adapters/prisma';
 import { StripePaymentAdapter } from './adapters/stripe.adapter';
 import { PostmarkMailAdapter } from './adapters/postmark.adapter';
 import { GoogleCalendarAdapter } from './adapters/gcal.adapter';
+import { GoogleCalendarSyncAdapter } from './adapters/google-calendar-sync.adapter';
 import { logger } from './lib/core/logger';
 
 export interface Container {
@@ -67,6 +72,12 @@ export interface Container {
     booking: BookingService;
     audit: AuditService;
     segment: SegmentService;
+    googleCalendar?: GoogleCalendarService; // Optional - only if calendar provider supports sync
+    schedulingAvailability?: SchedulingAvailabilityService; // Scheduling slot generation
+  };
+  repositories?: {
+    service?: PrismaServiceRepository;
+    availabilityRule?: PrismaAvailabilityRuleRepository;
   };
   mailProvider?: PostmarkMailAdapter; // Export mail provider for password reset emails
   cacheAdapter: CacheServicePort; // Export cache adapter for health checks
@@ -140,6 +151,18 @@ export function buildContainer(config: Config): Container {
     const segmentRepo = new PrismaSegmentRepository(mockPrisma);
     const segmentService = new SegmentService(segmentRepo, legacyCacheService);
 
+    // Create GoogleCalendarService with mock calendar provider
+    const googleCalendarService = new GoogleCalendarService(adapters.calendarProvider);
+
+    // Create scheduling repositories and service with mock Prisma
+    const serviceRepo = new PrismaServiceRepository(mockPrisma);
+    const availabilityRuleRepo = new PrismaAvailabilityRuleRepository(mockPrisma);
+    const schedulingAvailabilityService = new SchedulingAvailabilityService(
+      serviceRepo as any, // Type adapter for repository interface
+      availabilityRuleRepo as any,
+      adapters.bookingRepo
+    );
+
     const controllers = {
       packages: new PackagesController(catalogService),
       availability: new AvailabilityController(availabilityService),
@@ -162,9 +185,16 @@ export function buildContainer(config: Config): Container {
       booking: bookingService,
       audit: auditService,
       segment: segmentService,
+      googleCalendar: googleCalendarService,
+      schedulingAvailability: schedulingAvailabilityService,
     };
 
-    return { controllers, services, mailProvider: undefined, cacheAdapter, prisma: undefined };
+    const repositories = {
+      service: serviceRepo,
+      availabilityRule: availabilityRuleRepo,
+    };
+
+    return { controllers, services, repositories, mailProvider: undefined, cacheAdapter, prisma: undefined };
   }
 
   // Real adapters mode
@@ -248,8 +278,9 @@ export function buildContainer(config: Config): Container {
   // Build Google Calendar adapter (or fallback to mock if creds missing)
   let calendarProvider;
   if (config.GOOGLE_CALENDAR_ID && config.GOOGLE_SERVICE_ACCOUNT_JSON_BASE64) {
-    logger.info('📅 Using Google Calendar adapter');
-    calendarProvider = new GoogleCalendarAdapter({
+    logger.info('📅 Using Google Calendar sync adapter (one-way sync enabled)');
+    // Use GoogleCalendarSyncAdapter for full sync capabilities (extends GoogleCalendarAdapter)
+    calendarProvider = new GoogleCalendarSyncAdapter({
       calendarId: config.GOOGLE_CALENDAR_ID,
       serviceAccountJsonBase64: config.GOOGLE_SERVICE_ACCOUNT_JSON_BASE64,
     });
@@ -288,6 +319,18 @@ export function buildContainer(config: Config): Container {
 
   // Create SegmentService with real Prisma segment repo
   const segmentService = new SegmentService(segmentRepo, legacyCacheService);
+
+  // Create GoogleCalendarService with real calendar provider
+  const googleCalendarService = new GoogleCalendarService(calendarProvider);
+
+  // Create scheduling repositories and service with real Prisma
+  const serviceRepo = new PrismaServiceRepository(prisma);
+  const availabilityRuleRepo = new PrismaAvailabilityRuleRepository(prisma);
+  const schedulingAvailabilityService = new SchedulingAvailabilityService(
+    serviceRepo as any, // Type adapter for repository interface
+    availabilityRuleRepo as any,
+    bookingRepo
+  );
 
   // Subscribe to BookingPaid events to send confirmation emails
   eventEmitter.subscribe<{
@@ -334,7 +377,14 @@ export function buildContainer(config: Config): Container {
     booking: bookingService,
     audit: auditService,
     segment: segmentService,
+    googleCalendar: googleCalendarService,
+    schedulingAvailability: schedulingAvailabilityService,
   };
 
-  return { controllers, services, mailProvider, cacheAdapter, prisma };
+  const repositories = {
+    service: serviceRepo,
+    availabilityRule: availabilityRuleRepo,
+  };
+
+  return { controllers, services, repositories, mailProvider, cacheAdapter, prisma };
 }

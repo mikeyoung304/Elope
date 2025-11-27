@@ -435,6 +435,16 @@ export class MockBookingRepository implements BookingRepository {
     // Sort by date
     return unavailable.sort((a, b) => a.getTime() - b.getTime());
   }
+
+  async updateGoogleEventId(tenantId: string, bookingId: string, googleEventId: string): Promise<void> {
+    // Mock mode: Ignore tenantId
+    const booking = bookings.get(bookingId);
+    if (booking) {
+      // Store googleEventId in mock booking (extend Booking type if needed)
+      (booking as any).googleEventId = googleEventId;
+      console.log(`📅 [MOCK] Updated booking ${bookingId} with Google event ID: ${googleEventId}`);
+    }
+  }
 }
 
 // Mock Blackout Repository
@@ -476,6 +486,14 @@ export class MockBlackoutRepository implements BlackoutRepository {
 
 // Mock Calendar Provider
 export class MockCalendarProvider implements CalendarProvider {
+  private mockEvents = new Map<string, {
+    eventId: string;
+    summary: string;
+    startTime: Date;
+    endTime: Date;
+    tenantId: string;
+  }>();
+
   async isDateAvailable(date: string): Promise<boolean> {
     const dateKey = toUtcMidnight(date);
     return !calendarBusyDates.has(dateKey);
@@ -485,6 +503,66 @@ export class MockCalendarProvider implements CalendarProvider {
   markBusy(date: string): void {
     const dateKey = toUtcMidnight(date);
     calendarBusyDates.add(dateKey);
+  }
+
+  /**
+   * Create a mock calendar event (for testing Google Calendar sync)
+   */
+  async createEvent(input: {
+    tenantId: string;
+    summary: string;
+    description?: string;
+    startTime: Date;
+    endTime: Date;
+    attendees?: { email: string; name?: string }[];
+    metadata?: Record<string, string>;
+  }): Promise<{ eventId: string } | null> {
+    const eventId = `mock_gcal_event_${Date.now()}_${Math.random().toString(36).substring(7)}`;
+
+    this.mockEvents.set(eventId, {
+      eventId,
+      summary: input.summary,
+      startTime: input.startTime,
+      endTime: input.endTime,
+      tenantId: input.tenantId,
+    });
+
+    console.log('📅 [MOCK GOOGLE CALENDAR] Event created:', {
+      eventId,
+      summary: input.summary,
+      startTime: input.startTime.toISOString(),
+      endTime: input.endTime.toISOString(),
+      attendees: input.attendees?.map(a => a.email).join(', '),
+    });
+
+    return { eventId };
+  }
+
+  /**
+   * Delete a mock calendar event (for testing Google Calendar sync)
+   */
+  async deleteEvent(tenantId: string, eventId: string): Promise<boolean> {
+    const event = this.mockEvents.get(eventId);
+
+    if (!event) {
+      console.log('📅 [MOCK GOOGLE CALENDAR] Event not found:', eventId);
+      return false;
+    }
+
+    this.mockEvents.delete(eventId);
+    console.log('📅 [MOCK GOOGLE CALENDAR] Event deleted:', {
+      eventId,
+      summary: event.summary,
+    });
+
+    return true;
+  }
+
+  /**
+   * Get all mock events (for testing/debugging)
+   */
+  getMockEvents(): Array<{ eventId: string; summary: string; startTime: Date; endTime: Date }> {
+    return Array.from(this.mockEvents.values());
   }
 }
 

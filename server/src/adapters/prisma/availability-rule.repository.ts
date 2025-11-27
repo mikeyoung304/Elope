@@ -1,0 +1,142 @@
+/**
+ * Prisma AvailabilityRule Repository Adapter
+ */
+
+import type { PrismaClient } from '../../generated/prisma';
+import type {
+  AvailabilityRuleRepository,
+  AvailabilityRule,
+  CreateAvailabilityRuleData,
+} from '../lib/ports';
+
+export class PrismaAvailabilityRuleRepository implements AvailabilityRuleRepository {
+  constructor(private readonly prisma: PrismaClient) {}
+
+  async getAll(tenantId: string): Promise<AvailabilityRule[]> {
+    const rules = await this.prisma.availabilityRule.findMany({
+      where: { tenantId },
+      orderBy: [
+        { dayOfWeek: 'asc' },
+        { startTime: 'asc' },
+      ],
+    });
+
+    return rules.map((rule) => this.mapToEntity(rule));
+  }
+
+  async getByService(tenantId: string, serviceId: string | null): Promise<AvailabilityRule[]> {
+    const rules = await this.prisma.availabilityRule.findMany({
+      where: {
+        tenantId,
+        serviceId,
+      },
+      orderBy: [
+        { dayOfWeek: 'asc' },
+        { startTime: 'asc' },
+      ],
+    });
+
+    return rules.map((rule) => this.mapToEntity(rule));
+  }
+
+  async getByDayOfWeek(
+    tenantId: string,
+    dayOfWeek: number,
+    serviceId?: string | null
+  ): Promise<AvailabilityRule[]> {
+    const where: any = {
+      tenantId,
+      dayOfWeek,
+    };
+
+    // If serviceId is provided (including null), filter by it
+    if (serviceId !== undefined) {
+      where.serviceId = serviceId;
+    }
+
+    const rules = await this.prisma.availabilityRule.findMany({
+      where,
+      orderBy: { startTime: 'asc' },
+    });
+
+    return rules.map((rule) => this.mapToEntity(rule));
+  }
+
+  async getEffectiveRules(
+    tenantId: string,
+    date: Date,
+    serviceId?: string | null
+  ): Promise<AvailabilityRule[]> {
+    const where: any = {
+      tenantId,
+      effectiveFrom: { lte: date },
+      OR: [
+        { effectiveTo: null },
+        { effectiveTo: { gte: date } },
+      ],
+    };
+
+    // If serviceId is provided (including null), filter by it
+    if (serviceId !== undefined) {
+      where.serviceId = serviceId;
+    }
+
+    const rules = await this.prisma.availabilityRule.findMany({
+      where,
+      orderBy: [
+        { dayOfWeek: 'asc' },
+        { startTime: 'asc' },
+      ],
+    });
+
+    return rules.map((rule) => this.mapToEntity(rule));
+  }
+
+  async create(tenantId: string, data: CreateAvailabilityRuleData): Promise<AvailabilityRule> {
+    const rule = await this.prisma.availabilityRule.create({
+      data: {
+        tenantId,
+        serviceId: data.serviceId ?? null,
+        dayOfWeek: data.dayOfWeek,
+        startTime: data.startTime,
+        endTime: data.endTime,
+        effectiveFrom: data.effectiveFrom ?? new Date(),
+        effectiveTo: data.effectiveTo ?? null,
+      },
+    });
+
+    return this.mapToEntity(rule);
+  }
+
+  async delete(tenantId: string, id: string): Promise<void> {
+    // Use deleteMany to ensure tenant isolation
+    await this.prisma.availabilityRule.deleteMany({
+      where: { id, tenantId },
+    });
+  }
+
+  async deleteByService(tenantId: string, serviceId: string): Promise<void> {
+    // Delete all rules for a specific service (tenant-scoped)
+    await this.prisma.availabilityRule.deleteMany({
+      where: { tenantId, serviceId },
+    });
+  }
+
+  /**
+   * Map Prisma model to domain entity
+   */
+  private mapToEntity(rule: any): AvailabilityRule {
+    return {
+      id: rule.id,
+      tenantId: rule.tenantId,
+      serviceId: rule.serviceId,
+      dayOfWeek: rule.dayOfWeek,
+      startTime: rule.startTime,
+      endTime: rule.endTime,
+      effectiveFrom: rule.effectiveFrom,
+      effectiveTo: rule.effectiveTo,
+      createdAt: rule.createdAt,
+      updatedAt: rule.updatedAt,
+    };
+  }
+}

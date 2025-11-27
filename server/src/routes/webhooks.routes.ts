@@ -124,14 +124,35 @@ export class WebhooksController {
     logger.info({ eventId: event.id, type: event.type }, 'Stripe webhook received');
 
     // Extract tenantId from metadata (for idempotency and recording)
-    // We need to extract it early, before full validation
+    // For checkout.session.completed, tenantId is REQUIRED - fail fast if missing
+    // For other event types, 'unknown' is acceptable but logged as warning
     let tenantId = 'unknown';
     try {
       // Type-safe extraction using Stripe's event data structure
       const tempSession = event.data.object as Stripe.Checkout.Session;
-      tenantId = tempSession?.metadata?.tenantId || 'unknown';
+      const extractedTenantId = tempSession?.metadata?.tenantId;
+
+      if (extractedTenantId) {
+        tenantId = extractedTenantId;
+      } else if (event.type === 'checkout.session.completed') {
+        // For checkout completion, tenantId is CRITICAL - this is a data integrity issue
+        // Log error but continue to record the webhook for debugging
+        logger.error(
+          { eventId: event.id, type: event.type, metadata: tempSession?.metadata },
+          'CRITICAL: checkout.session.completed webhook missing tenantId in metadata. ' +
+          'This indicates a bug in checkout session creation - tenantId MUST be included in metadata.'
+        );
+        // Record as 'unknown' for audit trail, but the booking creation will fail
+        // due to Zod validation on MetadataSchema
+      } else {
+        // Non-checkout events (like payment_intent.created) may not have tenantId
+        logger.warn(
+          { eventId: event.id, type: event.type },
+          'Webhook event missing tenantId - recording as unknown (non-critical for this event type)'
+        );
+      }
     } catch (err) {
-      logger.warn({ eventId: event.id }, 'Could not extract tenantId from webhook metadata');
+      logger.warn({ eventId: event.id, error: err }, 'Could not extract tenantId from webhook metadata');
     }
 
     // Idempotency check - prevent duplicate processing (tenant-scoped)
