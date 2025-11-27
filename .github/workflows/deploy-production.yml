@@ -146,6 +146,9 @@ jobs:
         run: npm run test:unit -- --coverage
         env:
           NODE_ENV: test
+          # Required by encryption.service.spec.ts and stripe-connect.service.spec.ts
+          TENANT_SECRETS_ENCRYPTION_KEY: 0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef
+          STRIPE_SECRET_KEY: sk_test_placeholder_for_ci_unit_tests
 
       - name: Run integration tests with coverage
         run: npm run test:integration -- --coverage
