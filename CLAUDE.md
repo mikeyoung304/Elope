@@ -245,11 +245,44 @@ const key = 'catalog:packages';
 
 ### When Modifying Database Schema
 
-1. Edit `server/prisma/schema.prisma`
-2. Run `npm exec prisma migrate dev --name descriptive_name`
-3. Update seed script if needed (`server/prisma/seed.ts`)
-4. Run `npm exec prisma generate` to regenerate client
-5. Update repository implementations in `server/src/adapters/prisma/`
+MAIS uses a **hybrid migration system** with two patterns. Choose the right one:
+
+**Pattern A: Prisma Migrations** (for tables/columns)
+```bash
+1. Edit server/prisma/schema.prisma
+2. npm exec prisma migrate dev --name descriptive_name
+3. Prisma auto-generates migration.sql and applies it
+4. Update repository implementations if needed
+5. npm test to verify
+```
+
+**Pattern B: Manual Raw SQL** (for enums, indexes, extensions, RLS)
+```bash
+1. Edit server/prisma/schema.prisma
+2. Find next migration number: ls server/prisma/migrations/ | grep '^[0-9]' | tail -1
+3. Create: server/prisma/migrations/NN_name.sql (idempotent SQL with IF EXISTS)
+4. Apply: psql $DATABASE_URL < migrations/NN_name.sql
+5. npm exec prisma generate
+6. npm test to verify
+```
+
+**Decision Guide:**
+| Change | Pattern | Example |
+|--------|---------|---------|
+| Add column | A | `newField String?` |
+| Add table | A | `model NewTable { ... }` |
+| Create enum | B | `CREATE TYPE MyEnum AS ENUM (...)` |
+| Add index | B | `CREATE INDEX on Table(col)` |
+| Add constraint | A | `@@unique([tenantId, slug])` |
+| RLS policy | B | `ALTER TABLE ... ENABLE ROW SECURITY` |
+
+**Critical Rules:**
+- Never modify applied migrations (they're part of git history)
+- Always use idempotent SQL (IF EXISTS, IF NOT EXISTS, DO $$ blocks)
+- Test on dev database before committing
+- Commit schema.prisma + migrations together
+
+**Reference:** See `docs/solutions/SCHEMA_DRIFT_PREVENTION.md` for detailed migration patterns and decision tree.
 
 ### Test Strategy
 
