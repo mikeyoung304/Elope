@@ -52,12 +52,12 @@ export function SegmentsList({
         <Table>
           <TableHeader>
             <TableRow className="border-white/20 hover:bg-macon-navy-700">
-              <TableHead className="text-white/90 text-lg">Name</TableHead>
-              <TableHead className="text-white/90 text-lg">Slug</TableHead>
-              <TableHead className="text-white/90 text-lg">Hero Title</TableHead>
-              <TableHead className="text-white/90 text-lg">Status</TableHead>
-              <TableHead className="text-white/90 text-lg">Sort Order</TableHead>
-              <TableHead className="text-white/90 text-lg">Actions</TableHead>
+              <TableHead className="bg-macon-navy-700 text-white/90 text-lg">Name</TableHead>
+              <TableHead className="bg-macon-navy-700 text-white/90 text-lg">Slug</TableHead>
+              <TableHead className="bg-macon-navy-700 text-white/90 text-lg">Hero Title</TableHead>
+              <TableHead className="bg-macon-navy-700 text-white/90 text-lg">Status</TableHead>
+              <TableHead className="bg-macon-navy-700 text-white/90 text-lg">Sort Order</TableHead>
+              <TableHead className="bg-macon-navy-700 text-white/90 text-lg">Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -71,17 +71,17 @@ export function SegmentsList({
 
             {!isLoading &&
               segments.map((segment) => (
-                <TableRow key={segment.id} className="border-white/20 hover:bg-macon-navy-700">
-                  <TableCell className="font-medium text-white text-base">
+                <TableRow key={segment.id} className="border-white/20 hover:bg-macon-navy-700 bg-macon-navy-800">
+                  <TableCell className="font-medium text-white text-base bg-transparent">
                     {segment.name}
                   </TableCell>
-                  <TableCell className="text-white/70 text-base font-mono">
+                  <TableCell className="text-white/70 text-base font-mono bg-transparent">
                     {segment.slug}
                   </TableCell>
-                  <TableCell className="text-white/70 text-base">
+                  <TableCell className="text-white/70 text-base bg-transparent">
                     {truncateText(segment.heroTitle, 50)}
                   </TableCell>
-                  <TableCell>
+                  <TableCell className="bg-transparent">
                     {segment.active ? (
                       <Badge className="bg-green-900 text-green-100 border-green-700">
                         Active
@@ -92,10 +92,10 @@ export function SegmentsList({
                       </Badge>
                     )}
                   </TableCell>
-                  <TableCell className="text-white/70 text-base">
+                  <TableCell className="text-white/70 text-base bg-transparent">
                     {segment.sortOrder}
                   </TableCell>
-                  <TableCell>
+                  <TableCell className="bg-transparent">
                     <div className="flex gap-2">
                       <Button
                         variant="outline"
