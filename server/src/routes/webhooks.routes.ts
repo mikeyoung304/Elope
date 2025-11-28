@@ -125,47 +125,48 @@ export class WebhooksController {
 
     // Extract tenantId from metadata (for idempotency and recording)
     // For checkout.session.completed, tenantId is REQUIRED - fail fast if missing
-    // For other event types, 'unknown' is acceptable but logged as warning
-    let tenantId = 'unknown';
+    // For other event types, use 'system' namespace to prevent cross-tenant collision
+    let tenantId: string | undefined;
     try {
       // Type-safe extraction using Stripe's event data structure
       const tempSession = event.data.object as Stripe.Checkout.Session;
-      const extractedTenantId = tempSession?.metadata?.tenantId;
-
-      if (extractedTenantId) {
-        tenantId = extractedTenantId;
-      } else if (event.type === 'checkout.session.completed') {
-        // For checkout completion, tenantId is CRITICAL - this is a data integrity issue
-        // Log error but continue to record the webhook for debugging
-        logger.error(
-          { eventId: event.id, type: event.type, metadata: tempSession?.metadata },
-          'CRITICAL: checkout.session.completed webhook missing tenantId in metadata. ' +
-          'This indicates a bug in checkout session creation - tenantId MUST be included in metadata.'
-        );
-        // Record as 'unknown' for audit trail, but the booking creation will fail
-        // due to Zod validation on MetadataSchema
-      } else {
-        // Non-checkout events (like payment_intent.created) may not have tenantId
-        logger.warn(
-          { eventId: event.id, type: event.type },
-          'Webhook event missing tenantId - recording as unknown (non-critical for this event type)'
-        );
-      }
+      tenantId = tempSession?.metadata?.tenantId;
     } catch (err) {
       logger.warn({ eventId: event.id, error: err }, 'Could not extract tenantId from webhook metadata');
     }
 
+    // For checkout.session.completed, tenantId is CRITICAL - fail fast
+    // Stripe will retry the webhook, giving us time to fix the metadata bug
+    if (!tenantId && event.type === 'checkout.session.completed') {
+      logger.error(
+        { eventId: event.id, type: event.type },
+        'CRITICAL: checkout.session.completed webhook missing tenantId in metadata. ' +
+        'Rejecting webhook - Stripe will retry. Fix checkout session creation to include tenantId in metadata.'
+      );
+      throw new WebhookValidationError('Webhook missing required tenantId in metadata');
+    }
+
+    // For non-critical events (payment_intent.created, etc.), use 'system' namespace
+    // This prevents cross-tenant collision while preserving audit trail
+    const effectiveTenantId = tenantId || 'system';
+    if (!tenantId) {
+      logger.warn(
+        { eventId: event.id, type: event.type },
+        'Webhook event missing tenantId - recording under system namespace (non-critical for this event type)'
+      );
+    }
+
     // Idempotency check - prevent duplicate processing (tenant-scoped)
-    const isDupe = await this.webhookRepo.isDuplicate(tenantId, event.id);
+    const isDupe = await this.webhookRepo.isDuplicate(effectiveTenantId, event.id);
     if (isDupe) {
-      logger.info({ eventId: event.id, tenantId }, 'Duplicate webhook ignored - returning 200 OK to Stripe');
+      logger.info({ eventId: event.id, tenantId: effectiveTenantId }, 'Duplicate webhook ignored - returning 200 OK to Stripe');
       // Return early without throwing - Stripe expects 200 for successful receipt
       return;
     }
 
     // Record webhook event (tenant-scoped)
     await this.webhookRepo.recordWebhook({
-      tenantId,
+      tenantId: effectiveTenantId,
       eventId: event.id,
       eventType: event.type,
       rawPayload: rawBody,
@@ -180,7 +181,7 @@ export class WebhooksController {
         if (!sessionResult.success) {
           logger.error({ errors: sessionResult.error.flatten() }, 'Invalid session structure from Stripe');
           await this.webhookRepo.markFailed(
-            tenantId,
+            effectiveTenantId,
             event.id,
             `Invalid session structure: ${JSON.stringify(sessionResult.error.flatten())}`
           );
@@ -193,7 +194,7 @@ export class WebhooksController {
         if (!metadataResult.success) {
           logger.error({ errors: metadataResult.error.flatten() }, 'Invalid webhook metadata');
           await this.webhookRepo.markFailed(
-            tenantId,
+            effectiveTenantId,
             event.id,
             `Invalid metadata: ${JSON.stringify(metadataResult.error.flatten())}`
           );
@@ -269,12 +270,12 @@ export class WebhooksController {
       }
 
       // Mark webhook as successfully processed (tenant-scoped)
-      await this.webhookRepo.markProcessed(tenantId, event.id);
+      await this.webhookRepo.markProcessed(effectiveTenantId, event.id);
     } catch (error) {
       // Don't mark as failed if it's a validation error (already handled)
       if (!(error instanceof WebhookValidationError)) {
         const errorMessage = error instanceof Error ? error.message : String(error);
-        await this.webhookRepo.markFailed(tenantId, event.id, errorMessage);
+        await this.webhookRepo.markFailed(effectiveTenantId, event.id, errorMessage);
 
         logger.error(
           {

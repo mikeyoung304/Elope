@@ -463,7 +463,7 @@ describe.sequential('PrismaCatalogRepository - Integration Tests', () => {
       // Performance benchmarks belong in dedicated performance test suite
       // Integration tests validate correctness, not speed
       // See: SPRINT_6_STABILIZATION_PLAN.md § Catalog Repository Tests (Performance #3)
-    });
+    }, 15000); // Extended timeout for bulk insert operations under load
   });
 
   describe('Data Integrity', () => {

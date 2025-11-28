@@ -258,8 +258,3 @@ export function createAdminTenantsRoutes(prisma: PrismaClient): Router {
 
   return router;
 }
-
-// Legacy default export for backward compatibility (creates new PrismaClient)
-// TODO: Remove once all usages are migrated to createAdminTenantsRoutes()
-const legacyPrisma = new PrismaClient();
-export default createAdminTenantsRoutes(legacyPrisma);

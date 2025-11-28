@@ -154,11 +154,18 @@ Copy-paste this into your PR description:
 - [ ] Tests cover happy + error paths
 - [ ] Documentation updated
 
-## Testing
+## Testing - Correctness
 - [ ] Tenant isolation tested
 - [ ] Input normalization tested
 - [ ] Idempotency tested (webhooks)
 - [ ] Performance tested (N+1 check)
+
+## Testing - Reliability (CRITICAL)
+- [ ] Tests use sequential await (not Promise.all for correctness)
+- [ ] Bulk operations have explicit timeouts (>10 records = 15-30s)
+- [ ] Cleanup code has guards (if (container.prisma))
+- [ ] Mock adapters export all dependencies
+- [ ] No parallel execution unless stress test
 ```
 
 ---
@@ -202,6 +209,70 @@ it('should handle duplicate events', async () => {
 
   const bookings = await repo.findAll(tenantId);
   expect(bookings).toHaveLength(1); // Only created once
+});
+```
+
+### Sequential Execution (Prevent Flaky Tests)
+
+```typescript
+// ✅ CORRECT - Sequential for correctness tests
+it('should create multiple records', async () => {
+  await service.create(tenantId, { name: 'A' });
+  await service.create(tenantId, { name: 'B' });
+  await service.create(tenantId, { name: 'C' });
+
+  const records = await repo.findAll(tenantId);
+  expect(records).toHaveLength(3);
+});
+
+// ❌ WRONG - Parallel execution causes timeouts
+it('should create multiple records', async () => {
+  await Promise.all([
+    service.create(tenantId, { name: 'A' }),
+    service.create(tenantId, { name: 'B' }),
+    service.create(tenantId, { name: 'C' }),
+  ]); // Transaction contention!
+});
+```
+
+### Bulk Operations with Timeouts
+
+```typescript
+// ✅ CORRECT - Explicit timeout for bulk operations
+it('should create 50 packages', async () => {
+  for (let i = 0; i < 50; i++) {
+    await service.create(tenantId, { slug: `pkg-${i}`, ... });
+  }
+
+  const packages = await repo.findAll(tenantId);
+  expect(packages).toHaveLength(50);
+}, 30000); // 30 second timeout
+
+// ❌ WRONG - Default 5s timeout will fail
+it('should create 50 packages', async () => {
+  for (let i = 0; i < 50; i++) {
+    await service.create(tenantId, { slug: `pkg-${i}`, ... });
+  }
+}); // Likely to timeout!
+```
+
+### Safe Cleanup
+
+```typescript
+// ✅ CORRECT - Guards in cleanup
+afterAll(async () => {
+  if (container.prisma) {
+    await container.prisma.$disconnect();
+  }
+
+  if (container.cacheAdapter?.disconnect) {
+    await container.cacheAdapter.disconnect();
+  }
+});
+
+// ❌ WRONG - Assumes dependencies exist
+afterAll(async () => {
+  await container.prisma.$disconnect(); // Fails in mock mode!
 });
 ```
 

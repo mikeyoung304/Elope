@@ -86,6 +86,31 @@ else
 fi
 echo ""
 
+# Check 6: Schema Drift - schema.prisma changes must have migrations
+echo "📄 Check 6: schema.prisma changes must have corresponding migrations"
+STAGED_FILES=$(git diff --cached --name-only 2>/dev/null || echo "")
+SCHEMA_MODIFIED=false
+if echo "$STAGED_FILES" | grep -q "server/prisma/schema.prisma"; then
+  SCHEMA_MODIFIED=true
+fi
+
+MIGRATIONS_CREATED=false
+if echo "$STAGED_FILES" | grep -qE "server/prisma/migrations/(20[0-9]+|[0-9]{2}_)"; then
+  MIGRATIONS_CREATED=true
+fi
+
+if [ "$SCHEMA_MODIFIED" = true ] && [ "$MIGRATIONS_CREATED" = false ]; then
+  echo "   ❌ FAIL: schema.prisma changed but no migrations found"
+  echo "   Action: Create migration using one of:"
+  echo "   • npm exec prisma migrate dev --name your_change_name"
+  echo "   • Create manual SQL: server/prisma/migrations/NN_name.sql"
+  echo "   See: docs/solutions/SCHEMA_DRIFT_PREVENTION.md"
+  ERRORS=$((ERRORS + 1))
+else
+  echo "   ✅ PASS: schema.prisma and migrations are consistent"
+fi
+echo ""
+
 # Summary
 echo "═══════════════════════════════════════"
 if [ $ERRORS -eq 0 ] && [ $WARNINGS -eq 0 ]; then

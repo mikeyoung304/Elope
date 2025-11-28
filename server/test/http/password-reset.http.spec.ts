@@ -47,9 +47,14 @@ describe('Password Reset Flow - HTTP Tests', () => {
   });
 
   afterAll(async () => {
+    // Guard against prisma being undefined if beforeAll failed
+    if (!prisma) return;
+
     // Cleanup test tenant
     if (testTenantId) {
-      await prisma.tenant.delete({ where: { id: testTenantId } });
+      await prisma.tenant.delete({ where: { id: testTenantId } }).catch(() => {
+        // Ignore cleanup errors - tenant may not exist
+      });
     }
     await prisma.$disconnect();
   });

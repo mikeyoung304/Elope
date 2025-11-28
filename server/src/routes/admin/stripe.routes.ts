@@ -207,8 +207,3 @@ export function createAdminStripeRoutes(prisma: PrismaClient): Router {
 
   return router;
 }
-
-// Legacy default export for backward compatibility (creates new PrismaClient)
-// TODO: Remove once all usages are migrated to createAdminStripeRoutes()
-const legacyPrisma = new PrismaClient();
-export default createAdminStripeRoutes(legacyPrisma);

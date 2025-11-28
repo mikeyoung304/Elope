@@ -105,6 +105,23 @@ if (data.segmentId) {
 }
 ```
 
+#### [Test Failure Prevention Strategies](./TEST-FAILURE-PREVENTION-STRATEGIES.md)
+**Purpose:** Prevent flaky and non-deterministic test failures
+**Audience:** All engineers writing integration tests
+**Key Patterns:** Sequential execution, DI completeness, timeout configuration
+
+**Quick Rules:**
+```typescript
+// Sequential for correctness
+await create(); await create(); await create();
+
+// Guards in cleanup
+if (container.prisma) await container.prisma.$disconnect();
+
+// Timeouts for bulk operations
+it('bulk test', async () => { ... }, 30000);
+```
+
 ---
 
 ### 3. Testing Guides
@@ -132,6 +149,19 @@ cp server/test/templates/tenant-isolation.test.ts \
 - `createIsolatedTestData()` - Test data with cleanup
 - `queryCountTracker()` - Detect N+1 queries
 - `mockStripeWebhook()` - Webhook testing
+- `calculateTimeout()` - Dynamic timeout calculation for bulk operations
+
+#### Test Failure Prevention
+**Location:** `docs/solutions/TEST-FAILURE-PREVENTION-STRATEGIES.md`
+
+**Covers three critical patterns:**
+1. **Concurrent Transaction Contention** - Sequential vs parallel execution
+2. **Undefined Dependencies in Mock Mode** - DI container completeness
+3. **Insufficient Timeouts for Bulk Operations** - Timeout configuration
+
+**When to read:** Before writing integration tests, when debugging flaky tests
+
+**Quick Summary:** [TEST-FAILURE-PATTERNS-SUMMARY.md](./TEST-FAILURE-PATTERNS-SUMMARY.md) (5 min read)
 
 ---
 

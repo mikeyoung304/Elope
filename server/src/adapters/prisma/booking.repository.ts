@@ -159,11 +159,13 @@ export class PrismaBookingRepository implements BookingRepository {
         }
 
         // Create or find the customer (tenant-scoped)
+        // Normalize email to lowercase for case-insensitive matching
+        const normalizedEmail = booking.email.toLowerCase().trim();
         const customer = await tx.customer.upsert({
           where: {
             tenantId_email: {
               tenantId,
-              email: booking.email,
+              email: normalizedEmail,
             },
           },
           update: {
@@ -172,7 +174,7 @@ export class PrismaBookingRepository implements BookingRepository {
           },
           create: {
             tenantId,
-            email: booking.email,
+            email: normalizedEmail,
             name: booking.coupleName,
             phone: booking.phone,
           },

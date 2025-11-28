@@ -74,8 +74,11 @@ export function createV1Router(
   prisma?: PrismaClient,
   repositories?: Repositories
 ): void {
-  // Use shared Prisma instance from DI, or create one for backward compatibility
-  const prismaClient = prisma ?? new PrismaClient();
+  // Require PrismaClient from DI - fail fast if misconfigured
+  if (!prisma) {
+    throw new Error('PrismaClient is required - ensure DI container provides it');
+  }
+  const prismaClient = prisma;
 
   // Create tenant middleware for multi-tenant data isolation
   const tenantMiddleware = resolveTenant(prismaClient);

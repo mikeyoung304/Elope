@@ -196,7 +196,7 @@ export function buildContainer(config: Config): Container {
       booking: adapters.bookingRepo as any, // Mock booking repo - type compatibility
     };
 
-    return { controllers, services, repositories, mailProvider: undefined, cacheAdapter, prisma: undefined };
+    return { controllers, services, repositories, mailProvider: undefined, cacheAdapter, prisma: mockPrisma };
   }
 
   // Real adapters mode
