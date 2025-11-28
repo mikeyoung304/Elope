@@ -105,6 +105,19 @@ if (data.segmentId) {
 }
 ```
 
+#### [Webhook Error Logging PII Exposure](./security-issues/webhook-error-logging-pii-exposure.md)
+**Purpose:** Prevent customer PII from being stored in error logs
+**Audience:** Engineers working on webhook handlers or error logging
+**Key Pattern:** Separate logging layers - detailed logs for server, sanitized for database
+
+**Quick Rule:**
+```typescript
+// Log details to server (ephemeral)
+logger.error({ errors: result.error.flatten() }, 'Validation failed');
+// Store only type in DB (persistent)
+await repo.markFailed(tenantId, id, 'Validation failed');
+```
+
 #### [Test Failure Prevention Strategies](./TEST-FAILURE-PREVENTION-STRATEGIES.md)
 **Purpose:** Prevent flaky and non-deterministic test failures
 **Audience:** All engineers writing integration tests
