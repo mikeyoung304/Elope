@@ -13,6 +13,7 @@ import { BlackoutsManager } from "../BlackoutsManager";
 import { TenantBookingList } from "../TenantBookingList";
 import { BrandingEditor } from "../BrandingEditor";
 import { StripeConnectCard } from "./StripeConnectCard";
+import { SegmentsManager } from "../../admin/segments/SegmentsManager";
 import { AdminLayout } from "../../../layouts/AdminLayout";
 import { MetricsCards } from "./MetricsCards";
 import { TabNavigation, type DashboardTab } from "./TabNavigation";
@@ -87,6 +88,10 @@ export function TenantDashboard({ tenantInfo }: TenantDashboardProps) {
         {/* Tab Content */}
         {activeTab === "packages" && (
           <TenantPackagesManager packages={packages} onPackagesChange={loadPackages} />
+        )}
+
+        {activeTab === "segments" && (
+          <SegmentsManager />
         )}
 
         {activeTab === "blackouts" && (

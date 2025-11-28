@@ -1,6 +1,7 @@
 /**
  * Role-Based Navigation Component
  * Shows different navigation items based on user role
+ * When impersonating a tenant, shows tenant navigation instead of platform admin nav
  */
 
 import { Link, useLocation } from "react-router-dom";
@@ -24,7 +25,7 @@ interface NavItem {
 }
 
 export function RoleBasedNav({ variant = "sidebar" }: { variant?: "sidebar" | "horizontal" }) {
-  const { user } = useAuth();
+  const { user, isImpersonating } = useAuth();
   const location = useLocation();
 
   if (!user) {
@@ -86,7 +87,11 @@ export function RoleBasedNav({ variant = "sidebar" }: { variant?: "sidebar" | "h
     // }
   ];
 
-  const navItems = user.role === "PLATFORM_ADMIN" ? platformAdminNav : tenantAdminNav;
+  // When impersonating a tenant, show tenant navigation instead of platform admin
+  const isCurrentlyImpersonating = isImpersonating();
+  const navItems = (user.role === "PLATFORM_ADMIN" && !isCurrentlyImpersonating)
+    ? platformAdminNav
+    : tenantAdminNav;
 
   if (variant === "horizontal") {
     return (

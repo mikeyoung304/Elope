@@ -6,7 +6,7 @@
 
 import { cn } from "@/lib/utils";
 
-export type DashboardTab = "packages" | "blackouts" | "bookings" | "branding" | "payments";
+export type DashboardTab = "packages" | "segments" | "blackouts" | "bookings" | "branding" | "payments";
 
 interface TabNavigationProps {
   activeTab: DashboardTab;
@@ -16,6 +16,7 @@ interface TabNavigationProps {
 export function TabNavigation({ activeTab, onTabChange }: TabNavigationProps) {
   const tabs: { id: DashboardTab; label: string }[] = [
     { id: "packages", label: "Packages" },
+    { id: "segments", label: "Segments" },
     { id: "blackouts", label: "Blackouts" },
     { id: "bookings", label: "Bookings" },
     { id: "branding", label: "Branding" },
