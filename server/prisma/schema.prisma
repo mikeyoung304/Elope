@@ -305,7 +305,8 @@ model Booking {
 
   // Unique constraints:
   // - For DATE bookings: one per tenant per date (legacy behavior)
-  // - For TIMESLOT bookings: uniqueness handled by application + advisory lock on startTime
+  // - For TIMESLOT bookings: partial unique index via migration (see migrations/20251128000000_add_timeslot_unique_constraint)
+  //   PostgreSQL partial unique index: (tenantId, serviceId, startTime) WHERE startTime IS NOT NULL
   @@unique([tenantId, date, bookingType]) // Composite unique for date-only bookings
   @@index([tenantId, status])
   @@index([tenantId, date])

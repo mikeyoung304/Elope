@@ -46,6 +46,8 @@ import {
   TimeSlotDtoSchema,
   AvailableSlotsQuerySchema,
   AppointmentDtoSchema,
+  CreateAppointmentCheckoutDtoSchema,
+  AppointmentCheckoutResponseDtoSchema,
   // Error response schemas
   BadRequestErrorSchema,
   UnauthorizedErrorSchema,
@@ -1049,6 +1051,29 @@ export const Contracts = c.router({
       500: InternalServerErrorSchema,
     },
     summary: 'Get available time slots for a service on a date (public, requires X-Tenant-Key)',
+  },
+
+  /**
+   * Create a checkout session for booking an appointment time slot
+   * POST /v1/public/appointments/checkout
+   *
+   * Public endpoint for customers to book appointments.
+   * Creates a Stripe checkout session and returns the checkout URL.
+   * The slot will be reserved upon successful payment.
+   */
+  createAppointmentCheckout: {
+    method: 'POST',
+    path: '/v1/public/appointments/checkout',
+    body: CreateAppointmentCheckoutDtoSchema,
+    responses: {
+      201: AppointmentCheckoutResponseDtoSchema,
+      400: BadRequestErrorSchema,
+      401: UnauthorizedErrorSchema, // Missing or invalid X-Tenant-Key
+      404: NotFoundErrorSchema, // Service not found
+      409: ConflictErrorSchema, // Time slot no longer available
+      500: InternalServerErrorSchema,
+    },
+    summary: 'Create checkout session for appointment booking (public, requires X-Tenant-Key)',
   },
 
   // =========================================================================

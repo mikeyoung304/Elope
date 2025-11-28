@@ -4,7 +4,7 @@
 
 import { PrismaClientKnownRequestError, Decimal } from '@prisma/client/runtime/library';
 import type { PrismaClient } from '../../generated/prisma';
-import type { BookingRepository } from '../lib/ports';
+import type { BookingRepository, TimeslotBooking, AppointmentDto } from '../lib/ports';
 import type { Booking } from '../lib/entities';
 import { BookingConflictError, BookingLockTimeoutError } from '../lib/errors';
 import { logger } from '../../lib/core/logger';
@@ -394,6 +394,180 @@ export class PrismaBookingRepository implements BookingRepository {
         googleEventId,
       },
     });
+  }
+
+  /**
+   * Find all TIMESLOT bookings for a specific date
+   *
+   * Used by SchedulingAvailabilityService for conflict detection.
+   * Only returns TIMESLOT bookings (not DATE bookings) that fall on the given date.
+   *
+   * MULTI-TENANT: Filtered by tenantId for data isolation
+   *
+   * @param tenantId - Tenant ID for isolation
+   * @param date - The date to check for time-slot bookings
+   * @param serviceId - Optional service ID to filter by specific service
+   * @returns Array of time-slot bookings for conflict detection
+   *
+   * @example
+   * ```typescript
+   * const bookings = await repository.findTimeslotBookings(
+   *   'tenant_123',
+   *   new Date('2025-06-15'),
+   *   'service_abc'
+   * );
+   * // Returns bookings with startTime on 2025-06-15
+   * ```
+   */
+  async findTimeslotBookings(
+    tenantId: string,
+    date: Date,
+    serviceId?: string
+  ): Promise<TimeslotBooking[]> {
+    // Calculate start and end of day in UTC
+    const startOfDay = new Date(date);
+    startOfDay.setUTCHours(0, 0, 0, 0);
+
+    const endOfDay = new Date(date);
+    endOfDay.setUTCHours(23, 59, 59, 999);
+
+    const bookings = await this.prisma.booking.findMany({
+      where: {
+        tenantId,
+        bookingType: 'TIMESLOT',
+        startTime: {
+          gte: startOfDay,
+          lte: endOfDay,
+        },
+        // Only filter by serviceId if provided
+        ...(serviceId && { serviceId }),
+        // Exclude cancelled bookings from conflict detection
+        status: {
+          in: ['PENDING', 'CONFIRMED'],
+        },
+      },
+      select: {
+        id: true,
+        tenantId: true,
+        serviceId: true,
+        startTime: true,
+        endTime: true,
+        status: true,
+      },
+    });
+
+    // Map to TimeslotBooking type (filter out nulls and type-narrow)
+    return bookings
+      .filter((b): b is typeof b & {
+        serviceId: string;
+        startTime: Date;
+        endTime: Date;
+      } => b.serviceId !== null && b.startTime !== null && b.endTime !== null)
+      .map((b) => ({
+        id: b.id,
+        tenantId: b.tenantId,
+        serviceId: b.serviceId,
+        startTime: b.startTime,
+        endTime: b.endTime,
+        status: b.status as TimeslotBooking['status'],
+      }));
+  }
+
+  /**
+   * Find all appointments (TIMESLOT bookings) with optional filters
+   *
+   * Performs server-side filtering directly in the database query.
+   * This is more efficient than fetching all bookings and filtering in memory.
+   *
+   * MULTI-TENANT: Filtered by tenantId for data isolation
+   *
+   * @param tenantId - Tenant ID for isolation
+   * @param filters - Optional filters for status, serviceId, and date range
+   * @returns Array of appointments with full details
+   *
+   * @example
+   * ```typescript
+   * const appointments = await repository.findAppointments('tenant_123', {
+   *   status: 'CONFIRMED',
+   *   serviceId: 'service_abc',
+   *   startDate: '2025-06-01',
+   *   endDate: '2025-06-30'
+   * });
+   * ```
+   */
+  async findAppointments(
+    tenantId: string,
+    filters?: {
+      status?: string;
+      serviceId?: string;
+      startDate?: string;
+      endDate?: string;
+    }
+  ): Promise<AppointmentDto[]> {
+    // Build WHERE clause with filters
+    const where: {
+      tenantId: string;
+      bookingType: 'TIMESLOT';
+      status?: string;
+      serviceId?: string;
+      date?: { gte?: Date; lte?: Date };
+    } = {
+      tenantId,
+      bookingType: 'TIMESLOT',
+    };
+
+    // Apply status filter
+    if (filters?.status) {
+      where.status = filters.status;
+    }
+
+    // Apply serviceId filter
+    if (filters?.serviceId) {
+      where.serviceId = filters.serviceId;
+    }
+
+    // Apply date range filters
+    if (filters?.startDate || filters?.endDate) {
+      where.date = {};
+      if (filters.startDate) {
+        where.date.gte = new Date(filters.startDate);
+      }
+      if (filters.endDate) {
+        where.date.lte = new Date(filters.endDate);
+      }
+    }
+
+    const bookings = await this.prisma.booking.findMany({
+      where: where as any, // Type assertion needed for dynamic where clause
+      include: {
+        customer: {
+          select: {
+            id: true,
+          },
+        },
+      },
+      orderBy: [
+        { startTime: 'asc' },
+        { createdAt: 'desc' },
+      ],
+    });
+
+    // Map to AppointmentDto
+    return bookings.map((b) => ({
+      id: b.id,
+      tenantId: b.tenantId,
+      customerId: b.customerId,
+      serviceId: b.serviceId,
+      packageId: b.packageId,
+      date: toISODate(b.date),
+      startTime: b.startTime?.toISOString() || null,
+      endTime: b.endTime?.toISOString() || null,
+      clientTimezone: b.clientTimezone,
+      status: b.status,
+      totalPrice: b.totalPrice,
+      notes: b.notes,
+      createdAt: b.createdAt.toISOString(),
+    }));
   }
 
   // Mappers

@@ -6,7 +6,7 @@ import { toUtcMidnight } from '@macon/shared';
 import type { Package, AddOn } from '../lib/entities';
 import type { CatalogRepository } from '../lib/ports';
 import type { Booking } from '../lib/entities';
-import type { BookingRepository } from '../lib/ports';
+import type { BookingRepository, TimeslotBooking, AppointmentDto } from '../lib/ports';
 import type {
   BlackoutRepository,
   CalendarProvider,
@@ -444,6 +444,33 @@ export class MockBookingRepository implements BookingRepository {
       (booking as any).googleEventId = googleEventId;
       console.log(`📅 [MOCK] Updated booking ${bookingId} with Google event ID: ${googleEventId}`);
     }
+  }
+
+  async findTimeslotBookings(
+    tenantId: string,
+    date: Date,
+    serviceId?: string
+  ): Promise<TimeslotBooking[]> {
+    // Mock mode: Return empty array for now
+    // Real TIMESLOT bookings would need to be stored with startTime/endTime
+    // This mock implementation is sufficient for basic testing
+    console.log(`📅 [MOCK] findTimeslotBookings called for ${date.toISOString()}, serviceId: ${serviceId || 'all'}`);
+    return [];
+  }
+
+  async findAppointments(
+    tenantId: string,
+    filters?: {
+      status?: string;
+      serviceId?: string;
+      startDate?: string;
+      endDate?: string;
+    }
+  ): Promise<AppointmentDto[]> {
+    // Mock mode: Return empty array for now
+    // Mock bookings don't have TIMESLOT type
+    console.log(`📅 [MOCK] findAppointments called for tenant ${tenantId}, filters:`, filters);
+    return [];
   }
 }
 

@@ -12,7 +12,7 @@ import {
   UpdateServiceDtoSchema,
   CreateAvailabilityRuleDtoSchema,
 } from '@macon/contracts';
-import type { ServiceRepository, AvailabilityRuleRepository } from '../lib/ports';
+import type { ServiceRepository, AvailabilityRuleRepository, BookingRepository } from '../lib/ports';
 import type { BookingService } from '../services/booking.service';
 import { logger } from '../lib/core/logger';
 import { NotFoundError, ValidationError } from '../lib/errors';
@@ -24,12 +24,14 @@ import { NotFoundError, ValidationError } from '../lib/errors';
  * @param serviceRepo - Service repository instance
  * @param availabilityRuleRepo - Availability rule repository instance
  * @param bookingService - Booking service instance (for appointments)
+ * @param bookingRepo - Booking repository instance (for efficient appointment queries)
  * @returns Express router with tenant admin scheduling endpoints
  */
 export function createTenantAdminSchedulingRoutes(
   serviceRepo: ServiceRepository,
   availabilityRuleRepo: AvailabilityRuleRepository,
-  bookingService: BookingService
+  bookingService: BookingService,
+  bookingRepo: BookingRepository
 ): Router {
   const router = Router();
 
@@ -494,49 +496,26 @@ export function createTenantAdminSchedulingRoutes(
         return;
       }
 
-      // Get all bookings for tenant
-      let bookings = await bookingService.getAllBookings(tenantId);
-
-      // Filter for TIMESLOT bookings only (appointments)
-      bookings = bookings.filter((b: any) => b.bookingType === 'TIMESLOT');
-
-      // Apply status filter
-      if (status && typeof status === 'string') {
-        bookings = bookings.filter((b) => b.status === status);
+      // Validate date range (max 90 days to prevent abuse)
+      if (startDate && endDate && typeof startDate === 'string' && typeof endDate === 'string') {
+        const daysDiff = Math.floor(
+          (new Date(endDate).getTime() - new Date(startDate).getTime()) / (1000 * 60 * 60 * 24)
+        );
+        if (daysDiff > 90) {
+          res.status(400).json({ error: 'Date range cannot exceed 90 days' });
+          return;
+        }
       }
 
-      // Apply serviceId filter
-      if (serviceId && typeof serviceId === 'string') {
-        bookings = bookings.filter((b: any) => b.serviceId === serviceId);
-      }
+      // Use server-side filtering via repository for efficient queries
+      const appointments = await bookingRepo.findAppointments(tenantId, {
+        status: typeof status === 'string' ? status : undefined,
+        serviceId: typeof serviceId === 'string' ? serviceId : undefined,
+        startDate: typeof startDate === 'string' ? startDate : undefined,
+        endDate: typeof endDate === 'string' ? endDate : undefined,
+      });
 
-      // Apply date range filters
-      if (startDate && typeof startDate === 'string') {
-        bookings = bookings.filter((b) => b.eventDate >= startDate);
-      }
-
-      if (endDate && typeof endDate === 'string') {
-        bookings = bookings.filter((b) => b.eventDate <= endDate);
-      }
-
-      // Map to appointment DTO format
-      const appointmentsDto = bookings.map((booking: any) => ({
-        id: booking.id,
-        tenantId: booking.tenantId,
-        customerId: booking.customerId,
-        serviceId: booking.serviceId,
-        packageId: booking.packageId,
-        date: booking.eventDate, // YYYY-MM-DD string
-        startTime: booking.startTime, // ISO datetime
-        endTime: booking.endTime, // ISO datetime
-        clientTimezone: booking.clientTimezone,
-        status: booking.status,
-        totalPrice: booking.totalCents,
-        notes: booking.notes,
-        createdAt: booking.createdAt,
-      }));
-
-      res.json(appointmentsDto);
+      res.json(appointments);
     } catch (error) {
       if (error instanceof ZodError) {
         res.status(400).json({

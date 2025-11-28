@@ -62,6 +62,7 @@ interface Services {
 interface Repositories {
   service?: any; // ServiceRepository
   availabilityRule?: any; // AvailabilityRuleRepository
+  booking?: any; // BookingRepository
 }
 
 export function createV1Router(
@@ -377,7 +378,8 @@ export function createV1Router(
         const tenantAdminSchedulingRouter = createTenantAdminSchedulingRoutes(
           repositories.service,
           repositories.availabilityRule,
-          services.booking
+          services.booking,
+          repositories.booking
         );
         app.use('/v1/tenant-admin', tenantAuthMiddleware, tenantAdminSchedulingRouter);
         logger.info('✅ Tenant admin scheduling routes mounted at /v1/tenant-admin');

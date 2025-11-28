@@ -78,6 +78,7 @@ export interface Container {
   repositories?: {
     service?: PrismaServiceRepository;
     availabilityRule?: PrismaAvailabilityRuleRepository;
+    booking?: PrismaBookingRepository;
   };
   mailProvider?: PostmarkMailAdapter; // Export mail provider for password reset emails
   cacheAdapter: CacheServicePort; // Export cache adapter for health checks
@@ -158,8 +159,8 @@ export function buildContainer(config: Config): Container {
     const serviceRepo = new PrismaServiceRepository(mockPrisma);
     const availabilityRuleRepo = new PrismaAvailabilityRuleRepository(mockPrisma);
     const schedulingAvailabilityService = new SchedulingAvailabilityService(
-      serviceRepo as any, // Type adapter for repository interface
-      availabilityRuleRepo as any,
+      serviceRepo,
+      availabilityRuleRepo,
       adapters.bookingRepo
     );
 
@@ -192,6 +193,7 @@ export function buildContainer(config: Config): Container {
     const repositories = {
       service: serviceRepo,
       availabilityRule: availabilityRuleRepo,
+      booking: adapters.bookingRepo as any, // Mock booking repo - type compatibility
     };
 
     return { controllers, services, repositories, mailProvider: undefined, cacheAdapter, prisma: undefined };
@@ -327,8 +329,8 @@ export function buildContainer(config: Config): Container {
   const serviceRepo = new PrismaServiceRepository(prisma);
   const availabilityRuleRepo = new PrismaAvailabilityRuleRepository(prisma);
   const schedulingAvailabilityService = new SchedulingAvailabilityService(
-    serviceRepo as any, // Type adapter for repository interface
-    availabilityRuleRepo as any,
+    serviceRepo,
+    availabilityRuleRepo,
     bookingRepo
   );
 
@@ -351,6 +353,52 @@ export function buildContainer(config: Config): Container {
       });
     } catch (err) {
       logger.error({ err, bookingId: payload.bookingId }, 'Failed to send booking confirmation email');
+    }
+  });
+
+  // Subscribe to AppointmentBooked events to sync with Google Calendar
+  eventEmitter.subscribe<{
+    bookingId: string;
+    tenantId: string;
+    serviceId: string;
+    serviceName: string;
+    clientName: string;
+    clientEmail: string;
+    clientPhone?: string;
+    startTime: string;
+    endTime: string;
+    totalCents: number;
+    notes?: string;
+  }>('AppointmentBooked', async (payload) => {
+    try {
+      // Sync appointment to Google Calendar
+      const result = await googleCalendarService.createAppointmentEvent(
+        payload.tenantId,
+        {
+          id: payload.bookingId,
+          serviceName: payload.serviceName,
+          clientName: payload.clientName,
+          clientEmail: payload.clientEmail,
+          startTime: new Date(payload.startTime),
+          endTime: new Date(payload.endTime),
+          notes: payload.notes,
+        }
+      );
+
+      if (result?.eventId) {
+        // Store Google event ID in booking for future cancellation sync
+        await bookingRepo.updateGoogleEventId(payload.tenantId, payload.bookingId, result.eventId);
+        logger.info(
+          { bookingId: payload.bookingId, googleEventId: result.eventId },
+          'Appointment synced to Google Calendar'
+        );
+      }
+    } catch (err) {
+      // Log error but don't fail the booking - calendar sync is non-critical
+      logger.error(
+        { err, bookingId: payload.bookingId },
+        'Failed to sync appointment to Google Calendar'
+      );
     }
   });
 
@@ -384,6 +432,7 @@ export function buildContainer(config: Config): Container {
   const repositories = {
     service: serviceRepo,
     availabilityRule: availabilityRuleRepo,
+    booking: bookingRepo,
   };
 
   return { controllers, services, repositories, mailProvider, cacheAdapter, prisma };

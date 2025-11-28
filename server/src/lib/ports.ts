@@ -32,6 +32,18 @@ export interface CatalogRepository {
 }
 
 /**
+ * Time-slot booking for conflict detection
+ */
+export interface TimeslotBooking {
+  id: string;
+  tenantId: string;
+  serviceId: string;
+  startTime: Date;
+  endTime: Date;
+  status: 'PENDING' | 'CONFIRMED' | 'CANCELED' | 'FULFILLED';
+}
+
+/**
  * Booking Repository - Booking persistence
  */
 export interface BookingRepository {
@@ -41,6 +53,62 @@ export interface BookingRepository {
   isDateBooked(tenantId: string, date: string): Promise<boolean>;
   getUnavailableDates(tenantId: string, startDate: Date, endDate: Date): Promise<Date[]>;
   updateGoogleEventId(tenantId: string, bookingId: string, googleEventId: string): Promise<void>;
+
+  /**
+   * Find all TIMESLOT bookings that overlap with a date range
+   *
+   * Used by SchedulingAvailabilityService for conflict detection.
+   * Returns bookings where startTime overlaps with the given date's day.
+   *
+   * @param tenantId - Tenant ID for isolation
+   * @param date - The date to check for time-slot bookings
+   * @param serviceId - Optional service ID to filter by specific service
+   * @returns Array of time-slot bookings for conflict detection
+   */
+  findTimeslotBookings(
+    tenantId: string,
+    date: Date,
+    serviceId?: string
+  ): Promise<TimeslotBooking[]>;
+
+  /**
+   * Find all appointments (TIMESLOT bookings) with optional filters
+   *
+   * Performs server-side filtering for efficient queries.
+   * Used by admin dashboard to list appointments.
+   *
+   * @param tenantId - Tenant ID for isolation
+   * @param filters - Optional filters for status, serviceId, and date range
+   * @returns Array of appointments with full details
+   */
+  findAppointments(
+    tenantId: string,
+    filters?: {
+      status?: string;
+      serviceId?: string;
+      startDate?: string;
+      endDate?: string;
+    }
+  ): Promise<AppointmentDto[]>;
+}
+
+/**
+ * Appointment DTO for admin dashboard
+ */
+export interface AppointmentDto {
+  id: string;
+  tenantId: string;
+  customerId: string;
+  serviceId: string | null;
+  packageId: string;
+  date: string; // YYYY-MM-DD
+  startTime: string | null; // ISO datetime
+  endTime: string | null; // ISO datetime
+  clientTimezone: string | null;
+  status: string;
+  totalPrice: number;
+  notes: string | null;
+  createdAt: string;
 }
 
 /**

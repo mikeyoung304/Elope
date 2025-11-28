@@ -5,73 +5,20 @@
  * Handles timezone conversion, rule-based slot generation, and conflict detection.
  */
 
-import type { BookingRepository } from '../lib/ports';
+import type {
+  BookingRepository,
+  ServiceRepository,
+  AvailabilityRuleRepository,
+  AvailabilityRule,
+  TimeslotBooking,
+} from '../lib/ports';
+import type { Service } from '../lib/entities';
 
-// ============================================================================
-// Repository Interfaces (to be added to ports.ts)
-// ============================================================================
+// Re-export TimeslotBooking from ports for external consumers
+export type { TimeslotBooking as TimeSlotBooking } from '../lib/ports';
 
-/**
- * Service entity - represents a bookable service/appointment type
- */
-export interface SchedulingService {
-  id: string;
-  tenantId: string;
-  slug: string;
-  name: string;
-  description?: string;
-  durationMinutes: number;
-  bufferMinutes: number;
-  priceCents: number;
-  timezone: string; // IANA timezone (e.g., "America/New_York")
-  active: boolean;
-  segmentId?: string;
-}
-
-/**
- * Availability rule entity - defines when services are available
- */
-export interface AvailabilityRule {
-  id: string;
-  tenantId: string;
-  serviceId: string | null; // null = applies to all services
-  dayOfWeek: number; // 0=Sunday, 1=Monday, ..., 6=Saturday
-  startTime: string; // "09:00" (in tenant timezone)
-  endTime: string; // "17:00" (in tenant timezone)
-  effectiveFrom: Date;
-  effectiveTo: Date | null; // null = indefinite
-}
-
-/**
- * Booking entity extended for time-slot bookings
- */
-export interface TimeSlotBooking {
-  id: string;
-  tenantId: string;
-  serviceId: string;
-  customerId: string;
-  date: Date; // Date portion only
-  startTime: Date; // Full UTC timestamp
-  endTime: Date; // Full UTC timestamp
-  status: 'PENDING' | 'CONFIRMED' | 'CANCELED' | 'FULFILLED';
-}
-
-/**
- * Service Repository interface
- */
-export interface ServiceRepository {
-  findById(tenantId: string, serviceId: string): Promise<SchedulingService | null>;
-  findBySlug(tenantId: string, slug: string): Promise<SchedulingService | null>;
-  findAll(tenantId: string, options?: { active?: boolean }): Promise<SchedulingService[]>;
-}
-
-/**
- * Availability Rule Repository interface
- */
-export interface AvailabilityRuleRepository {
-  findByService(tenantId: string, serviceId: string, date: Date): Promise<AvailabilityRule[]>;
-  findEffectiveRules(tenantId: string, serviceId: string | null, date: Date): Promise<AvailabilityRule[]>;
-}
+// Internal alias for use within this file
+type TimeSlotBooking = TimeslotBooking;
 
 // ============================================================================
 // Service Types
@@ -139,7 +86,7 @@ export class SchedulingAvailabilityService {
     const { tenantId, serviceId, date } = params;
 
     // 1. Get service details
-    const service = await this.serviceRepo.findById(tenantId, serviceId);
+    const service = await this.serviceRepo.getById(tenantId, serviceId);
     if (!service) {
       return []; // Service not found, no slots available
     }
@@ -149,10 +96,10 @@ export class SchedulingAvailabilityService {
     }
 
     // 2. Get effective availability rules for this service and date
-    const rules = await this.availabilityRuleRepo.findEffectiveRules(
+    const rules = await this.availabilityRuleRepo.getEffectiveRules(
       tenantId,
-      serviceId,
-      date
+      date,
+      serviceId
     );
 
     if (rules.length === 0) {
@@ -380,12 +327,12 @@ export class SchedulingAvailabilityService {
    *
    * MULTI-TENANT: Filtered by tenantId
    *
-   * Note: This is a placeholder. The BookingRepository needs to be extended
-   * to support querying TIMESLOT bookings by date range.
+   * Uses the BookingRepository to fetch actual TIMESLOT bookings
+   * for conflict detection during slot availability checks.
    *
    * @param tenantId - Tenant ID
    * @param date - Target date
-   * @returns Array of time-slot bookings
+   * @returns Array of time-slot bookings for conflict detection
    *
    * @private
    */
@@ -393,17 +340,8 @@ export class SchedulingAvailabilityService {
     tenantId: string,
     date: Date
   ): Promise<TimeSlotBooking[]> {
-    // For now, return empty array
-    // This method should be implemented when the Booking repository is extended
-    // to support TIMESLOT booking queries
-
-    // TODO: Extend BookingRepository with:
-    // findTimeslotBookings(tenantId: string, date: Date): Promise<TimeSlotBooking[]>
-
-    // Example implementation would be:
-    // return this.bookingRepo.findTimeslotBookings(tenantId, date);
-
-    return [];
+    // Use the booking repository to fetch real TIMESLOT bookings
+    return this.bookingRepo.findTimeslotBookings(tenantId, date);
   }
 
   /**

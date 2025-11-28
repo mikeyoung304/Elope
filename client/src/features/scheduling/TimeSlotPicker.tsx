@@ -149,14 +149,14 @@ export function TimeSlotPicker({
 
       {/* Time slots grid */}
       <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
-        {data.slots.map((slot: TimeSlotDto, index: number) => {
+        {data.slots.map((slot: TimeSlotDto) => {
           const isSelected =
             selectedSlot && isSameSlot(selectedSlot, slot);
           const isAvailable = slot.available;
 
           return (
             <button
-              key={index}
+              key={slot.startTime} // Use startTime as stable unique identifier (ISO datetime string)
               onClick={() => handleSlotClick(slot)}
               disabled={!isAvailable}
               className={`

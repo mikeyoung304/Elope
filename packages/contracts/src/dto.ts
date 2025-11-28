@@ -614,3 +614,25 @@ export const AppointmentDtoSchema = z.object({
 });
 
 export type AppointmentDto = z.infer<typeof AppointmentDtoSchema>;
+
+// Create Appointment Checkout DTO (for public booking flow)
+export const CreateAppointmentCheckoutDtoSchema = z.object({
+  serviceId: z.string().min(1, 'Service ID is required'),
+  date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Date must be in YYYY-MM-DD format'),
+  startTime: z.string().datetime({ message: 'Start time must be a valid ISO datetime' }),
+  endTime: z.string().datetime({ message: 'End time must be a valid ISO datetime' }),
+  customerName: z.string().min(1, 'Customer name is required').max(100, 'Name must be 100 characters or less'),
+  customerEmail: z.string().email('Valid email is required'),
+  customerPhone: z.string().optional(),
+  notes: z.string().max(1000, 'Notes must be 1000 characters or less').optional(),
+});
+
+export type CreateAppointmentCheckoutDto = z.infer<typeof CreateAppointmentCheckoutDtoSchema>;
+
+// Appointment Checkout Response DTO
+export const AppointmentCheckoutResponseDtoSchema = z.object({
+  checkoutUrl: z.string().url('Checkout URL must be a valid URL'),
+  sessionId: z.string(),
+});
+
+export type AppointmentCheckoutResponseDto = z.infer<typeof AppointmentCheckoutResponseDtoSchema>;
