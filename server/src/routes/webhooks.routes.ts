@@ -179,11 +179,13 @@ export class WebhooksController {
         // Validate and parse session data
         const sessionResult = StripeSessionSchema.safeParse(event.data.object);
         if (!sessionResult.success) {
+          // Log full error details for debugging (server logs only)
           logger.error({ errors: sessionResult.error.flatten() }, 'Invalid session structure from Stripe');
+          // Store only error type in DB - no sensitive data (P0 security fix)
           await this.webhookRepo.markFailed(
             effectiveTenantId,
             event.id,
-            `Invalid session structure: ${JSON.stringify(sessionResult.error.flatten())}`
+            'Invalid session structure - validation failed'
           );
           throw new WebhookValidationError('Invalid Stripe session structure');
         }
@@ -192,11 +194,13 @@ export class WebhooksController {
         // Validate metadata with Zod (replaces JSON.parse)
         const metadataResult = MetadataSchema.safeParse(session.metadata);
         if (!metadataResult.success) {
+          // Log full error details for debugging (server logs only)
           logger.error({ errors: metadataResult.error.flatten() }, 'Invalid webhook metadata');
+          // Store only error type in DB - no sensitive data (P0 security fix)
           await this.webhookRepo.markFailed(
             effectiveTenantId,
             event.id,
-            `Invalid metadata: ${JSON.stringify(metadataResult.error.flatten())}`
+            'Invalid metadata - validation failed'
           );
           throw new WebhookValidationError('Invalid webhook metadata');
         }

@@ -52,8 +52,7 @@ export function usePackageForm({ onSuccess, onPackagesChange }: UsePackageFormPr
       title: pkg.title,
       description: pkg.description,
       priceCents: pkg.priceCents.toString(),
-      // TODO: Add minLeadDays to backend schema
-      minLeadDays: "7", // Default value until backend supports this field
+      minLeadDays: "7", // Frontend-only field, not persisted to backend
       isActive: pkg.isActive !== false,
       segmentId: pkg.segmentId ?? "",
       grouping: pkg.grouping ?? "",

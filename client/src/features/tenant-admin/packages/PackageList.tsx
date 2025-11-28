@@ -114,7 +114,6 @@ export function PackageList({ packages, onEdit, onDelete }: PackageListProps) {
                 <span className="font-medium text-white/60">
                   {formatCurrency(pkg.priceCents)}
                 </span>
-                {/* TODO: Add minLeadDays field to backend schema and API contract */}
               </div>
             </div>
             <div className="flex gap-2">
