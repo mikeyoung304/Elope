@@ -13,6 +13,17 @@ import { AppointmentFilters as Filters } from './AppointmentFilters';
 import { AppointmentsList } from './AppointmentsList';
 
 /**
+ * Get authentication token, handling impersonation
+ */
+function getAuthToken(): string | null {
+  const isImpersonating = localStorage.getItem('impersonationTenantKey');
+  if (isImpersonating) {
+    return localStorage.getItem('adminToken');
+  }
+  return localStorage.getItem('tenantToken');
+}
+
+/**
  * Initial filter state
  */
 const initialFilters: AppointmentFilters = {
@@ -37,7 +48,7 @@ export function AppointmentsView() {
   } = useQuery<AppointmentDto[]>({
     queryKey: ['tenant-admin', 'appointments', filters],
     queryFn: async () => {
-      const token = localStorage.getItem('tenantToken');
+      const token = getAuthToken();
       if (!token) {
         throw new Error('No authentication token found');
       }
@@ -69,7 +80,7 @@ export function AppointmentsView() {
   } = useQuery<ServiceDto[]>({
     queryKey: ['tenant-admin', 'services'],
     queryFn: async () => {
-      const token = localStorage.getItem('tenantToken');
+      const token = getAuthToken();
       if (!token) {
         throw new Error('No authentication token found');
       }
@@ -95,7 +106,7 @@ export function AppointmentsView() {
   } = useQuery<Customer[]>({
     queryKey: ['tenant-admin', 'customers'],
     queryFn: async () => {
-      const token = localStorage.getItem('tenantToken');
+      const token = getAuthToken();
       if (!token) {
         return []; // Return empty array if no token, customers are optional enrichment
       }

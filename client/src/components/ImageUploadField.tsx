@@ -28,6 +28,17 @@ const ALLOWED_TYPES = [
   'image/svg+xml',
 ];
 
+/**
+ * Get authentication token, handling impersonation
+ */
+function getAuthToken(): string | null {
+  const isImpersonating = localStorage.getItem('impersonationTenantKey');
+  if (isImpersonating) {
+    return localStorage.getItem('adminToken');
+  }
+  return localStorage.getItem('tenantToken');
+}
+
 export function ImageUploadField({
   label,
   value,
@@ -66,7 +77,11 @@ export function ImageUploadField({
       const formData = new FormData();
       formData.append('file', file);
 
-      const token = localStorage.getItem('tenantToken');
+      const token = getAuthToken();
+      if (!token) {
+        throw new Error('Authentication required');
+      }
+
       const response = await fetch(uploadEndpoint, {
         method: 'POST',
         headers: {

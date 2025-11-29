@@ -63,9 +63,17 @@ interface ErrorResponse {
 
 /**
  * Get authentication token from localStorage
+ * Handles both normal tenant auth and platform admin impersonation
  * @returns JWT token or null if not authenticated
  */
 function getAuthToken(): string | null {
+  // Check if platform admin is impersonating a tenant
+  const isImpersonating = localStorage.getItem('impersonationTenantKey');
+  if (isImpersonating) {
+    // Use admin token which contains impersonation context
+    return localStorage.getItem('adminToken');
+  }
+  // Normal tenant admin - use tenant token
   return localStorage.getItem('tenantToken');
 }
 
@@ -157,7 +165,7 @@ export const packagePhotoApi = {
 
     try {
       const response = await fetch(
-        `${baseUrl}/v1/tenant/admin/packages/${packageId}/photos`,
+        `${baseUrl}/v1/tenant-admin/packages/${packageId}/photos`,
         {
           method: 'POST',
           headers: {
@@ -211,7 +219,7 @@ export const packagePhotoApi = {
 
     try {
       const response = await fetch(
-        `${baseUrl}/v1/tenant/admin/packages/${packageId}/photos/${filename}`,
+        `${baseUrl}/v1/tenant-admin/packages/${packageId}/photos/${filename}`,
         {
           method: 'DELETE',
           headers: {
@@ -258,7 +266,7 @@ export const packagePhotoApi = {
 
     try {
       const response = await fetch(
-        `${baseUrl}/v1/tenant/admin/packages/${packageId}`,
+        `${baseUrl}/v1/tenant-admin/packages/${packageId}`,
         {
           method: 'GET',
           headers: {
@@ -304,7 +312,7 @@ export const packagePhotoApi = {
 
     try {
       const response = await fetch(
-        `${baseUrl}/v1/tenant/admin/packages`,
+        `${baseUrl}/v1/tenant-admin/packages`,
         {
           method: 'GET',
           headers: {

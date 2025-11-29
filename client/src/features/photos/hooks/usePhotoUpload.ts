@@ -26,7 +26,22 @@ interface UploadResult {
  */
 interface ApiErrorResponse {
   error: string;
-  details?: any;
+  details?: unknown;
+}
+
+/**
+ * Get authentication token, handling impersonation
+ * @param providedToken - Optional token passed to hook
+ * @returns JWT token or null if not authenticated
+ */
+function getAuthToken(providedToken?: string): string | null {
+  if (providedToken) return providedToken;
+  // Check if platform admin is impersonating a tenant
+  const isImpersonating = localStorage.getItem('impersonationTenantKey');
+  if (isImpersonating) {
+    return localStorage.getItem('adminToken');
+  }
+  return localStorage.getItem('tenantToken');
 }
 
 /**
@@ -119,8 +134,8 @@ export function usePhotoUpload({
       const formData = new FormData();
       formData.append('photo', file);
 
-      // Get token from prop or localStorage
-      const token = tenantToken || localStorage.getItem('tenantToken');
+      // Get token from prop or localStorage (handles impersonation)
+      const token = getAuthToken(tenantToken);
       if (!token) {
         throw new Error('Authentication required');
       }
@@ -172,7 +187,7 @@ export function usePhotoUpload({
     setError(null);
 
     try {
-      const token = tenantToken || localStorage.getItem('tenantToken');
+      const token = getAuthToken(tenantToken);
       if (!token) {
         throw new Error('Authentication required');
       }

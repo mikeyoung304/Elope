@@ -3,6 +3,17 @@ import { Upload, X, Loader2, CheckCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { api } from "@/lib/api";
 
+/**
+ * Get authentication token, handling impersonation
+ */
+function getAuthToken(): string | null {
+  const isImpersonating = localStorage.getItem("impersonationTenantKey");
+  if (isImpersonating) {
+    return localStorage.getItem("adminToken");
+  }
+  return localStorage.getItem("tenantToken");
+}
+
 interface LogoUploadButtonProps {
   currentLogoUrl?: string;
   onUploadSuccess: (logoUrl: string) => void;
@@ -55,10 +66,15 @@ export function LogoUploadButton({
       const formData = new FormData();
       formData.append("logo", file);
 
+      const token = getAuthToken();
+      if (!token) {
+        throw new Error("Authentication required");
+      }
+
       const response = await fetch(`${api.baseUrl}/v1/tenant-admin/logo`, {
         method: "POST",
         headers: {
-          Authorization: `Bearer ${localStorage.getItem("tenantToken")}`,
+          Authorization: `Bearer ${token}`,
         },
         body: formData,
       });
