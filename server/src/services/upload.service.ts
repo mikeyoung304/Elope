@@ -82,6 +82,9 @@ export class UploadService {
       this.supabase = getSupabaseClient();
       logger.info('UploadService: Supabase client initialized for storage');
     }
+    if (!this.supabase) {
+      throw new Error('Failed to initialize Supabase client');
+    }
     return this.supabase;
   }
 
@@ -151,9 +154,10 @@ export class UploadService {
 
     // Also verify the detected type matches the declared type
     // This prevents uploading PNG as JPEG etc. (defense in depth)
-    // Note: image/jpg and image/jpeg are equivalent
+    // Note: image/jpg and image/jpeg are equivalent - normalize both to image/jpeg
+    // The file-type library always returns 'image/jpeg' (never 'image/jpg')
     const normalizedDeclared = file.mimetype === 'image/jpg' ? 'image/jpeg' : file.mimetype;
-    const normalizedDetected = detectedType.mime === 'image/jpg' ? 'image/jpeg' : detectedType.mime;
+    const normalizedDetected = detectedType.mime; // file-type already normalizes to image/jpeg
     if (normalizedDetected !== normalizedDeclared) {
       logger.warn({ declared: file.mimetype, detected: detectedType.mime, filename: file.originalname },
         'SECURITY: MIME type mismatch detected - possible spoofing attempt');
