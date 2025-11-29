@@ -10,11 +10,12 @@
 import fs from 'fs';
 import path from 'path';
 import crypto from 'crypto';
+import { createRequire } from 'module';
 import { SupabaseClient } from '@supabase/supabase-js';
 import { logger } from '../lib/core/logger';
 
-// file-type is a CommonJS module, use require for compatibility with Node 25+ ESM
-// eslint-disable-next-line @typescript-eslint/no-var-requires
+// file-type v16 is CommonJS - use createRequire for ESM compatibility in Node 25+
+const require = createRequire(import.meta.url);
 const fileType = require('file-type') as { fromBuffer: (buffer: Buffer) => Promise<{ mime: string; ext: string } | undefined> };
 
 export interface UploadedFile {
