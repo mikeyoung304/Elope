@@ -13,6 +13,8 @@ import {
   getSegmentInvalidationKeys,
 } from '../lib/cache-helpers';
 import type { PrismaSegmentRepository, CreateSegmentInput, UpdateSegmentInput } from '../adapters/prisma/segment.repository';
+import { uploadService } from './upload.service';
+import { logger } from '../lib/core/logger';
 
 export interface PackageWithAddOns extends Package {
   addOns?: {
@@ -261,11 +263,25 @@ export class SegmentService {
       throw new NotFoundError(`Segment not found or access denied: ${id}`);
     }
 
+    // Clean up heroImage BEFORE deleting segment from database
+    // This prevents orphaned files in storage
+    if (existing.heroImage) {
+      try {
+        await uploadService.deleteSegmentImage(existing.heroImage, tenantId);
+      } catch (err) {
+        // Don't block segment deletion if cleanup fails
+        logger.warn({ err, heroImage: existing.heroImage, segmentId: id },
+          'Failed to delete segment image - continuing with segment deletion');
+      }
+    }
+
     // Delete segment
     await this.repository.delete(tenantId, id);
 
     // Invalidate cache
     this.invalidateSegmentCache(tenantId, existing.slug);
+
+    logger.info({ tenantId, segmentId: id }, 'Segment deleted with image cleanup');
   }
 
   /**

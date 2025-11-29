@@ -9,7 +9,8 @@ export default defineConfig(({ mode }) => {
     test: {
       globals: true,
       environment: 'node',
-      env: env,
+      // Override env to use local storage (not Supabase) for file uploads in tests
+      env: { ...env, STORAGE_MODE: 'local' },
       coverage: {
         provider: 'v8',
         reporter: ['text', 'json', 'html', 'lcov'],

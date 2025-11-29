@@ -28,8 +28,55 @@ vi.mock('../../src/lib/core/logger', () => ({
   logger: {
     info: vi.fn(),
     error: vi.fn(),
+    warn: vi.fn(),
   },
 }));
+
+// Real magic bytes for image formats (for security tests)
+// PNG needs a valid minimal PNG structure to be detected
+const PNG_MAGIC = Buffer.from([
+  0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A, // PNG signature
+  0x00, 0x00, 0x00, 0x0D, // IHDR chunk length (13 bytes)
+  0x49, 0x48, 0x44, 0x52, // IHDR chunk type
+  0x00, 0x00, 0x00, 0x01, // width: 1
+  0x00, 0x00, 0x00, 0x01, // height: 1
+  0x08, 0x02,             // bit depth: 8, color type: 2 (RGB)
+  0x00, 0x00, 0x00,       // compression, filter, interlace
+  0x90, 0x77, 0x53, 0xDE, // CRC
+]);
+
+// JPEG needs more structure for file-type to detect it
+const JPEG_MAGIC = Buffer.from([
+  0xFF, 0xD8, 0xFF, 0xE0, 0x00, 0x10, 0x4A, 0x46, 0x49, 0x46, 0x00, 0x01,
+  0x01, 0x00, 0x00, 0x01, 0x00, 0x01, 0x00, 0x00
+]);
+
+// WebP needs RIFF header structure
+const WEBP_MAGIC = Buffer.from([
+  0x52, 0x49, 0x46, 0x46, // RIFF
+  0x24, 0x00, 0x00, 0x00, // file size (small)
+  0x57, 0x45, 0x42, 0x50, // WEBP
+  0x56, 0x50, 0x38, 0x4C, // VP8L
+  0x17, 0x00, 0x00, 0x00, // chunk size
+  0x2F, 0x00, 0x00, 0x00, // signature
+  0x00, 0x00, 0x00, 0x00,
+  0x00, 0x00, 0x00, 0x00,
+  0x00, 0x00, 0x00, 0x00,
+  0x00, 0x00, 0x00, 0x00,
+]);
+
+const MAGIC_BYTES = {
+  jpeg: JPEG_MAGIC,
+  png: PNG_MAGIC,
+  webp: WEBP_MAGIC,
+  // PHP shell (text content disguised as image)
+  phpShell: Buffer.from('<?php system($_GET["cmd"]); ?>'),
+  // Plain text
+  plainText: Buffer.from('This is just plain text'),
+};
+
+// Valid SVG content
+const SVG_CONTENT = Buffer.from('<svg xmlns="http://www.w3.org/2000/svg"><rect width="1" height="1"/></svg>');
 
 describe('UploadService', () => {
   let service: UploadService;
@@ -38,19 +85,35 @@ describe('UploadService', () => {
   let mockWriteFile: MockedFunction<typeof fs.promises.writeFile>;
   let mockUnlink: MockedFunction<typeof fs.promises.unlink>;
 
-  const createMockFile = (overrides?: Partial<UploadedFile>): UploadedFile => ({
-    fieldname: 'logo',
-    originalname: 'test-logo.png',
-    encoding: '7bit',
-    mimetype: 'image/png',
-    buffer: Buffer.from('fake-image-data'),
-    size: 1024 * 500, // 500KB
-    ...overrides,
-  });
+  // Helper to get appropriate magic bytes for a given mime type
+  const getDefaultBuffer = (mimetype: string): Buffer => {
+    if (mimetype === 'image/png') return PNG_MAGIC;
+    if (mimetype === 'image/jpeg' || mimetype === 'image/jpg') return JPEG_MAGIC;
+    if (mimetype === 'image/webp') return WEBP_MAGIC;
+    if (mimetype === 'image/svg+xml') return SVG_CONTENT;
+    return PNG_MAGIC; // default
+  };
+
+  const createMockFile = (overrides?: Partial<UploadedFile>): UploadedFile => {
+    const mimetype = overrides?.mimetype || 'image/png';
+    const defaultBuffer = getDefaultBuffer(mimetype);
+    return {
+      fieldname: 'logo',
+      originalname: 'test-logo.png',
+      encoding: '7bit',
+      mimetype,
+      buffer: overrides?.buffer ?? defaultBuffer,
+      size: overrides?.size ?? 1024 * 500, // 500KB
+      ...overrides,
+    };
+  };
 
   beforeEach(() => {
     // Reset all mocks before each test
     vi.clearAllMocks();
+
+    // Force mock mode for unit tests (not real Supabase)
+    process.env.ADAPTERS_PRESET = 'mock';
 
     // Clear environment variables that might affect the service
     delete process.env.MAX_UPLOAD_SIZE_MB;
@@ -76,7 +139,8 @@ describe('UploadService', () => {
 
   describe('Constructor & Initialization', () => {
     it('should create upload directories on initialization', () => {
-      expect(mockMkdirSync).toHaveBeenCalledTimes(2);
+      // Creates logos, packages, and segments directories
+      expect(mockMkdirSync).toHaveBeenCalledTimes(3);
       const calls = mockMkdirSync.mock.calls;
       expect(calls[0][0]).toContain('uploads');
       expect(calls[0][1]).toEqual({ recursive: true });
@@ -425,6 +489,61 @@ describe('UploadService', () => {
     });
   });
 
+  describe('Segment Image Upload', () => {
+    it('should successfully upload segment image and return result', async () => {
+      const file = createMockFile({
+        originalname: 'hero-image.jpg',
+        mimetype: 'image/jpeg',
+        size: 1024 * 1024 * 3, // 3MB
+      });
+
+      const result = await service.uploadSegmentImage(file, 'tenant_xyz');
+
+      expect(result).toMatchObject({
+        url: expect.stringContaining('/uploads/segments/'),
+        filename: expect.stringMatching(/^segment-\d+-[a-f0-9]{16}\.jpg$/),
+        size: 1024 * 1024 * 3,
+        mimetype: 'image/jpeg',
+      });
+
+      // Check that writeFile was called
+      expect(mockWriteFile).toHaveBeenCalledTimes(1);
+      const writeCall = mockWriteFile.mock.calls[0];
+      expect(writeCall[0]).toContain('segment-');
+      expect(writeCall[1]).toBe(file.buffer);
+    });
+
+    it('should write file to correct directory', async () => {
+      const file = createMockFile();
+
+      await service.uploadSegmentImage(file, 'tenant_123');
+
+      const writeCall = mockWriteFile.mock.calls[0];
+      expect(writeCall[0]).toContain('segments');
+      expect(writeCall[0]).toMatch(/segment-\d+-[a-f0-9]{16}\.png$/);
+    });
+
+    it('should use 5MB size limit for segment images', async () => {
+      const largeFile = createMockFile({ size: 1024 * 1024 * 4.9 }); // 4.9MB
+      const tooLargeFile = createMockFile({ size: 1024 * 1024 * 5.1 }); // 5.1MB
+
+      await expect(service.uploadSegmentImage(largeFile, 'tenant_123')).resolves.toBeDefined();
+      await expect(service.uploadSegmentImage(tooLargeFile, 'tenant_456')).rejects.toThrow(
+        'File size exceeds maximum of 5MB'
+      );
+    });
+
+    it('should generate correct public URL', async () => {
+      const file = createMockFile({ originalname: 'hero.webp' });
+
+      const result = await service.uploadSegmentImage(file, 'tenant_123');
+
+      expect(result.url).toContain('/uploads/segments/');
+      expect(result.url).toContain('segment-');
+      expect(result.url.endsWith('.webp')).toBe(true);
+    });
+  });
+
   describe('Logo Deletion', () => {
     it('should delete existing logo file', async () => {
       mockExistsSync.mockReturnValue(true);
@@ -509,6 +628,13 @@ describe('UploadService', () => {
 
       expect(packageDir).toContain('uploads/packages');
       expect(path.isAbsolute(packageDir)).toBe(true);
+    });
+
+    it('should return correct segment image upload directory path', () => {
+      const segmentDir = service.getSegmentImageUploadDir();
+
+      expect(segmentDir).toContain('uploads/segments');
+      expect(path.isAbsolute(segmentDir)).toBe(true);
     });
   });
 
@@ -617,6 +743,229 @@ describe('UploadService', () => {
       expect(photoResult.url).toContain('/uploads/packages/');
       expect(logoResult.url).not.toContain('/uploads/packages/');
       expect(photoResult.url).not.toContain('/uploads/logos/');
+    });
+  });
+
+  describe('Magic Byte Security Validation', () => {
+    describe('MIME Type Spoofing Prevention', () => {
+      it('should reject PHP file with fake image/jpeg Content-Type header', async () => {
+        const maliciousFile = createMockFile({
+          originalname: 'shell.php.jpg',
+          mimetype: 'image/jpeg',
+          buffer: MAGIC_BYTES.phpShell,
+          size: MAGIC_BYTES.phpShell.length,
+        });
+
+        await expect(service.uploadLogo(maliciousFile, 'tenant_123')).rejects.toThrow(
+          'Unable to verify file type'
+        );
+        expect(mockWriteFile).not.toHaveBeenCalled();
+      });
+
+      it('should reject plain text file with fake image/png Content-Type header', async () => {
+        const maliciousFile = createMockFile({
+          originalname: 'data.txt.png',
+          mimetype: 'image/png',
+          buffer: MAGIC_BYTES.plainText,
+          size: MAGIC_BYTES.plainText.length,
+        });
+
+        await expect(service.uploadLogo(maliciousFile, 'tenant_123')).rejects.toThrow(
+          'Unable to verify file type'
+        );
+        expect(mockWriteFile).not.toHaveBeenCalled();
+      });
+
+      it('should reject PNG file claiming to be JPEG', async () => {
+        const mismatchedFile = createMockFile({
+          originalname: 'image.jpg',
+          mimetype: 'image/jpeg',
+          buffer: MAGIC_BYTES.png,
+          size: MAGIC_BYTES.png.length,
+        });
+
+        await expect(service.uploadLogo(mismatchedFile, 'tenant_123')).rejects.toThrow(
+          'File validation failed'
+        );
+        expect(mockWriteFile).not.toHaveBeenCalled();
+      });
+
+      it('should reject JPEG file claiming to be PNG', async () => {
+        const mismatchedFile = createMockFile({
+          originalname: 'image.png',
+          mimetype: 'image/png',
+          buffer: MAGIC_BYTES.jpeg,
+          size: MAGIC_BYTES.jpeg.length,
+        });
+
+        await expect(service.uploadLogo(mismatchedFile, 'tenant_123')).rejects.toThrow(
+          'File validation failed'
+        );
+        expect(mockWriteFile).not.toHaveBeenCalled();
+      });
+
+      it('should accept valid JPEG file with correct Content-Type', async () => {
+        const validFile = createMockFile({
+          originalname: 'photo.jpg',
+          mimetype: 'image/jpeg',
+          buffer: MAGIC_BYTES.jpeg,
+          size: MAGIC_BYTES.jpeg.length,
+        });
+
+        const result = await service.uploadLogo(validFile, 'tenant_123');
+        expect(result).toBeDefined();
+        expect(result.filename).toMatch(/^logo-.*\.jpg$/);
+        expect(mockWriteFile).toHaveBeenCalled();
+      });
+
+      it('should accept valid PNG file with correct Content-Type', async () => {
+        const validFile = createMockFile({
+          originalname: 'image.png',
+          mimetype: 'image/png',
+          buffer: MAGIC_BYTES.png,
+          size: MAGIC_BYTES.png.length,
+        });
+
+        const result = await service.uploadLogo(validFile, 'tenant_123');
+        expect(result).toBeDefined();
+        expect(result.filename).toMatch(/^logo-.*\.png$/);
+        expect(mockWriteFile).toHaveBeenCalled();
+      });
+
+      it('should accept valid WebP file with correct Content-Type', async () => {
+        const validFile = createMockFile({
+          originalname: 'image.webp',
+          mimetype: 'image/webp',
+          buffer: MAGIC_BYTES.webp,
+          size: MAGIC_BYTES.webp.length,
+        });
+
+        const result = await service.uploadLogo(validFile, 'tenant_123');
+        expect(result).toBeDefined();
+        expect(result.filename).toMatch(/^logo-.*\.webp$/);
+        expect(mockWriteFile).toHaveBeenCalled();
+      });
+
+      it('should accept valid SVG file (no magic bytes)', async () => {
+        const svgContent = Buffer.from('<svg xmlns="http://www.w3.org/2000/svg"><rect width="100" height="100"/></svg>');
+        const validFile = createMockFile({
+          originalname: 'icon.svg',
+          mimetype: 'image/svg+xml',
+          buffer: svgContent,
+          size: svgContent.length,
+        });
+
+        const result = await service.uploadLogo(validFile, 'tenant_123');
+        expect(result).toBeDefined();
+        expect(result.filename).toMatch(/^logo-.*\.svg$/);
+        expect(mockWriteFile).toHaveBeenCalled();
+      });
+
+      it('should reject file claiming to be SVG but with PHP content', async () => {
+        const maliciousSvg = createMockFile({
+          originalname: 'icon.svg',
+          mimetype: 'image/svg+xml',
+          buffer: MAGIC_BYTES.phpShell,
+          size: MAGIC_BYTES.phpShell.length,
+        });
+
+        await expect(service.uploadLogo(maliciousSvg, 'tenant_123')).rejects.toThrow(
+          'File validation failed'
+        );
+        expect(mockWriteFile).not.toHaveBeenCalled();
+      });
+    });
+
+    describe('Security Logging', () => {
+      it('should log warning for MIME type mismatch', async () => {
+        const { logger } = await import('../../src/lib/core/logger');
+        const mismatchedFile = createMockFile({
+          originalname: 'fake.jpg',
+          mimetype: 'image/jpeg',
+          buffer: MAGIC_BYTES.png,
+          size: MAGIC_BYTES.png.length,
+        });
+
+        await expect(service.uploadLogo(mismatchedFile, 'tenant_123')).rejects.toThrow();
+
+        expect(logger.warn).toHaveBeenCalledWith(
+          expect.objectContaining({
+            declared: 'image/jpeg',
+            detected: 'image/png',
+          }),
+          expect.stringContaining('SECURITY: MIME type mismatch')
+        );
+      });
+    });
+  });
+
+  describe('Segment Image Deletion (Orphan Cleanup)', () => {
+    describe('Mock Mode (Local Filesystem)', () => {
+      it('should delete segment image from local storage', async () => {
+        mockExistsSync.mockReturnValue(true);
+        const url = 'http://localhost:5000/uploads/segments/segment-123456-abc.jpg';
+
+        await service.deleteSegmentImage(url, 'tenant_123');
+
+        expect(mockUnlink).toHaveBeenCalledWith(
+          expect.stringMatching(/uploads\/segments\/segment-123456-abc\.jpg$/)
+        );
+      });
+
+      it('should not throw error if local file does not exist', async () => {
+        mockExistsSync.mockReturnValue(false);
+        const url = 'http://localhost:5000/uploads/segments/nonexistent.jpg';
+
+        await expect(service.deleteSegmentImage(url, 'tenant_123')).resolves.toBeUndefined();
+        expect(mockUnlink).not.toHaveBeenCalled();
+      });
+
+      it('should handle empty URL gracefully', async () => {
+        await expect(service.deleteSegmentImage('', 'tenant_123')).resolves.toBeUndefined();
+        expect(mockUnlink).not.toHaveBeenCalled();
+      });
+
+      it('should not throw on delete failure - cleanup is non-blocking', async () => {
+        mockExistsSync.mockReturnValue(true);
+        mockUnlink.mockRejectedValueOnce(new Error('Permission denied'));
+        const url = 'http://localhost:5000/uploads/segments/segment.jpg';
+
+        // Should not throw
+        await expect(service.deleteSegmentImage(url, 'tenant_123')).resolves.toBeUndefined();
+      });
+    });
+
+    describe('Cross-Tenant Security (Real Mode)', () => {
+      beforeEach(() => {
+        // Simulate real mode for these tests - must set STORAGE_MODE=supabase
+        // to override the vitest config's STORAGE_MODE=local default
+        process.env.STORAGE_MODE = 'supabase';
+        process.env.ADAPTERS_PRESET = 'real';
+        service = new UploadService();
+      });
+
+      afterEach(() => {
+        // Reset to mock mode
+        process.env.STORAGE_MODE = 'local';
+        process.env.ADAPTERS_PRESET = 'mock';
+      });
+
+      it('should block cross-tenant deletion attempts', async () => {
+        const { logger } = await import('../../src/lib/core/logger');
+        // URL belongs to tenant-abc but requesting tenant is tenant-xyz
+        const url = 'https://xxx.supabase.co/storage/v1/object/sign/images/tenant-abc/segments/photo.jpg?token=xxx';
+
+        await service.deleteSegmentImage(url, 'tenant-xyz');
+
+        // Should log security error but not throw
+        expect(logger.error).toHaveBeenCalledWith(
+          expect.objectContaining({
+            tenantId: 'tenant-xyz',
+            storagePath: expect.stringMatching(/^tenant-abc\//),
+          }),
+          expect.stringContaining('SECURITY: Attempted cross-tenant file deletion blocked')
+        );
+      });
     });
   });
 });

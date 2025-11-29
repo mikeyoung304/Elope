@@ -7,6 +7,9 @@
  * - DELETE /v1/tenant-admin/packages/:id/photos/:filename
  */
 
+// Force local storage for tests (not Supabase) - must be before any imports
+process.env.STORAGE_MODE = 'local';
+
 import { describe, it, expect, beforeAll, afterEach, afterAll } from 'vitest';
 import request from 'supertest';
 import type { Express } from 'express';
@@ -30,9 +33,17 @@ describe('Package Photo Upload/Delete Endpoints', () => {
   const uploadDir = path.join(process.cwd(), 'uploads', 'packages');
   const JWT_SECRET = process.env.JWT_SECRET || 'test-secret-key';
 
-  // Helper function to create a test image buffer
+  // Helper function to create a test image buffer with valid JPEG magic bytes
+  // This is required because the upload service now validates magic bytes for security
   const createTestImageBuffer = (sizeInBytes: number): Buffer => {
-    return Buffer.alloc(sizeInBytes, 'A');
+    // JPEG magic bytes: FF D8 FF E0 00 10 4A 46 49 46 00 01 01 00 00 01 00 01 00 00
+    const jpegHeader = Buffer.from([
+      0xFF, 0xD8, 0xFF, 0xE0, 0x00, 0x10, 0x4A, 0x46, 0x49, 0x46, 0x00, 0x01,
+      0x01, 0x00, 0x00, 0x01, 0x00, 0x01, 0x00, 0x00
+    ]);
+    // Create buffer with JPEG header + padding to reach desired size
+    const padding = Buffer.alloc(Math.max(0, sizeInBytes - jpegHeader.length), 0);
+    return Buffer.concat([jpegHeader, padding]);
   };
 
   // Helper function to generate JWT token for testing
@@ -394,15 +405,39 @@ describe('Package Photo Upload/Delete Endpoints', () => {
     });
 
     it('should accept all valid image MIME types', async () => {
-      const imageBuffer = createTestImageBuffer(1024 * 500);
+      // Each MIME type needs its own buffer with valid magic bytes
+      const PNG_MAGIC = Buffer.from([
+        0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A, // PNG signature
+        0x00, 0x00, 0x00, 0x0D, // IHDR chunk length (13 bytes)
+        0x49, 0x48, 0x44, 0x52, // IHDR chunk type
+        0x00, 0x00, 0x00, 0x01, // width: 1
+        0x00, 0x00, 0x00, 0x01, // height: 1
+        0x08, 0x02,             // bit depth: 8, color type: 2 (RGB)
+        0x00, 0x00, 0x00,       // compression, filter, interlace
+        0x90, 0x77, 0x53, 0xDE, // CRC
+      ]);
+      const WEBP_MAGIC = Buffer.from([
+        0x52, 0x49, 0x46, 0x46, // RIFF
+        0x24, 0x00, 0x00, 0x00, // file size (small)
+        0x57, 0x45, 0x42, 0x50, // WEBP
+        0x56, 0x50, 0x38, 0x4C, // VP8L
+        0x17, 0x00, 0x00, 0x00, // chunk size
+        0x2F, 0x00, 0x00, 0x00, // signature
+        0x00, 0x00, 0x00, 0x00,
+        0x00, 0x00, 0x00, 0x00,
+        0x00, 0x00, 0x00, 0x00,
+        0x00, 0x00, 0x00, 0x00,
+      ]);
+      const SVG_CONTENT = Buffer.from('<svg xmlns="http://www.w3.org/2000/svg"><rect width="1" height="1"/></svg>');
+
       const validMimeTypes = [
-        { ext: 'jpg', mime: 'image/jpeg' },
-        { ext: 'png', mime: 'image/png' },
-        { ext: 'webp', mime: 'image/webp' },
-        { ext: 'svg', mime: 'image/svg+xml' },
+        { ext: 'jpg', mime: 'image/jpeg', buffer: createTestImageBuffer(1024 * 500) },
+        { ext: 'png', mime: 'image/png', buffer: PNG_MAGIC },
+        { ext: 'webp', mime: 'image/webp', buffer: WEBP_MAGIC },
+        { ext: 'svg', mime: 'image/svg+xml', buffer: SVG_CONTENT },
       ];
 
-      for (const { ext, mime } of validMimeTypes) {
+      for (const { ext, mime, buffer } of validMimeTypes) {
         // Reset photos before each upload
         await prisma.package.update({
           where: { id: testPackage1Id },
@@ -412,7 +447,7 @@ describe('Package Photo Upload/Delete Endpoints', () => {
         const res = await request(app)
           .post(`/v1/tenant-admin/packages/${testPackage1Id}/photos`)
           .set('Authorization', `Bearer ${testToken1}`)
-          .attach('photo', imageBuffer, {
+          .attach('photo', buffer, {
             filename: `test-image.${ext}`,
             contentType: mime,
           })
