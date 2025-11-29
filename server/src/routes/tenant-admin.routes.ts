@@ -27,6 +27,7 @@ import {
   ValidationError,
   ForbiddenError,
 } from '../lib/errors';
+import { uploadLimiter } from '../middleware/rateLimiter';
 
 // Configure multer for memory storage
 const upload = multer({
@@ -288,6 +289,41 @@ export function createTenantAdminRoutes(
   });
 
   /**
+   * GET /v1/tenant-admin/packages/:id
+   * Get single package by ID (verifies ownership)
+   */
+  router.get('/packages/:id', async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const tenantAuth = res.locals.tenantAuth;
+      if (!tenantAuth) {
+        res.status(401).json({ error: 'Unauthorized: No tenant authentication' });
+        return;
+      }
+      const tenantId = tenantAuth.tenantId;
+      const packageId = req.params.id;
+
+      const pkg = await catalogService.getPackageById(tenantId, packageId);
+
+      if (!pkg) {
+        res.status(404).json({ error: 'Package not found' });
+        return;
+      }
+
+      res.json({
+        id: pkg.id,
+        slug: pkg.slug,
+        title: pkg.title,
+        description: pkg.description,
+        priceCents: pkg.priceCents,
+        photoUrl: pkg.photoUrl,
+        photos: pkg.photos || [],
+      });
+    } catch (error) {
+      next(error);
+    }
+  });
+
+  /**
    * POST /v1/tenant-admin/packages
    * Create new package for authenticated tenant
    */
@@ -453,8 +489,8 @@ export function createTenantAdminRoutes(
           return;
         }
 
-        // Upload photo
-        const uploadResult = await uploadService.uploadPackagePhoto(req.file as any, packageId);
+        // Upload photo (pass tenantId for Supabase storage path)
+        const uploadResult = await uploadService.uploadPackagePhoto(req.file as any, packageId, tenantId);
 
         // Add photo to package photos array
         const newPhoto = {
@@ -726,6 +762,64 @@ export function createTenantAdminRoutes(
       next(error);
     }
   });
+
+  // ============================================================================
+  // Segment Image Upload Endpoint
+  // ============================================================================
+
+  /**
+   * POST /v1/tenant-admin/segment-image
+   * Upload a hero image for segments
+   *
+   * @returns 201 - Image successfully uploaded with URL
+   * @returns 400 - No file uploaded or invalid file type
+   * @returns 401 - No tenant authentication
+   * @returns 413 - File too large (>5MB, handled by multer middleware)
+   * @returns 500 - Internal server error
+   */
+  router.post(
+    '/segment-image',
+    uploadLimiter, // Rate limit: 100 uploads per hour
+    uploadPackagePhoto.single('file'),
+    handleMulterError,
+    async (req: Request, res: Response, next: NextFunction) => {
+      try {
+        const tenantAuth = res.locals.tenantAuth;
+        if (!tenantAuth) {
+          res.status(401).json({ error: 'Unauthorized: No tenant authentication' });
+          return;
+        }
+        const tenantId = tenantAuth.tenantId;
+
+        // Check if file was uploaded
+        if (!req.file) {
+          res.status(400).json({ error: 'No file uploaded' });
+          return;
+        }
+
+        // Upload segment image
+        const uploadResult = await uploadService.uploadSegmentImage(req.file as any, tenantId);
+
+        logger.info(
+          { tenantId, filename: uploadResult.filename },
+          'Segment image uploaded'
+        );
+
+        res.status(201).json(uploadResult);
+      } catch (error) {
+        logger.error({ error }, 'Error uploading segment image');
+
+        // Handle generic errors from upload service (file validation)
+        if (error instanceof Error) {
+          res.status(400).json({ error: error.message });
+          return;
+        }
+
+        // Pass unknown errors to global error handler
+        next(error);
+      }
+    }
+  );
 
   return router;
 }
