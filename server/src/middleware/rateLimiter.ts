@@ -51,6 +51,23 @@ export const signupLimiter = rateLimit({
     }),
 });
 
+/**
+ * Rate limiter for file uploads
+ * Prevents abuse of storage resources
+ * 100 uploads per hour per IP (generous for legitimate use)
+ */
+export const uploadLimiter = rateLimit({
+  windowMs: 60 * 60 * 1000, // 1 hour
+  max: process.env.NODE_ENV === 'test' ? 500 : 100, // 100 uploads per hour
+  standardHeaders: true,
+  legacyHeaders: false,
+  handler: (_req: Request, res: Response) =>
+    res.status(429).json({
+      error: 'too_many_uploads',
+      message: 'Upload rate limit exceeded. Please try again later.',
+    }),
+});
+
 export const skipIfHealth = (req: Request, _res: Response, next: NextFunction) => {
   if (req.path === '/health' || req.path === '/ready') {
     return next();

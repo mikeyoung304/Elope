@@ -159,6 +159,10 @@ export function createApp(
   app.use('/uploads/packages', express.static(packagePhotoUploadDir));
   logger.info({ uploadDir: packagePhotoUploadDir }, 'Serving package photos from static directory');
 
+  const segmentImageUploadDir = uploadService.getSegmentImageUploadDir();
+  app.use('/uploads/segments', express.static(segmentImageUploadDir));
+  logger.info({ uploadDir: segmentImageUploadDir }, 'Serving segment images from static directory');
+
   // Serve public files (security.txt, etc.)
   const publicDir = path.join(__dirname, '..', 'public');
   app.use('/.well-known', express.static(path.join(publicDir, '.well-known')));
