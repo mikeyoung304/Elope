@@ -65,17 +65,17 @@ export function WaitlistCTASection() {
                 type="submit"
                 size="lg"
                 disabled={isSubmitting}
-                className="bg-white hover:bg-white/90 text-sage font-semibold text-base px-8 py-4 h-auto rounded-full group transition-all duration-300 disabled:opacity-70"
+                className="bg-white hover:bg-white/90 text-sage font-semibold text-base whitespace-nowrap px-8 py-4 h-14 min-w-[220px] rounded-full group transition-all duration-300 disabled:opacity-70"
               >
                 {isSubmitting ? (
-                  <span className="flex items-center gap-2">
+                  <span className="flex items-center justify-center gap-2">
                     <span className="w-4 h-4 border-2 border-sage/30 border-t-sage rounded-full animate-spin" />
                     Sending...
                   </span>
                 ) : (
-                  <span className="flex items-center gap-2">
+                  <span className="flex items-center justify-center gap-2">
                     Request Early Access
-                    <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                    <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform flex-shrink-0" />
                   </span>
                 )}
               </Button>
