@@ -424,12 +424,39 @@ export class PrismaCatalogRepository implements CatalogRepository {
       description: pkg.description || '',
       priceCents: pkg.basePrice,
       photoUrl: undefined,
-      photos: (pkg.photos as unknown as PackagePhoto[]) || [],
+      photos: this.parsePhotosJson(pkg.photos),
       active: pkg.active,
       segmentId: pkg.segmentId,
       grouping: pkg.grouping,
       groupingOrder: pkg.groupingOrder,
     };
+  }
+
+  /**
+   * Safely parse photos JSON field which may be:
+   * - An actual array (from Prisma JSON deserialization)
+   * - A JSON string (from default value "[]" or legacy data)
+   * - null/undefined
+   */
+  private parsePhotosJson(photos: Prisma.JsonValue | undefined): PackagePhoto[] {
+    if (!photos) return [];
+
+    // If it's already an array, use it directly
+    if (Array.isArray(photos)) {
+      return photos as PackagePhoto[];
+    }
+
+    // If it's a string, try to parse it
+    if (typeof photos === 'string') {
+      try {
+        const parsed = JSON.parse(photos);
+        return Array.isArray(parsed) ? parsed : [];
+      } catch {
+        return [];
+      }
+    }
+
+    return [];
   }
 
   private toDomainAddOn(addOn: {
