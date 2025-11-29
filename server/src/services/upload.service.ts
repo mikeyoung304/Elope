@@ -11,8 +11,11 @@ import fs from 'fs';
 import path from 'path';
 import crypto from 'crypto';
 import { SupabaseClient } from '@supabase/supabase-js';
-import { fromBuffer as detectFileType } from 'file-type';
 import { logger } from '../lib/core/logger';
+
+// file-type is a CommonJS module, use require for compatibility with Node 25+ ESM
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+const fileType = require('file-type') as { fromBuffer: (buffer: Buffer) => Promise<{ mime: string; ext: string } | undefined> };
 
 export interface UploadedFile {
   fieldname: string;
@@ -124,7 +127,7 @@ export class UploadService {
 
     // CRITICAL: Verify actual file content via magic bytes
     // This prevents attackers from uploading PHP shells disguised as images
-    const detectedType = await detectFileType(file.buffer);
+    const detectedType = await fileType.fromBuffer(file.buffer);
 
     // SVG files don't have magic bytes (they're XML text), so skip detection for them
     if (file.mimetype === 'image/svg+xml') {
