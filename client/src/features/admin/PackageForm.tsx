@@ -6,7 +6,9 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { ImageUploadField } from "@/components/ImageUploadField";
 import { formatCurrency } from "@/lib/utils";
+import { baseUrl } from "@/lib/api";
 import { useUnsavedChanges } from "@/hooks/useUnsavedChanges";
 import type { PackageFormProps, PackageFormData } from "./types";
 
@@ -158,22 +160,14 @@ export function PackageForm({
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div className="space-y-2">
-            <Label htmlFor="photoUrl" className="text-white/90 text-lg">
-              Photo URL
-            </Label>
-            <Input
-              id="photoUrl"
-              type="url"
-              value={packageForm.photoUrl}
-              onChange={(e) =>
-                onFormChange({ ...packageForm, photoUrl: e.target.value })
-              }
-              placeholder="https://example.com/photo.jpg"
-              disabled={isSaving}
-              className="bg-macon-navy-900 border-white/20 text-white placeholder:text-white/50 focus:border-white/30 text-lg h-12"
-            />
-          </div>
+          <ImageUploadField
+            label="Package Photo"
+            value={packageForm.photoUrl}
+            onChange={(url) => onFormChange({ ...packageForm, photoUrl: url })}
+            uploadEndpoint={`${baseUrl}/v1/tenant-admin/segment-image`}
+            disabled={isSaving}
+            maxSizeMB={5}
+          />
 
           <div className="space-y-2">
             <Label htmlFor="segmentId" className="text-white/90 text-lg">

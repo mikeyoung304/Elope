@@ -3,7 +3,9 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { ImageUploadField } from "@/components/ImageUploadField";
 import { formatCurrency } from "@/lib/utils";
+import { baseUrl } from "@/lib/api";
 import type { AddOnManagerProps } from "./types";
 
 export function AddOnManager({
@@ -74,22 +76,14 @@ export function AddOnManager({
                   required
                 />
               </div>
-              <div className="space-y-2">
-                <Label htmlFor="addOnPhoto" className="text-base text-white/90">
-                  Photo URL
-                </Label>
-                <Input
-                  id="addOnPhoto"
-                  type="url"
-                  value={addOnForm.photoUrl}
-                  onChange={(e) =>
-                    onFormChange({ ...addOnForm, photoUrl: e.target.value })
-                  }
-                  placeholder="https://..."
-                  disabled={isSaving}
-                  className="bg-macon-navy-900 border-white/20 text-white placeholder:text-white/50 focus:border-white/30 text-lg h-12"
-                />
-              </div>
+              <ImageUploadField
+                label="Add-on Photo"
+                value={addOnForm.photoUrl}
+                onChange={(url) => onFormChange({ ...addOnForm, photoUrl: url })}
+                uploadEndpoint={`${baseUrl}/v1/tenant-admin/segment-image`}
+                disabled={isSaving}
+                maxSizeMB={5}
+              />
             </div>
             <div className="space-y-2">
               <Label htmlFor="segmentId" className="text-white/90 text-lg">
