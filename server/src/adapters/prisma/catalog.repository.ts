@@ -443,7 +443,7 @@ export class PrismaCatalogRepository implements CatalogRepository {
 
     // If it's already an array, use it directly
     if (Array.isArray(photos)) {
-      return photos as PackagePhoto[];
+      return photos as unknown as PackagePhoto[];
     }
 
     // If it's a string, try to parse it
