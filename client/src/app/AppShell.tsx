@@ -1,15 +1,11 @@
 /**
- * AppShell with minimal aesthetic design
- * Features: Skip link, ARIA landmarks, focus management, clean typography, mobile menu
+ * AppShell - Minimal header/footer for waitlist landing page
+ * Features: Skip link, ARIA landmarks, focus management, clean typography
  */
 
 import { Outlet, Link, useLocation } from 'react-router-dom';
-import { Menu } from 'lucide-react';
 import { AnimatePresence } from 'framer-motion';
 import { Container } from '@/ui/Container';
-import { cn } from '@/lib/utils';
-import { Button } from '@/components/ui/button';
-import { Sheet, SheetContent, SheetTrigger, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 import { PageTransition } from '@/components/transitions/PageTransition';
 import '@/styles/a11y.css';
 
@@ -39,75 +35,24 @@ export function AppShell() {
           </div>
         )}
 
-        <header className="bg-macon-navy-900 border-b border-macon-navy-800">
+        <header className="absolute top-0 left-0 right-0 z-10 bg-transparent">
           <Container>
             <div className="flex items-center justify-between py-6">
               <Link
                 to="/"
-                className="text-2xl tracking-tight text-white font-semibold hover:text-white/80 transition-colors"
+                className="text-xl tracking-tight text-text-primary font-semibold hover:text-sage transition-colors"
               >
-                Macon AI Solutions
+                MaconAI
               </Link>
-              {/* Desktop Navigation */}
-              <nav aria-label="Primary navigation" className="hidden md:flex items-center gap-8">
-                <a
-                  href="#how-it-works"
-                  className="text-lg tracking-wide text-white hover:text-white/90 transition-colors"
-                >
-                  How It Works
-                </a>
+              {/* Minimal nav - just login for existing users */}
+              <nav aria-label="Primary navigation" className="flex items-center gap-6">
                 <Link
                   to="/login"
-                  className="text-lg tracking-wide text-white hover:text-white/90 transition-colors"
+                  className="text-sm tracking-wide text-text-muted hover:text-text-primary transition-colors"
                 >
                   Log In
                 </Link>
-                <Button
-                  asChild
-                  className="bg-macon-orange hover:bg-macon-orange-dark text-white font-semibold px-6"
-                >
-                  <Link to="/contact">Book Discovery Call</Link>
-                </Button>
               </nav>
-
-              {/* Mobile Menu */}
-              <Sheet>
-                <SheetTrigger className="md:hidden p-2 text-white/90 hover:text-white transition-colors">
-                  <Menu className="w-6 h-6" />
-                  <span className="sr-only">Open menu</span>
-                </SheetTrigger>
-                <SheetContent side="right">
-                  <SheetHeader>
-                    <SheetTitle className="text-macon-navy text-left">Menu</SheetTitle>
-                  </SheetHeader>
-                  <nav className="flex flex-col gap-6 mt-8">
-                    <Link
-                      to="/"
-                      className="text-xl text-neutral-900 hover:text-macon-orange transition-colors font-medium"
-                    >
-                      Home
-                    </Link>
-                    <a
-                      href="#how-it-works"
-                      className="text-xl text-neutral-900 hover:text-macon-orange transition-colors font-medium"
-                    >
-                      How It Works
-                    </a>
-                    <Link
-                      to="/login"
-                      className="text-xl text-neutral-900 hover:text-macon-orange transition-colors font-medium"
-                    >
-                      Log In
-                    </Link>
-                    <Button
-                      asChild
-                      className="bg-macon-orange hover:bg-macon-orange-dark text-white font-semibold w-full mt-4"
-                    >
-                      <Link to="/contact">Book Discovery Call</Link>
-                    </Button>
-                  </nav>
-                </SheetContent>
-              </Sheet>
             </div>
           </Container>
         </header>
@@ -120,68 +65,18 @@ export function AppShell() {
           </AnimatePresence>
         </main>
 
-        <footer className="bg-macon-navy-900 border-t border-macon-navy-800 mt-24">
+        <footer className="bg-surface border-t border-sage-light/20">
           <Container>
-            <div className="py-16">
-              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-12">
-                <div className="md:col-span-2">
-                  <h3 className="text-3xl font-semibold text-white mb-4 tracking-tight">
-                    Macon AI Solutions
-                  </h3>
-                  <p className="text-lg text-white/90 leading-relaxed max-w-md">
-                    Helping business owners escape the admin trap and focus on what they do best. Scheduling, websites, and marketing—handled.
-                  </p>
-                </div>
-                <div>
-                  <h4 className="text-base font-medium text-white mb-4 tracking-wide uppercase">
-                    Company
-                  </h4>
-                  <ul className="space-y-3 text-lg text-white/90">
-                    <li>
-                      <a href="#about" className="hover:text-white transition-colors">
-                        About Us
-                      </a>
-                    </li>
-                    <li>
-                      <a href="#careers" className="hover:text-white transition-colors">
-                        Careers
-                      </a>
-                    </li>
-                    <li>
-                      <Link to="/login" className="hover:text-white transition-colors">
-                        Log In
-                      </Link>
-                    </li>
-                  </ul>
-                </div>
-                <div>
-                  <h4 className="text-base font-medium text-white mb-4 tracking-wide uppercase">
-                    Support
-                  </h4>
-                  <ul className="space-y-3 text-lg text-white/90">
-                    <li>
-                      <a href="#contact" className="hover:text-white transition-colors">
-                        Contact Support
-                      </a>
-                    </li>
-                    <li>
-                      <a href="#privacy" className="hover:text-white transition-colors">
-                        Privacy Policy
-                      </a>
-                    </li>
-                    <li>
-                      <a href="#terms" className="hover:text-white transition-colors">
-                        Terms of Service
-                      </a>
-                    </li>
-                  </ul>
-                </div>
-              </div>
-              <div className="border-t border-macon-navy-800 mt-12 pt-8 text-center">
-                <p className="text-base text-white/80 tracking-wide">
-                  &copy; 2025 Macon AI Solutions. All rights reserved.
-                </p>
-              </div>
+            <div className="py-8 flex flex-col sm:flex-row items-center justify-between gap-4">
+              <p className="text-sm text-text-muted">
+                &copy; {new Date().getFullYear()} MaconAI Solutions
+              </p>
+              <a
+                href="mailto:hello@maconaisolutions.com"
+                className="text-sm text-text-muted hover:text-sage transition-colors"
+              >
+                hello@maconaisolutions.com
+              </a>
             </div>
           </Container>
         </footer>

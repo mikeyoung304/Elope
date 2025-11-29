@@ -1,39 +1,39 @@
 import { HeroSection } from "./HeroSection";
 import { ProblemSection } from "./ProblemSection";
+import { ServicesSection } from "./ServicesSection";
 import { StorefrontSection } from "./StorefrontSection";
-import { PsychologySection } from "./PsychologySection";
 import { CollectiveSection } from "./CollectiveSection";
-import { PartnershipSection } from "./PartnershipSection";
 import { FutureStateSection } from "./FutureStateSection";
-import { FinalCTASection } from "./FinalCTASection";
+import { WaitlistCTASection } from "./WaitlistCTASection";
 
 /**
- * Home page - Managed Storefronts & The Collective
+ * Home page - Pre-Launch Waitlist Landing
  *
- * Premium editorial landing page targeting high-value service businesses:
- * horse farms, elopement agencies, wedding photographers, event planners.
+ * Full-featured landing page with exclusive positioning.
+ * Targeting select service businesses: wedding photographers,
+ * elopement agencies, horse farms, event planners.
  *
  * Section flow:
- * 1. Hero - AI-powered storefronts headline
- * 2. Problem - Pain points they recognize
- * 3. Storefront - 3-tier model explanation
- * 4. Psychology - Why 3 tiers work
- * 5. Collective - AI + team capabilities
- * 6. Partnership - Revenue-share model
- * 7. FutureState - Transformation narrative
- * 8. FinalCTA - Book a discovery call
+ * 1. Hero - Transformation headline + email capture
+ * 2. Problem - Pain points they recognize (builds trust)
+ * 3. Services - Overview of 3 core offerings
+ * 4. Storefront - Deep dive on 3-tier model
+ * 5. Collective - The team/partnership angle
+ * 6. FutureState - The transformation narrative
+ * 7. WaitlistCTA - Final email capture
+ *
+ * Additional sections archived in ./_archive/ for future use.
  */
 export function Home() {
   return (
     <main>
       <HeroSection />
       <ProblemSection />
+      <ServicesSection />
       <StorefrontSection />
-      <PsychologySection />
       <CollectiveSection />
-      <PartnershipSection />
       <FutureStateSection />
-      <FinalCTASection />
+      <WaitlistCTASection />
     </main>
   );
 }
