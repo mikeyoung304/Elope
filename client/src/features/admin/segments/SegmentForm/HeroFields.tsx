@@ -6,6 +6,8 @@
 
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
+import { ImageUploadField } from "@/components/ImageUploadField";
+import { baseUrl } from "@/lib/api";
 
 interface HeroFieldsProps {
   heroTitle: string;
@@ -61,22 +63,14 @@ export function HeroFields({
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div className="space-y-2">
-          <Label htmlFor="heroImage" className="text-white/90 text-lg">
-            Hero Image URL
-          </Label>
-          <Input
-            id="heroImage"
-            type="url"
-            value={heroImage}
-            onChange={(e) => onHeroImageChange(e.target.value)}
-            placeholder="https://example.com/hero.jpg"
-            disabled={disabled}
-            className="bg-macon-navy-900 border-white/20 text-white placeholder:text-white/50 focus:border-white/30 text-lg h-12"
-          />
-        </div>
-      </div>
+      <ImageUploadField
+        label="Hero Image"
+        value={heroImage}
+        onChange={onHeroImageChange}
+        uploadEndpoint={`${baseUrl}/v1/tenant-admin/segment-image`}
+        disabled={disabled}
+        maxSizeMB={5}
+      />
     </>
   );
 }
