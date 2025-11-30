@@ -5,6 +5,26 @@
 
 import { PrismaClient, Segment } from '../../generated/prisma';
 
+/**
+ * Decode HTML entities in a URL string
+ * Fixes cases where URLs get accidentally HTML-encoded (e.g., &#x2F; instead of /)
+ * This can happen due to browser extensions, clipboard operations, or XML serialization
+ */
+function decodeHtmlEntitiesInUrl(url: string | undefined): string | undefined {
+  if (!url) return url;
+  // Decode common HTML entities that might appear in URLs
+  return url
+    .replace(/&#x2F;/g, '/')
+    .replace(/&#47;/g, '/')
+    .replace(/&amp;/g, '&')
+    .replace(/&#x3A;/g, ':')
+    .replace(/&#58;/g, ':')
+    .replace(/&#x3F;/g, '?')
+    .replace(/&#63;/g, '?')
+    .replace(/&#x3D;/g, '=')
+    .replace(/&#61;/g, '=');
+}
+
 export interface CreateSegmentInput {
   tenantId: string;
   slug: string;
@@ -102,7 +122,8 @@ export class PrismaSegmentRepository {
         name: data.name,
         heroTitle: data.heroTitle,
         heroSubtitle: data.heroSubtitle,
-        heroImage: data.heroImage,
+        // Sanitize heroImage URL to prevent HTML-encoded entities
+        heroImage: decodeHtmlEntitiesInUrl(data.heroImage),
         description: data.description,
         metaTitle: data.metaTitle,
         metaDescription: data.metaDescription,
@@ -131,9 +152,17 @@ export class PrismaSegmentRepository {
       throw new Error(`Segment not found or access denied: ${id}`);
     }
 
+    // Sanitize heroImage URL if present to prevent HTML-encoded entities
+    const sanitizedData = {
+      ...data,
+      heroImage: data.heroImage !== undefined
+        ? decodeHtmlEntitiesInUrl(data.heroImage)
+        : undefined,
+    };
+
     return await this.prisma.segment.update({
       where: { id },
-      data,
+      data: sanitizedData,
     });
   }
 

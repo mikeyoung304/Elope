@@ -65,12 +65,18 @@ export function TierDetail({
     };
   }, [tierLevel, tiers]);
 
-  // Build navigation links
-  const buildTierLink = (level: TierLevel) =>
-    segmentSlug ? `/s/${segmentSlug}/${level}` : `/tiers/${level}`;
+  // Build relative navigation links for tenant storefront compatibility
+  // When inside segment: we're at /t/slug/s/segment/tier, so just use tier name
+  // When at root tiers: we're at /t/slug/tiers/tier, so just use tier name
+  const buildTierLink = (level: TierLevel) => level;
 
-  const backLink = segmentSlug ? `/s/${segmentSlug}` : '/tiers';
-  const bookingLink = `/package/${pkg.slug}`;
+  // Back link: ".." goes up one level in the path hierarchy
+  const backLink = '..';
+
+  // Booking link: Navigate to book page within tenant storefront
+  // From /t/slug/s/segment/tier or /t/slug/tiers/tier, we need to go to /t/slug/book
+  // Use relative path with enough ".." to get to tenant root, then "book"
+  const bookingLink = segmentSlug ? '../../../book' : '../../book';
 
   return (
     <div className="min-h-screen bg-neutral-50">

@@ -27,15 +27,15 @@ function SegmentTierDetailContent() {
   const { slug, tier } = useParams<{ slug: string; tier: string }>();
   const { data: segment, isLoading, error } = useSegmentWithPackages(slug || '');
 
-  // Validate params
+  // Validate params - use ".." to go up to parent (segment tiers page)
   if (!slug || !tier) {
-    return <Navigate to="/" replace />;
+    return <Navigate to=".." replace />;
   }
 
-  // Validate tier level
+  // Validate tier level - go back to segment tiers page if invalid
   const tierLevel = tier.toLowerCase();
   if (!TIER_LEVELS.includes(tierLevel as TierLevel)) {
-    return <Navigate to={`/s/${slug}`} replace />;
+    return <Navigate to=".." replace />;
   }
 
   // Loading state
@@ -43,9 +43,9 @@ function SegmentTierDetailContent() {
     return <Loading label="Loading tier details..." />;
   }
 
-  // Error or not found
+  // Error or not found - go back to storefront home
   if (error || !segment) {
-    return <Navigate to="/" replace />;
+    return <Navigate to="../.." replace />;
   }
 
   const packages = segment.packages || [];
@@ -54,7 +54,7 @@ function SegmentTierDetailContent() {
   const pkg = packages.find((p: PackageDto) => p.grouping?.toLowerCase() === tierLevel);
 
   if (!pkg) {
-    return <Navigate to={`/s/${slug}`} replace />;
+    return <Navigate to=".." replace />;
   }
 
   return (
@@ -75,15 +75,15 @@ function RootTierDetailContent() {
   const { tier } = useParams<{ tier: string }>();
   const { data: packages, isLoading, error } = usePackages();
 
-  // Validate tier param
+  // Validate tier param - use ".." to go back to tiers list
   if (!tier) {
-    return <Navigate to="/tiers" replace />;
+    return <Navigate to=".." replace />;
   }
 
-  // Validate tier level
+  // Validate tier level - use ".." to go back to tiers list
   const tierLevel = tier.toLowerCase();
   if (!TIER_LEVELS.includes(tierLevel as TierLevel)) {
-    return <Navigate to="/tiers" replace />;
+    return <Navigate to=".." replace />;
   }
 
   // Loading state
@@ -91,9 +91,9 @@ function RootTierDetailContent() {
     return <Loading label="Loading tier details..." />;
   }
 
-  // Error or not found
+  // Error or not found - use ".." to go back to tiers list
   if (error || !packages) {
-    return <Navigate to="/tiers" replace />;
+    return <Navigate to=".." replace />;
   }
 
   // Filter to root packages (no segment) with valid tier groupings - memoized
@@ -112,7 +112,7 @@ function RootTierDetailContent() {
   const pkg = rootPackages.find((p: PackageDto) => p.grouping?.toLowerCase() === tierLevel);
 
   if (!pkg) {
-    return <Navigate to="/tiers" replace />;
+    return <Navigate to=".." replace />;
   }
 
   return (

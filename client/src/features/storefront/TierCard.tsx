@@ -9,7 +9,7 @@
  * - Shows price (tier cards always display price)
  * - "Most Popular" badge only when exactly 3 tiers AND tier is middle
  * - CTA: "View Details"
- * - Links to /s/{segmentSlug}/{tier} or /tiers/{tier}
+ * - Uses relative links for tenant storefront compatibility
  * - Memoized to prevent unnecessary re-renders
  */
 
@@ -42,10 +42,9 @@ export const TierCard = memo(function TierCard({
   // Only highlight middle tier when exactly 3 tiers exist
   const isHighlighted = totalTierCount === 3 && tierLevel === 'middle';
 
-  // Build link based on whether we're in a segment context
-  const href = segmentSlug
-    ? `/s/${segmentSlug}/${tierLevel}`
-    : `/tiers/${tierLevel}`;
+  // Build relative link based on whether we're in a segment context
+  // Relative paths resolve correctly within /t/:tenantSlug routes
+  const href = segmentSlug ? `${tierLevel}` : `tiers/${tierLevel}`;
 
   // Get image URL, preferring new photos array over legacy photoUrl
   const imageUrl = pkg.photos?.[0]?.url || pkg.photoUrl || null;

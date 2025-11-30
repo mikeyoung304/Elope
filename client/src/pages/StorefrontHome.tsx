@@ -48,13 +48,15 @@ function StorefrontHomeContent() {
   }
 
   // 0 segments: redirect to root tiers (with replace - no back needed)
+  // Use relative path "tiers" so it resolves correctly within /t/:tenantSlug
   if (!segments || segments.length === 0) {
-    return <Navigate to="/tiers" replace />;
+    return <Navigate to="tiers" replace />;
   }
 
   // 1 segment: auto-skip to that segment's tiers (without replace for back button)
+  // Use relative path "s/{slug}" so it resolves correctly within /t/:tenantSlug
   if (segments.length === 1) {
-    return <Navigate to={`/s/${segments[0].slug}`} />;
+    return <Navigate to={`s/${segments[0].slug}`} />;
   }
 
   // 2+ segments: show segment selector

@@ -8,7 +8,7 @@
  * - Maps SegmentDto fields to ChoiceCardBase props
  * - No price display (segments don't show price)
  * - CTA: "See Packages"
- * - Links to /s/{slug}
+ * - Uses relative links (s/{slug}) for tenant storefront compatibility
  * - Memoized to prevent unnecessary re-renders
  */
 
@@ -21,6 +21,8 @@ interface SegmentCardProps {
 }
 
 export const SegmentCard = memo(function SegmentCard({ segment }: SegmentCardProps) {
+  // Use relative path so it works within tenant storefront (/t/:tenantSlug)
+  // "s/wellness" resolves to "/t/plate/s/wellness" when inside /t/plate
   return (
     <ChoiceCardBase
       title={segment.heroTitle}
@@ -29,7 +31,7 @@ export const SegmentCard = memo(function SegmentCard({ segment }: SegmentCardPro
       imageAlt={segment.heroTitle}
       categoryLabel={segment.name}
       cta="See Packages"
-      href={`/s/${segment.slug}`}
+      href={`s/${segment.slug}`}
       testId={`segment-card-${segment.slug}`}
     />
   );

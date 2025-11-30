@@ -21,9 +21,9 @@ function SegmentTiersContent() {
   const { slug } = useParams<{ slug: string }>();
   const { data: segment, isLoading, error } = useSegmentWithPackages(slug || '');
 
-  // Redirect if no slug provided
+  // Redirect if no slug provided - use relative ".." to go up one level
   if (!slug) {
-    return <Navigate to="/" replace />;
+    return <Navigate to=".." replace />;
   }
 
   // Loading state
@@ -46,9 +46,9 @@ function SegmentTiersContent() {
     );
   }
 
-  // Error state or segment not found
+  // Error state or segment not found - use relative ".." to go up one level
   if (error || !segment) {
-    return <Navigate to="/" replace />;
+    return <Navigate to=".." replace />;
   }
 
   const packages = segment.packages || [];
@@ -59,7 +59,7 @@ function SegmentTiersContent() {
       segmentSlug={slug}
       title={segment.heroTitle || 'Choose Your Experience'}
       subtitle={segment.heroSubtitle || segment.description || 'Select the tier that best fits your needs'}
-      backLink="/"
+      backLink=".."
       backLinkText="Back to all options"
     />
   );
