@@ -86,6 +86,10 @@ export class FakeCatalogRepository implements CatalogRepository {
     return this.addOns.filter((a) => a.packageId === packageId);
   }
 
+  async getAddOnById(tenantId: string, id: string): Promise<AddOn | null> {
+    return this.addOns.find((a) => a.id === id) || null;
+  }
+
   async createPackage(tenantId: string, data: {
     slug: string;
     title: string;

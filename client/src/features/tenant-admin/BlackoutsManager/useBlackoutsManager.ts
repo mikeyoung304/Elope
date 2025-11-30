@@ -1,4 +1,4 @@
-import { useState, useCallback } from "react";
+import { useState } from "react";
 import { toast } from "sonner";
 import { api } from "@/lib/api";
 import { useSuccessMessage } from "@/hooks/useSuccessMessage";
@@ -17,7 +17,7 @@ export function useBlackoutsManager(onBlackoutsChange: () => void) {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [blackoutToDelete, setBlackoutToDelete] = useState<BlackoutDto | null>(null);
 
-  const handleAddBlackout = useCallback(async (e: React.FormEvent) => {
+  const handleAddBlackout = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newBlackoutDate) return;
 
@@ -42,21 +42,23 @@ export function useBlackoutsManager(onBlackoutsChange: () => void) {
         });
       }
     } catch (error) {
-      console.error("Failed to create blackout:", error);
+      if (import.meta.env.DEV) {
+        console.error("Failed to create blackout:", error);
+      }
       toast.error("An error occurred while creating the blackout date", {
         description: "Please try again or contact support.",
       });
     } finally {
       setIsAdding(false);
     }
-  }, [newBlackoutDate, newBlackoutReason, showSuccess, onBlackoutsChange]);
+  };
 
-  const handleDeleteClick = useCallback((blackout: BlackoutDto) => {
+  const handleDeleteClick = (blackout: BlackoutDto) => {
     setBlackoutToDelete(blackout);
     setDeleteDialogOpen(true);
-  }, []);
+  };
 
-  const confirmDelete = useCallback(async () => {
+  const confirmDelete = async () => {
     if (!blackoutToDelete) return;
 
     try {
@@ -76,17 +78,19 @@ export function useBlackoutsManager(onBlackoutsChange: () => void) {
         });
       }
     } catch (error) {
-      console.error("Failed to delete blackout:", error);
+      if (import.meta.env.DEV) {
+        console.error("Failed to delete blackout:", error);
+      }
       toast.error("An error occurred while deleting the blackout date", {
         description: "Please try again or contact support.",
       });
     }
-  }, [blackoutToDelete, showSuccess, onBlackoutsChange]);
+  };
 
-  const cancelDelete = useCallback(() => {
+  const cancelDelete = () => {
     setDeleteDialogOpen(false);
     setBlackoutToDelete(null);
-  }, []);
+  };
 
   // Calculate if form has unsaved changes
   const isDirty = newBlackoutDate.trim() !== "" || newBlackoutReason.trim() !== "";

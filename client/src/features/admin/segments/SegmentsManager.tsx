@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect } from "react";
 import type { SegmentDto } from "@macon/contracts";
 import { api } from "@/lib/api";
 import { SegmentForm } from "./SegmentForm";
@@ -13,7 +13,7 @@ export function SegmentsManager() {
   const [isLoading, setIsLoading] = useState(true);
   const { successMessage, showSuccess } = useSuccessMessage();
 
-  const fetchSegments = useCallback(async () => {
+  const fetchSegments = async () => {
     setIsLoading(true);
     try {
       const result = await api.tenantAdminGetSegments();
@@ -25,11 +25,12 @@ export function SegmentsManager() {
     } finally {
       setIsLoading(false);
     }
-  }, []);
+  };
 
   useEffect(() => {
     fetchSegments();
-  }, [fetchSegments]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const {
     isCreatingSegment,

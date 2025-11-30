@@ -29,12 +29,12 @@ export function useSuccessMessage(duration = 3000) {
     [duration]
   );
 
-  const clearMessage = useCallback(() => {
+  const clearMessage = () => {
     if (timeoutRef.current) {
       clearTimeout(timeoutRef.current);
     }
     setMessage(null);
-  }, []);
+  };
 
   // Cleanup on unmount
   useEffect(() => {

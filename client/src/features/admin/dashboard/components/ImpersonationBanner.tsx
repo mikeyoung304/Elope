@@ -28,11 +28,15 @@ export function ImpersonationBanner({
         // Reload to return to normal admin view
         window.location.reload();
       } else {
-        console.error("Stop impersonation failed:", result.status);
+        if (import.meta.env.DEV) {
+          console.error("Stop impersonation failed:", result.status);
+        }
         alert("Failed to stop impersonation. Please try again.");
       }
     } catch (error) {
-      console.error("Stop impersonation error:", error);
+      if (import.meta.env.DEV) {
+        console.error("Stop impersonation error:", error);
+      }
       alert("An error occurred while stopping impersonation.");
     }
   };

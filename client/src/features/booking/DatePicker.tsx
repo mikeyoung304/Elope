@@ -105,7 +105,9 @@ export function DatePicker({ selected, onSelect }: DatePickerProps) {
         onSelect(undefined);
       }
     } catch (error) {
-      console.error("Error checking availability:", error);
+      if (import.meta.env.DEV) {
+        console.error("Error checking availability:", error);
+      }
       // On error, allow selection (fail open)
       onSelect(date);
     }

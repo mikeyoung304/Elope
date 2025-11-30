@@ -511,6 +511,86 @@ export class PrismaBookingRepository implements BookingRepository {
   }
 
   /**
+   * Find all TIMESLOT bookings within a date range (batch query)
+   *
+   * PERFORMANCE: Single query optimization to avoid N+1 problem.
+   * Used by getNextAvailableSlot to batch-fetch bookings for entire search window.
+   *
+   * MULTI-TENANT: Filtered by tenantId for data isolation
+   *
+   * @param tenantId - Tenant ID for isolation
+   * @param startDate - Start of date range (inclusive)
+   * @param endDate - End of date range (inclusive)
+   * @param serviceId - Optional service ID to filter by specific service
+   * @returns Array of time-slot bookings for conflict detection
+   *
+   * @example
+   * ```typescript
+   * const bookings = await repository.findTimeslotBookingsInRange(
+   *   'tenant_123',
+   *   new Date('2025-06-01'),
+   *   new Date('2025-06-30'),
+   *   'service_abc'
+   * );
+   * // Returns all bookings from June 1-30 in a single query
+   * ```
+   */
+  async findTimeslotBookingsInRange(
+    tenantId: string,
+    startDate: Date,
+    endDate: Date,
+    serviceId?: string
+  ): Promise<TimeslotBooking[]> {
+    // Calculate start and end of date range in UTC
+    const startOfRange = new Date(startDate);
+    startOfRange.setUTCHours(0, 0, 0, 0);
+
+    const endOfRange = new Date(endDate);
+    endOfRange.setUTCHours(23, 59, 59, 999);
+
+    const bookings = await this.prisma.booking.findMany({
+      where: {
+        tenantId,
+        bookingType: 'TIMESLOT',
+        startTime: {
+          gte: startOfRange,
+          lte: endOfRange,
+        },
+        // Only filter by serviceId if provided
+        ...(serviceId && { serviceId }),
+        // Exclude cancelled bookings from conflict detection
+        status: {
+          in: ['PENDING', 'CONFIRMED'],
+        },
+      },
+      select: {
+        id: true,
+        tenantId: true,
+        serviceId: true,
+        startTime: true,
+        endTime: true,
+        status: true,
+      },
+    });
+
+    // Map to TimeslotBooking type (filter out nulls and type-narrow)
+    return bookings
+      .filter((b): b is typeof b & {
+        serviceId: string;
+        startTime: Date;
+        endTime: Date;
+      } => b.serviceId !== null && b.startTime !== null && b.endTime !== null)
+      .map((b) => ({
+        id: b.id,
+        tenantId: b.tenantId,
+        serviceId: b.serviceId,
+        startTime: b.startTime,
+        endTime: b.endTime,
+        status: b.status as TimeslotBooking['status'],
+      }));
+  }
+
+  /**
    * Find all appointments (TIMESLOT bookings) with optional filters
    *
    * Performs server-side filtering directly in the database query.
@@ -539,8 +619,36 @@ export class PrismaBookingRepository implements BookingRepository {
       serviceId?: string;
       startDate?: string;
       endDate?: string;
+      limit?: number;
+      offset?: number;
     }
   ): Promise<AppointmentDto[]> {
+    // P2 #052 FIX: Pagination constants to prevent DoS via unbounded queries
+    const MAX_LIMIT = 500;
+    const DEFAULT_LIMIT = 100;
+    const MAX_DATE_RANGE_DAYS = 90;
+
+    // Apply pagination with safe defaults
+    const limit = Math.min(filters?.limit ?? DEFAULT_LIMIT, MAX_LIMIT);
+    const offset = Math.max(filters?.offset ?? 0, 0);
+
+    // Validate date range to prevent excessive queries
+    if (filters?.startDate && filters?.endDate) {
+      const start = new Date(filters.startDate);
+      const end = new Date(filters.endDate);
+      const daysDiff = Math.ceil((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24));
+
+      if (daysDiff > MAX_DATE_RANGE_DAYS) {
+        throw new Error(
+          `Date range too large. Maximum allowed: ${MAX_DATE_RANGE_DAYS} days, requested: ${daysDiff} days`
+        );
+      }
+
+      if (daysDiff < 0) {
+        throw new Error('Invalid date range: endDate must be after startDate');
+      }
+    }
+
     // Build WHERE clause with filters
     const where: {
       tenantId: string;
@@ -587,6 +695,8 @@ export class PrismaBookingRepository implements BookingRepository {
         { startTime: 'asc' },
         { createdAt: 'desc' },
       ],
+      take: limit,
+      skip: offset,
     });
 
     // Map to AppointmentDto

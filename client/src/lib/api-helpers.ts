@@ -2,6 +2,8 @@
  * Shared API client utilities
  */
 
+import { logger } from './logger';
+
 /**
  * API Error class for structured error handling
  */
@@ -24,7 +26,7 @@ export function handleApiError(error: unknown): never {
     throw error;
   }
 
-  console.error('API Error:', error);
+  logger.error('API Error', { error });
   throw new Error('An unexpected error occurred');
 }
 

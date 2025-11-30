@@ -1,4 +1,4 @@
-import { useState, useCallback } from "react";
+import { useState } from "react";
 import { toast } from "sonner";
 import { api } from "@/lib/api";
 import { useSuccessMessage } from "@/hooks/useSuccessMessage";
@@ -31,7 +31,7 @@ export function useAvailabilityRulesManager(onRulesChange: () => void) {
     effectiveTo: null,
   });
 
-  const handleCreateRule = useCallback(() => {
+  const handleCreateRule = () => {
     setIsCreatingRule(true);
     setError(null);
     // Reset form to defaults
@@ -43,14 +43,14 @@ export function useAvailabilityRulesManager(onRulesChange: () => void) {
       effectiveFrom: getTodayISODate(),
       effectiveTo: null,
     });
-  }, []);
+  };
 
-  const handleCancelRuleForm = useCallback(() => {
+  const handleCancelRuleForm = () => {
     setIsCreatingRule(false);
     setError(null);
-  }, []);
+  };
 
-  const handleSaveRule = useCallback(async (e: React.FormEvent) => {
+  const handleSaveRule = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSaving(true);
     setError(null);
@@ -91,7 +91,9 @@ export function useAvailabilityRulesManager(onRulesChange: () => void) {
         });
       }
     } catch (err) {
-      console.error("Failed to create availability rule:", err);
+      if (import.meta.env.DEV) {
+        console.error("Failed to create availability rule:", err);
+      }
       setError("An error occurred while creating the rule");
       toast.error("An error occurred while creating the availability rule", {
         description: "Please try again or contact support.",
@@ -99,14 +101,14 @@ export function useAvailabilityRulesManager(onRulesChange: () => void) {
     } finally {
       setIsSaving(false);
     }
-  }, [ruleForm, showSuccess, onRulesChange]);
+  };
 
-  const handleDeleteClick = useCallback((rule: AvailabilityRuleDto) => {
+  const handleDeleteClick = (rule: AvailabilityRuleDto) => {
     setRuleToDelete(rule);
     setDeleteDialogOpen(true);
-  }, []);
+  };
 
-  const confirmDelete = useCallback(async () => {
+  const confirmDelete = async () => {
     if (!ruleToDelete) return;
 
     try {
@@ -126,17 +128,19 @@ export function useAvailabilityRulesManager(onRulesChange: () => void) {
         });
       }
     } catch (err) {
-      console.error("Failed to delete availability rule:", err);
+      if (import.meta.env.DEV) {
+        console.error("Failed to delete availability rule:", err);
+      }
       toast.error("An error occurred while deleting the availability rule", {
         description: "Please try again or contact support.",
       });
     }
-  }, [ruleToDelete, showSuccess, onRulesChange]);
+  };
 
-  const cancelDelete = useCallback(() => {
+  const cancelDelete = () => {
     setDeleteDialogOpen(false);
     setRuleToDelete(null);
-  }, []);
+  };
 
   return {
     // Form state

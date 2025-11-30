@@ -81,7 +81,9 @@ export function LogoUploadButton({
       // Clear success indicator after 3 seconds
       setTimeout(() => setUploadSuccess(false), 3000);
     } catch (error) {
-      console.error("Logo upload failed:", error);
+      if (import.meta.env.DEV) {
+        console.error("Logo upload failed:", error);
+      }
       onUploadError?.(error instanceof Error ? error.message : "Failed to upload logo");
       // Reset preview on error
       setPreviewUrl(currentLogoUrl);

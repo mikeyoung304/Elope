@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { Loader2 } from "lucide-react";
 import { api } from "../../lib/api";
 import { logger } from "../../lib/logger";
@@ -56,7 +56,7 @@ export function BrandingEditor({ branding, isLoading, onBrandingChange }: Brandi
     }
   }, [branding]);
 
-  const handleSave = useCallback(async (e: React.FormEvent) => {
+  const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
 
@@ -104,7 +104,7 @@ export function BrandingEditor({ branding, isLoading, onBrandingChange }: Brandi
     } finally {
       setIsSaving(false);
     }
-  }, [primaryColor, secondaryColor, accentColor, backgroundColor, fontFamily, logoUrl, showSuccess, onBrandingChange]);
+  };
 
   return (
     <div className="space-y-6">

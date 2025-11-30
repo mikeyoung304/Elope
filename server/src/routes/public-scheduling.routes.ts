@@ -237,6 +237,20 @@ export function createPublicSchedulingRoutes(
       // Determine timezone for response (client timezone or service timezone)
       const responseTimezone = clientTimezone ?? service.timezone;
 
+      // Log if falling back to service timezone
+      if (!clientTimezone) {
+        logger.warn(
+          {
+            tenantId,
+            serviceId,
+            fallbackTimezone: service.timezone,
+            date: dateStr,
+            context: 'available_slots_query',
+          },
+          'Timezone fallback used - no client timezone provided in available slots query'
+        );
+      }
+
       logger.info(
         {
           tenantId,

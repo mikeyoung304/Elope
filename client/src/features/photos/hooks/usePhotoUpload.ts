@@ -1,6 +1,7 @@
 import { useState, useCallback } from "react";
 import { baseUrl } from "@/lib/api";
 import { getAuthToken } from "@/lib/auth";
+import { logger } from "@/lib/logger";
 
 /**
  * Package photo data structure
@@ -63,20 +64,20 @@ export function usePhotoUpload({
   /**
    * Show success message temporarily
    */
-  const showSuccess = useCallback((message: string) => {
+  const showSuccess = (message: string) => {
     setSuccessMessage(message);
     setTimeout(() => setSuccessMessage(null), 3000);
-  }, []);
+  };
 
   /**
    * Update photos state and notify parent
    */
-  const updatePhotos = useCallback((newPhotos: PackagePhoto[]) => {
+  const updatePhotos = (newPhotos: PackagePhoto[]) => {
     setPhotos(newPhotos);
     if (onPhotosChange) {
       onPhotosChange(newPhotos);
     }
-  }, [onPhotosChange]);
+  };
 
   /**
    * Validate file before upload
@@ -158,7 +159,7 @@ export function usePhotoUpload({
       updatePhotos(newPhotos);
       showSuccess('Photo uploaded successfully');
     } catch (err) {
-      console.error('Upload error:', err);
+      logger.error('Upload error', { error: err, packageId, component: 'usePhotoUpload' });
       setError(err instanceof Error ? err.message : 'An error occurred while uploading');
     } finally {
       setIsUploading(false);
@@ -206,7 +207,7 @@ export function usePhotoUpload({
       updatePhotos(newPhotos);
       showSuccess('Photo deleted successfully');
     } catch (err) {
-      console.error('Delete error:', err);
+      logger.error('Delete error', { error: err, packageId, filename: photo.filename, component: 'usePhotoUpload' });
       setError(err instanceof Error ? err.message : 'An error occurred while deleting');
     } finally {
       setIsDeleting(false);

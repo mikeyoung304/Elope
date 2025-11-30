@@ -17,7 +17,7 @@
  * - DELETE /v1/tenant-admin/availability-rules/:id - Delete rule
  */
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect } from "react";
 import type { AvailabilityRuleDto, ServiceDto } from "@macon/contracts";
 import { api } from "@/lib/api";
 import { SuccessMessage } from "@/components/shared/SuccessMessage";
@@ -32,7 +32,7 @@ export function AvailabilityRulesManager() {
   const [services, setServices] = useState<ServiceDto[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
-  const fetchRules = useCallback(async () => {
+  const fetchRules = async () => {
     setIsLoading(true);
     try {
       const result = await api.tenantAdminGetAvailabilityRules();
@@ -40,13 +40,15 @@ export function AvailabilityRulesManager() {
         setRules(result.body);
       }
     } catch (error) {
-      console.error("Failed to fetch availability rules:", error);
+      if (import.meta.env.DEV) {
+        console.error("Failed to fetch availability rules:", error);
+      }
     } finally {
       setIsLoading(false);
     }
-  }, []);
+  };
 
-  const fetchServices = useCallback(async () => {
+  const fetchServices = async () => {
     try {
       const result = await api.tenantAdminGetServices();
       if (result.status === 200) {
@@ -55,14 +57,17 @@ export function AvailabilityRulesManager() {
         setServices(sortedServices);
       }
     } catch (error) {
-      console.error("Failed to fetch services:", error);
+      if (import.meta.env.DEV) {
+        console.error("Failed to fetch services:", error);
+      }
     }
-  }, []);
+  };
 
   useEffect(() => {
     fetchRules();
     fetchServices();
-  }, [fetchRules, fetchServices]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const {
     isCreatingRule,

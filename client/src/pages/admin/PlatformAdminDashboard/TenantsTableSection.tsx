@@ -9,6 +9,7 @@ import {
   Settings
 } from "lucide-react";
 import { api } from "../../../lib/api";
+import { logger } from "../../../lib/logger";
 import { Card } from "../../../components/ui/card";
 import { Button } from "../../../components/ui/button";
 import { Input } from "../../../components/ui/input";
@@ -47,11 +48,11 @@ export function TenantsTableSection({ tenants, isLoading }: TenantsTableSectionP
         // Token is stored by api.adminImpersonate, reload to reinitialize with impersonation context
         window.location.reload();
       } else {
-        console.error("Impersonation failed:", result.status);
+        logger.error("Impersonation failed", { status: result.status, component: "TenantsTableSection" });
         alert("Failed to sign in as tenant. Please try again.");
       }
     } catch (error) {
-      console.error("Impersonation error:", error);
+      logger.error("Impersonation error", { error, component: "TenantsTableSection" });
       alert("An error occurred while signing in as tenant.");
     } finally {
       setImpersonatingId(null);

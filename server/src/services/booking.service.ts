@@ -47,12 +47,16 @@ export interface AppointmentPaymentCompletedInput {
 
 /**
  * Filters for querying appointments
+ *
+ * P2 #052 FIX: Added pagination to prevent DoS via unbounded queries
  */
 export interface GetAppointmentsFilters {
   status?: 'PENDING' | 'CONFIRMED' | 'CANCELED' | 'FULFILLED';
   serviceId?: string;
   startDate?: Date;
   endDate?: Date;
+  limit?: number;
+  offset?: number;
 }
 
 export class BookingService {
@@ -648,27 +652,36 @@ export class BookingService {
    * Returns only TIMESLOT bookings (excludes legacy DATE bookings).
    * Results are ordered by startTime ascending.
    *
+   * P2 #052 FIX: Delegates to repository with pagination to prevent DoS.
+   * - Default limit: 100 appointments
+   * - Maximum limit: 500 appointments
+   * - Maximum date range: 90 days
+   *
    * @param tenantId - Tenant ID for data isolation
    * @param filters - Optional filters
    * @param filters.status - Filter by booking status
    * @param filters.serviceId - Filter by service ID
    * @param filters.startDate - Filter by start date (inclusive)
    * @param filters.endDate - Filter by end date (inclusive)
+   * @param filters.limit - Maximum number of results to return (default 100, max 500)
+   * @param filters.offset - Number of results to skip for pagination (default 0)
    *
    * @returns Array of appointment bookings
    *
    * @example
    * ```typescript
-   * // Get all confirmed appointments
+   * // Get all confirmed appointments (uses default limit of 100)
    * const appointments = await bookingService.getAppointments('tenant_123', {
    *   status: 'CONFIRMED'
    * });
    *
-   * // Get appointments for a specific service in a date range
+   * // Get appointments for a specific service in a date range with pagination
    * const serviceAppointments = await bookingService.getAppointments('tenant_123', {
    *   serviceId: 'service_abc',
    *   startDate: new Date('2025-06-01'),
-   *   endDate: new Date('2025-06-30')
+   *   endDate: new Date('2025-06-30'),
+   *   limit: 50,
+   *   offset: 0
    * });
    * ```
    */
@@ -676,39 +689,17 @@ export class BookingService {
     tenantId: string,
     filters?: GetAppointmentsFilters
   ): Promise<any[]> {
-    // Get all bookings for this tenant
-    const allBookings = await this.bookingRepo.findAll(tenantId);
+    // Delegate to repository with pagination
+    // Convert Date objects to ISO strings for repository
+    const repositoryFilters = {
+      status: filters?.status,
+      serviceId: filters?.serviceId,
+      startDate: filters?.startDate?.toISOString().split('T')[0],
+      endDate: filters?.endDate?.toISOString().split('T')[0],
+      limit: filters?.limit,
+      offset: filters?.offset,
+    };
 
-    // Filter to only TIMESLOT bookings
-    let appointments = allBookings.filter((booking: any) => booking.bookingType === 'TIMESLOT');
-
-    // Apply optional filters
-    if (filters?.status) {
-      appointments = appointments.filter((booking: any) => booking.status === filters.status);
-    }
-
-    if (filters?.serviceId) {
-      appointments = appointments.filter((booking: any) => booking.serviceId === filters.serviceId);
-    }
-
-    if (filters?.startDate) {
-      appointments = appointments.filter((booking: any) =>
-        booking.startTime && new Date(booking.startTime) >= filters.startDate!
-      );
-    }
-
-    if (filters?.endDate) {
-      appointments = appointments.filter((booking: any) =>
-        booking.startTime && new Date(booking.startTime) <= filters.endDate!
-      );
-    }
-
-    // Sort by startTime ascending
-    appointments.sort((a: any, b: any) => {
-      if (!a.startTime || !b.startTime) return 0;
-      return new Date(a.startTime).getTime() - new Date(b.startTime).getTime();
-    });
-
-    return appointments;
+    return this.bookingRepo.findAppointments(tenantId, repositoryFilters);
   }
 }

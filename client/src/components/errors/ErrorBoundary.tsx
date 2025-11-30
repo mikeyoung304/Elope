@@ -50,8 +50,10 @@ export class ErrorBoundary extends React.Component<Props, State> {
   }
 
   componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
-    // Log error to console
-    console.error('Error boundary caught:', error, errorInfo);
+    // Log error to console in development only
+    if (import.meta.env.DEV) {
+      console.error('Error boundary caught:', error, errorInfo);
+    }
 
     // Report to Sentry with React context
     captureException(error, {

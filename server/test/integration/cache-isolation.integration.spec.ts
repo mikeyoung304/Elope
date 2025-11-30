@@ -66,9 +66,9 @@ describe.sequential('Cache Tenant Isolation - Integration Tests', () => {
       await catalogService.getAllPackages(tenantA_id);
 
       // Second call - should hit cache
-      const stats1 = ctx.cache.getStats();
+      const stats1 = await ctx.cache.getStats();
       await catalogService.getAllPackages(tenantA_id);
-      const stats2 = ctx.cache.getStats();
+      const stats2 = await ctx.cache.getStats();
 
       // Verify cache hit occurred
       expect(stats2.hits).toBe(stats1.hits + 1);
@@ -84,9 +84,9 @@ describe.sequential('Cache Tenant Isolation - Integration Tests', () => {
       await catalogService.getPackageBySlug(tenantA_id, pkg.slug);
 
       // Second call - should hit cache
-      const stats1 = ctx.cache.getStats();
+      const stats1 = await ctx.cache.getStats();
       await catalogService.getPackageBySlug(tenantA_id, pkg.slug);
-      const stats2 = ctx.cache.getStats();
+      const stats2 = await ctx.cache.getStats();
 
       // Verify cache hit occurred
       expect(stats2.hits).toBe(stats1.hits + 1);
@@ -133,7 +133,7 @@ describe.sequential('Cache Tenant Isolation - Integration Tests', () => {
 
       // Verify both tenants have their own cache keys
       // Each tenant should have 1 cache miss (initial fetch)
-      const stats = ctx.cache.getStats();
+      const stats = await ctx.cache.getStats();
       expect(stats.misses).toBe(2); // 2 different tenants, 2 cache misses
     });
 
@@ -189,7 +189,7 @@ describe.sequential('Cache Tenant Isolation - Integration Tests', () => {
       await catalogService.getAllPackages(tenantB_id); // Miss
       await catalogService.getAllPackages(tenantB_id); // Hit
 
-      const stats = ctx.cache.getStats();
+      const stats = await ctx.cache.getStats();
 
       // Should have 2 cache misses (one per tenant's first call)
       expect(stats.misses).toBe(2);
@@ -240,7 +240,7 @@ describe.sequential('Cache Tenant Isolation - Integration Tests', () => {
       // Tenant B should get cache hit (cache was NOT invalidated)
       await catalogService.getAllPackages(tenantB_id);
 
-      const stats = ctx.cache.getStats();
+      const stats = await ctx.cache.getStats();
 
       // Verify Tenant A cache miss and Tenant B cache hit
       expect(stats.misses).toBeGreaterThanOrEqual(1); // Tenant A
@@ -286,7 +286,7 @@ describe.sequential('Cache Tenant Isolation - Integration Tests', () => {
       const cachedA = await catalogService.getPackageBySlug(tenantA_id, 'deluxe-invalidation-test');
       expect(cachedA.title).toBe('Deluxe - Tenant A');
 
-      const stats = ctx.cache.getStats();
+      const stats = await ctx.cache.getStats();
 
       // Verify Tenant B cache miss and Tenant A cache hit
       expect(stats.misses).toBeGreaterThanOrEqual(1); // Tenant B
@@ -323,7 +323,7 @@ describe.sequential('Cache Tenant Isolation - Integration Tests', () => {
       expect(allPackages[0].priceCents).toBe(550000);
       expect(specificPackage.priceCents).toBe(550000);
 
-      const stats = ctx.cache.getStats();
+      const stats = await ctx.cache.getStats();
 
       // Should have 2 cache misses (both caches invalidated)
       expect(stats.misses).toBe(2);
@@ -370,7 +370,7 @@ describe.sequential('Cache Tenant Isolation - Integration Tests', () => {
         'new-slug-test-unique'
       );
 
-      const stats = ctx.cache.getStats();
+      const stats = await ctx.cache.getStats();
 
       // Verify cache miss occurred and package was updated
       expect(stats.misses).toBe(1);
@@ -401,7 +401,7 @@ describe.sequential('Cache Tenant Isolation - Integration Tests', () => {
       // Fetch all packages - should be cache miss (cache invalidated)
       const packages = await catalogService.getAllPackages(tenantA_id);
 
-      const stats = ctx.cache.getStats();
+      const stats = await ctx.cache.getStats();
 
       // Verify cache was invalidated
       expect(stats.misses).toBeGreaterThanOrEqual(1);
@@ -547,7 +547,7 @@ describe.sequential('Cache Tenant Isolation - Integration Tests', () => {
       expect(results[6].priceCents).toBe(200000);
       expect(results[6].title).toBe('Load Test Package B');
 
-      const stats = ctx.cache.getStats();
+      const stats = await ctx.cache.getStats();
 
       // All requests should be cache hits (cache was pre-populated)
       expect(stats.hits).toBeGreaterThan(0);
@@ -594,7 +594,7 @@ describe.sequential('Cache Tenant Isolation - Integration Tests', () => {
       ctx.cache.resetStats();
 
       // Verify starting state
-      const initialStats = ctx.cache.getStats();
+      const initialStats = await ctx.cache.getStats();
       expect(initialStats.keys).toBe(0);
       expect(initialStats.totalRequests).toBe(0);
 
@@ -618,7 +618,7 @@ describe.sequential('Cache Tenant Isolation - Integration Tests', () => {
       expect(allPackages).toHaveLength(1);
       expect(specificPackage.slug).toBe('format-test');
 
-      const stats = ctx.cache.getStats();
+      const stats = await ctx.cache.getStats();
 
       // Verify cache behavior
       expect(stats.misses).toBe(2); // First call to each method = 2 misses
@@ -648,7 +648,7 @@ describe.sequential('Cache Tenant Isolation - Integration Tests', () => {
 
       // First call - cache miss (should populate cache)
       const result1 = await catalogService.getAllPackages(tenantA_id);
-      const statsAfterMiss = ctx.cache.getStats();
+      const statsAfterMiss = await ctx.cache.getStats();
 
       // Verify cache miss behavior
       expect(statsAfterMiss.misses).toBe(1);
@@ -657,7 +657,7 @@ describe.sequential('Cache Tenant Isolation - Integration Tests', () => {
 
       // Second call - cache hit (should return from memory)
       const result2 = await catalogService.getAllPackages(tenantA_id);
-      const statsAfterHit = ctx.cache.getStats();
+      const statsAfterHit = await ctx.cache.getStats();
 
       // Verify cache hit behavior
       expect(statsAfterHit.misses).toBe(1); // Still 1 miss
@@ -677,7 +677,7 @@ describe.sequential('Cache Tenant Isolation - Integration Tests', () => {
       ctx.cache.flush();
       ctx.cache.resetStats();
 
-      const initialStats = ctx.cache.getStats();
+      const initialStats = await ctx.cache.getStats();
       expect(initialStats.totalRequests).toBe(0);
       expect(initialStats.keys).toBe(0);
 
@@ -702,21 +702,21 @@ describe.sequential('Cache Tenant Isolation - Integration Tests', () => {
       // Make specific number of calls with step-by-step verification
       await catalogService.getAllPackages(tenantA_id); // Miss
 
-      let stats = ctx.cache.getStats();
+      let stats = await ctx.cache.getStats();
       expect(stats.misses).toBe(1);
       expect(stats.hits).toBe(0);
       expect(stats.keys).toBe(1);
 
       await catalogService.getAllPackages(tenantA_id); // Hit
 
-      stats = ctx.cache.getStats();
+      stats = await ctx.cache.getStats();
       expect(stats.misses).toBe(1);
       expect(stats.hits).toBe(1);
       expect(stats.keys).toBe(1);
 
       await catalogService.getAllPackages(tenantB_id); // Miss
 
-      stats = ctx.cache.getStats();
+      stats = await ctx.cache.getStats();
       expect(stats.misses).toBe(2);
       expect(stats.hits).toBe(1);
       expect(stats.keys).toBe(2);
@@ -724,7 +724,7 @@ describe.sequential('Cache Tenant Isolation - Integration Tests', () => {
       await catalogService.getAllPackages(tenantB_id); // Hit
 
       // Final verification
-      stats = ctx.cache.getStats();
+      stats = await ctx.cache.getStats();
       expect(stats.totalRequests).toBe(4);
       expect(stats.hits).toBe(2);
       expect(stats.misses).toBe(2);

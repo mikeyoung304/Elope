@@ -228,6 +228,11 @@ export class MockCatalogRepository implements CatalogRepository {
     return Array.from(addOns.values()).filter((a) => a.packageId === packageId);
   }
 
+  async getAddOnById(tenantId: string, id: string): Promise<AddOn | null> {
+    // Mock mode: Ignore tenantId
+    return addOns.get(id) || null;
+  }
+
   async createPackage(tenantId: string, data: {
     slug: string;
     title: string;
@@ -477,6 +482,19 @@ export class MockBookingRepository implements BookingRepository {
     return [];
   }
 
+  async findTimeslotBookingsInRange(
+    tenantId: string,
+    startDate: Date,
+    endDate: Date,
+    serviceId?: string
+  ): Promise<TimeslotBooking[]> {
+    // Mock mode: Return empty array for now
+    // Real TIMESLOT bookings would need to be stored with startTime/endTime
+    // This mock implementation is sufficient for basic testing
+    console.log(`📅 [MOCK] findTimeslotBookingsInRange called for ${startDate.toISOString()} to ${endDate.toISOString()}, serviceId: ${serviceId || 'all'}`);
+    return [];
+  }
+
   async findAppointments(
     tenantId: string,
     filters?: {
@@ -484,11 +502,20 @@ export class MockBookingRepository implements BookingRepository {
       serviceId?: string;
       startDate?: string;
       endDate?: string;
+      limit?: number;
+      offset?: number;
     }
   ): Promise<AppointmentDto[]> {
+    // P2 #052 FIX: Mock implementation respects pagination parameters
+    const MAX_LIMIT = 500;
+    const DEFAULT_LIMIT = 100;
+
+    const limit = Math.min(filters?.limit ?? DEFAULT_LIMIT, MAX_LIMIT);
+    const offset = Math.max(filters?.offset ?? 0, 0);
+
     // Mock mode: Return empty array for now
     // Mock bookings don't have TIMESLOT type
-    console.log(`📅 [MOCK] findAppointments called for tenant ${tenantId}, filters:`, filters);
+    console.log(`📅 [MOCK] findAppointments called for tenant ${tenantId}, filters:`, filters, `limit: ${limit}, offset: ${offset}`);
     return [];
   }
 }

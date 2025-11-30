@@ -8,6 +8,7 @@ import { ErrorSummary, type FormError } from "@/components/ui/ErrorSummary";
 import { Mail, Lock, ArrowLeft } from "lucide-react";
 import { useForm } from "@/hooks/useForm";
 import { useAuth } from "../contexts/AuthContext";
+import { logger } from "../lib/logger";
 
 /**
  * Unified Login Page
@@ -94,7 +95,10 @@ export function Login() {
           return;
         } catch (tenantError) {
           // Both logins failed
-          console.error("Login error:", { adminError, tenantError });
+          logger.error("Login failed for both admin and tenant", {
+            error: { adminError, tenantError },
+            component: "Login"
+          });
           setError("Invalid credentials. Please check your email and password.");
         }
       }

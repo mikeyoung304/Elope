@@ -104,6 +104,25 @@ export class PrismaCatalogRepository implements CatalogRepository {
     return addOns.map(this.toDomainAddOn);
   }
 
+  async getAddOnById(tenantId: string, id: string): Promise<AddOn | null> {
+    const addOn = await this.prisma.addOn.findFirst({
+      where: { tenantId, id },
+      include: {
+        packages: {
+          select: {
+            packageId: true,
+          },
+        },
+      },
+    });
+
+    if (!addOn) {
+      return null;
+    }
+
+    return this.toDomainAddOn(addOn);
+  }
+
   async createPackage(tenantId: string, data: CreatePackageInput): Promise<Package> {
     // Check for slug uniqueness within tenant - use select to minimize data transfer
     const existing = await this.prisma.package.findUnique({

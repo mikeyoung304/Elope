@@ -45,11 +45,15 @@ export function TenantsTab({ tenants, isLoading, onRefresh }: TenantsTabProps) {
         // Reload the page to reinitialize with impersonation context
         window.location.reload();
       } else {
-        console.error("Impersonation failed:", result.status);
+        if (import.meta.env.DEV) {
+          console.error("Impersonation failed:", result.status);
+        }
         alert("Failed to impersonate tenant. Please try again.");
       }
     } catch (error) {
-      console.error("Impersonation error:", error);
+      if (import.meta.env.DEV) {
+        console.error("Impersonation error:", error);
+      }
       alert("An error occurred while impersonating tenant.");
     } finally {
       setImpersonating(null);

@@ -46,7 +46,9 @@ export function TenantPackagesManager({ packages, onPackagesChange }: TenantPack
         }
       } catch (error) {
         // Segments are optional - fail silently
-        console.error("Failed to fetch segments:", error);
+        if (import.meta.env.DEV) {
+          console.error("Failed to fetch segments:", error);
+        }
       } finally {
         setIsLoadingSegments(false);
       }

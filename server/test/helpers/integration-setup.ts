@@ -30,8 +30,8 @@
  */
 
 import { PrismaClient, Tenant, Package, AddOn } from '../../src/generated/prisma';
-import { CacheService } from '../../src/lib/cache';
-import type { CreatePackageInput, CreateAddOnInput } from '../../src/lib/ports';
+import { InMemoryCacheAdapter } from '../../src/adapters/mock/cache.adapter';
+import type { CreatePackageInput, CreateAddOnInput, CacheServicePort } from '../../src/lib/ports';
 
 /**
  * Integration test context with PrismaClient and cleanup
@@ -63,17 +63,19 @@ export interface MultiTenantTestSetup {
 
 /**
  * Cache test utilities
+ * Uses InMemoryCacheAdapter (modern async cache interface)
  */
 export interface CacheTestUtils {
-  cache: CacheService;
+  cache: CacheServicePort;
   resetStats: () => void;
   flush: () => void;
-  getStats: () => {
+  getStats: () => Promise<{
     hits: number;
     misses: number;
-    hitRate: number;
+    keys: number;
     totalRequests: number;
-  };
+    hitRate: string;
+  }>;
   verifyCacheKey: (key: string, tenantId: string) => boolean;
 }
 
@@ -264,7 +266,10 @@ export function createMultiTenantSetup(
 /**
  * Create cache test utilities for validating cache isolation
  *
- * @param ttlSeconds - Cache TTL in seconds (default: 60)
+ * Uses InMemoryCacheAdapter (modern async cache interface) instead of
+ * legacy CacheService. This ensures test code uses same patterns as production.
+ *
+ * @param ttlSeconds - Cache TTL in seconds (default: 60) - NOT USED, kept for API compatibility
  * @returns Cache utilities for testing
  *
  * @example
@@ -275,24 +280,24 @@ export function createMultiTenantSetup(
  *   resetStats();
  * });
  *
- * it('should have tenant-scoped cache key', () => {
- *   const key = cache.buildKey(['packages'], tenantId);
+ * it('should have tenant-scoped cache key', async () => {
+ *   const key = 'catalog:tenantId:packages';
  *   expect(verifyCacheKey(key, tenantId)).toBe(true);
  * });
  * ```
  */
 export function createCacheTestUtils(ttlSeconds = 60): CacheTestUtils {
-  const cache = new CacheService(ttlSeconds);
+  const cache = new InMemoryCacheAdapter();
 
   const verifyCacheKey = (key: string, tenantId: string): boolean => {
-    // Cache keys MUST start with tenantId prefix
-    return key.startsWith(`${tenantId}:`);
+    // Cache keys MUST include tenantId in the format: prefix:tenantId:...
+    return key.includes(`:${tenantId}:`);
   };
 
   return {
     cache,
     resetStats: () => cache.resetStats(),
-    flush: () => cache.flush(),
+    flush: () => cache.clear(), // InMemoryCacheAdapter uses clear() instead of flush()
     getStats: () => cache.getStats(),
     verifyCacheKey,
   };

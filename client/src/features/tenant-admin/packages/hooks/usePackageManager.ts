@@ -1,4 +1,4 @@
-import { useState, useCallback } from "react";
+import { useState } from "react";
 import { toast } from "sonner";
 import { api } from "@/lib/api";
 import { packagePhotoApi } from "@/lib/package-photo-api";
@@ -12,13 +12,13 @@ export function usePackageManager(onPackagesChange: () => void) {
   const { message: successMessage, showSuccess } = useSuccessMessage();
   const [packagePhotos, setPackagePhotos] = useState<PackagePhoto[]>([]);
 
-  const handleCreate = useCallback(() => {
+  const handleCreate = () => {
     setIsCreating(true);
     setEditingPackageId(null);
     setPackagePhotos([]);
-  }, []);
+  };
 
-  const handleEdit = useCallback(async (pkg: PackageDto) => {
+  const handleEdit = async (pkg: PackageDto) => {
     setEditingPackageId(pkg.id);
     setIsCreating(true);
 
@@ -27,14 +27,16 @@ export function usePackageManager(onPackagesChange: () => void) {
       const packageWithPhotos = await packagePhotoApi.getPackageWithPhotos(pkg.id);
       setPackagePhotos(packageWithPhotos.photos || []);
     } catch (err) {
-      console.error("Failed to load package photos:", err);
+      if (import.meta.env.DEV) {
+        console.error("Failed to load package photos:", err);
+      }
       setPackagePhotos([]);
     }
 
     return pkg;
-  }, []);
+  };
 
-  const handleDelete = useCallback(async (packageId: string) => {
+  const handleDelete = async (packageId: string) => {
     if (!window.confirm("Are you sure you want to delete this package?")) {
       return;
     }
@@ -54,25 +56,27 @@ export function usePackageManager(onPackagesChange: () => void) {
         });
       }
     } catch (err) {
-      console.error("Failed to delete package:", err);
+      if (import.meta.env.DEV) {
+        console.error("Failed to delete package:", err);
+      }
       toast.error("An error occurred while deleting the package", {
         description: "Please try again or contact support.",
       });
     }
-  }, [showSuccess, onPackagesChange]);
+  };
 
-  const handleCancel = useCallback(() => {
+  const handleCancel = () => {
     setIsCreating(false);
     setEditingPackageId(null);
     setPackagePhotos([]);
-  }, []);
+  };
 
-  const handleFormSuccess = useCallback((message: string) => {
+  const handleFormSuccess = (message: string) => {
     showSuccess(message);
     setIsCreating(false);
     setEditingPackageId(null);
     setPackagePhotos([]);
-  }, [showSuccess]);
+  };
 
   return {
     isCreating,

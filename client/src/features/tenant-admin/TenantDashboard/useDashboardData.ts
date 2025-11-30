@@ -4,7 +4,7 @@
  * Manages data fetching for the tenant dashboard
  */
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect } from "react";
 import { api } from "../../../lib/api";
 import { logger } from "../../../lib/logger";
 import type { PackageDto, BookingDto } from "@macon/contracts";
@@ -36,7 +36,7 @@ export function useDashboardData(activeTab: string) {
   const [branding, setBranding] = useState<BrandingDto | null>(null);
   const [isLoading, setIsLoading] = useState(false);
 
-  const loadPackages = useCallback(async () => {
+  const loadPackages = async () => {
     setIsLoading(true);
     try {
       const result = await api.tenantAdminGetPackages();
@@ -48,9 +48,9 @@ export function useDashboardData(activeTab: string) {
     } finally {
       setIsLoading(false);
     }
-  }, []);
+  };
 
-  const loadBlackouts = useCallback(async () => {
+  const loadBlackouts = async () => {
     setIsLoading(true);
     try {
       const result = await api.tenantAdminGetBlackouts();
@@ -62,9 +62,9 @@ export function useDashboardData(activeTab: string) {
     } finally {
       setIsLoading(false);
     }
-  }, []);
+  };
 
-  const loadBookings = useCallback(async () => {
+  const loadBookings = async () => {
     setIsLoading(true);
     try {
       const result = await api.tenantAdminGetBookings();
@@ -76,9 +76,9 @@ export function useDashboardData(activeTab: string) {
     } finally {
       setIsLoading(false);
     }
-  }, []);
+  };
 
-  const loadBranding = useCallback(async () => {
+  const loadBranding = async () => {
     setIsLoading(true);
     try {
       const result = await api.tenantAdminGetBranding();
@@ -90,7 +90,7 @@ export function useDashboardData(activeTab: string) {
     } finally {
       setIsLoading(false);
     }
-  }, []);
+  };
 
   useEffect(() => {
     if (activeTab === "packages") {

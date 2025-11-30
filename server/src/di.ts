@@ -4,7 +4,6 @@
 
 import type { Config } from './lib/core/config';
 import { InProcessEventEmitter } from './lib/core/events';
-import { CacheService } from './lib/cache';
 import type { CacheServicePort } from './lib/ports';
 import { RedisCacheAdapter } from './adapters/redis/cache.adapter';
 import { InMemoryCacheAdapter } from './adapters/mock/cache.adapter';
@@ -88,11 +87,7 @@ export interface Container {
 export function buildContainer(config: Config): Container {
   const eventEmitter = new InProcessEventEmitter();
 
-  // Initialize legacy cache service (backward compatibility)
-  // TODO: Remove once all services migrated to CacheServicePort
-  const legacyCacheService = new CacheService(900);
-
-  // Initialize new cache adapter (Redis for real mode, in-memory for mock)
+  // Initialize cache adapter (Redis for real mode, in-memory for mock)
   let cacheAdapter: CacheServicePort;
   if (config.ADAPTERS_PRESET === 'real' && process.env.REDIS_URL) {
     logger.info('🔴 Using Redis cache adapter');
@@ -121,7 +116,7 @@ export function buildContainer(config: Config): Container {
     const idempotencyService = new IdempotencyService(mockPrisma);
 
     // Build domain services with caching and audit logging
-    const catalogService = new CatalogService(adapters.catalogRepo, legacyCacheService, auditService);
+    const catalogService = new CatalogService(adapters.catalogRepo, cacheAdapter, auditService);
     const availabilityService = new AvailabilityService(
       adapters.calendarProvider,
       adapters.blackoutRepo,
@@ -150,7 +145,7 @@ export function buildContainer(config: Config): Container {
 
     // Create SegmentService with mock Prisma segment repo
     const segmentRepo = new PrismaSegmentRepository(mockPrisma);
-    const segmentService = new SegmentService(segmentRepo, legacyCacheService);
+    const segmentService = new SegmentService(segmentRepo, cacheAdapter);
 
     // Create GoogleCalendarService with mock calendar provider
     const googleCalendarService = new GoogleCalendarService(adapters.calendarProvider);
@@ -299,7 +294,7 @@ export function buildContainer(config: Config): Container {
   const idempotencyService = new IdempotencyService(prisma);
 
   // Build domain services with caching and audit logging
-  const catalogService = new CatalogService(catalogRepo, legacyCacheService, auditService);
+  const catalogService = new CatalogService(catalogRepo, cacheAdapter, auditService);
   const availabilityService = new AvailabilityService(
     calendarProvider,
     blackoutRepo,
@@ -320,7 +315,7 @@ export function buildContainer(config: Config): Container {
   const tenantAuthService = new TenantAuthService(tenantRepo, config.JWT_SECRET);
 
   // Create SegmentService with real Prisma segment repo
-  const segmentService = new SegmentService(segmentRepo, legacyCacheService);
+  const segmentService = new SegmentService(segmentRepo, cacheAdapter);
 
   // Create GoogleCalendarService with real calendar provider
   const googleCalendarService = new GoogleCalendarService(calendarProvider);

@@ -107,7 +107,9 @@ export function PackagePage() {
       }
     } catch (error) {
       setIsCheckingOut(false);
-      console.error('Checkout error:', error);
+      if (import.meta.env.DEV) {
+        console.error('Checkout error:', error);
+      }
       toast.error('An error occurred during checkout', {
         description: 'Please try again or contact support.',
       });

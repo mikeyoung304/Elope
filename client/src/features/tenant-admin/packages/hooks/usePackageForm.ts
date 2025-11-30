@@ -1,4 +1,4 @@
-import { useState, useCallback } from "react";
+import { useState } from "react";
 import { api } from "@/lib/api";
 import type { PackageDto } from "@macon/contracts";
 
@@ -33,7 +33,7 @@ export function usePackageForm({ onSuccess, onPackagesChange }: UsePackageFormPr
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const resetForm = useCallback(() => {
+  const resetForm = () => {
     setForm({
       title: "",
       description: "",
@@ -45,9 +45,9 @@ export function usePackageForm({ onSuccess, onPackagesChange }: UsePackageFormPr
       groupingOrder: "",
     });
     setError(null);
-  }, []);
+  };
 
-  const loadPackage = useCallback((pkg: PackageDto) => {
+  const loadPackage = (pkg: PackageDto) => {
     setForm({
       title: pkg.title,
       description: pkg.description,
@@ -58,9 +58,9 @@ export function usePackageForm({ onSuccess, onPackagesChange }: UsePackageFormPr
       grouping: pkg.grouping ?? "",
       groupingOrder: pkg.groupingOrder?.toString() ?? "",
     });
-  }, []);
+  };
 
-  const validateForm = useCallback((): boolean => {
+  const validateForm = (): boolean => {
     if (!form.title || !form.description || !form.priceCents) {
       setError("Title, description, and price are required");
       return false;
@@ -80,9 +80,9 @@ export function usePackageForm({ onSuccess, onPackagesChange }: UsePackageFormPr
     }
 
     return true;
-  }, [form]);
+  };
 
-  const submitForm = useCallback(async (editingPackageId: string | null) => {
+  const submitForm = async (editingPackageId: string | null) => {
     setError(null);
 
     if (!validateForm()) {
@@ -142,13 +142,15 @@ export function usePackageForm({ onSuccess, onPackagesChange }: UsePackageFormPr
         }
       }
     } catch (err) {
-      console.error("Failed to save package:", err);
+      if (import.meta.env.DEV) {
+        console.error("Failed to save package:", err);
+      }
       setError("An error occurred while saving the package");
       return false;
     } finally {
       setIsSaving(false);
     }
-  }, [form, validateForm, onSuccess, resetForm, onPackagesChange]);
+  };
 
   return {
     form,

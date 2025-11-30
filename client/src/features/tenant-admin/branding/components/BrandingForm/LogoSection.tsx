@@ -34,7 +34,9 @@ export function LogoSection({ logoUrl, disabled = false, onLogoUrlChange }: Logo
         onUploadSuccess={(url) => onLogoUrlChange(url)}
         onUploadError={(errorMsg) => {
           // Error will be shown in the component itself
-          console.error("Logo upload error:", errorMsg);
+          if (import.meta.env.DEV) {
+            console.error("Logo upload error:", errorMsg);
+          }
         }}
         disabled={disabled}
       />

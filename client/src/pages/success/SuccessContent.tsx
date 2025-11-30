@@ -3,6 +3,7 @@ import { toast } from "sonner";
 import { AlertCircle, CheckCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { api, baseUrl } from "@/lib/api";
+import { logger } from "@/lib/logger";
 import type { LastCheckout } from "@/lib/types";
 import { LoadingState } from "./LoadingState";
 import { ErrorState } from "./ErrorState";
@@ -87,7 +88,7 @@ export function SuccessContent({
         });
       }
     } catch (err) {
-      console.error("Simulation error:", err);
+      logger.error("Simulation error", { error: err, component: "SuccessContent", sessionId });
       toast.error("An error occurred during simulation", {
         description: "Please try again or contact support.",
       });

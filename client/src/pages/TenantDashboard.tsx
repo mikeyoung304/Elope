@@ -4,6 +4,7 @@ import { TenantDashboard as TenantDashboardComponent } from "../features/tenant-
 import { FeatureErrorBoundary } from "../components/errors";
 import { useAuth } from "../contexts/AuthContext";
 import { api } from "../lib/api";
+import { logger } from "../lib/logger";
 
 type TenantDto = {
   id: string;
@@ -57,7 +58,7 @@ export function TenantDashboard() {
           setTenantInfo(result.body);
         }
       } catch (error) {
-        console.error("Failed to load tenant info:", error);
+        logger.error("Failed to load tenant info", { error, component: "TenantDashboard" });
       } finally {
         setIsLoadingInfo(false);
       }

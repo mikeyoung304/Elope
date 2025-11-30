@@ -3,7 +3,7 @@
  * Reduces duplication in service-level caching patterns
  */
 
-import type { CacheService } from './cache';
+import type { CacheServicePort } from './ports';
 
 /**
  * Cache decorator options
@@ -40,7 +40,7 @@ export interface CacheOptions {
  * @returns Cached or freshly fetched data
  */
 export async function cachedOperation<T>(
-  cache: CacheService | undefined,
+  cache: CacheServicePort | undefined,
   options: CacheOptions,
   fetchFn: () => Promise<T>
 ): Promise<T> {
@@ -50,8 +50,8 @@ export async function cachedOperation<T>(
   const cacheKey = `${prefix}:${keyParts.join(':')}`;
 
   // Try cache first
-  const cached = cache?.get<T>(cacheKey);
-  if (cached !== undefined) {
+  const cached = await cache?.get<T>(cacheKey);
+  if (cached !== undefined && cached !== null) {
     return cached;
   }
 
@@ -59,7 +59,7 @@ export async function cachedOperation<T>(
   const result = await fetchFn();
 
   // Cache the result
-  cache?.set(cacheKey, result, ttl);
+  await cache?.set(cacheKey, result, ttl);
 
   return result;
 }
@@ -89,7 +89,7 @@ export function buildCacheKey(prefix: string, tenantId: string, ...parts: string
  *
  * @example
  * ```typescript
- * invalidateCacheKeys(this.cache, [
+ * await invalidateCacheKeys(this.cache, [
  *   buildCacheKey('catalog', tenantId, 'all-packages'),
  *   buildCacheKey('catalog', tenantId, 'package', slug)
  * ]);
@@ -98,12 +98,11 @@ export function buildCacheKey(prefix: string, tenantId: string, ...parts: string
  * @param cache - Cache service instance
  * @param keys - Array of cache keys to invalidate
  */
-export function invalidateCacheKeys(cache: CacheService | undefined, keys: string[]): void {
+export async function invalidateCacheKeys(cache: CacheServicePort | undefined, keys: string[]): Promise<void> {
   if (!cache) return;
 
-  for (const key of keys) {
-    cache.del(key);
-  }
+  // Invalidate all keys in parallel
+  await Promise.all(keys.map(key => cache.del(key)));
 }
 
 /**

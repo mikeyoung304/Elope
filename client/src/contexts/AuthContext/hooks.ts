@@ -5,7 +5,7 @@
  * and auth state management.
  */
 
-import { useContext, useCallback } from 'react';
+import { useContext } from 'react';
 import { AuthContext } from './context';
 import type { AuthContextType, UserRole } from '../../types/auth';
 
@@ -65,12 +65,9 @@ export function useIsTenantAdmin(): boolean {
 export function useHasRole(): (targetRole: UserRole) => boolean {
   const { role } = useAuth();
 
-  return useCallback(
-    (targetRole: UserRole): boolean => {
-      return role === targetRole;
-    },
-    [role]
-  );
+  return (targetRole: UserRole): boolean => {
+    return role === targetRole;
+  };
 }
 
 /**

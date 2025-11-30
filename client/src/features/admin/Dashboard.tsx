@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useMemo } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { LogOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -70,7 +70,9 @@ export function Dashboard() {
           });
         }
       } catch (error) {
-        console.error("Failed to decode JWT:", error);
+        if (import.meta.env.DEV) {
+          console.error("Failed to decode JWT:", error);
+        }
       }
     }
   }, []);
@@ -87,7 +89,7 @@ export function Dashboard() {
     }
   }, [activeTab]);
 
-  const loadBookings = useCallback(async () => {
+  const loadBookings = async () => {
     setIsLoading(true);
     try {
       const result = await api.adminGetBookings();
@@ -95,13 +97,15 @@ export function Dashboard() {
         setBookings(result.body);
       }
     } catch (error) {
-      console.error("Failed to load bookings:", error);
+      if (import.meta.env.DEV) {
+        console.error("Failed to load bookings:", error);
+      }
     } finally {
       setIsLoading(false);
     }
-  }, []);
+  };
 
-  const loadBlackouts = useCallback(async () => {
+  const loadBlackouts = async () => {
     setIsLoading(true);
     try {
       const result = await api.adminGetBlackouts();
@@ -109,13 +113,15 @@ export function Dashboard() {
         setBlackouts(result.body);
       }
     } catch (error) {
-      console.error("Failed to load blackouts:", error);
+      if (import.meta.env.DEV) {
+        console.error("Failed to load blackouts:", error);
+      }
     } finally {
       setIsLoading(false);
     }
-  }, []);
+  };
 
-  const loadPackages = useCallback(async () => {
+  const loadPackages = async () => {
     setIsLoading(true);
     try {
       const result = await api.getPackages();
@@ -123,13 +129,15 @@ export function Dashboard() {
         setPackages(result.body);
       }
     } catch (error) {
-      console.error("Failed to load packages:", error);
+      if (import.meta.env.DEV) {
+        console.error("Failed to load packages:", error);
+      }
     } finally {
       setIsLoading(false);
     }
-  }, []);
+  };
 
-  const loadTenants = useCallback(async () => {
+  const loadTenants = async () => {
     setIsLoading(true);
     try {
       const result = await api.adminGetTenants();
@@ -137,13 +145,15 @@ export function Dashboard() {
         setTenants(result.body.tenants);
       }
     } catch (error) {
-      console.error("Failed to load tenants:", error);
+      if (import.meta.env.DEV) {
+        console.error("Failed to load tenants:", error);
+      }
     } finally {
       setIsLoading(false);
     }
-  }, []);
+  };
 
-  const handleAddBlackout = useCallback(async (date: string, reason: string) => {
+  const handleAddBlackout = async (date: string, reason: string) => {
     try {
       const result = await api.adminCreateBlackout({
         body: {
@@ -156,11 +166,13 @@ export function Dashboard() {
         loadBlackouts();
       }
     } catch (error) {
-      console.error("Failed to create blackout:", error);
+      if (import.meta.env.DEV) {
+        console.error("Failed to create blackout:", error);
+      }
     }
-  }, [loadBlackouts]);
+  };
 
-  const exportToCSV = useCallback(() => {
+  const exportToCSV = () => {
     if (bookings.length === 0) return;
 
     const headers = ["Couple", "Email", "Date", "Package ID", "Total"];
@@ -180,12 +192,12 @@ export function Dashboard() {
     a.download = `bookings-${new Date().toISOString().split("T")[0]}.csv`;
     a.click();
     URL.revokeObjectURL(url);
-  }, [bookings]);
+  };
 
-  const handleLogout = useCallback(() => {
+  const handleLogout = () => {
     localStorage.removeItem("adminToken");
     navigate("/login");
-  }, [navigate]);
+  };
 
   // Calculate metrics with useMemo
   const metrics = useMemo(() => {

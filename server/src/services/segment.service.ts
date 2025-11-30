@@ -5,7 +5,7 @@
 
 import type { Segment, Package, AddOn, PackageAddOn } from '../generated/prisma';
 import { NotFoundError, ValidationError } from '../lib/errors';
-import type { CacheService } from '../lib/cache';
+import type { CacheServicePort } from '../lib/ports';
 import {
   cachedOperation,
   buildCacheKey,
@@ -34,7 +34,7 @@ export interface SegmentWithRelations extends Segment {
 export class SegmentService {
   constructor(
     private readonly repository: PrismaSegmentRepository,
-    private readonly cache?: CacheService
+    private readonly cache?: CacheServicePort
   ) {}
 
   /**
@@ -75,7 +75,7 @@ export class SegmentService {
     // CRITICAL: Cache key includes tenantId
     const cacheKey = `segments:${tenantId}:id:${id}`;
 
-    const cached = this.cache?.get<Segment>(cacheKey);
+    const cached = await this.cache?.get<Segment>(cacheKey);
     if (cached) {
       return cached;
     }
@@ -87,7 +87,7 @@ export class SegmentService {
     }
 
     // Cache for 15 minutes
-    this.cache?.set(cacheKey, segment, 900);
+    await this.cache?.set(cacheKey, segment, 900);
 
     return segment;
   }
@@ -109,7 +109,7 @@ export class SegmentService {
     const cacheKey = `segments:${tenantId}:slug:${slug}`;
 
     // Try cache first
-    const cached = this.cache?.get<Segment>(cacheKey);
+    const cached = await this.cache?.get<Segment>(cacheKey);
     if (cached) {
       return cached;
     }
@@ -122,7 +122,7 @@ export class SegmentService {
     }
 
     // Cache for 15 minutes
-    this.cache?.set(cacheKey, segment, 900);
+    await this.cache?.set(cacheKey, segment, 900);
 
     return segment;
   }
@@ -141,7 +141,7 @@ export class SegmentService {
   async getSegmentWithRelations(tenantId: string, slug: string): Promise<SegmentWithRelations> {
     const cacheKey = `segments:${tenantId}:slug:${slug}:with-relations`;
 
-    const cached = this.cache?.get<SegmentWithRelations>(cacheKey);
+    const cached = await this.cache?.get<SegmentWithRelations>(cacheKey);
     if (cached) {
       return cached;
     }
@@ -153,7 +153,7 @@ export class SegmentService {
     }
 
     // Cache for 15 minutes
-    this.cache?.set(cacheKey, segment, 900);
+    await this.cache?.set(cacheKey, segment, 900);
 
     return segment;
   }
@@ -301,7 +301,7 @@ export class SegmentService {
     // CRITICAL: Cache key includes tenantId
     const cacheKey = `segments:${tenantId}:${id}:stats`;
 
-    const cached = this.cache?.get<{ packageCount: number; addOnCount: number }>(cacheKey);
+    const cached = await this.cache?.get<{ packageCount: number; addOnCount: number }>(cacheKey);
     if (cached) {
       return cached;
     }
@@ -309,7 +309,7 @@ export class SegmentService {
     const stats = await this.repository.getStats(tenantId, id);
 
     // Cache for 5 minutes (shorter TTL for frequently changing data)
-    this.cache?.set(cacheKey, stats, 300);
+    await this.cache?.set(cacheKey, stats, 300);
 
     return stats;
   }
@@ -322,7 +322,7 @@ export class SegmentService {
    * @param tenantId - Tenant ID
    * @param slug - Optional specific segment slug to invalidate
    */
-  private invalidateSegmentCache(tenantId: string, slug?: string): void {
-    invalidateCacheKeys(this.cache, getSegmentInvalidationKeys(tenantId, slug));
+  private async invalidateSegmentCache(tenantId: string, slug?: string): Promise<void> {
+    await invalidateCacheKeys(this.cache, getSegmentInvalidationKeys(tenantId, slug));
   }
 }

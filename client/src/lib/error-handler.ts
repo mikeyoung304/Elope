@@ -4,6 +4,7 @@
  */
 
 import { captureException } from './sentry';
+import { logger } from './logger';
 
 // ============================================================================
 // API Error Classes
@@ -128,7 +129,7 @@ export function handleFetchError(error: unknown): never {
  * Generic error handler that reports to Sentry
  */
 export function handleError(error: Error, context?: Record<string, any>): void {
-  console.error('Error:', error);
+  logger.error('Error', { error: error.message, ...context });
 
   // Report to Sentry if it's not a client error
   if (error instanceof APIError) {

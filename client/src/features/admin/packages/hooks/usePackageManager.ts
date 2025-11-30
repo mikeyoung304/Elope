@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { toast } from "sonner";
 import { api } from "@/lib/api";
 import type {
@@ -50,7 +50,7 @@ export function usePackageManager({ onPackagesChange, showSuccess }: UsePackageM
   };
 
   // Reset form
-  const resetPackageForm = useCallback(() => {
+  const resetPackageForm = () => {
     setPackageForm({
       slug: "",
       title: "",
@@ -60,16 +60,16 @@ export function usePackageManager({ onPackagesChange, showSuccess }: UsePackageM
       segmentId: "",
     });
     setError(null);
-  }, []);
+  };
 
   // Package handlers
-  const handleCreatePackage = useCallback(() => {
+  const handleCreatePackage = () => {
     resetPackageForm();
     setIsCreatingPackage(true);
     setEditingPackageId(null);
-  }, [resetPackageForm]);
+  };
 
-  const handleEditPackage = useCallback((pkg: PackageDto) => {
+  const handleEditPackage = (pkg: PackageDto) => {
     setPackageForm({
       slug: pkg.slug,
       title: pkg.title,
@@ -80,9 +80,9 @@ export function usePackageManager({ onPackagesChange, showSuccess }: UsePackageM
     });
     setEditingPackageId(pkg.id);
     setIsCreatingPackage(true);
-  }, []);
+  };
 
-  const handleSavePackage = useCallback(async (e: React.FormEvent) => {
+  const handleSavePackage = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
 
@@ -152,14 +152,16 @@ export function usePackageManager({ onPackagesChange, showSuccess }: UsePackageM
         }
       }
     } catch (err) {
-      console.error("Failed to save package:", err);
+      if (import.meta.env.DEV) {
+        console.error("Failed to save package:", err);
+      }
       setError("An error occurred while saving the package");
     } finally {
       setIsSaving(false);
     }
-  }, [packageForm, editingPackageId, showSuccess, resetPackageForm, onPackagesChange]);
+  };
 
-  const handleDeletePackage = useCallback(async (packageId: string) => {
+  const handleDeletePackage = async (packageId: string) => {
     if (!window.confirm("Are you sure you want to delete this package? This action cannot be undone.")) {
       return;
     }
@@ -179,17 +181,19 @@ export function usePackageManager({ onPackagesChange, showSuccess }: UsePackageM
         });
       }
     } catch (err) {
-      console.error("Failed to delete package:", err);
+      if (import.meta.env.DEV) {
+        console.error("Failed to delete package:", err);
+      }
       toast.error("An error occurred while deleting the package", {
         description: "Please try again or contact support.",
       });
     }
-  }, [showSuccess, onPackagesChange]);
+  };
 
-  const handleCancelPackageForm = useCallback(() => {
+  const handleCancelPackageForm = () => {
     setIsCreatingPackage(false);
     resetPackageForm();
-  }, [resetPackageForm]);
+  };
 
   return {
     // State

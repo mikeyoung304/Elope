@@ -18,6 +18,7 @@ export interface CatalogRepository {
   getPackageBySlug(tenantId: string, slug: string): Promise<Package | null>;
   getPackageById(tenantId: string, id: string): Promise<Package | null>;
   getAddOnsByPackageId(tenantId: string, packageId: string): Promise<AddOn[]>;
+  getAddOnById(tenantId: string, id: string): Promise<AddOn | null>;
   createPackage(tenantId: string, data: CreatePackageInput): Promise<Package>;
   updatePackage(tenantId: string, id: string, data: UpdatePackageInput): Promise<Package>;
   deletePackage(tenantId: string, id: string): Promise<void>;
@@ -80,13 +81,43 @@ export interface BookingRepository {
   ): Promise<TimeslotBooking[]>;
 
   /**
+   * Find all TIMESLOT bookings within a date range (batch query)
+   *
+   * Used for batch availability checking to avoid N+1 query problem.
+   * Returns all TIMESLOT bookings where startTime falls within the range.
+   *
+   * @param tenantId - Tenant ID for isolation
+   * @param startDate - Start of date range (inclusive)
+   * @param endDate - End of date range (inclusive)
+   * @param serviceId - Optional service ID to filter by specific service
+   * @returns Array of time-slot bookings for conflict detection
+   */
+  findTimeslotBookingsInRange(
+    tenantId: string,
+    startDate: Date,
+    endDate: Date,
+    serviceId?: string
+  ): Promise<TimeslotBooking[]>;
+
+  /**
    * Find all appointments (TIMESLOT bookings) with optional filters
    *
    * Performs server-side filtering for efficient queries.
    * Used by admin dashboard to list appointments.
    *
+   * PERFORMANCE: Implements pagination with reasonable limits to prevent DoS.
+   * - Default limit: 100 appointments
+   * - Maximum limit: 500 appointments
+   * - Maximum date range: 90 days
+   *
    * @param tenantId - Tenant ID for isolation
    * @param filters - Optional filters for status, serviceId, and date range
+   * @param filters.status - Filter by booking status
+   * @param filters.serviceId - Filter by service ID
+   * @param filters.startDate - Filter by start date (inclusive, ISO string)
+   * @param filters.endDate - Filter by end date (inclusive, ISO string)
+   * @param filters.limit - Maximum number of results to return (default 100, max 500)
+   * @param filters.offset - Number of results to skip for pagination (default 0)
    * @returns Array of appointments with full details
    */
   findAppointments(
@@ -96,6 +127,8 @@ export interface BookingRepository {
       serviceId?: string;
       startDate?: string;
       endDate?: string;
+      limit?: number;
+      offset?: number;
     }
   ): Promise<AppointmentDto[]>;
 }

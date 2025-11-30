@@ -1,4 +1,4 @@
-import { useState, useCallback } from "react";
+import { useState } from "react";
 import { toast } from "sonner";
 import { api } from "@/lib/api";
 import type {
@@ -48,7 +48,7 @@ export function useSegmentManager({ onSegmentsChange, showSuccess }: UseSegmentM
   };
 
   // Reset form
-  const resetSegmentForm = useCallback(() => {
+  const resetSegmentForm = () => {
     setSegmentForm({
       slug: "",
       name: "",
@@ -62,16 +62,16 @@ export function useSegmentManager({ onSegmentsChange, showSuccess }: UseSegmentM
       active: true,
     });
     setError(null);
-  }, []);
+  };
 
   // Segment handlers
-  const handleCreateSegment = useCallback(() => {
+  const handleCreateSegment = () => {
     resetSegmentForm();
     setIsCreatingSegment(true);
     setEditingSegmentId(null);
-  }, [resetSegmentForm]);
+  };
 
-  const handleEditSegment = useCallback((segment: SegmentDto) => {
+  const handleEditSegment = (segment: SegmentDto) => {
     setSegmentForm({
       slug: segment.slug,
       name: segment.name,
@@ -86,9 +86,9 @@ export function useSegmentManager({ onSegmentsChange, showSuccess }: UseSegmentM
     });
     setEditingSegmentId(segment.id);
     setIsCreatingSegment(true);
-  }, []);
+  };
 
-  const handleSaveSegment = useCallback(async (e: React.FormEvent) => {
+  const handleSaveSegment = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
 
@@ -171,14 +171,16 @@ export function useSegmentManager({ onSegmentsChange, showSuccess }: UseSegmentM
         }
       }
     } catch (err) {
-      console.error("Failed to save segment:", err);
+      if (import.meta.env.DEV) {
+        console.error("Failed to save segment:", err);
+      }
       setError("An error occurred while saving the segment");
     } finally {
       setIsSaving(false);
     }
-  }, [segmentForm, editingSegmentId, showSuccess, resetSegmentForm, onSegmentsChange]);
+  };
 
-  const handleDeleteSegment = useCallback(async (id: string) => {
+  const handleDeleteSegment = async (id: string) => {
     if (!window.confirm("Are you sure you want to delete this segment? This action cannot be undone.")) {
       return;
     }
@@ -198,20 +200,22 @@ export function useSegmentManager({ onSegmentsChange, showSuccess }: UseSegmentM
         });
       }
     } catch (err) {
-      console.error("Failed to delete segment:", err);
+      if (import.meta.env.DEV) {
+        console.error("Failed to delete segment:", err);
+      }
       toast.error("An error occurred while deleting the segment", {
         description: "Please try again or contact support.",
       });
     }
-  }, [showSuccess, onSegmentsChange]);
+  };
 
-  const handleCancelSegmentForm = useCallback(() => {
+  const handleCancelSegmentForm = () => {
     setIsCreatingSegment(false);
     resetSegmentForm();
-  }, [resetSegmentForm]);
+  };
 
   // Auto-generate slug from name when creating (not editing)
-  const handleNameChange = useCallback((name: string) => {
+  const handleNameChange = (name: string) => {
     setSegmentForm(prev => {
       const newForm = { ...prev, name };
       // Only auto-generate slug when creating (not editing)
@@ -220,7 +224,7 @@ export function useSegmentManager({ onSegmentsChange, showSuccess }: UseSegmentM
       }
       return newForm;
     });
-  }, [editingSegmentId]);
+  };
 
   return {
     // State

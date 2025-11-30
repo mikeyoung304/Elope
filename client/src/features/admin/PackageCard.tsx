@@ -1,4 +1,4 @@
-import { useMemo, useCallback } from "react";
+import { useMemo } from "react";
 import { Edit, Trash2, ChevronDown, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -24,13 +24,13 @@ export function PackageCard({
   onDelete,
   onAddOnChange,
 }: PackageCardProps) {
-  const handleEdit = useCallback(() => {
+  const handleEdit = () => {
     onEdit(pkg);
-  }, [pkg, onEdit]);
+  };
 
-  const handleDelete = useCallback(() => {
+  const handleDelete = () => {
     onDelete(pkg.id);
-  }, [pkg.id, onDelete]);
+  };
 
   const formattedPrice = useMemo(() => formatCurrency(pkg.priceCents), [pkg.priceCents]);
 

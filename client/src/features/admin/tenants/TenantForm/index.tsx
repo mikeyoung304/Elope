@@ -54,7 +54,9 @@ export function TenantForm() {
       const data = await tenantApi.loadTenant(id);
       setFormData(data);
     } catch (error) {
-      console.error("Failed to load tenant:", error);
+      if (import.meta.env.DEV) {
+        console.error("Failed to load tenant:", error);
+      }
       toast.error("Failed to load tenant");
     } finally {
       setIsLoading(false);
@@ -88,7 +90,9 @@ export function TenantForm() {
       }
       navigate("/admin/dashboard");
     } catch (error: any) {
-      console.error("Failed to save tenant:", error);
+      if (import.meta.env.DEV) {
+        console.error("Failed to save tenant:", error);
+      }
       setErrors({
         submit: error.message || "Failed to save tenant. Please try again."
       });

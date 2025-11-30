@@ -8,10 +8,10 @@ import type {
   UpdatePackageInput,
   CreateAddOnInput,
   UpdateAddOnInput,
+  CacheServicePort,
 } from '../lib/ports';
 import type { Package, AddOn } from '../lib/entities';
 import { NotFoundError, ValidationError } from '../lib/errors';
-import type { CacheService } from '../lib/cache';
 import {
   cachedOperation,
   buildCacheKey,
@@ -39,7 +39,7 @@ export interface AuditContext {
 export class CatalogService {
   constructor(
     private readonly repository: CatalogRepository,
-    private readonly cache?: CacheService,
+    private readonly cache?: CacheServicePort,
     private readonly auditService?: AuditService
   ) {}
 
@@ -288,9 +288,11 @@ export class CatalogService {
   }
 
   async updateAddOn(tenantId: string, id: string, data: UpdateAddOnInput): Promise<AddOn> {
-    // Check if add-on exists
-    // Note: We need a way to get add-on by ID, but since the port doesn't have it,
-    // we'll let the repository handle the NotFound case
+    // Fetch existing add-on to know which package cache to invalidate
+    const existing = await this.repository.getAddOnById(tenantId, id);
+    if (!existing) {
+      throw new NotFoundError(`AddOn with id "${id}" not found`);
+    }
 
     // Validate price if provided
     if (data.priceCents !== undefined) {
@@ -298,26 +300,49 @@ export class CatalogService {
     }
 
     // Verify package exists if packageId is being updated
+    let newPackage;
     if (data.packageId) {
-      const pkg = await this.repository.getPackageById(tenantId, data.packageId);
-      if (!pkg) {
+      newPackage = await this.repository.getPackageById(tenantId, data.packageId);
+      if (!newPackage) {
         throw new NotFoundError(`Package with id "${data.packageId}" not found`);
       }
     }
 
     const result = await this.repository.updateAddOn(tenantId, id, data);
 
-    // Invalidate catalog cache
+    // Targeted cache invalidation - only invalidate affected packages
+    const oldPackage = await this.repository.getPackageById(tenantId, existing.packageId);
+    if (oldPackage) {
+      this.invalidatePackageCache(tenantId, oldPackage.slug);
+    }
+
+    // If package changed, also invalidate new package cache
+    if (newPackage && newPackage.id !== existing.packageId) {
+      this.invalidatePackageCache(tenantId, newPackage.slug);
+    }
+
+    // Invalidate list cache (all-packages includes add-ons)
     this.invalidateCatalogCache(tenantId);
 
     return result;
   }
 
   async deleteAddOn(tenantId: string, id: string): Promise<void> {
-    // Repository will throw NotFoundError if add-on doesn't exist
+    // Fetch add-on first to know which package cache to invalidate
+    const existing = await this.repository.getAddOnById(tenantId, id);
+    if (!existing) {
+      throw new NotFoundError(`AddOn with id "${id}" not found`);
+    }
+
     await this.repository.deleteAddOn(tenantId, id);
 
-    // Invalidate catalog cache
+    // Targeted cache invalidation - only invalidate affected package
+    const pkg = await this.repository.getPackageById(tenantId, existing.packageId);
+    if (pkg) {
+      this.invalidatePackageCache(tenantId, pkg.slug);
+    }
+
+    // Invalidate list cache (all-packages includes add-ons)
     this.invalidateCatalogCache(tenantId);
   }
 
@@ -348,7 +373,7 @@ export class CatalogService {
     const cacheKey = `catalog:${tenantId}:segment:${segmentId}:packages`;
 
     // Try cache first
-    const cached = this.cache?.get<Package[]>(cacheKey);
+    const cached = await this.cache?.get<Package[]>(cacheKey);
     if (cached) {
       return cached;
     }
@@ -357,7 +382,7 @@ export class CatalogService {
     const packages = await this.repository.getPackagesBySegment(tenantId, segmentId);
 
     // Cache for 15 minutes (900 seconds)
-    this.cache?.set(cacheKey, packages, 900);
+    await this.cache?.set(cacheKey, packages, 900);
 
     return packages;
   }
@@ -393,7 +418,7 @@ export class CatalogService {
     const cacheKey = `catalog:${tenantId}:segment:${segmentId}:packages-with-addons`;
 
     // Try cache first
-    const cached = this.cache?.get<PackageWithAddOns[]>(cacheKey);
+    const cached = await this.cache?.get<PackageWithAddOns[]>(cacheKey);
     if (cached) {
       return cached;
     }
@@ -402,7 +427,7 @@ export class CatalogService {
     const packages = await this.repository.getPackagesBySegmentWithAddOns(tenantId, segmentId);
 
     // Cache for 15 minutes (900 seconds)
-    this.cache?.set(cacheKey, packages, 900);
+    await this.cache?.set(cacheKey, packages, 900);
 
     return packages;
   }
@@ -434,7 +459,7 @@ export class CatalogService {
     const cacheKey = `catalog:${tenantId}:segment:${segmentId}:addons`;
 
     // Try cache first
-    const cached = this.cache?.get<AddOn[]>(cacheKey);
+    const cached = await this.cache?.get<AddOn[]>(cacheKey);
     if (cached) {
       return cached;
     }
@@ -443,7 +468,7 @@ export class CatalogService {
     const addOns = await this.repository.getAddOnsForSegment(tenantId, segmentId);
 
     // Cache for 15 minutes (900 seconds)
-    this.cache?.set(cacheKey, addOns, 900);
+    await this.cache?.set(cacheKey, addOns, 900);
 
     return addOns;
   }
@@ -457,8 +482,8 @@ export class CatalogService {
    *
    * @param tenantId - Tenant whose cache should be invalidated
    */
-  private invalidateCatalogCache(tenantId: string): void {
-    invalidateCacheKeys(this.cache, getCatalogInvalidationKeys(tenantId));
+  private async invalidateCatalogCache(tenantId: string): Promise<void> {
+    await invalidateCacheKeys(this.cache, getCatalogInvalidationKeys(tenantId));
   }
 
   /**
@@ -467,8 +492,8 @@ export class CatalogService {
    * @param tenantId - Tenant ID
    * @param slug - Package slug
    */
-  private invalidatePackageCache(tenantId: string, slug: string): void {
-    invalidateCacheKeys(this.cache, getCatalogInvalidationKeys(tenantId, slug));
+  private async invalidatePackageCache(tenantId: string, slug: string): Promise<void> {
+    await invalidateCacheKeys(this.cache, getCatalogInvalidationKeys(tenantId, slug));
   }
 
   /**
@@ -482,7 +507,7 @@ export class CatalogService {
    *
    * @private
    */
-  private invalidateSegmentCatalogCache(tenantId: string, segmentId: string): void {
-    invalidateCacheKeys(this.cache, getSegmentCatalogInvalidationKeys(tenantId, segmentId));
+  private async invalidateSegmentCatalogCache(tenantId: string, segmentId: string): Promise<void> {
+    await invalidateCacheKeys(this.cache, getSegmentCatalogInvalidationKeys(tenantId, segmentId));
   }
 }

@@ -1,5 +1,6 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect } from "react";
 import { api } from "../../../lib/api";
+import { logger } from "../../../lib/logger";
 import type { TenantDto, SegmentDto, SystemStats } from "./types";
 
 /**
@@ -20,7 +21,7 @@ export function useDashboardData() {
   });
   const [isLoading, setIsLoading] = useState(false);
 
-  const loadDashboardData = useCallback(async () => {
+  const loadDashboardData = async () => {
     setIsLoading(true);
     try {
       // Load all tenants (Platform admin can see all)
@@ -52,7 +53,7 @@ export function useDashboardData() {
       } catch (segmentError) {
         // Segments endpoint might not be accessible or might fail
         // Set to 0 as fallback
-        console.warn("Could not fetch segments:", segmentError);
+        logger.warn("Could not fetch segments", { error: segmentError, component: "useDashboardData" });
         setStats(prev => ({
           ...prev,
           totalSegments: 0,
@@ -60,15 +61,16 @@ export function useDashboardData() {
         }));
       }
     } catch (error) {
-      console.error("Failed to load dashboard data:", error);
+      logger.error("Failed to load dashboard data", { error, component: "useDashboardData" });
     } finally {
       setIsLoading(false);
     }
-  }, []);
+  };
 
   useEffect(() => {
     loadDashboardData();
-  }, [loadDashboardData]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   return {
     tenants,

@@ -13,6 +13,7 @@ import type {
   TimeslotBooking,
 } from '../lib/ports';
 import type { Service } from '../lib/entities';
+import { logger } from '../lib/core/logger';
 
 // Re-export TimeslotBooking from ports for external consumers
 export type { TimeslotBooking as TimeSlotBooking } from '../lib/ports';
@@ -112,7 +113,8 @@ export class SchedulingAvailabilityService {
       date,
       service.durationMinutes,
       service.bufferMinutes,
-      service.timezone
+      service.timezone,
+      tenantId
     );
 
     if (allSlots.length === 0) {
@@ -142,6 +144,7 @@ export class SchedulingAvailabilityService {
    * @param durationMinutes - Service duration
    * @param bufferMinutes - Buffer time after service
    * @param timezone - Tenant timezone (IANA format)
+   * @param tenantId - Tenant ID for logging context
    * @returns Array of time slots in UTC
    *
    * @private
@@ -151,7 +154,8 @@ export class SchedulingAvailabilityService {
     date: Date,
     durationMinutes: number,
     bufferMinutes: number,
-    timezone: string
+    timezone: string,
+    tenantId: string
   ): TimeSlot[] {
     const slots: TimeSlot[] = [];
     const dayOfWeek = date.getDay(); // 0=Sunday, 6=Saturday
@@ -173,7 +177,8 @@ export class SchedulingAvailabilityService {
         date.getDate(),
         startHour,
         startMinute,
-        timezone
+        timezone,
+        tenantId
       );
 
       const ruleEnd = this.createDateInTimezone(
@@ -182,7 +187,8 @@ export class SchedulingAvailabilityService {
         date.getDate(),
         endHour,
         endMinute,
-        timezone
+        timezone,
+        tenantId
       );
 
       // Generate slots at regular intervals
@@ -265,6 +271,7 @@ export class SchedulingAvailabilityService {
    * @param hour - Hour (0-23)
    * @param minute - Minute (0-59)
    * @param timezone - IANA timezone string
+   * @param tenantId - Tenant ID for logging context
    * @returns Date object in UTC representing the local time in the specified timezone
    *
    * @private
@@ -275,7 +282,8 @@ export class SchedulingAvailabilityService {
     day: number,
     hour: number,
     minute: number,
-    timezone: string
+    timezone: string,
+    tenantId: string
   ): Date {
     // Create ISO string in the format: YYYY-MM-DDTHH:MM
     const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}T${String(hour).padStart(2, '0')}:${String(minute).padStart(2, '0')}:00`;
@@ -318,6 +326,16 @@ export class SchedulingAvailabilityService {
       return new Date(Date.UTC(year, month, day, hour, minute, 0) - offset);
     } catch (error) {
       // Fallback: treat as UTC if timezone conversion fails
+      logger.warn(
+        {
+          providedTimezone: timezone,
+          fallbackTimezone: 'UTC',
+          tenantId,
+          date: dateStr,
+          error: error instanceof Error ? error.message : String(error),
+        },
+        'Timezone conversion failed, falling back to UTC'
+      );
       return new Date(Date.UTC(year, month, day, hour, minute, 0));
     }
   }
@@ -399,6 +417,12 @@ export class SchedulingAvailabilityService {
    * Finds the earliest available time slot starting from the given date.
    * Useful for "book next available" functionality.
    *
+   * PERFORMANCE FIX (P2 #053): Optimized to use batch queries instead of N+1:
+   * - Single query for all bookings in the date range
+   * - Single query for all availability rules in the date range
+   * - In-memory processing of slots and conflicts
+   * This reduces database queries from O(N) to O(1), eliminating N+1 query problem.
+   *
    * @param tenantId - Tenant ID
    * @param serviceId - Service ID
    * @param fromDate - Search from this date (inclusive)
@@ -424,21 +448,79 @@ export class SchedulingAvailabilityService {
     fromDate: Date,
     maxDaysAhead: number = 30
   ): Promise<TimeSlot | null> {
+    // Normalize start date to beginning of day
     const startDate = new Date(fromDate);
     startDate.setHours(0, 0, 0, 0);
 
+    // Calculate end date for the search window
+    const endDate = new Date(startDate);
+    endDate.setDate(endDate.getDate() + maxDaysAhead - 1);
+
+    // 1. Get service details (needed for slot generation)
+    const service = await this.serviceRepo.getById(tenantId, serviceId);
+    if (!service || !service.active) {
+      return null; // Service not found or inactive
+    }
+
+    // 2. PERFORMANCE: Batch-fetch all data with single queries instead of N queries
+    const [allBookings, allAvailabilityRules] = await Promise.all([
+      // Fetch all bookings in the entire search window (1 query)
+      this.bookingRepo.findTimeslotBookingsInRange(
+        tenantId,
+        startDate,
+        endDate,
+        serviceId
+      ),
+      // Fetch all effective availability rules for the service (1 query)
+      // These rules are filtered by effectiveFrom/effectiveTo date range
+      this.availabilityRuleRepo.getEffectiveRules(tenantId, endDate, serviceId)
+    ]);
+
+    // Filter to only active bookings (CONFIRMED/PENDING)
+    const activeBookings = allBookings.filter(
+      booking => booking.status === 'CONFIRMED' || booking.status === 'PENDING'
+    );
+
+    // 3. Group availability rules by day of week for O(1) lookup
+    // This allows us to process each day without additional DB queries
+    const rulesByDayOfWeek = new Map<number, AvailabilityRule[]>();
+    for (const rule of allAvailabilityRules) {
+      const existing = rulesByDayOfWeek.get(rule.dayOfWeek) || [];
+      existing.push(rule);
+      rulesByDayOfWeek.set(rule.dayOfWeek, existing);
+    }
+
+    // 4. Iterate through each day and generate slots in memory
     for (let i = 0; i < maxDaysAhead; i++) {
       const checkDate = new Date(startDate);
       checkDate.setDate(checkDate.getDate() + i);
+      const dayOfWeek = checkDate.getDay(); // 0=Sunday, 6=Saturday
 
-      const slots = await this.getAvailableSlots({
-        tenantId,
-        serviceId,
-        date: checkDate,
-      });
+      // Get rules for this day of week (in-memory lookup)
+      const rulesForDay = rulesByDayOfWeek.get(dayOfWeek) || [];
+      if (rulesForDay.length === 0) {
+        continue; // No availability rules for this day of week
+      }
+
+      // Generate all possible slots for this day
+      const slots = this.generateSlotsFromRules(
+        rulesForDay,
+        checkDate,
+        service.durationMinutes,
+        service.bufferMinutes,
+        service.timezone,
+        tenantId
+      );
+
+      if (slots.length === 0) {
+        continue; // No slots generated for this day
+      }
+
+      // Filter slots against bookings (in memory)
+      const availableSlots = this.filterConflictingSlots(slots, activeBookings);
 
       // Find first available slot
-      const availableSlot = slots.find(slot => slot.available);
+      const availableSlot = availableSlots.find(slot => slot.available);
       if (availableSlot) {
         return availableSlot;
       }

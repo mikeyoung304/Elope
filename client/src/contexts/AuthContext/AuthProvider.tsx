@@ -6,7 +6,7 @@
  * Checks for token expiration on mount and periodically.
  */
 
-import { useState, useEffect, useCallback, ReactNode } from 'react';
+import { useState, useEffect, useCallback, ReactNode, useMemo } from 'react';
 import { AuthContext } from './context';
 import {
   authenticateUser,
@@ -113,7 +113,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
   /**
    * Logout method
    */
-  const logout = useCallback(() => {
+  const logout = () => {
     logoutUser();
 
     // Clear state
@@ -122,38 +122,35 @@ export function AuthProvider({ children }: AuthProviderProps) {
     setRole(null);
     setTenantId(null);
     setImpersonation(null);
-  }, []);
+  };
 
   /**
    * Check if current user is platform admin
    */
-  const isPlatformAdmin = useCallback((): boolean => {
+  const isPlatformAdmin = (): boolean => {
     return role === 'PLATFORM_ADMIN';
-  }, [role]);
+  };
 
   /**
    * Check if current user is tenant admin
    */
-  const isTenantAdmin = useCallback((): boolean => {
+  const isTenantAdmin = (): boolean => {
     return role === 'TENANT_ADMIN';
-  }, [role]);
+  };
 
   /**
    * Check if current user has specific role
    */
-  const hasRole = useCallback(
-    (targetRole: UserRole): boolean => {
-      return role === targetRole;
-    },
-    [role]
-  );
+  const hasRole = (targetRole: UserRole): boolean => {
+    return role === targetRole;
+  };
 
   /**
    * Check if currently impersonating a tenant
    */
-  const isImpersonating = useCallback((): boolean => {
+  const isImpersonating = (): boolean => {
     return impersonation !== null;
-  }, [impersonation]);
+  };
 
   /**
    * Periodically check for token expiration

@@ -45,17 +45,14 @@ const Textarea = React.forwardRef<HTMLTextAreaElement, TextareaProps>(
     }, [value, autoResize]);
 
     // Merge refs
-    const setRefs = React.useCallback(
-      (element: HTMLTextAreaElement | null) => {
-        textareaRef.current = element;
-        if (typeof ref === 'function') {
-          ref(element);
-        } else if (ref) {
-          ref.current = element;
-        }
-      },
-      [ref]
-    );
+    const setRefs = (element: HTMLTextAreaElement | null) => {
+      textareaRef.current = element;
+      if (typeof ref === 'function') {
+        ref(element);
+      } else if (ref) {
+        ref.current = element;
+      }
+    };
 
     const charCount = typeof value === 'string' ? value.length : 0;
     const showCount = showCharCount && maxLength;

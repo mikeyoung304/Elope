@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { toast } from "sonner";
 import { api } from "@/lib/api";
 import type { ServiceDto, CreateServiceDto, UpdateServiceDto } from "@macon/contracts";
@@ -47,7 +47,7 @@ export function useServicesManager({ showSuccess, onServicesChange }: UseService
   };
 
   // Reset form
-  const resetServiceForm = useCallback(() => {
+  const resetServiceForm = () => {
     setServiceForm({
       slug: "",
       name: "",
@@ -60,16 +60,16 @@ export function useServicesManager({ showSuccess, onServicesChange }: UseService
       active: true,
     });
     setError(null);
-  }, []);
+  };
 
   // Service handlers
-  const handleCreateService = useCallback(() => {
+  const handleCreateService = () => {
     resetServiceForm();
     setIsCreatingService(true);
     setEditingServiceId(null);
-  }, [resetServiceForm]);
+  };
 
-  const handleEditService = useCallback((service: ServiceDto) => {
+  const handleEditService = (service: ServiceDto) => {
     setServiceForm({
       slug: service.slug,
       name: service.name,
@@ -83,9 +83,9 @@ export function useServicesManager({ showSuccess, onServicesChange }: UseService
     });
     setEditingServiceId(service.id);
     setIsCreatingService(true);
-  }, []);
+  };
 
-  const handleSaveService = useCallback(async (e: React.FormEvent) => {
+  const handleSaveService = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
 
@@ -185,19 +185,21 @@ export function useServicesManager({ showSuccess, onServicesChange }: UseService
         }
       }
     } catch (err) {
-      console.error("Failed to save service:", err);
+      if (import.meta.env.DEV) {
+        console.error("Failed to save service:", err);
+      }
       setError("An error occurred while saving the service");
     } finally {
       setIsSaving(false);
     }
-  }, [serviceForm, editingServiceId, showSuccess, resetServiceForm, onServicesChange]);
+  };
 
-  const handleDeleteClick = useCallback((service: ServiceDto) => {
+  const handleDeleteClick = (service: ServiceDto) => {
     setServiceToDelete(service);
     setDeleteDialogOpen(true);
-  }, []);
+  };
 
-  const confirmDelete = useCallback(async () => {
+  const confirmDelete = async () => {
     if (!serviceToDelete) return;
 
     try {
@@ -217,19 +219,21 @@ export function useServicesManager({ showSuccess, onServicesChange }: UseService
         });
       }
     } catch (err) {
-      console.error("Failed to delete service:", err);
+      if (import.meta.env.DEV) {
+        console.error("Failed to delete service:", err);
+      }
       toast.error("An error occurred while deleting the service", {
         description: "Please try again or contact support.",
       });
     }
-  }, [serviceToDelete, showSuccess, onServicesChange]);
+  };
 
-  const cancelDelete = useCallback(() => {
+  const cancelDelete = () => {
     setDeleteDialogOpen(false);
     setServiceToDelete(null);
-  }, []);
+  };
 
-  const handleToggleActive = useCallback(async (service: ServiceDto) => {
+  const handleToggleActive = async (service: ServiceDto) => {
     try {
       const result = await api.tenantAdminUpdateService({
         params: { id: service.id },
@@ -245,20 +249,22 @@ export function useServicesManager({ showSuccess, onServicesChange }: UseService
         });
       }
     } catch (err) {
-      console.error("Failed to toggle service status:", err);
+      if (import.meta.env.DEV) {
+        console.error("Failed to toggle service status:", err);
+      }
       toast.error("An error occurred while toggling service status", {
         description: "Please try again or contact support.",
       });
     }
-  }, [showSuccess, onServicesChange]);
+  };
 
-  const handleCancelServiceForm = useCallback(() => {
+  const handleCancelServiceForm = () => {
     setIsCreatingService(false);
     resetServiceForm();
-  }, [resetServiceForm]);
+  };
 
   // Auto-generate slug from name when creating (not editing)
-  const handleNameChange = useCallback((name: string) => {
+  const handleNameChange = (name: string) => {
     setServiceForm(prev => {
       const newForm = { ...prev, name };
       // Only auto-generate slug when creating (not editing)
@@ -267,7 +273,7 @@ export function useServicesManager({ showSuccess, onServicesChange }: UseService
       }
       return newForm;
     });
-  }, [editingServiceId]);
+  };
 
   return {
     // State

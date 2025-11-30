@@ -19,7 +19,7 @@
  * - DELETE /v1/tenant-admin/services/:id - Delete service
  */
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect } from "react";
 import type { ServiceDto } from "@macon/contracts";
 import { api } from "@/lib/api";
 import { useSuccessMessage } from "@/hooks/useSuccessMessage";
@@ -35,7 +35,7 @@ export function ServicesManager() {
   const [isLoading, setIsLoading] = useState(true);
   const { message: successMessage, showSuccess } = useSuccessMessage();
 
-  const fetchServices = useCallback(async () => {
+  const fetchServices = async () => {
     setIsLoading(true);
     try {
       const result = await api.tenantAdminGetServices();
@@ -45,15 +45,18 @@ export function ServicesManager() {
         setServices(sortedServices);
       }
     } catch (error) {
-      console.error("Failed to fetch services:", error);
+      if (import.meta.env.DEV) {
+        console.error("Failed to fetch services:", error);
+      }
     } finally {
       setIsLoading(false);
     }
-  }, []);
+  };
 
   useEffect(() => {
     fetchServices();
-  }, [fetchServices]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const {
     isCreatingService,
@@ -77,7 +80,7 @@ export function ServicesManager() {
   } = useServicesManager({ onServicesChange: fetchServices, showSuccess });
 
   // Wrap handleNameChange to work with ServiceForm
-  const handleFormChange = useCallback((form: typeof serviceForm) => {
+  const handleFormChange = (form: typeof serviceForm) => {
     // If name changed, use handleNameChange for auto-slug (it will update both name and slug)
     if (form.name !== serviceForm.name) {
       handleNameChange(form.name);
@@ -87,7 +90,7 @@ export function ServicesManager() {
     } else {
       setServiceForm(form);
     }
-  }, [serviceForm, handleNameChange, setServiceForm]);
+  };
 
   return (
     <div className="space-y-6">

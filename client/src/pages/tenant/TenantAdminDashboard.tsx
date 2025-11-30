@@ -12,6 +12,7 @@ import { useEffect, useState } from "react";
 import { TenantDashboard as TenantDashboardComponent } from "../../features/tenant-admin/TenantDashboard";
 import { useAuth } from "../../contexts/AuthContext";
 import { api } from "../../lib/api";
+import { logger } from "../../lib/logger";
 
 type TenantDto = {
   id: string;
@@ -38,7 +39,7 @@ export function TenantAdminDashboard() {
           setTenantInfo(result.body);
         }
       } catch (error) {
-        console.error("Failed to load tenant info:", error);
+        logger.error("Failed to load tenant info", { error, component: "TenantAdminDashboard" });
       } finally {
         setIsLoadingInfo(false);
       }

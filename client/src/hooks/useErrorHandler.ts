@@ -7,6 +7,7 @@
 import { useState, useCallback } from 'react';
 import { captureException } from '../lib/sentry';
 import { handleError as handleErrorUtil } from '../lib/error-handler';
+import { logger } from '../lib/logger';
 
 export interface UseErrorHandlerReturn {
   error: Error | null;
@@ -44,17 +45,17 @@ export interface UseErrorHandlerReturn {
 export function useErrorHandler(): UseErrorHandlerReturn {
   const [error, setError] = useState<Error | null>(null);
 
-  const handleError = useCallback((error: Error, context?: Record<string, any>) => {
-    console.error('Error:', error);
+  const handleError = (error: Error, context?: Record<string, any>) => {
+    logger.error('Error', { error: error.message, ...context });
     setError(error);
 
     // Report to Sentry with context
     handleErrorUtil(error, context);
-  }, []);
+  };
 
-  const clearError = useCallback(() => {
+  const clearError = () => {
     setError(null);
-  }, []);
+  };
 
   return {
     error,
@@ -106,7 +107,7 @@ export function useAsyncError<T>(
       return result;
     } catch (err) {
       const error = err instanceof Error ? err : new Error(String(err));
-      console.error('Async error:', error);
+      logger.error('Async error', { error: error.message });
       setError(error);
 
       // Report to Sentry
@@ -119,9 +120,9 @@ export function useAsyncError<T>(
     }
   }, [asyncFn]);
 
-  const clearError = useCallback(() => {
+  const clearError = () => {
     setError(null);
-  }, []);
+  };
 
   return { execute, error, loading, clearError };
 }

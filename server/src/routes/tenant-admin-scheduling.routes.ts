@@ -464,14 +464,18 @@ export function createTenantAdminSchedulingRoutes(
   /**
    * GET /v1/tenant-admin/appointments
    * List all time-slot appointments for authenticated tenant
-   * Query params: ?status=CONFIRMED&serviceId=xyz&startDate=2025-01-01&endDate=2025-12-31
+   * Query params: ?status=CONFIRMED&serviceId=xyz&startDate=2025-01-01&endDate=2025-12-31&limit=50&offset=0
+   *
+   * P2 #052 FIX: Added pagination support to prevent DoS via unbounded queries
    *
    * @query status - Optional booking status filter (PENDING, CONFIRMED, CANCELED, FULFILLED)
    * @query serviceId - Optional service ID filter
    * @query startDate - Optional start date filter (YYYY-MM-DD)
    * @query endDate - Optional end date filter (YYYY-MM-DD)
+   * @query limit - Maximum results to return (default 100, max 500)
+   * @query offset - Number of results to skip for pagination (default 0)
    * @returns 200 - Array of appointment bookings
-   * @returns 400 - Validation error (invalid date format)
+   * @returns 400 - Validation error (invalid date format or pagination params)
    * @returns 401 - Missing or invalid authentication
    * @returns 500 - Internal server error
    */
@@ -484,7 +488,7 @@ export function createTenantAdminSchedulingRoutes(
       }
       const tenantId = tenantAuth.tenantId;
 
-      const { status, serviceId, startDate, endDate } = req.query;
+      const { status, serviceId, startDate, endDate, limit, offset } = req.query;
 
       // Validate date formats if provided
       if (startDate && typeof startDate === 'string' && !/^\d{4}-\d{2}-\d{2}$/.test(startDate)) {
@@ -494,6 +498,26 @@ export function createTenantAdminSchedulingRoutes(
       if (endDate && typeof endDate === 'string' && !/^\d{4}-\d{2}-\d{2}$/.test(endDate)) {
         res.status(400).json({ error: 'Invalid endDate format. Use YYYY-MM-DD' });
         return;
+      }
+
+      // Validate pagination parameters
+      let parsedLimit: number | undefined;
+      let parsedOffset: number | undefined;
+
+      if (limit !== undefined) {
+        parsedLimit = parseInt(limit as string, 10);
+        if (isNaN(parsedLimit) || parsedLimit < 1) {
+          res.status(400).json({ error: 'Invalid limit parameter. Must be a positive integer' });
+          return;
+        }
+      }
+
+      if (offset !== undefined) {
+        parsedOffset = parseInt(offset as string, 10);
+        if (isNaN(parsedOffset) || parsedOffset < 0) {
+          res.status(400).json({ error: 'Invalid offset parameter. Must be a non-negative integer' });
+          return;
+        }
       }
 
       // Validate date range (max 90 days to prevent abuse)
@@ -513,6 +537,8 @@ export function createTenantAdminSchedulingRoutes(
         serviceId: typeof serviceId === 'string' ? serviceId : undefined,
         startDate: typeof startDate === 'string' ? startDate : undefined,
         endDate: typeof endDate === 'string' ? endDate : undefined,
+        limit: parsedLimit,
+        offset: parsedOffset,
       });
 
       res.json(appointments);

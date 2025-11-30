@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { toast } from "sonner";
 import { api } from "@/lib/api";
 import type {
@@ -43,7 +43,7 @@ export function useAddOnManager({ onPackagesChange, showSuccess }: UseAddOnManag
   }, []);
 
   // Reset form
-  const resetAddOnForm = useCallback(() => {
+  const resetAddOnForm = () => {
     setAddOnForm({
       title: "",
       priceCents: "",
@@ -51,16 +51,16 @@ export function useAddOnManager({ onPackagesChange, showSuccess }: UseAddOnManag
       segmentId: "",
     });
     setError(null);
-  }, []);
+  };
 
   // Add-on handlers
-  const handleStartAddingAddOn = useCallback((packageId: string) => {
+  const handleStartAddingAddOn = (packageId: string) => {
     resetAddOnForm();
     setIsAddingAddOn(packageId);
     setEditingAddOnId(null);
-  }, [resetAddOnForm]);
+  };
 
-  const handleEditAddOn = useCallback((addOn: AddOnDto) => {
+  const handleEditAddOn = (addOn: AddOnDto) => {
     setAddOnForm({
       title: addOn.title,
       priceCents: addOn.priceCents.toString(),
@@ -69,9 +69,9 @@ export function useAddOnManager({ onPackagesChange, showSuccess }: UseAddOnManag
     });
     setEditingAddOnId(addOn.id);
     setIsAddingAddOn(addOn.packageId);
-  }, []);
+  };
 
-  const handleSaveAddOn = useCallback(async (e: React.FormEvent, packageId: string) => {
+  const handleSaveAddOn = async (e: React.FormEvent, packageId: string) => {
     e.preventDefault();
     setError(null);
 
@@ -135,14 +135,16 @@ export function useAddOnManager({ onPackagesChange, showSuccess }: UseAddOnManag
         }
       }
     } catch (err) {
-      console.error("Failed to save add-on:", err);
+      if (import.meta.env.DEV) {
+        console.error("Failed to save add-on:", err);
+      }
       setError("An error occurred while saving the add-on");
     } finally {
       setIsSaving(false);
     }
-  }, [addOnForm, editingAddOnId, showSuccess, resetAddOnForm, onPackagesChange]);
+  };
 
-  const handleDeleteAddOn = useCallback(async (addOnId: string) => {
+  const handleDeleteAddOn = async (addOnId: string) => {
     if (!window.confirm("Are you sure you want to delete this add-on?")) {
       return;
     }
@@ -162,18 +164,20 @@ export function useAddOnManager({ onPackagesChange, showSuccess }: UseAddOnManag
         });
       }
     } catch (err) {
-      console.error("Failed to delete add-on:", err);
+      if (import.meta.env.DEV) {
+        console.error("Failed to delete add-on:", err);
+      }
       toast.error("An error occurred while deleting the add-on", {
         description: "Please try again or contact support.",
       });
     }
-  }, [showSuccess, onPackagesChange]);
+  };
 
-  const handleCancelAddOn = useCallback(() => {
+  const handleCancelAddOn = () => {
     setIsAddingAddOn(null);
     setEditingAddOnId(null);
     resetAddOnForm();
-  }, [resetAddOnForm]);
+  };
 
   return {
     // State
