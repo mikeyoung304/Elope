@@ -1,14 +1,15 @@
 /**
  * TierSelector Component
  *
- * Displays 3 tier cards in a responsive grid layout.
+ * Displays tier cards in a responsive grid layout.
  * Filters packages by grouping field to show budget/middle/luxury tiers.
  *
  * Features:
  * - Extracts tiers from packages using grouping field convention
- * - Highlights middle tier as "Most Popular"
- * - Responsive 1-2-3 column layout
+ * - Highlights middle tier as "Most Popular" (only when exactly 3 tiers)
+ * - Responsive 1-2-3 column layout based on tier count
  * - Shows warning if fewer than 3 tiers configured
+ * - Empty state when no tiers are available
  */
 
 import { useMemo } from 'react';
@@ -16,6 +17,7 @@ import { Link } from 'react-router-dom';
 import { ArrowLeft, AlertCircle } from 'lucide-react';
 import { Container } from '@/ui/Container';
 import { TierCard } from './TierCard';
+import { ChoiceGrid } from './ChoiceGrid';
 import type { PackageDto } from '@macon/contracts';
 import { TIER_LEVELS, extractTiers } from './utils';
 
@@ -45,15 +47,15 @@ export function TierSelector({
   // Extract tiers from packages
   const tiers = useMemo(() => extractTiers(packages), [packages]);
 
-  // Count how many tiers are configured
+  // Get list of configured tier levels
   const configuredTiers = useMemo(
-    () => TIER_LEVELS.filter(level => tiers[level] !== undefined),
+    () => TIER_LEVELS.filter((level) => tiers[level] !== undefined),
     [tiers]
   );
 
-  // Check if all tiers are configured
+  // Check completeness for warning display
   const isComplete = configuredTiers.length === 3;
-  const missingTiers = TIER_LEVELS.filter(level => !tiers[level]);
+  const missingTiers = TIER_LEVELS.filter((level) => !tiers[level]);
 
   return (
     <div className="py-12">
@@ -88,7 +90,10 @@ export function TierSelector({
                 Some tiers are not yet configured
               </p>
               <p className="text-amber-700 text-sm">
-                Missing: {missingTiers.map(t => t.charAt(0).toUpperCase() + t.slice(1)).join(', ')}
+                Missing:{' '}
+                {missingTiers
+                  .map((t) => t.charAt(0).toUpperCase() + t.slice(1))
+                  .join(', ')}
               </p>
             </div>
           </div>
@@ -108,8 +113,8 @@ export function TierSelector({
 
         {/* Tier Cards Grid */}
         {configuredTiers.length > 0 && (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8">
-            {TIER_LEVELS.map(tierLevel => {
+          <ChoiceGrid itemCount={configuredTiers.length}>
+            {TIER_LEVELS.map((tierLevel) => {
               const pkg = tiers[tierLevel];
               if (!pkg) return null;
 
@@ -119,15 +124,15 @@ export function TierSelector({
                   package={pkg}
                   tierLevel={tierLevel}
                   segmentSlug={segmentSlug}
-                  highlighted={tierLevel === 'middle'}
+                  totalTierCount={configuredTiers.length}
                 />
               );
             })}
-          </div>
+          </ChoiceGrid>
         )}
 
-        {/* Pricing Psychology Note */}
-        {configuredTiers.length >= 3 && (
+        {/* Pricing Psychology Note - only show when 3 tiers */}
+        {configuredTiers.length === 3 && (
           <div className="mt-12 text-center">
             <p className="text-neutral-500 text-sm">
               Not sure which to choose? Our{' '}

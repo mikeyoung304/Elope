@@ -2,92 +2,31 @@
  * StorefrontHome Page
  *
  * Smart router that determines the customer's entry point:
- * - If tenant has segments (1-3): Show segment selector cards
- * - If tenant has no segments (0): Redirect to /tiers
+ * - If tenant has 0 segments: Redirect to /tiers (with replace)
+ * - If tenant has 1 segment: Skip to that segment's tiers (without replace for back button)
+ * - If tenant has 2+ segments: Show segment selector cards
  *
  * Route: / (root)
  *
  * Customer flow:
  * 1. Customer arrives at storefront root
- * 2. This page checks if segments exist
- * 3. If segments: show segment cards for customer to choose
- * 4. If no segments: redirect to /tiers for direct tier selection
+ * 2. This page checks segment count
+ * 3. 0 segments: redirect to /tiers for direct tier selection
+ * 4. 1 segment: auto-skip to /s/{slug} (back button works)
+ * 5. 2+ segments: show segment cards for customer to choose
  */
 
-import { memo } from 'react';
-import { Navigate, Link } from 'react-router-dom';
+import { Navigate } from 'react-router-dom';
 import { Container } from '@/ui/Container';
-import { Card, CardContent } from '@/components/ui/card';
 import { Loading } from '@/ui/Loading';
 import { FeatureErrorBoundary } from '@/components/errors';
 import { useSegments } from '@/features/catalog/hooks';
-import type { SegmentDto } from '@macon/contracts';
-
-/**
- * Segment Card Component
- * Displays a clickable card for each customer segment
- * Memoized to prevent unnecessary re-renders
- */
-const SegmentCard = memo(function SegmentCard({ segment }: { segment: SegmentDto }) {
-  return (
-    <Link to={`/s/${segment.slug}`}>
-      <Card
-        className="overflow-hidden h-full transition-all duration-300 hover:shadow-elevation-3 hover:-translate-y-1 bg-white border-2 border-neutral-200 hover:border-macon-orange/30 shadow-elevation-1 cursor-pointer"
-        data-testid={`segment-card-${segment.slug}`}
-      >
-        {/* Segment Hero Image */}
-        {segment.heroImage ? (
-          <div className="relative aspect-[16/9] overflow-hidden">
-            <img
-              src={segment.heroImage}
-              alt={segment.heroTitle}
-              loading="lazy"
-              className="w-full h-full object-cover transition-transform duration-300 hover:scale-105"
-            />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/30 to-transparent" />
-            <div className="absolute bottom-0 left-0 right-0 p-6">
-              <h3 className="font-heading text-2xl md:text-3xl font-bold text-white mb-2">
-                {segment.heroTitle}
-              </h3>
-              {segment.heroSubtitle && (
-                <p className="text-white/80 text-lg line-clamp-2">
-                  {segment.heroSubtitle}
-                </p>
-              )}
-            </div>
-          </div>
-        ) : (
-          <div className="relative aspect-[16/9] overflow-hidden bg-gradient-to-br from-macon-navy to-macon-teal/80 flex items-center justify-center">
-            <div className="text-center p-6">
-              <h3 className="font-heading text-2xl md:text-3xl font-bold text-white mb-2">
-                {segment.heroTitle}
-              </h3>
-              {segment.heroSubtitle && (
-                <p className="text-white/80 text-lg">
-                  {segment.heroSubtitle}
-                </p>
-              )}
-            </div>
-          </div>
-        )}
-
-        {/* Segment Description */}
-        {segment.description && (
-          <CardContent className="p-6">
-            <p className="text-neutral-600 leading-relaxed line-clamp-3">
-              {segment.description}
-            </p>
-          </CardContent>
-        )}
-      </Card>
-    </Link>
-  );
-});
+import { SegmentCard, ChoiceGrid } from '@/features/storefront';
 
 function StorefrontHomeContent() {
   const { data: segments, isLoading, error } = useSegments();
 
-  // Loading state
+  // Loading state - show spinner before making routing decisions
   if (isLoading) {
     return <Loading label="Loading storefront..." />;
   }
@@ -108,12 +47,17 @@ function StorefrontHomeContent() {
     );
   }
 
-  // If no segments, redirect to root tiers
+  // 0 segments: redirect to root tiers (with replace - no back needed)
   if (!segments || segments.length === 0) {
     return <Navigate to="/tiers" replace />;
   }
 
-  // Show segment selector
+  // 1 segment: auto-skip to that segment's tiers (without replace for back button)
+  if (segments.length === 1) {
+    return <Navigate to={`/s/${segments[0].slug}`} />;
+  }
+
+  // 2+ segments: show segment selector
   return (
     <div className="py-12">
       <Container>
@@ -128,22 +72,17 @@ function StorefrontHomeContent() {
         </div>
 
         {/* Segment Cards Grid */}
-        <div className={`grid gap-8 ${
-          segments.length === 1
-            ? 'grid-cols-1 max-w-2xl mx-auto'
-            : segments.length === 2
-            ? 'grid-cols-1 md:grid-cols-2 max-w-4xl mx-auto'
-            : 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3'
-        }`}>
-          {segments.map((segment: SegmentDto) => (
+        <ChoiceGrid itemCount={segments.length}>
+          {segments.map((segment) => (
             <SegmentCard key={segment.id} segment={segment} />
           ))}
-        </div>
+        </ChoiceGrid>
 
         {/* Help text */}
         <div className="mt-12 text-center">
           <p className="text-neutral-500">
-            Not sure which to choose? Pick the one that sounds closest to your needs.
+            Not sure which to choose? Pick the one that sounds closest to your
+            needs.
           </p>
         </div>
       </Container>
