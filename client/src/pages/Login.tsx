@@ -21,10 +21,10 @@ export function Login() {
   const [isLoading, setIsLoading] = useState(false);
   const [validationErrors, setValidationErrors] = useState<FormError[]>([]);
 
-  // Auto-fill for local development - use actual seeded admin credentials
+  // Initialize form with empty values
   const { values, handleChange } = useForm({
-    email: "mike@maconheadshots.com",
-    password: "@Nupples8"
+    email: "",
+    password: ""
   });
 
   /**
