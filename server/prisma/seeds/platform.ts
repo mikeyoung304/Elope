@@ -34,18 +34,32 @@ export async function seedPlatform(prisma: PrismaClient): Promise<void> {
     throw new Error('ADMIN_DEFAULT_PASSWORD must be at least 12 characters');
   }
 
-  const passwordHash = await bcrypt.hash(adminPassword, BCRYPT_ROUNDS);
-
-  const admin = await prisma.user.upsert({
-    where: { email: adminEmail },
-    update: { passwordHash, role: 'PLATFORM_ADMIN', name: adminName },
-    create: {
-      email: adminEmail,
-      name: adminName,
-      role: 'PLATFORM_ADMIN',
-      passwordHash
-    },
+  // Check if admin user already exists
+  const existingAdmin = await prisma.user.findUnique({
+    where: { email: adminEmail }
   });
 
-  console.log(`✅ Platform admin created: ${admin.email}`);
+  if (existingAdmin) {
+    // User exists - only update role and name, NEVER password
+    const admin = await prisma.user.update({
+      where: { email: adminEmail },
+      data: {
+        role: 'PLATFORM_ADMIN',
+        name: adminName
+      }
+    });
+    console.log(`✅ Platform admin already exists (password NOT updated): ${admin.email}`);
+  } else {
+    // User does not exist - create with password
+    const passwordHash = await bcrypt.hash(adminPassword, BCRYPT_ROUNDS);
+    const admin = await prisma.user.create({
+      data: {
+        email: adminEmail,
+        name: adminName,
+        role: 'PLATFORM_ADMIN',
+        passwordHash
+      }
+    });
+    console.log(`✅ Platform admin created with new password: ${admin.email}`);
+  }
 }

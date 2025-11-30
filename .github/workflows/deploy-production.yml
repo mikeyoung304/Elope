@@ -329,6 +329,13 @@ jobs:
         env:
           DATABASE_URL: ${{ secrets.PRODUCTION_DATABASE_URL }}
 
+      - name: Seed production database
+        run: npm run --workspace=server db:seed:production
+        env:
+          DATABASE_URL: ${{ secrets.PRODUCTION_DATABASE_URL }}
+          ADMIN_EMAIL: ${{ secrets.ADMIN_EMAIL }}
+          ADMIN_DEFAULT_PASSWORD: ${{ secrets.ADMIN_DEFAULT_PASSWORD }}
+
   # Job 5: Deploy API to Render (Production)
   deploy-api-production:
     name: Deploy API to Production (Render)

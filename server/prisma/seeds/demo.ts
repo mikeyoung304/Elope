@@ -11,9 +11,9 @@ import crypto from 'crypto';
 
 export async function seedDemo(prisma: PrismaClient): Promise<void> {
   // Generate unique keys for demo tenant (different each time for security)
-  const demoSlug = 'demo';
-  const demoPublicKey = `pk_live_demo_${crypto.randomBytes(8).toString('hex')}`;
-  const demoSecretKey = `sk_live_demo_${crypto.randomBytes(16).toString('hex')}`;
+  const demoSlug = 'little-bit-farm';
+  const demoPublicKey = `pk_live_little-bit-farm_${crypto.randomBytes(8).toString('hex')}`;
+  const demoSecretKey = `sk_live_little-bit-farm_${crypto.randomBytes(16).toString('hex')}`;
 
   // Create demo tenant
   const tenant = await prisma.tenant.upsert({
@@ -25,7 +25,7 @@ export async function seedDemo(prisma: PrismaClient): Promise<void> {
     },
     create: {
       slug: demoSlug,
-      name: 'Demo Business',
+      name: 'Little Bit Farm',
       email: 'demo@example.com',
       commissionPercent: 5.0,
       apiKeyPublic: demoPublicKey,
