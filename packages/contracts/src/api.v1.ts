@@ -39,6 +39,7 @@ import {
   StripeAccountStatusDtoSchema,
   // Scheduling DTOs
   ServiceDtoSchema,
+  PublicServiceDtoSchema,
   CreateServiceDtoSchema,
   UpdateServiceDtoSchema,
   AvailabilityRuleDtoSchema,
@@ -1031,7 +1032,7 @@ export const Contracts = c.router({
     method: 'GET',
     path: '/v1/public/services',
     responses: {
-      200: z.array(ServiceDtoSchema),
+      200: z.array(PublicServiceDtoSchema),
       400: BadRequestErrorSchema,
       401: UnauthorizedErrorSchema,
       500: InternalServerErrorSchema,
@@ -1050,7 +1051,7 @@ export const Contracts = c.router({
       slug: z.string(),
     }),
     responses: {
-      200: ServiceDtoSchema,
+      200: PublicServiceDtoSchema,
       400: BadRequestErrorSchema,
       401: UnauthorizedErrorSchema,
       404: NotFoundErrorSchema,

@@ -16,6 +16,7 @@ import { logger } from './core/logger';
 export interface ShutdownManager {
   server: Server;
   prisma?: PrismaClient;
+  cleanup?: () => Promise<void>; // DI container cleanup method
   onShutdown?: () => Promise<void> | void;
 }
 
@@ -27,7 +28,7 @@ export interface ShutdownManager {
  * const server = app.listen(3001);
  * registerGracefulShutdown({
  *   server,
- *   prisma: container.prisma,
+ *   cleanup: container.cleanup, // Use DI container cleanup (recommended)
  *   onShutdown: async () => {
  *     // Custom cleanup
  *   },
@@ -35,7 +36,7 @@ export interface ShutdownManager {
  * ```
  */
 export function registerGracefulShutdown(manager: ShutdownManager): void {
-  const { server, prisma, onShutdown } = manager;
+  const { server, prisma, cleanup, onShutdown } = manager;
 
   let isShuttingDown = false;
 
@@ -69,9 +70,14 @@ export function registerGracefulShutdown(manager: ShutdownManager): void {
         });
       });
 
-      // 2. Close database connections (Prisma)
-      if (prisma) {
-        logger.info('Disconnecting Prisma Client');
+      // 2. Run DI container cleanup (preferred - cleans up Prisma, cache, event emitter)
+      if (cleanup) {
+        logger.info('Running DI container cleanup');
+        await cleanup();
+        logger.info('DI container cleanup completed');
+      } else if (prisma) {
+        // Fallback: disconnect Prisma directly if no cleanup method
+        logger.info('Disconnecting Prisma Client (fallback)');
         await prisma.$disconnect();
         logger.info('Prisma Client disconnected');
       }

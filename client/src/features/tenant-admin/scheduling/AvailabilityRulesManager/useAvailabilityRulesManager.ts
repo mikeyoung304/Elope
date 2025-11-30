@@ -91,9 +91,6 @@ export function useAvailabilityRulesManager(onRulesChange: () => void) {
         });
       }
     } catch (err) {
-      if (import.meta.env.DEV) {
-        console.error("Failed to create availability rule:", err);
-      }
       setError("An error occurred while creating the rule");
       toast.error("An error occurred while creating the availability rule", {
         description: "Please try again or contact support.",
@@ -128,9 +125,6 @@ export function useAvailabilityRulesManager(onRulesChange: () => void) {
         });
       }
     } catch (err) {
-      if (import.meta.env.DEV) {
-        console.error("Failed to delete availability rule:", err);
-      }
       toast.error("An error occurred while deleting the availability rule", {
         description: "Please try again or contact support.",
       });

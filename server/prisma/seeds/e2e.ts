@@ -7,6 +7,7 @@
 
 import { PrismaClient } from '../../src/generated/prisma';
 import { apiKeyService } from '../../src/lib/api-key.service';
+import { logger } from '../../src/lib/core/logger';
 
 // Fixed keys for E2E tests - NEVER use in production
 // These are intentionally predictable for test automation
@@ -51,8 +52,8 @@ export async function seedE2E(prisma: PrismaClient): Promise<void> {
     },
   });
 
-  console.log(`✅ E2E test tenant created: ${tenant.name} (${tenant.slug})`);
-  console.log(`   Public Key: ${E2E_PUBLIC_KEY}`);
+  logger.info(`E2E test tenant created: ${tenant.name} (${tenant.slug})`);
+  logger.info(`Public Key: ${E2E_PUBLIC_KEY}`);
 
   // Create minimal packages for E2E tests
   const [starter, growth] = await Promise.all([
@@ -82,7 +83,7 @@ export async function seedE2E(prisma: PrismaClient): Promise<void> {
     }),
   ]);
 
-  console.log(`✅ E2E packages created: ${[starter, growth].length}`);
+  logger.info(`E2E packages created: ${[starter, growth].length}`);
 
   // Create one add-on for testing
   const addOn = await prisma.addOn.upsert({
@@ -104,7 +105,7 @@ export async function seedE2E(prisma: PrismaClient): Promise<void> {
     create: { packageId: starter.id, addOnId: addOn.id },
   });
 
-  console.log(`✅ E2E add-on linked to starter package`);
+  logger.info('E2E add-on linked to starter package');
 }
 
 // Export keys for test files to import

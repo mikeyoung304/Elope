@@ -8,6 +8,7 @@
 import { PrismaClient } from '../../src/generated/prisma';
 import { apiKeyService } from '../../src/lib/api-key.service';
 import crypto from 'crypto';
+import { logger } from '../../src/lib/core/logger';
 
 export async function seedDemo(prisma: PrismaClient): Promise<void> {
   // Generate unique keys for demo tenant (different each time for security)
@@ -41,10 +42,10 @@ export async function seedDemo(prisma: PrismaClient): Promise<void> {
     },
   });
 
-  console.log(`✅ Demo tenant created: ${tenant.name}`);
-  console.log(`   Public Key: ${demoPublicKey}`);
-  console.log(`   Secret Key: ${demoSecretKey}`);
-  console.log(`   ⚠️  Save these keys - they change on each seed!`);
+  logger.info(`Demo tenant created: ${tenant.name}`);
+  logger.info(`Public Key: ${demoPublicKey}`);
+  logger.warn(`Secret Key: ${demoSecretKey}`);
+  logger.warn('Save these keys - they change on each seed!');
 
   // Create realistic packages
   const [starter, growth, enterprise] = await Promise.all([
@@ -101,7 +102,7 @@ export async function seedDemo(prisma: PrismaClient): Promise<void> {
     }),
   ]);
 
-  console.log(`✅ Demo packages created: ${[starter, growth, enterprise].length}`);
+  logger.info(`Demo packages created: ${[starter, growth, enterprise].length}`);
 
   // Create add-ons
   const [socialMedia, emailMarketing, crmSetup, dedicatedManager] = await Promise.all([
@@ -185,7 +186,7 @@ export async function seedDemo(prisma: PrismaClient): Promise<void> {
     }),
   ]);
 
-  console.log(`✅ Demo add-ons created and linked: ${[socialMedia, emailMarketing, crmSetup, dedicatedManager].length}`);
+  logger.info(`Demo add-ons created and linked: ${[socialMedia, emailMarketing, crmSetup, dedicatedManager].length}`);
 
   // Create sample blackout dates
   const christmas = new Date('2025-12-25T00:00:00Z');
@@ -204,5 +205,5 @@ export async function seedDemo(prisma: PrismaClient): Promise<void> {
     }),
   ]);
 
-  console.log(`✅ Demo blackout dates created`);
+  logger.info('Demo blackout dates created');
 }

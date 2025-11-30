@@ -40,10 +40,7 @@ export function createPublicTenantRoutes(tenantRepository: PrismaTenantRepositor
     const slugRegex = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
     if (!slug || slug.length === 0 || slug.length > 63 || !slugRegex.test(slug)) {
       return res.status(400).json({
-        status: 'error',
-        statusCode: 400,
-        error: 'VALIDATION_ERROR',
-        message: 'Invalid slug format: must be lowercase alphanumeric with hyphens, 1-63 characters',
+        error: 'Invalid slug format: must be lowercase alphanumeric with hyphens, 1-63 characters',
       });
     }
 
@@ -54,10 +51,7 @@ export function createPublicTenantRoutes(tenantRepository: PrismaTenantRepositor
       if (!tenant) {
         logger.info({ slug }, 'Tenant not found for public lookup');
         return res.status(404).json({
-          status: 'error',
-          statusCode: 404,
-          error: 'NOT_FOUND',
-          message: 'Tenant not found',
+          error: 'Tenant not found',
         });
       }
 
@@ -67,10 +61,7 @@ export function createPublicTenantRoutes(tenantRepository: PrismaTenantRepositor
     } catch (error) {
       logger.error({ error, slug }, 'Error fetching public tenant');
       return res.status(500).json({
-        status: 'error',
-        statusCode: 500,
-        error: 'INTERNAL_SERVER_ERROR',
-        message: 'Failed to fetch tenant',
+        error: 'Failed to fetch tenant',
       });
     }
   });

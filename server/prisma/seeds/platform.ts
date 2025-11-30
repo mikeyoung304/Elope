@@ -7,6 +7,7 @@
 
 import { PrismaClient } from '../../src/generated/prisma';
 import bcrypt from 'bcryptjs';
+import { logger } from '../../src/lib/core/logger';
 
 // OWASP 2023 recommendation for bcrypt rounds
 const BCRYPT_ROUNDS = 12;
@@ -48,7 +49,7 @@ export async function seedPlatform(prisma: PrismaClient): Promise<void> {
         name: adminName
       }
     });
-    console.log(`✅ Platform admin already exists (password NOT updated): ${admin.email}`);
+    logger.info(`Platform admin already exists (password NOT updated): ${admin.email}`);
   } else {
     // User does not exist - create with password
     const passwordHash = await bcrypt.hash(adminPassword, BCRYPT_ROUNDS);
@@ -60,6 +61,6 @@ export async function seedPlatform(prisma: PrismaClient): Promise<void> {
         passwordHash
       }
     });
-    console.log(`✅ Platform admin created with new password: ${admin.email}`);
+    logger.info(`Platform admin created with new password: ${admin.email}`);
   }
 }

@@ -48,15 +48,14 @@ async function main(): Promise<void> {
     // Register graceful shutdown handlers
     registerGracefulShutdown({
       server,
-      prisma: container.prisma,
+      cleanup: container.cleanup, // Use DI container cleanup (handles Prisma, cache, event emitter)
       onShutdown: async () => {
-        // Custom cleanup: close event emitters, flush logs, etc.
+        // Custom cleanup: close Supabase connections, flush logs, etc.
         logger.info('Running custom shutdown tasks');
         await closeSupabaseConnections();
       },
     });
   } catch (error) {
-    console.error('Failed to start server:', error);
     logger.error({ error }, 'Failed to start server');
     process.exit(1);
   }

@@ -358,7 +358,7 @@ export function createTenantAdminRoutes(
         try {
           await segmentService.getSegmentById(tenantId, data.segmentId);
         } catch {
-          res.status(400).json({ error: 'Invalid segment: segment not found or does not belong to this tenant' });
+          res.status(404).json({ error: 'Invalid segment: segment not found or does not belong to this tenant' });
           return;
         }
       }
@@ -406,7 +406,7 @@ export function createTenantAdminRoutes(
         try {
           await segmentService.getSegmentById(tenantId, data.segmentId);
         } catch {
-          res.status(400).json({ error: 'Invalid segment: segment not found or does not belong to this tenant' });
+          res.status(404).json({ error: 'Invalid segment: segment not found or does not belong to this tenant' });
           return;
         }
       }

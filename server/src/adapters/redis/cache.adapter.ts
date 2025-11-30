@@ -13,6 +13,7 @@
 
 import Redis from 'ioredis';
 import type { CacheServicePort } from '../../lib/ports';
+import { DEFAULT_CACHE_TTL_SECONDS } from '../../lib/ports';
 import { logger } from '../../lib/core/logger';
 
 export class RedisCacheAdapter implements CacheServicePort {
@@ -102,11 +103,11 @@ export class RedisCacheAdapter implements CacheServicePort {
     try {
       const serialized = JSON.stringify(value);
 
-      if (ttlSeconds && ttlSeconds > 0) {
-        await this.redis.setex(key, ttlSeconds, serialized);
-      } else {
-        await this.redis.set(key, serialized);
-      }
+      // Apply default TTL if not provided to prevent indefinite caching
+      const ttl = ttlSeconds ?? DEFAULT_CACHE_TTL_SECONDS;
+
+      // Always use SETEX to ensure TTL is applied
+      await this.redis.setex(key, ttl, serialized);
     } catch (error) {
       logger.error({ error, key }, 'Cache set error');
       // Degrade gracefully - don't throw
@@ -125,8 +126,19 @@ export class RedisCacheAdapter implements CacheServicePort {
     }
   }
 
-  async flush(pattern: string): Promise<void> {
+  async flush(pattern?: string): Promise<void> {
     if (!this.redis || !this.connected) {
+      return;
+    }
+
+    // If no pattern provided, flush all keys
+    if (!pattern) {
+      try {
+        await this.redis.flushdb();
+        logger.debug('Redis cache flushed all keys');
+      } catch (error) {
+        logger.error({ error }, 'Redis flush all error');
+      }
       return;
     }
 

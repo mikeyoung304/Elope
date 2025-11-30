@@ -4,6 +4,7 @@
 
 import { z } from 'zod';
 import dotenv from 'dotenv';
+import { logger } from './logger';
 
 dotenv.config();
 
@@ -34,8 +35,7 @@ export type Config = z.infer<typeof ConfigSchema>;
 export function loadConfig(): Config {
   const result = ConfigSchema.safeParse(process.env);
   if (!result.success) {
-    console.error('❌ Invalid environment configuration:');
-    console.error(result.error.format());
+    logger.error({ errors: result.error.format() }, 'Invalid environment configuration');
     throw new Error('Invalid environment configuration');
   }
   return result.data;

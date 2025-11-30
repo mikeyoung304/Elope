@@ -140,9 +140,6 @@ export function SignupForm() {
         setServerError("An error occurred during signup. Please try again.");
       }
     } catch (error) {
-      if (import.meta.env.DEV) {
-        console.error("Signup error:", error);
-      }
       setServerError("An unexpected error occurred. Please try again.");
     } finally {
       setIsLoading(false);

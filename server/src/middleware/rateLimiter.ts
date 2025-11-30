@@ -106,10 +106,8 @@ export const publicTenantLookupLimiter = rateLimit({
   legacyHeaders: false,
   handler: (_req: Request, res: Response) =>
     res.status(429).json({
-      status: 'error',
-      statusCode: 429,
-      error: 'RATE_LIMIT_EXCEEDED',
-      message: 'Too many requests. Please try again later.',
+      error: 'too_many_requests',
+      message: 'Rate limit exceeded. Please try again later.',
     }),
 });
 

@@ -99,8 +99,24 @@ export function createTenantAdminSchedulingRoutes(
       }
       const tenantId = tenantAuth.tenantId;
 
+      // Check if timezone was provided BEFORE Zod applies default
+      const timezoneMissing = !req.body.timezone;
+
       // Validate request body
       const data = CreateServiceDtoSchema.parse(req.body);
+
+      // Log timezone fallback if timezone wasn't provided
+      if (timezoneMissing) {
+        logger.warn(
+          {
+            fallbackTimezone: data.timezone,
+            tenantId,
+            serviceSlug: data.slug,
+            context: 'service_creation_route',
+          },
+          'Timezone fallback used - no timezone provided for service creation'
+        );
+      }
 
       // Check for slug conflict
       const existing = await serviceRepo.getBySlug(tenantId, data.slug);
@@ -356,7 +372,7 @@ export function createTenantAdminSchedulingRoutes(
       if (data.serviceId) {
         const service = await serviceRepo.getById(tenantId, data.serviceId);
         if (!service) {
-          res.status(400).json({ error: 'Service not found' });
+          res.status(404).json({ error: 'Service not found' });
           return;
         }
       }

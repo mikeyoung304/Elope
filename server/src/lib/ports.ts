@@ -494,6 +494,12 @@ export interface UpdateServiceInput {
 // ============================================================================
 
 /**
+ * Default cache TTL in seconds (1 hour)
+ * Applied when no explicit TTL is provided to prevent indefinite caching
+ */
+export const DEFAULT_CACHE_TTL_SECONDS = 3600;
+
+/**
  * Cache Service Port
  *
  * Provides key-value caching with TTL support.
@@ -501,6 +507,15 @@ export interface UpdateServiceInput {
  *
  * CRITICAL: All cache keys MUST include tenantId to prevent cross-tenant data leakage
  * Example: `catalog:${tenantId}:packages` NOT `catalog:packages`
+ *
+ * TTL BEHAVIOR:
+ * - All cache entries MUST have a TTL to prevent stale data
+ * - Default TTL: 1 hour (3600 seconds) when not specified
+ * - Recommended TTLs:
+ *   - Catalog/packages: 15 minutes (900s)
+ *   - Availability: 5 minutes (300s)
+ *   - User sessions: 1 hour (3600s)
+ *   - Static content: 24 hours (86400s)
  */
 export interface CacheServicePort {
   /**
@@ -510,10 +525,10 @@ export interface CacheServicePort {
   get<T>(key: string): Promise<T | null>;
 
   /**
-   * Set value with optional TTL (time-to-live in seconds)
+   * Set value with TTL (time-to-live in seconds)
    * @param key - Cache key (must include tenantId for multi-tenant safety)
    * @param value - Value to cache (will be JSON serialized)
-   * @param ttlSeconds - Optional TTL override (defaults to service default)
+   * @param ttlSeconds - TTL in seconds (defaults to DEFAULT_CACHE_TTL_SECONDS = 3600)
    */
   set(key: string, value: any, ttlSeconds?: number): Promise<void>;
 
@@ -525,8 +540,9 @@ export interface CacheServicePort {
   /**
    * Delete all keys matching pattern (e.g., "catalog:tenant_123:*")
    * Uses SCAN for Redis (production-safe), regex for in-memory
+   * If no pattern provided, flushes all keys
    */
-  flush(pattern: string): Promise<void>;
+  flush(pattern?: string): Promise<void>;
 
   /**
    * Check if cache is available (health check)
@@ -545,4 +561,52 @@ export interface CacheServicePort {
     totalRequests: number;
     hitRate: string;
   }>;
+}
+
+// ============================================================================
+// STORAGE INTERFACES
+// ============================================================================
+
+/**
+ * File uploaded via multer or similar middleware
+ */
+export interface UploadedFile {
+  fieldname: string;
+  originalname: string;
+  encoding: string;
+  mimetype: string;
+  buffer: Buffer;
+  size: number;
+}
+
+/**
+ * Result of a successful file upload
+ */
+export interface UploadResult {
+  url: string;
+  filename: string;
+  size: number;
+  mimetype: string;
+}
+
+/**
+ * FileSystem abstraction for dependency injection (testability)
+ */
+export interface FileSystem {
+  existsSync(path: string): boolean;
+  mkdirSync(path: string, options?: { recursive?: boolean }): void;
+  writeFile(path: string, data: Buffer): Promise<void>;
+  unlink(path: string): Promise<void>;
+}
+
+/**
+ * Storage provider for file uploads (logos, package photos, segment images)
+ */
+export interface StorageProvider {
+  uploadLogo(file: UploadedFile, tenantId: string): Promise<UploadResult>;
+  uploadPackagePhoto(file: UploadedFile, packageId: string, tenantId?: string): Promise<UploadResult>;
+  uploadSegmentImage(file: UploadedFile, tenantId: string): Promise<UploadResult>;
+  deleteLogo(filename: string): Promise<void>;
+  deletePackagePhoto(filename: string): Promise<void>;
+  deleteSegmentImage(url: string, tenantId: string): Promise<void>;
 }

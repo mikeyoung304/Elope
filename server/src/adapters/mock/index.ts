@@ -18,6 +18,7 @@ import type { User, UserRepository } from '../lib/ports';
 import { BookingConflictError } from '../lib/errors';
 import bcrypt from 'bcryptjs';
 import type Stripe from 'stripe';
+import { logger } from '../lib/core/logger';
 
 // Default tenant ID for mock mode (single-tenant simulation)
 const DEFAULT_TENANT = 'tenant_default_legacy';
@@ -190,7 +191,7 @@ function seedData(): void {
     role: 'admin',
   });
 
-  console.log('✅ Mock data seeded: 6 packages, 6 add-ons, 1 admin user');
+  logger.debug('Mock data seeded: 6 packages, 6 add-ons, 1 admin user');
 }
 
 // Initialize seed data
@@ -412,11 +413,12 @@ export class MockBookingRepository implements BookingRepository {
     // P2 #037: In mock mode, we just log payment data
     // Real Prisma implementation creates Payment record atomically
     if (paymentData) {
-      console.log(`💳 [MOCK PAYMENT] Payment recorded for booking ${booking.id}:`, {
+      logger.debug({
+        bookingId: booking.id,
         amount: paymentData.amount / 100,
         processor: paymentData.processor,
         processorId: paymentData.processorId,
-      });
+      }, 'Mock payment recorded for booking');
     }
 
     return booking;
@@ -466,7 +468,7 @@ export class MockBookingRepository implements BookingRepository {
     if (booking) {
       // Store googleEventId in mock booking (extend Booking type if needed)
       (booking as any).googleEventId = googleEventId;
-      console.log(`📅 [MOCK] Updated booking ${bookingId} with Google event ID: ${googleEventId}`);
+      logger.debug({ bookingId, googleEventId }, 'Updated booking with Google event ID');
     }
   }
 
@@ -478,7 +480,7 @@ export class MockBookingRepository implements BookingRepository {
     // Mock mode: Return empty array for now
     // Real TIMESLOT bookings would need to be stored with startTime/endTime
     // This mock implementation is sufficient for basic testing
-    console.log(`📅 [MOCK] findTimeslotBookings called for ${date.toISOString()}, serviceId: ${serviceId || 'all'}`);
+    logger.debug({ date: date.toISOString(), serviceId: serviceId || 'all' }, 'findTimeslotBookings called');
     return [];
   }
 
@@ -491,7 +493,11 @@ export class MockBookingRepository implements BookingRepository {
     // Mock mode: Return empty array for now
     // Real TIMESLOT bookings would need to be stored with startTime/endTime
     // This mock implementation is sufficient for basic testing
-    console.log(`📅 [MOCK] findTimeslotBookingsInRange called for ${startDate.toISOString()} to ${endDate.toISOString()}, serviceId: ${serviceId || 'all'}`);
+    logger.debug({
+      startDate: startDate.toISOString(),
+      endDate: endDate.toISOString(),
+      serviceId: serviceId || 'all'
+    }, 'findTimeslotBookingsInRange called');
     return [];
   }
 
@@ -515,7 +521,7 @@ export class MockBookingRepository implements BookingRepository {
 
     // Mock mode: Return empty array for now
     // Mock bookings don't have TIMESLOT type
-    console.log(`📅 [MOCK] findAppointments called for tenant ${tenantId}, filters:`, filters, `limit: ${limit}, offset: ${offset}`);
+    logger.debug({ tenantId, filters, limit, offset }, 'findAppointments called');
     return [];
   }
 }
@@ -600,13 +606,13 @@ export class MockCalendarProvider implements CalendarProvider {
       tenantId: input.tenantId,
     });
 
-    console.log('📅 [MOCK GOOGLE CALENDAR] Event created:', {
+    logger.debug({
       eventId,
       summary: input.summary,
       startTime: input.startTime.toISOString(),
       endTime: input.endTime.toISOString(),
       attendees: input.attendees?.map(a => a.email).join(', '),
-    });
+    }, 'Mock Google Calendar event created');
 
     return { eventId };
   }
@@ -618,15 +624,15 @@ export class MockCalendarProvider implements CalendarProvider {
     const event = this.mockEvents.get(eventId);
 
     if (!event) {
-      console.log('📅 [MOCK GOOGLE CALENDAR] Event not found:', eventId);
+      logger.debug({ eventId }, 'Mock Google Calendar event not found');
       return false;
     }
 
     this.mockEvents.delete(eventId);
-    console.log('📅 [MOCK GOOGLE CALENDAR] Event deleted:', {
+    logger.debug({
       eventId,
       summary: event.summary,
-    });
+    }, 'Mock Google Calendar event deleted');
 
     return true;
   }
@@ -723,10 +729,11 @@ export class MockEmailProvider implements EmailProvider {
     subject: string;
     html: string;
   }): Promise<void> {
-    console.log('📧 [MOCK EMAIL]');
-    console.log(`  To: ${input.to}`);
-    console.log(`  Subject: ${input.subject}`);
-    console.log(`  Body: ${input.html.substring(0, 100)}...`);
+    logger.debug({
+      to: input.to,
+      subject: input.subject,
+      bodyPreview: input.html.substring(0, 100),
+    }, 'Mock email sent');
   }
 }
 
@@ -777,7 +784,7 @@ export class MockWebhookRepository implements WebhookRepository {
     if (event) {
       event.status = 'FAILED';
     }
-    console.log(`❌ [MOCK WEBHOOK] Failed: ${eventId} - ${errorMessage}`);
+    logger.debug({ eventId, errorMessage }, 'Mock webhook failed');
   }
 }
 
@@ -818,5 +825,5 @@ export function resetMockState() {
   calendarBusyDates.clear();
   webhookEvents.clear();
 
-  console.log('🔄 Mock state reset to seed data');
+  logger.debug('Mock state reset to seed data');
 }

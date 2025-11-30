@@ -12,11 +12,12 @@
  */
 
 import type { CacheServicePort } from '../../lib/ports';
+import { DEFAULT_CACHE_TTL_SECONDS } from '../../lib/ports';
 import { logger } from '../../lib/core/logger';
 
 interface CacheEntry {
   value: any;
-  expiresAt?: number;
+  expiresAt: number;
 }
 
 export class InMemoryCacheAdapter implements CacheServicePort {
@@ -33,7 +34,7 @@ export class InMemoryCacheAdapter implements CacheServicePort {
     }
 
     // Check expiration
-    if (entry.expiresAt && Date.now() > entry.expiresAt) {
+    if (Date.now() > entry.expiresAt) {
       this.cache.delete(key);
       this.missCount++;
       return null;
@@ -44,9 +45,12 @@ export class InMemoryCacheAdapter implements CacheServicePort {
   }
 
   async set(key: string, value: any, ttlSeconds?: number): Promise<void> {
+    // Apply default TTL if not provided to prevent indefinite caching
+    const ttl = ttlSeconds ?? DEFAULT_CACHE_TTL_SECONDS;
+
     const entry: CacheEntry = {
       value,
-      expiresAt: ttlSeconds ? Date.now() + ttlSeconds * 1000 : undefined,
+      expiresAt: Date.now() + ttl * 1000,
     };
 
     this.cache.set(key, entry);
@@ -56,7 +60,17 @@ export class InMemoryCacheAdapter implements CacheServicePort {
     this.cache.delete(key);
   }
 
-  async flush(pattern: string): Promise<void> {
+  async flush(pattern?: string): Promise<void> {
+    // If no pattern provided, flush all keys
+    if (!pattern) {
+      const count = this.cache.size;
+      this.cache.clear();
+      if (count > 0) {
+        logger.debug({ count }, 'In-memory cache flushed all keys');
+      }
+      return;
+    }
+
     // Convert pattern to regex (simple pattern matching)
     const regex = new RegExp('^' + pattern.replace(/\*/g, '.*') + '$');
 
@@ -129,7 +143,7 @@ export class InMemoryCacheAdapter implements CacheServicePort {
     const keysToDelete: string[] = [];
 
     for (const [key, entry] of this.cache.entries()) {
-      if (entry.expiresAt && now > entry.expiresAt) {
+      if (now > entry.expiresAt) {
         keysToDelete.push(key);
       }
     }

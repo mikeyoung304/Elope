@@ -115,10 +115,9 @@ export function validateEnv(): Env {
   const result = envSchema.safeParse(process.env);
 
   if (!result.success) {
-    console.error('❌ Environment validation failed:');
-    console.error(result.error.format());
-    console.error('\n📋 Missing or invalid environment variables detected.');
-    console.error('💡 Tip: Copy .env.example to .env and fill in your values.\n');
+    logger.error({ errors: result.error.format() }, 'Environment validation failed');
+    logger.error('Missing or invalid environment variables detected.');
+    logger.error('Tip: Copy .env.example to .env and fill in your values.');
     process.exit(1);
   }
 
@@ -136,17 +135,16 @@ export function validateEnv(): Env {
     const missing = prodRequired.filter(key => !env[key]);
 
     if (missing.length > 0) {
-      console.error('❌ Production environment missing required variables:');
-      console.error(missing.map(key => `  - ${key}`).join('\n'));
-      console.error('\n💡 These variables are REQUIRED in production.\n');
+      logger.error({ missing }, 'Production environment missing required variables');
+      logger.error('These variables are REQUIRED in production.');
       process.exit(1);
     }
   }
 
   // Real mode validation (requires Stripe)
   if (env.ADAPTERS_PRESET === 'real' && !env.STRIPE_SECRET_KEY) {
-    console.error('❌ ADAPTERS_PRESET=real requires STRIPE_SECRET_KEY');
-    console.error('💡 Either set STRIPE_SECRET_KEY or use ADAPTERS_PRESET=mock\n');
+    logger.error('ADAPTERS_PRESET=real requires STRIPE_SECRET_KEY');
+    logger.error('Either set STRIPE_SECRET_KEY or use ADAPTERS_PRESET=mock');
     process.exit(1);
   }
 

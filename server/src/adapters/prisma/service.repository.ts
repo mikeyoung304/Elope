@@ -77,19 +77,9 @@ export class PrismaServiceRepository implements ServiceRepository {
     }
 
     try {
-      // Apply timezone fallback with logging for observability
+      // Note: Timezone fallback logging is handled at the route layer
+      // (before Zod applies defaults) to ensure observability
       const timezone = data.timezone ?? 'America/New_York';
-      if (!data.timezone) {
-        logger.warn(
-          {
-            fallbackTimezone: 'America/New_York',
-            tenantId,
-            serviceSlug: data.slug,
-            context: 'service_creation',
-          },
-          'Timezone fallback used - no timezone provided for service creation'
-        );
-      }
 
       const service = await this.prisma.service.create({
         data: {

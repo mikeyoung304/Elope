@@ -145,9 +145,6 @@ export function AppointmentBookingFlow() {
         throw new Error("No checkout URL returned");
       }
     } catch (error) {
-      if (import.meta.env.DEV) {
-        console.error("Checkout error:", error);
-      }
       toast.error("Unable to create checkout session", {
         description: "Please try again or contact support.",
       });

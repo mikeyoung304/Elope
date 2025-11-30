@@ -40,9 +40,7 @@ export function AvailabilityRulesManager() {
         setRules(result.body);
       }
     } catch (error) {
-      if (import.meta.env.DEV) {
-        console.error("Failed to fetch availability rules:", error);
-      }
+      // Error is handled by UI state
     } finally {
       setIsLoading(false);
     }
@@ -57,9 +55,7 @@ export function AvailabilityRulesManager() {
         setServices(sortedServices);
       }
     } catch (error) {
-      if (import.meta.env.DEV) {
-        console.error("Failed to fetch services:", error);
-      }
+      // Error is handled by UI state
     }
   };
 

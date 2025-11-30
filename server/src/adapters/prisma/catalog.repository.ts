@@ -25,7 +25,7 @@ export class PrismaCatalogRepository implements CatalogRepository {
       orderBy: { createdAt: 'asc' },
     });
 
-    return packages.map(this.toDomainPackage);
+    return packages.map((pkg) => this.toDomainPackage(pkg));
   }
 
   async getAllPackagesWithAddOns(tenantId: string): Promise<Array<Package & { addOns: AddOn[] }>> {
@@ -340,7 +340,7 @@ export class PrismaCatalogRepository implements CatalogRepository {
       ],
     });
 
-    return packages.map(this.toDomainPackage);
+    return packages.map((pkg) => this.toDomainPackage(pkg));
   }
 
   /**

@@ -185,9 +185,6 @@ export function useServicesManager({ showSuccess, onServicesChange }: UseService
         }
       }
     } catch (err) {
-      if (import.meta.env.DEV) {
-        console.error("Failed to save service:", err);
-      }
       setError("An error occurred while saving the service");
     } finally {
       setIsSaving(false);
@@ -219,9 +216,6 @@ export function useServicesManager({ showSuccess, onServicesChange }: UseService
         });
       }
     } catch (err) {
-      if (import.meta.env.DEV) {
-        console.error("Failed to delete service:", err);
-      }
       toast.error("An error occurred while deleting the service", {
         description: "Please try again or contact support.",
       });
@@ -249,9 +243,6 @@ export function useServicesManager({ showSuccess, onServicesChange }: UseService
         });
       }
     } catch (err) {
-      if (import.meta.env.DEV) {
-        console.error("Failed to toggle service status:", err);
-      }
       toast.error("An error occurred while toggling service status", {
         description: "Please try again or contact support.",
       });

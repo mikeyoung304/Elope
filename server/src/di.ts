@@ -82,6 +82,12 @@ export interface Container {
   mailProvider?: PostmarkMailAdapter; // Export mail provider for password reset emails
   cacheAdapter: CacheServicePort; // Export cache adapter for health checks
   prisma?: PrismaClient; // Export Prisma instance for shutdown
+  eventEmitter?: InProcessEventEmitter; // Export event emitter for cleanup
+  /**
+   * Cleanup method to properly dispose of services and close connections
+   * Call this during application shutdown to prevent memory leaks
+   */
+  cleanup: () => Promise<void>;
 }
 
 export function buildContainer(config: Config): Container {
@@ -191,7 +197,44 @@ export function buildContainer(config: Config): Container {
       booking: adapters.bookingRepo as any, // Mock booking repo - type compatibility
     };
 
-    return { controllers, services, repositories, mailProvider: undefined, cacheAdapter, prisma: mockPrisma };
+    // Cleanup function for mock mode
+    const cleanup = async (): Promise<void> => {
+      logger.info('Starting DI container cleanup (mock mode)');
+
+      try {
+        // 1. Disconnect Prisma (mock instance)
+        if (mockPrisma) {
+          await mockPrisma.$disconnect();
+          logger.info('Mock Prisma disconnected');
+        }
+
+        // 2. Disconnect cache adapter (in-memory or Redis)
+        if (cacheAdapter && 'disconnect' in cacheAdapter) {
+          await (cacheAdapter as any).disconnect();
+          logger.info('Cache adapter disconnected');
+        }
+
+        // 3. Clear event emitter subscriptions to prevent memory leaks
+        eventEmitter.clearAll();
+        logger.info('Event emitter subscriptions cleared');
+
+        logger.info('DI container cleanup completed (mock mode)');
+      } catch (error) {
+        logger.error({ error }, 'Error during DI container cleanup (mock mode)');
+        throw error;
+      }
+    };
+
+    return {
+      controllers,
+      services,
+      repositories,
+      mailProvider: undefined,
+      cacheAdapter,
+      prisma: mockPrisma,
+      eventEmitter,
+      cleanup,
+    };
   }
 
   // Real adapters mode
@@ -430,5 +473,42 @@ export function buildContainer(config: Config): Container {
     booking: bookingRepo,
   };
 
-  return { controllers, services, repositories, mailProvider, cacheAdapter, prisma };
+  // Cleanup function for real mode
+  const cleanup = async (): Promise<void> => {
+    logger.info('Starting DI container cleanup (real mode)');
+
+    try {
+      // 1. Disconnect Prisma
+      if (prisma) {
+        await prisma.$disconnect();
+        logger.info('Prisma disconnected');
+      }
+
+      // 2. Disconnect cache adapter (Redis or in-memory)
+      if (cacheAdapter && 'disconnect' in cacheAdapter) {
+        await (cacheAdapter as any).disconnect();
+        logger.info('Cache adapter disconnected');
+      }
+
+      // 3. Clear event emitter subscriptions to prevent memory leaks
+      eventEmitter.clearAll();
+      logger.info('Event emitter subscriptions cleared');
+
+      logger.info('DI container cleanup completed (real mode)');
+    } catch (error) {
+      logger.error({ error }, 'Error during DI container cleanup (real mode)');
+      throw error;
+    }
+  };
+
+  return {
+    controllers,
+    services,
+    repositories,
+    mailProvider,
+    cacheAdapter,
+    prisma,
+    eventEmitter,
+    cleanup,
+  };
 }

@@ -519,6 +519,14 @@ export const ServiceDtoSchema = z.object({
 
 export type ServiceDto = z.infer<typeof ServiceDtoSchema>;
 
+/**
+ * Public Service DTO (excludes tenantId for security)
+ * Used by public scheduling endpoints where tenant context comes from X-Tenant-Key header
+ */
+export const PublicServiceDtoSchema = ServiceDtoSchema.omit({ tenantId: true });
+
+export type PublicServiceDto = z.infer<typeof PublicServiceDtoSchema>;
+
 export const CreateServiceDtoSchema = z.object({
   slug: z.string().min(1).max(100).regex(/^[a-z0-9-]+$/, 'Lowercase alphanumeric + hyphens only'),
   name: z.string().min(1).max(100),

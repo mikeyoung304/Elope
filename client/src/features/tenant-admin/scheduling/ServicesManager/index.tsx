@@ -45,9 +45,7 @@ export function ServicesManager() {
         setServices(sortedServices);
       }
     } catch (error) {
-      if (import.meta.env.DEV) {
-        console.error("Failed to fetch services:", error);
-      }
+      // Error is handled by UI state
     } finally {
       setIsLoading(false);
     }
