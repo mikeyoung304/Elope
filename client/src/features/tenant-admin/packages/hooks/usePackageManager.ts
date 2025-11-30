@@ -2,19 +2,15 @@ import { useState, useCallback } from "react";
 import { toast } from "sonner";
 import { api } from "@/lib/api";
 import { packagePhotoApi } from "@/lib/package-photo-api";
+import { useSuccessMessage } from "@/hooks/useSuccessMessage";
 import type { PackageDto } from "@macon/contracts";
 import type { PackagePhoto } from "@/features/photos";
 
 export function usePackageManager(onPackagesChange: () => void) {
   const [isCreating, setIsCreating] = useState(false);
   const [editingPackageId, setEditingPackageId] = useState<string | null>(null);
-  const [successMessage, setSuccessMessage] = useState<string | null>(null);
+  const { message: successMessage, showSuccess } = useSuccessMessage();
   const [packagePhotos, setPackagePhotos] = useState<PackagePhoto[]>([]);
-
-  const showSuccess = useCallback((message: string) => {
-    setSuccessMessage(message);
-    setTimeout(() => setSuccessMessage(null), 3000);
-  }, []);
 
   const handleCreate = useCallback(() => {
     setIsCreating(true);

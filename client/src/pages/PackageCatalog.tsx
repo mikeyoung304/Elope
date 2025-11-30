@@ -23,37 +23,41 @@ function PackageCatalogContent() {
   const [priceRange, setPriceRange] = useState({ min: 0, max: Infinity });
   const [sortBy, setSortBy] = useState<'price-asc' | 'price-desc'>('price-asc');
 
-  // Apply filters and sorting
-  const filteredAndSortedPackages = packages
-    ?.filter((pkg: PackageDto) => {
-      // Search filter (search in title and description)
-      if (searchQuery) {
-        const query = searchQuery.toLowerCase();
-        const titleMatch = pkg.title.toLowerCase().includes(query);
-        const descMatch = pkg.description.toLowerCase().includes(query);
-        if (!titleMatch && !descMatch) {
+  // Apply filters and sorting - memoized to prevent unnecessary re-computation
+  const filteredAndSortedPackages = useMemo(() => {
+    if (!packages) return undefined;
+
+    return packages
+      .filter((pkg: PackageDto) => {
+        // Search filter (search in title and description)
+        if (searchQuery) {
+          const query = searchQuery.toLowerCase();
+          const titleMatch = pkg.title.toLowerCase().includes(query);
+          const descMatch = pkg.description.toLowerCase().includes(query);
+          if (!titleMatch && !descMatch) {
+            return false;
+          }
+        }
+
+        // Price filter
+        const priceInDollars = pkg.priceCents / 100;
+        if (priceInDollars < priceRange.min || priceInDollars > priceRange.max) {
           return false;
         }
-      }
 
-      // Price filter
-      const priceInDollars = pkg.priceCents / 100;
-      if (priceInDollars < priceRange.min || priceInDollars > priceRange.max) {
-        return false;
-      }
-
-      return true;
-    })
-    .sort((a: PackageDto, b: PackageDto) => {
-      // Sort logic
-      if (sortBy === 'price-asc') {
-        return a.priceCents - b.priceCents;
-      }
-      if (sortBy === 'price-desc') {
-        return b.priceCents - a.priceCents;
-      }
-      return 0;
-    });
+        return true;
+      })
+      .sort((a: PackageDto, b: PackageDto) => {
+        // Sort logic
+        if (sortBy === 'price-asc') {
+          return a.priceCents - b.priceCents;
+        }
+        if (sortBy === 'price-desc') {
+          return b.priceCents - a.priceCents;
+        }
+        return 0;
+      });
+  }, [packages, searchQuery, priceRange.min, priceRange.max, sortBy]);
 
   // Group packages by tier for storefront display
   const packagesByTier = useMemo(() => {

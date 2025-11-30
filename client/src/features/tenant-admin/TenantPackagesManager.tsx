@@ -1,8 +1,9 @@
 import { useState, useEffect } from "react";
-import { Plus, CheckCircle } from "lucide-react";
+import { Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import type { PackageDto, SegmentDto } from "@macon/contracts";
 import { PackagePhotoUploader } from "@/components/PackagePhotoUploader";
+import { SuccessMessage } from "@/components/shared/SuccessMessage";
 import { api } from "@/lib/api";
 import { usePackageForm } from "./packages/hooks/usePackageForm";
 import { usePackageManager } from "./packages/hooks/usePackageManager";
@@ -18,7 +19,7 @@ interface TenantPackagesManagerProps {
  * TenantPackagesManager Component
  *
  * Main coordinator for tenant package management.
- * Refactored to use custom hooks and smaller components.
+ * Design: Matches landing page aesthetic with sage accents
  */
 export function TenantPackagesManager({ packages, onPackagesChange }: TenantPackagesManagerProps) {
   // Segment state for organization dropdown
@@ -68,21 +69,24 @@ export function TenantPackagesManager({ packages, onPackagesChange }: TenantPack
   return (
     <div className="space-y-6">
       {/* Success Message */}
-      {packageManager.successMessage && (
-        <div className="flex items-center gap-2 p-4 border border-white/20 bg-macon-navy-700 rounded-lg">
-          <CheckCircle className="w-5 h-5 text-white/60" />
-          <span className="text-lg font-medium text-white/90">{packageManager.successMessage}</span>
-        </div>
-      )}
+      <SuccessMessage message={packageManager.successMessage} />
 
-      {/* Create Button */}
+      {/* Header with Create Button */}
       {!packageManager.isCreating && (
-        <div className="flex justify-end">
+        <div className="flex items-center justify-between">
+          <div>
+            <h2 className="font-serif text-2xl font-bold text-text-primary">Your Packages</h2>
+            <p className="text-text-muted text-sm mt-1">
+              {packages.length === 0
+                ? "Create your first package to get started"
+                : `${packages.length} package${packages.length !== 1 ? "s" : ""} available`}
+            </p>
+          </div>
           <Button
             onClick={packageManager.handleCreate}
-            className="bg-macon-navy hover:bg-macon-navy-dark text-lg h-12 px-6"
+            className="bg-sage hover:bg-sage-hover text-white rounded-full px-6 h-11 shadow-soft hover:shadow-medium transition-all duration-300 group"
           >
-            <Plus className="w-5 h-5 mr-2" />
+            <Plus className="w-4 h-4 mr-2 group-hover:rotate-90 transition-transform duration-300" />
             Create Package
           </Button>
         </div>

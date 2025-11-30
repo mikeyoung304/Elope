@@ -1,5 +1,4 @@
-import { Plus, Loader2 } from "lucide-react";
-import { Card } from "@/components/ui/card";
+import { Plus, Loader2, CalendarPlus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -17,6 +16,7 @@ interface BlackoutFormProps {
  * BlackoutForm Component
  *
  * Form for adding new blackout dates with optional reason
+ * Design: Matches landing page aesthetic with sage accents
  */
 export function BlackoutForm({
   newBlackoutDate,
@@ -27,11 +27,20 @@ export function BlackoutForm({
   onSubmit
 }: BlackoutFormProps) {
   return (
-    <Card className="p-6 bg-macon-navy-800 border-white/20">
-      <h2 className="text-2xl font-semibold mb-4 text-white">Add Blackout Date</h2>
-      <form onSubmit={onSubmit} className="flex gap-4">
-        <div className="flex-1">
-          <Label htmlFor="blackoutDate" className="text-white/90 text-lg">
+    <div className="bg-surface-alt rounded-2xl border border-sage-light/20 p-6">
+      <div className="flex items-center gap-3 mb-6">
+        <div className="w-10 h-10 bg-sage/10 rounded-xl flex items-center justify-center">
+          <CalendarPlus className="w-5 h-5 text-sage" />
+        </div>
+        <div>
+          <h2 className="font-serif text-xl font-bold text-text-primary">Add Blackout Date</h2>
+          <p className="text-sm text-text-muted">Block a date from accepting bookings</p>
+        </div>
+      </div>
+
+      <form onSubmit={onSubmit} className="flex flex-col sm:flex-row gap-4">
+        <div className="flex-1 space-y-2">
+          <Label htmlFor="blackoutDate" className="text-text-primary text-sm font-medium">
             Date
           </Label>
           <Input
@@ -39,14 +48,14 @@ export function BlackoutForm({
             type="date"
             value={newBlackoutDate}
             onChange={(e) => setNewBlackoutDate(e.target.value)}
-            className="bg-macon-navy-900 border-white/20 text-white focus:border-white/30 text-lg h-12"
+            className="bg-white border-sage-light/30 text-text-primary focus:border-sage focus:ring-sage/20 h-11 rounded-xl"
             required
             disabled={isAdding}
           />
         </div>
-        <div className="flex-1">
-          <Label htmlFor="blackoutReason" className="text-white/90 text-lg">
-            Reason (optional)
+        <div className="flex-1 space-y-2">
+          <Label htmlFor="blackoutReason" className="text-text-primary text-sm font-medium">
+            Reason <span className="text-text-muted font-normal">(optional)</span>
           </Label>
           <Input
             id="blackoutReason"
@@ -54,21 +63,30 @@ export function BlackoutForm({
             value={newBlackoutReason}
             onChange={(e) => setNewBlackoutReason(e.target.value)}
             placeholder="Holiday, maintenance, etc."
-            className="bg-macon-navy-900 border-white/20 text-white placeholder:text-white/50 focus:border-white/30 text-lg h-12"
+            className="bg-white border-sage-light/30 text-text-primary placeholder:text-text-muted/50 focus:border-sage focus:ring-sage/20 h-11 rounded-xl"
             disabled={isAdding}
           />
         </div>
         <div className="flex items-end">
           <Button
             type="submit"
-            className="bg-macon-navy hover:bg-macon-navy-dark text-lg h-12 px-6"
+            className="bg-sage hover:bg-sage-hover text-white h-11 px-6 rounded-full shadow-soft hover:shadow-medium transition-all duration-300"
             disabled={isAdding}
           >
-            {isAdding && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
-            {isAdding ? "Adding..." : <><Plus className="w-5 h-5 mr-2" />Add</>}
+            {isAdding ? (
+              <>
+                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                Adding...
+              </>
+            ) : (
+              <>
+                <Plus className="w-4 h-4 mr-2" />
+                Add Date
+              </>
+            )}
           </Button>
         </div>
       </form>
-    </Card>
+    </div>
   );
 }

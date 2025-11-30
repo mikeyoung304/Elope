@@ -1,6 +1,9 @@
 import { useState, useCallback, useEffect } from "react";
-import { CheckCircle, Loader2 } from "lucide-react";
+import { Loader2 } from "lucide-react";
 import { api } from "../../lib/api";
+import { logger } from "../../lib/logger";
+import { useSuccessMessage } from "../../hooks/useSuccessMessage";
+import { SuccessMessage } from "@/components/shared/SuccessMessage";
 import { BrandingForm } from "./branding/components/BrandingForm";
 import { BrandingPreview } from "./branding/components/BrandingPreview";
 
@@ -39,7 +42,7 @@ export function BrandingEditor({ branding, isLoading, onBrandingChange }: Brandi
   const [logoUrl, setLogoUrl] = useState("");
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [successMessage, setSuccessMessage] = useState<string | null>(null);
+  const { message: successMessage, showSuccess } = useSuccessMessage();
 
   // Load branding data when it changes
   useEffect(() => {
@@ -52,11 +55,6 @@ export function BrandingEditor({ branding, isLoading, onBrandingChange }: Brandi
       setLogoUrl(branding.logoUrl || "");
     }
   }, [branding]);
-
-  const showSuccess = useCallback((message: string) => {
-    setSuccessMessage(message);
-    setTimeout(() => setSuccessMessage(null), 3000);
-  }, []);
 
   const handleSave = useCallback(async (e: React.FormEvent) => {
     e.preventDefault();
@@ -101,7 +99,7 @@ export function BrandingEditor({ branding, isLoading, onBrandingChange }: Brandi
         setError("Failed to update branding");
       }
     } catch (err) {
-      console.error("Failed to save branding:", err);
+      logger.error("Failed to save branding:", { error: err, component: "BrandingEditor" });
       setError("An error occurred while saving branding");
     } finally {
       setIsSaving(false);
@@ -110,17 +108,23 @@ export function BrandingEditor({ branding, isLoading, onBrandingChange }: Brandi
 
   return (
     <div className="space-y-6">
-      {/* Success Message */}
-      {successMessage && (
-        <div className="flex items-center gap-2 p-4 border border-white/20 bg-macon-navy-700 rounded-lg">
-          <CheckCircle className="w-5 h-5 text-white/60" />
-          <span className="text-lg font-medium text-white/90">{successMessage}</span>
+      {/* Header */}
+      <div className="flex items-center justify-between">
+        <div>
+          <h2 className="font-serif text-2xl font-bold text-text-primary">Brand Customization</h2>
+          <p className="text-text-muted text-sm mt-1">
+            Customize colors and fonts for your booking widget
+          </p>
         </div>
-      )}
+      </div>
+
+      {/* Success Message */}
+      <SuccessMessage message={successMessage} />
 
       {isLoading ? (
-        <div className="flex items-center justify-center py-12">
-          <Loader2 className="w-8 h-8 animate-spin text-white/60" />
+        <div className="bg-surface-alt rounded-2xl border border-sage-light/20 p-12 text-center">
+          <Loader2 className="w-8 h-8 animate-spin mx-auto text-sage" />
+          <p className="text-text-muted mt-3">Loading branding settings...</p>
         </div>
       ) : (
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">

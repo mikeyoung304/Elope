@@ -1,5 +1,4 @@
-import { Card } from "@/components/ui/card";
-import { Calendar, Check } from "lucide-react";
+import { Calendar, Check, Eye } from "lucide-react";
 
 interface BrandingPreviewProps {
   primaryColor: string;
@@ -14,6 +13,7 @@ interface BrandingPreviewProps {
  * BrandingPreview Component
  *
  * Enhanced live preview of branding settings with realistic booking widget simulation
+ * Design: Matches landing page aesthetic with sage accents
  */
 export function BrandingPreview({
   primaryColor,
@@ -24,15 +24,20 @@ export function BrandingPreview({
   logoUrl
 }: BrandingPreviewProps) {
   return (
-    <Card className="p-6 bg-macon-navy-800 border-white/20">
-      <h2 className="text-2xl font-semibold mb-4 text-white">Live Preview</h2>
-      <p className="text-base text-white/70 mb-6">
-        See how your branding will appear in the booking widget
-      </p>
+    <div className="bg-surface-alt rounded-2xl border border-sage-light/20 p-6">
+      <div className="flex items-center gap-3 mb-6">
+        <div className="w-10 h-10 bg-sage/10 rounded-xl flex items-center justify-center">
+          <Eye className="w-5 h-5 text-sage" />
+        </div>
+        <div>
+          <h3 className="font-serif text-xl font-bold text-text-primary">Live Preview</h3>
+          <p className="text-sm text-text-muted">See how your branding appears</p>
+        </div>
+      </div>
 
       {/* Booking Widget Preview */}
       <div
-        className="rounded-lg shadow-xl overflow-hidden"
+        className="rounded-2xl shadow-medium overflow-hidden border border-sage-light/10"
         style={{
           backgroundColor: backgroundColor,
           fontFamily: fontFamily,
@@ -40,136 +45,109 @@ export function BrandingPreview({
       >
         {/* Header with Logo */}
         <div
-          className="p-6 flex items-center justify-center"
-          style={{
-            backgroundColor: primaryColor,
-            background: `linear-gradient(135deg, ${primaryColor} 0%, ${secondaryColor} 100%)`,
-          }}
+          className="p-5 flex items-center justify-center"
+          style={{ backgroundColor: primaryColor }}
         >
           {logoUrl ? (
             <img
               src={logoUrl}
               alt="Logo Preview"
-              className="max-h-16 max-w-[200px] object-contain"
+              className="max-h-12 max-w-[180px] object-contain"
             />
           ) : (
-            <div className="text-white text-2xl font-bold">Your Logo Here</div>
+            <div className="text-white text-lg font-semibold">Your Logo</div>
           )}
         </div>
 
         {/* Package Content */}
-        <div className="p-6">
-          <h3
-            className="text-2xl font-bold mb-3"
-            style={{ color: primaryColor }}
-          >
-            Premium Consulting Package
-          </h3>
-          <p className="text-base mb-4 opacity-80">
-            A comprehensive service session with professional guidance
-            and personalized recommendations.
-          </p>
+        <div className="p-5 space-y-4">
+          <div>
+            <h3
+              className="text-lg font-bold mb-1"
+              style={{ color: primaryColor }}
+            >
+              Sample Package
+            </h3>
+            <p className="text-sm opacity-70">
+              A preview of how your packages will look to clients.
+            </p>
+          </div>
 
           {/* Price */}
           <div
-            className="inline-block px-4 py-2 rounded-lg font-bold text-lg mb-4"
+            className="inline-block px-3 py-1.5 rounded-lg font-bold text-sm"
             style={{
-              backgroundColor: `${accentColor}20`,
+              backgroundColor: `${accentColor}15`,
               color: accentColor,
-              border: `2px solid ${accentColor}`,
             }}
           >
             $500.00
           </div>
 
           {/* Date Picker Mockup */}
-          <div className="mb-4">
-            <label className="block text-sm font-medium mb-2" style={{ color: primaryColor }}>
-              Select Event Date
+          <div>
+            <label className="block text-xs font-medium mb-1.5 opacity-70">
+              Select Date
             </label>
             <div
-              className="flex items-center gap-2 px-4 py-3 rounded-lg border-2"
-              style={{ borderColor: primaryColor }}
+              className="flex items-center gap-2 px-3 py-2 rounded-lg border text-sm"
+              style={{ borderColor: `${primaryColor}30` }}
             >
-              <Calendar className="w-5 h-5" style={{ color: primaryColor }} />
-              <span className="opacity-60">Choose a date...</span>
+              <Calendar className="w-4 h-4" style={{ color: primaryColor }} />
+              <span className="opacity-50">Choose a date...</span>
             </div>
           </div>
 
-          {/* Add-ons */}
-          <div className="mb-4">
-            <label className="block text-sm font-medium mb-2" style={{ color: primaryColor }}>
-              Optional Add-ons
-            </label>
+          {/* Add-on */}
+          <div
+            className="p-3 rounded-lg border flex items-center gap-3"
+            style={{
+              borderColor: `${secondaryColor}30`,
+              backgroundColor: `${secondaryColor}08`,
+            }}
+          >
             <div
-              className="p-4 rounded-lg border"
-              style={{
-                borderColor: secondaryColor,
-                backgroundColor: `${secondaryColor}10`,
-              }}
+              className="w-5 h-5 rounded flex items-center justify-center flex-shrink-0"
+              style={{ backgroundColor: accentColor }}
             >
-              <div className="flex items-center gap-3">
-                <div
-                  className="w-5 h-5 rounded flex items-center justify-center"
-                  style={{ backgroundColor: accentColor }}
-                >
-                  <Check className="w-3 h-3 text-white" />
-                </div>
-                <div className="flex-1">
-                  <div className="font-medium" style={{ color: secondaryColor }}>
-                    Professional Videography
-                  </div>
-                  <div className="text-sm opacity-70">+$300.00</div>
-                </div>
+              <Check className="w-3 h-3 text-white" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <div className="text-sm font-medium" style={{ color: secondaryColor }}>
+                Add-on Option
               </div>
+              <div className="text-xs opacity-60">+$100</div>
             </div>
           </div>
 
-          {/* Book Now Button */}
+          {/* Book Button */}
           <button
-            className="w-full py-3 rounded-lg font-semibold text-white transition-all hover:opacity-90 shadow-md"
+            className="w-full py-2.5 rounded-lg font-medium text-white text-sm transition-all"
             style={{ backgroundColor: primaryColor }}
           >
-            Book This Package
+            Book Now
           </button>
         </div>
       </div>
 
-      {/* Color Reference */}
-      <div className="mt-6 grid grid-cols-2 gap-3">
-        <div>
-          <p className="text-xs text-white/70 mb-1">Primary</p>
-          <div
-            className="h-10 rounded border border-white/20"
-            style={{ backgroundColor: primaryColor }}
-          />
-          <p className="text-xs text-white/90 mt-1 font-mono">{primaryColor}</p>
-        </div>
-        <div>
-          <p className="text-xs text-white/70 mb-1">Secondary</p>
-          <div
-            className="h-10 rounded border border-white/20"
-            style={{ backgroundColor: secondaryColor }}
-          />
-          <p className="text-xs text-white/90 mt-1 font-mono">{secondaryColor}</p>
-        </div>
-        <div>
-          <p className="text-xs text-white/70 mb-1">Accent</p>
-          <div
-            className="h-10 rounded border border-white/20"
-            style={{ backgroundColor: accentColor }}
-          />
-          <p className="text-xs text-white/90 mt-1 font-mono">{accentColor}</p>
-        </div>
-        <div>
-          <p className="text-xs text-white/70 mb-1">Background</p>
-          <div
-            className="h-10 rounded border border-white/20"
-            style={{ backgroundColor: backgroundColor }}
-          />
-          <p className="text-xs text-white/90 mt-1 font-mono">{backgroundColor}</p>
-        </div>
+      {/* Color Swatches */}
+      <div className="mt-5 grid grid-cols-4 gap-2">
+        {[
+          { label: "Primary", color: primaryColor },
+          { label: "Secondary", color: secondaryColor },
+          { label: "Accent", color: accentColor },
+          { label: "Background", color: backgroundColor },
+        ].map(({ label, color }) => (
+          <div key={label} className="text-center">
+            <div
+              className="h-8 rounded-lg border border-sage-light/20 mb-1"
+              style={{ backgroundColor: color }}
+            />
+            <p className="text-[10px] text-text-muted">{label}</p>
+            <p className="text-[10px] font-mono text-text-primary">{color}</p>
+          </div>
+        ))}
       </div>
-    </Card>
+    </div>
   );
 }

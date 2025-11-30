@@ -20,11 +20,11 @@
 import { useState, useEffect, useCallback } from "react";
 import type { AvailabilityRuleDto, ServiceDto } from "@macon/contracts";
 import { api } from "@/lib/api";
+import { SuccessMessage } from "@/components/shared/SuccessMessage";
 import { CreateRuleButton } from "./CreateRuleButton";
 import { RuleForm } from "./RuleForm";
 import { RulesList } from "./RulesList";
 import { DeleteConfirmationDialog } from "./DeleteConfirmationDialog";
-import { SuccessMessage } from "./SuccessMessage";
 import { useAvailabilityRulesManager } from "./useAvailabilityRulesManager";
 
 export function AvailabilityRulesManager() {

@@ -361,3 +361,51 @@ export function getTokenExpirationTime(token: string): string | null {
     return null;
   }
 }
+
+/**
+ * Get authentication token from localStorage
+ * Handles both normal tenant authentication and platform admin impersonation
+ *
+ * When a platform admin is impersonating a tenant:
+ * - impersonationTenantKey is set in localStorage
+ * - adminToken is used (contains impersonation context in JWT)
+ *
+ * When a normal tenant admin is authenticated:
+ * - tenantToken is used
+ *
+ * @param providedToken - Optional token to use instead of localStorage (useful for prop-based tokens)
+ * @returns JWT token or null if not authenticated
+ */
+export function getAuthToken(providedToken?: string): string | null {
+  // Use provided token if passed as argument (useful for components with token props)
+  if (providedToken) {
+    return providedToken;
+  }
+
+  // Check if platform admin is impersonating a tenant
+  const isImpersonating = localStorage.getItem('impersonationTenantKey');
+  if (isImpersonating) {
+    return localStorage.getItem('adminToken');
+  }
+
+  // Return tenant token for normal tenant admin auth
+  return localStorage.getItem('tenantToken');
+}
+
+/**
+ * Get tenant-specific auth token (tenantToken only)
+ *
+ * @returns Tenant admin JWT token or null if not found
+ */
+export function getTenantToken(): string | null {
+  return localStorage.getItem('tenantToken');
+}
+
+/**
+ * Get platform admin auth token (adminToken only)
+ *
+ * @returns Platform admin JWT token or null if not found
+ */
+export function getAdminToken(): string | null {
+  return localStorage.getItem('adminToken');
+}

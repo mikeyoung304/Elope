@@ -3,66 +3,19 @@
  */
 
 import type { CatalogService } from '../services/catalog.service';
-import type { PackageDto, AddOnDto } from '@macon/contracts';
+import type { PackageDto } from '@macon/contracts';
+import { mapPackageToDto, mapPackagesToDto } from '../lib/mappers/package.mapper';
 
 export class PackagesController {
   constructor(private readonly catalogService: CatalogService) {}
 
   async getPackages(tenantId: string): Promise<PackageDto[]> {
     const packages = await this.catalogService.getAllPackages(tenantId);
-    return packages.map((pkg) => ({
-      id: pkg.id,
-      slug: pkg.slug,
-      title: pkg.title,
-      description: pkg.description,
-      priceCents: pkg.priceCents,
-      photoUrl: pkg.photoUrl,
-      isActive: pkg.active ?? true,
-      photos: (pkg.photos ?? []).map((photo, idx) => ({
-        url: photo.url,
-        filename: photo.filename ?? `photo-${idx}`,
-        size: photo.size ?? 0,
-        order: photo.order ?? idx,
-      })),
-      segmentId: pkg.segmentId ?? null,
-      grouping: pkg.grouping ?? null,
-      groupingOrder: pkg.groupingOrder ?? null,
-      addOns: pkg.addOns.map((addOn): AddOnDto => ({
-        id: addOn.id,
-        packageId: addOn.packageId,
-        title: addOn.title,
-        priceCents: addOn.priceCents,
-        photoUrl: addOn.photoUrl,
-      })),
-    }));
+    return mapPackagesToDto(packages);
   }
 
   async getPackageBySlug(tenantId: string, slug: string): Promise<PackageDto> {
     const pkg = await this.catalogService.getPackageBySlug(tenantId, slug);
-    return {
-      id: pkg.id,
-      slug: pkg.slug,
-      title: pkg.title,
-      description: pkg.description,
-      priceCents: pkg.priceCents,
-      photoUrl: pkg.photoUrl,
-      isActive: pkg.active ?? true,
-      photos: (pkg.photos ?? []).map((photo, idx) => ({
-        url: photo.url,
-        filename: photo.filename ?? `photo-${idx}`,
-        size: photo.size ?? 0,
-        order: photo.order ?? idx,
-      })),
-      segmentId: pkg.segmentId ?? null,
-      grouping: pkg.grouping ?? null,
-      groupingOrder: pkg.groupingOrder ?? null,
-      addOns: pkg.addOns.map((addOn): AddOnDto => ({
-        id: addOn.id,
-        packageId: addOn.packageId,
-        title: addOn.title,
-        priceCents: addOn.priceCents,
-        photoUrl: addOn.photoUrl,
-      })),
-    };
+    return mapPackageToDto(pkg);
   }
 }

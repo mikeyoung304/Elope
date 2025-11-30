@@ -2,10 +2,10 @@
  * BrandingForm Component
  *
  * Form for editing branding settings with modular sub-components
+ * Design: Matches landing page aesthetic with sage accents
  */
 
-import { Save } from "lucide-react";
-import { Card } from "@/components/ui/card";
+import { Save, Palette } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { ColorInput } from "./ColorInput";
@@ -50,12 +50,20 @@ export function BrandingForm({
 }: BrandingFormProps) {
   return (
     <TooltipProvider>
-      <Card className="p-6 bg-macon-navy-800 border-white/20">
-        <h2 className="text-2xl font-semibold mb-4 text-white">Customize Branding</h2>
+      <div className="bg-surface-alt rounded-2xl border border-sage-light/20 p-6">
+        <div className="flex items-center gap-3 mb-6">
+          <div className="w-10 h-10 bg-sage/10 rounded-xl flex items-center justify-center">
+            <Palette className="w-5 h-5 text-sage" />
+          </div>
+          <div>
+            <h3 className="font-serif text-xl font-bold text-text-primary">Colors & Typography</h3>
+            <p className="text-sm text-text-muted">Define your brand palette</p>
+          </div>
+        </div>
 
         <ErrorMessage error={error} />
 
-        <form onSubmit={onSubmit} className="space-y-6">
+        <form onSubmit={onSubmit} className="space-y-5">
           <ColorInput
             id="primaryColor"
             label="Primary Color"
@@ -109,19 +117,19 @@ export function BrandingForm({
           />
 
           {/* Save Button */}
-          <div className="pt-2">
+          <div className="pt-4">
             <Button
               type="submit"
               isLoading={isSaving}
-              loadingText="Saving branding..."
-              className="w-full bg-macon-navy hover:bg-macon-navy-dark text-lg h-12 px-6"
+              loadingText="Saving..."
+              className="w-full bg-sage hover:bg-sage-hover text-white h-11 rounded-full shadow-soft hover:shadow-medium transition-all duration-300"
             >
-              <Save className="w-5 h-5 mr-2" />
+              <Save className="w-4 h-4 mr-2" />
               Save Branding
             </Button>
           </div>
         </form>
-      </Card>
+      </div>
     </TooltipProvider>
   );
 }

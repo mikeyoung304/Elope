@@ -10,6 +10,7 @@
  * - 3+ items: 3 columns on lg, 2 on md, 1 on mobile (full width)
  */
 
+import { memo } from 'react';
 import { clsx } from 'clsx';
 
 interface ChoiceGridProps {
@@ -17,7 +18,7 @@ interface ChoiceGridProps {
   itemCount: number;
 }
 
-export function ChoiceGrid({ children, itemCount }: ChoiceGridProps) {
+export const ChoiceGrid = memo(function ChoiceGrid({ children, itemCount }: ChoiceGridProps) {
   return (
     <div
       className={clsx(
@@ -30,4 +31,4 @@ export function ChoiceGrid({ children, itemCount }: ChoiceGridProps) {
       {children}
     </div>
   );
-}
+});

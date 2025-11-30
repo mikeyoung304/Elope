@@ -1,6 +1,7 @@
 import { useState, useCallback } from "react";
 import { toast } from "sonner";
 import { api } from "@/lib/api";
+import { useSuccessMessage } from "@/hooks/useSuccessMessage";
 import type { AvailabilityRuleDto, RuleFormData } from "./types";
 import { getTodayISODate } from "./utils";
 
@@ -13,7 +14,7 @@ export function useAvailabilityRulesManager(onRulesChange: () => void) {
   // Form state
   const [isCreatingRule, setIsCreatingRule] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
-  const [successMessage, setSuccessMessage] = useState<string | null>(null);
+  const { message: successMessage, showSuccess } = useSuccessMessage();
   const [error, setError] = useState<string | null>(null);
 
   // Dialog state
@@ -29,11 +30,6 @@ export function useAvailabilityRulesManager(onRulesChange: () => void) {
     effectiveFrom: getTodayISODate(),
     effectiveTo: null,
   });
-
-  const showSuccess = useCallback((message: string) => {
-    setSuccessMessage(message);
-    setTimeout(() => setSuccessMessage(null), 3000);
-  }, []);
 
   const handleCreateRule = useCallback(() => {
     setIsCreatingRule(true);

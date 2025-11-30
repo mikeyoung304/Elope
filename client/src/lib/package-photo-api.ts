@@ -23,6 +23,7 @@
 
 import { baseUrl } from './api';
 import { ApiError } from './api-helpers';
+import { getAuthToken } from './auth';
 
 /**
  * Package Photo structure
@@ -59,22 +60,6 @@ export interface PackageWithPhotos {
 interface ErrorResponse {
   error: string;
   details?: unknown;
-}
-
-/**
- * Get authentication token from localStorage
- * Handles both normal tenant auth and platform admin impersonation
- * @returns JWT token or null if not authenticated
- */
-function getAuthToken(): string | null {
-  // Check if platform admin is impersonating a tenant
-  const isImpersonating = localStorage.getItem('impersonationTenantKey');
-  if (isImpersonating) {
-    // Use admin token which contains impersonation context
-    return localStorage.getItem('adminToken');
-  }
-  // Normal tenant admin - use tenant token
-  return localStorage.getItem('tenantToken');
 }
 
 /**

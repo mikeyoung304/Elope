@@ -1,9 +1,6 @@
-import { useState } from "react";
-import { Pencil, Trash2, Image, Package, AlertTriangle } from "lucide-react";
-import { Card } from "@/components/ui/card";
+import { useState, memo } from "react";
+import { Pencil, Trash2, Image, Package, AlertTriangle, ImageIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { EmptyState } from "@/components/ui/empty-state";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -14,6 +11,9 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import { MobileActionDropdown } from "@/components/shared/MobileActionDropdown";
+import { EmptyState } from "@/components/shared/EmptyState";
+import { StatusBadge } from "@/components/shared/StatusBadge";
 import { formatCurrency } from "@/lib/utils";
 import type { PackageDto } from "@macon/contracts";
 
@@ -26,9 +26,12 @@ interface PackageListProps {
 /**
  * PackageList Component
  *
- * Displays a list of packages with edit and delete actions
+ * Displays packages in an elegant grid/list hybrid layout
+ * Design: Matches landing page aesthetic with cream backgrounds,
+ * sage accents, and subtle hover states
+ * Memoized to prevent unnecessary re-renders when parent re-renders
  */
-export function PackageList({ packages, onEdit, onDelete }: PackageListProps) {
+export const PackageList = memo(function PackageList({ packages, onEdit, onDelete }: PackageListProps) {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [packageToDelete, setPackageToDelete] = useState<PackageDto | null>(null);
 
@@ -52,130 +55,169 @@ export function PackageList({ packages, onEdit, onDelete }: PackageListProps) {
 
   if (packages.length === 0) {
     return (
-      <Card className="p-6 bg-macon-navy-800 border-white/20">
-        <h2 className="text-2xl font-semibold mb-4 text-white">Packages</h2>
-        <EmptyState
-          icon={Package}
-          title="Ready to showcase your services"
-          description="Create your first package to start accepting bookings. Your packages will appear here."
-          className="py-8"
-        />
-      </Card>
+      <EmptyState
+        icon={Package}
+        title="Ready to showcase your services"
+        description="Create your first package to start accepting bookings. Your packages will appear here."
+      />
     );
   }
 
   return (
-    <Card className="p-6 bg-macon-navy-800 border-white/20">
-      <h2 className="text-2xl font-semibold mb-4 text-white">Packages</h2>
-      <div className="space-y-3">
-        {packages.map((pkg) => (
-          <div
-            key={pkg.id}
-            className="flex items-center gap-4 p-4 bg-macon-navy-700 border border-white/20 rounded-lg"
-          >
-            {/* Photo Thumbnail */}
-            <div className="relative flex-shrink-0">
+    <div className="space-y-4">
+      {packages.map((pkg, index) => (
+        <div
+          key={pkg.id}
+          className="group bg-surface-alt rounded-2xl border border-sage-light/20 hover:border-sage-light/40 overflow-hidden transition-all duration-300 hover:shadow-soft"
+          style={{
+            animationDelay: `${index * 0.05}s`,
+          }}
+        >
+          <div className="flex items-stretch">
+            {/* Photo */}
+            <div className="relative w-32 sm:w-40 flex-shrink-0">
               {pkg.photos && pkg.photos.length > 0 ? (
-                <div className="relative">
+                <>
                   <img
                     src={pkg.photos[0].url}
                     alt={`${pkg.title} preview`}
-                    className="w-24 h-24 object-cover rounded-lg border-2 border-white/30"
+                    className="w-full h-full object-cover min-h-[120px]"
                   />
                   {pkg.photos.length > 1 && (
-                    <Badge
-                      className="absolute -top-2 -right-2 bg-macon-orange text-white border-macon-navy-700"
-                    >
+                    <span className="absolute bottom-2 left-2 bg-text-primary/80 backdrop-blur-sm text-white text-xs font-medium px-2 py-0.5 rounded-full flex items-center gap-1">
+                      <ImageIcon className="w-3 h-3" />
                       {pkg.photos.length}
-                    </Badge>
+                    </span>
                   )}
-                </div>
+                </>
               ) : (
-                <div className="w-24 h-24 flex items-center justify-center bg-macon-navy-600 border-2 border-white/30 rounded-lg">
-                  <Image className="w-8 h-8 text-white/50" />
+                <div className="w-full h-full min-h-[120px] bg-sage-light/10 flex items-center justify-center">
+                  <Image className="w-10 h-10 text-sage-light/50" />
                 </div>
               )}
             </div>
 
-            <div className="flex-1 min-w-0">
-              <div className="flex items-center gap-3">
-                <h3 className="text-xl font-semibold text-white">{pkg.title}</h3>
-                <Badge
-                  variant="outline"
-                  className={pkg.isActive !== false
-                    ? "border-green-500 bg-green-900/20 text-green-300"
-                    : "border-red-500 bg-red-900/20 text-red-300"}
-                >
-                  {pkg.isActive !== false ? "Active" : "Inactive"}
-                </Badge>
+            {/* Content */}
+            <div className="flex-1 p-5 flex flex-col justify-center min-w-0">
+              <div className="flex items-start justify-between gap-4">
+                <div className="min-w-0 flex-1">
+                  {/* Title and Status */}
+                  <div className="flex items-center gap-3 flex-wrap">
+                    <h3 className="font-serif text-xl font-bold text-text-primary truncate">
+                      {pkg.title}
+                    </h3>
+                    <StatusBadge status={pkg.isActive !== false ? "Active" : "Inactive"} />
+                  </div>
+
+                  {/* Description */}
+                  <p className="text-text-muted text-sm mt-1.5 line-clamp-2 leading-relaxed">
+                    {pkg.description}
+                  </p>
+
+                  {/* Price */}
+                  <div className="mt-3">
+                    <span className="font-serif text-lg font-bold text-sage">
+                      {formatCurrency(pkg.priceCents)}
+                    </span>
+                  </div>
+                </div>
+
+                {/* Actions */}
+                <div className="flex items-center gap-2 flex-shrink-0">
+                  {/* Desktop actions */}
+                  <div className="hidden sm:flex items-center gap-2">
+                    <Button
+                      onClick={() => onEdit(pkg)}
+                      variant="ghost"
+                      size="sm"
+                      className="text-text-muted hover:text-sage hover:bg-sage/10 transition-colors"
+                      aria-label={`Edit package: ${pkg.title}`}
+                    >
+                      <Pencil className="w-4 h-4" />
+                    </Button>
+                    <Button
+                      onClick={() => handleDeleteClick(pkg)}
+                      variant="ghost"
+                      size="sm"
+                      className="text-text-muted hover:text-danger-600 hover:bg-danger-50 transition-colors"
+                      aria-label={`Delete package: ${pkg.title}`}
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </Button>
+                  </div>
+
+                  {/* Mobile dropdown */}
+                  <MobileActionDropdown
+                    actions={[
+                      {
+                        label: "Edit",
+                        icon: Pencil,
+                        onClick: () => onEdit(pkg),
+                      },
+                      {
+                        label: "Delete",
+                        icon: Trash2,
+                        onClick: () => handleDeleteClick(pkg),
+                        variant: "danger",
+                      },
+                    ]}
+                  />
+                </div>
               </div>
-              <p className="text-base text-white/70 mt-1">{pkg.description}</p>
-              <div className="flex gap-4 mt-2 text-base text-white/90">
-                <span className="font-medium text-white/60">
-                  {formatCurrency(pkg.priceCents)}
-                </span>
-              </div>
-            </div>
-            <div className="flex gap-2">
-              <Button
-                onClick={() => onEdit(pkg)}
-                variant="outline"
-                size="sm"
-                className="border-white/30 text-white/90 hover:bg-macon-navy-600"
-                aria-label={`Edit package: ${pkg.title}`}
-                title="Edit package"
-              >
-                <Pencil className="w-4 h-4" />
-              </Button>
-              <Button
-                onClick={() => handleDeleteClick(pkg)}
-                variant="outline"
-                size="sm"
-                className="border-red-700 text-red-300 hover:bg-red-900/20"
-                aria-label={`Delete package: ${pkg.title}`}
-                title="Delete package"
-              >
-                <Trash2 className="w-4 h-4" />
-              </Button>
             </div>
           </div>
-        ))}
-      </div>
+        </div>
+      ))}
 
       {/* Delete Confirmation Dialog */}
       <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
-        <AlertDialogContent className="bg-white dark:bg-macon-navy-800 border-white/20">
+        <AlertDialogContent className="bg-surface border-sage-light/20 rounded-2xl">
           <AlertDialogHeader>
             <div className="flex items-center gap-3 mb-2">
-              <div className="p-2 bg-danger-100 rounded-full">
-                <AlertTriangle className="w-6 h-6 text-danger-700" />
+              <div className="w-12 h-12 bg-danger-50 rounded-xl flex items-center justify-center">
+                <AlertTriangle className="w-6 h-6 text-danger-600" />
               </div>
-              <AlertDialogTitle className="text-2xl">Delete Package?</AlertDialogTitle>
+              <AlertDialogTitle className="font-serif text-2xl text-text-primary">
+                Delete Package?
+              </AlertDialogTitle>
             </div>
-            <AlertDialogDescription className="text-base text-macon-navy-600 dark:text-white/60">
-              Are you sure you want to delete <strong className="font-semibold text-macon-navy-900 dark:text-white">"{packageToDelete?.title}"</strong>?
+            <AlertDialogDescription className="text-text-muted">
+              Are you sure you want to delete{" "}
+              <strong className="font-semibold text-text-primary">
+                "{packageToDelete?.title}"
+              </strong>
+              ?
             </AlertDialogDescription>
-            <div className="mt-3 p-3 bg-danger-50 dark:bg-danger-900/20 border border-danger-200 dark:border-danger-800 rounded-lg">
-              <p className="text-sm text-danger-800 dark:text-danger-300 font-medium">
-                ⚠️ This action cannot be undone
+            <div className="mt-4 p-4 bg-danger-50 border border-danger-100 rounded-xl">
+              <p className="text-sm text-danger-700 font-medium">
+                This action cannot be undone
               </p>
-              <ul className="mt-2 text-sm text-danger-700 dark:text-danger-400 space-y-1 list-disc list-inside">
-                <li>Package will be permanently removed</li>
-                <li>It will no longer be available for new bookings</li>
-                <li>Existing bookings will not be affected</li>
+              <ul className="mt-2 text-sm text-danger-600 space-y-1">
+                <li className="flex items-center gap-2">
+                  <span className="w-1 h-1 bg-danger-400 rounded-full" />
+                  Package will be permanently removed
+                </li>
+                <li className="flex items-center gap-2">
+                  <span className="w-1 h-1 bg-danger-400 rounded-full" />
+                  No longer available for new bookings
+                </li>
+                <li className="flex items-center gap-2">
+                  <span className="w-1 h-1 bg-danger-400 rounded-full" />
+                  Existing bookings will not be affected
+                </li>
               </ul>
             </div>
           </AlertDialogHeader>
-          <AlertDialogFooter className="gap-2">
+          <AlertDialogFooter className="gap-3 mt-2">
             <AlertDialogCancel
               onClick={cancelDelete}
-              className="bg-macon-navy-100 hover:bg-macon-navy-200 text-macon-navy-900 border-macon-navy-300"
+              className="bg-surface-alt hover:bg-sage-light/20 text-text-primary border-sage-light/30 rounded-xl"
             >
               Cancel
             </AlertDialogCancel>
             <AlertDialogAction
               onClick={confirmDelete}
-              className="bg-danger-600 hover:bg-danger-700 text-white focus:ring-danger-600"
+              className="bg-danger-600 hover:bg-danger-700 text-white rounded-xl"
             >
               <Trash2 className="w-4 h-4 mr-2" />
               Delete Package
@@ -183,6 +225,6 @@ export function PackageList({ packages, onEdit, onDelete }: PackageListProps) {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-    </Card>
+    </div>
   );
-}
+});

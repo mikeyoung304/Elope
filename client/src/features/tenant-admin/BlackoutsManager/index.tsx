@@ -7,10 +7,10 @@
  */
 
 import { useUnsavedChanges } from "@/hooks/useUnsavedChanges";
+import { SuccessMessage } from "@/components/shared/SuccessMessage";
 import { BlackoutForm } from "./BlackoutForm";
 import { BlackoutsList } from "./BlackoutsList";
 import { DeleteConfirmationDialog } from "./DeleteConfirmationDialog";
-import { SuccessMessage } from "./SuccessMessage";
 import { useBlackoutsManager } from "./useBlackoutsManager";
 import type { BlackoutsManagerProps } from "./types";
 

@@ -5,16 +5,18 @@ interface CreateSegmentButtonProps {
   onClick: () => void;
 }
 
+/**
+ * CreateSegmentButton Component
+ * Design: Matches landing page aesthetic with sage accents
+ */
 export function CreateSegmentButton({ onClick }: CreateSegmentButtonProps) {
   return (
-    <div className="flex justify-end">
-      <Button
-        onClick={onClick}
-        className="bg-macon-navy hover:bg-macon-navy-dark text-lg h-12 px-6"
-      >
-        <Plus className="w-5 h-5 mr-2" />
-        Create Segment
-      </Button>
-    </div>
+    <Button
+      onClick={onClick}
+      className="bg-sage hover:bg-sage-hover text-white rounded-full px-6 h-11 shadow-soft hover:shadow-medium transition-all duration-300 group"
+    >
+      <Plus className="w-4 h-4 mr-2 group-hover:rotate-90 transition-transform duration-300" />
+      Create Segment
+    </Button>
   );
 }

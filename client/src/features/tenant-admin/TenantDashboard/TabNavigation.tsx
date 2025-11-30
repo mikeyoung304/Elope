@@ -1,9 +1,11 @@
 /**
  * TabNavigation Component
  *
- * Tab navigation for dashboard sections
+ * Elegant pill-style tab navigation for dashboard sections
+ * Design: Minimal, rounded pills with sage accent on active state
  */
 
+import { Package, Layers, CalendarOff, Calendar, Palette, CreditCard } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export type DashboardTab = "packages" | "segments" | "blackouts" | "bookings" | "branding" | "payments";
@@ -14,33 +16,56 @@ interface TabNavigationProps {
 }
 
 export function TabNavigation({ activeTab, onTabChange }: TabNavigationProps) {
-  const tabs: { id: DashboardTab; label: string }[] = [
-    { id: "packages", label: "Packages" },
-    { id: "segments", label: "Segments" },
-    { id: "blackouts", label: "Blackouts" },
-    { id: "bookings", label: "Bookings" },
-    { id: "branding", label: "Branding" },
-    { id: "payments", label: "Payments" },
+  const tabs: { id: DashboardTab; label: string; icon: typeof Package }[] = [
+    { id: "packages", label: "Packages", icon: Package },
+    { id: "segments", label: "Segments", icon: Layers },
+    { id: "blackouts", label: "Blackouts", icon: CalendarOff },
+    { id: "bookings", label: "Bookings", icon: Calendar },
+    { id: "branding", label: "Branding", icon: Palette },
+    { id: "payments", label: "Payments", icon: CreditCard },
   ];
 
   return (
-    <div className="border-b border-neutral-200">
-      <nav className="flex -mb-px space-x-8">
-        {tabs.map((tab) => (
-          <button
-            key={tab.id}
-            onClick={() => onTabChange(tab.id)}
-            className={cn(
-              "py-4 px-1 border-b-2 font-medium text-sm transition-colors min-h-[44px]",
-              activeTab === tab.id
-                ? "border-macon-orange text-macon-navy-900 font-semibold"
-                : "border-transparent text-neutral-600 hover:text-neutral-900 hover:border-neutral-300"
-            )}
-          >
-            {tab.label}
-          </button>
-        ))}
-      </nav>
+    <div className="relative">
+      {/* Subtle background container */}
+      <div className="bg-surface-alt/50 rounded-2xl p-1.5 border border-sage-light/10">
+        <nav className="flex flex-wrap gap-1" role="tablist" aria-label="Dashboard sections">
+          {tabs.map((tab) => {
+            const isActive = activeTab === tab.id;
+            const Icon = tab.icon;
+
+            return (
+              <button
+                key={tab.id}
+                id={`${tab.id}-tab`}
+                onClick={() => onTabChange(tab.id)}
+                role="tab"
+                aria-selected={isActive}
+                aria-controls={`${tab.id}-panel`}
+                className={cn(
+                  "relative flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 min-h-[44px]",
+                  isActive
+                    ? "bg-white text-text-primary shadow-soft"
+                    : "text-text-muted hover:text-text-primary hover:bg-white/50"
+                )}
+              >
+                <Icon
+                  className={cn(
+                    "w-4 h-4 transition-colors",
+                    isActive ? "text-sage" : "text-text-muted"
+                  )}
+                />
+                <span>{tab.label}</span>
+
+                {/* Active indicator dot */}
+                {isActive && (
+                  <span className="absolute -bottom-0.5 left-1/2 -translate-x-1/2 w-1 h-1 bg-sage rounded-full" />
+                )}
+              </button>
+            );
+          })}
+        </nav>
+      </div>
     </div>
   );
 }

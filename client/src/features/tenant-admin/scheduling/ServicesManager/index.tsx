@@ -22,28 +22,18 @@
 import { useState, useEffect, useCallback } from "react";
 import type { ServiceDto } from "@macon/contracts";
 import { api } from "@/lib/api";
+import { useSuccessMessage } from "@/hooks/useSuccessMessage";
+import { SuccessMessage } from "@/components/shared/SuccessMessage";
 import { ServiceForm } from "./ServiceForm";
 import { ServicesList } from "./ServicesList";
 import { CreateServiceButton } from "./CreateServiceButton";
 import { DeleteConfirmationDialog } from "./DeleteConfirmationDialog";
-import { SuccessMessage } from "./SuccessMessage";
 import { useServicesManager } from "./useServicesManager";
-
-function useSuccessMessage() {
-  const [successMessage, setSuccessMessage] = useState<string | null>(null);
-
-  const showSuccess = useCallback((message: string) => {
-    setSuccessMessage(message);
-    setTimeout(() => setSuccessMessage(null), 3000);
-  }, []);
-
-  return { successMessage, showSuccess };
-}
 
 export function ServicesManager() {
   const [services, setServices] = useState<ServiceDto[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const { successMessage, showSuccess } = useSuccessMessage();
+  const { message: successMessage, showSuccess } = useSuccessMessage();
 
   const fetchServices = useCallback(async () => {
     setIsLoading(true);

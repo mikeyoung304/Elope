@@ -18,6 +18,7 @@ import { Button } from "../components/ui/button";
 import { Logo } from "../components/brand/Logo";
 import { useAuth } from "../contexts/AuthContext";
 import { cn } from "../lib/utils";
+import "@/styles/a11y.css";
 
 interface AdminLayoutProps {
   children: React.ReactNode;
@@ -64,6 +65,11 @@ export function AdminLayout({ children, breadcrumbs }: AdminLayoutProps) {
 
   return (
     <div className="min-h-screen bg-gray-50">
+      {/* Skip link for keyboard navigation (WCAG 2.4.1) */}
+      <a className="skip-link" href="#main-content">
+        Skip to main content
+      </a>
+
       {/* Mobile Header */}
       <div className="lg:hidden fixed top-0 left-0 right-0 z-50 bg-macon-navy-900 border-b border-macon-navy-700">
         <div className="flex items-center justify-between px-4 py-3">
@@ -212,7 +218,7 @@ export function AdminLayout({ children, breadcrumbs }: AdminLayoutProps) {
         )}
 
         {/* Page Content */}
-        <main className="p-6">{children}</main>
+        <main id="main-content" tabIndex={-1} className="p-6">{children}</main>
       </div>
     </div>
   );

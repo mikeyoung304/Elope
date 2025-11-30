@@ -1,5 +1,6 @@
 import { useState, useCallback } from "react";
 import { baseUrl } from "@/lib/api";
+import { getAuthToken } from "@/lib/auth";
 
 /**
  * Package photo data structure
@@ -27,21 +28,6 @@ interface UploadResult {
 interface ApiErrorResponse {
   error: string;
   details?: unknown;
-}
-
-/**
- * Get authentication token, handling impersonation
- * @param providedToken - Optional token passed to hook
- * @returns JWT token or null if not authenticated
- */
-function getAuthToken(providedToken?: string): string | null {
-  if (providedToken) return providedToken;
-  // Check if platform admin is impersonating a tenant
-  const isImpersonating = localStorage.getItem('impersonationTenantKey');
-  if (isImpersonating) {
-    return localStorage.getItem('adminToken');
-  }
-  return localStorage.getItem('tenantToken');
 }
 
 /**

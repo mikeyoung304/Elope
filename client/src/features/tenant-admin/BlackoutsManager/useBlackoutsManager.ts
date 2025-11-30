@@ -1,6 +1,7 @@
 import { useState, useCallback } from "react";
 import { toast } from "sonner";
 import { api } from "@/lib/api";
+import { useSuccessMessage } from "@/hooks/useSuccessMessage";
 import type { BlackoutDto } from "./types";
 
 /**
@@ -12,14 +13,9 @@ export function useBlackoutsManager(onBlackoutsChange: () => void) {
   const [newBlackoutDate, setNewBlackoutDate] = useState("");
   const [newBlackoutReason, setNewBlackoutReason] = useState("");
   const [isAdding, setIsAdding] = useState(false);
-  const [successMessage, setSuccessMessage] = useState<string | null>(null);
+  const { message: successMessage, showSuccess } = useSuccessMessage();
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [blackoutToDelete, setBlackoutToDelete] = useState<BlackoutDto | null>(null);
-
-  const showSuccess = useCallback((message: string) => {
-    setSuccessMessage(message);
-    setTimeout(() => setSuccessMessage(null), 3000);
-  }, []);
 
   const handleAddBlackout = useCallback(async (e: React.FormEvent) => {
     e.preventDefault();

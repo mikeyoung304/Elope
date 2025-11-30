@@ -49,7 +49,20 @@ export function SegmentsManager() {
     <div className="space-y-6">
       {successMessage && <SuccessMessage message={successMessage} />}
 
-      {!isCreatingSegment && <CreateSegmentButton onClick={handleCreateSegment} />}
+      {/* Header with Create Button */}
+      {!isCreatingSegment && (
+        <div className="flex items-center justify-between">
+          <div>
+            <h2 className="font-serif text-2xl font-bold text-text-primary">Your Segments</h2>
+            <p className="text-text-muted text-sm mt-1">
+              {segments.length === 0
+                ? "Organize your packages into segments"
+                : `${segments.length} segment${segments.length !== 1 ? "s" : ""} created`}
+            </p>
+          </div>
+          <CreateSegmentButton onClick={handleCreateSegment} />
+        </div>
+      )}
 
       {isCreatingSegment && (
         <SegmentForm

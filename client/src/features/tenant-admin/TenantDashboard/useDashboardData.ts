@@ -6,6 +6,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { api } from "../../../lib/api";
+import { logger } from "../../../lib/logger";
 import type { PackageDto, BookingDto } from "@macon/contracts";
 
 type BlackoutDto = {
@@ -43,7 +44,7 @@ export function useDashboardData(activeTab: string) {
         setPackages(result.body);
       }
     } catch (error) {
-      console.error("Failed to load packages:", error);
+      logger.error("Failed to load packages:", { error, component: "useDashboardData" });
     } finally {
       setIsLoading(false);
     }
@@ -57,7 +58,7 @@ export function useDashboardData(activeTab: string) {
         setBlackouts(result.body);
       }
     } catch (error) {
-      console.error("Failed to load blackouts:", error);
+      logger.error("Failed to load blackouts:", { error, component: "useDashboardData" });
     } finally {
       setIsLoading(false);
     }
@@ -71,7 +72,7 @@ export function useDashboardData(activeTab: string) {
         setBookings(result.body);
       }
     } catch (error) {
-      console.error("Failed to load bookings:", error);
+      logger.error("Failed to load bookings:", { error, component: "useDashboardData" });
     } finally {
       setIsLoading(false);
     }
@@ -85,7 +86,7 @@ export function useDashboardData(activeTab: string) {
         setBranding(result.body);
       }
     } catch (error) {
-      console.error("Failed to load branding:", error);
+      logger.error("Failed to load branding:", { error, component: "useDashboardData" });
     } finally {
       setIsLoading(false);
     }

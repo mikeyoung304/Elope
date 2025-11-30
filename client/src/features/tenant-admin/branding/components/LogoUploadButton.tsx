@@ -2,17 +2,7 @@ import React, { useRef, useState } from "react";
 import { Upload, X, Loader2, CheckCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { api } from "@/lib/api";
-
-/**
- * Get authentication token, handling impersonation
- */
-function getAuthToken(): string | null {
-  const isImpersonating = localStorage.getItem("impersonationTenantKey");
-  if (isImpersonating) {
-    return localStorage.getItem("adminToken");
-  }
-  return localStorage.getItem("tenantToken");
-}
+import { getAuthToken } from "@/lib/auth";
 
 interface LogoUploadButtonProps {
   currentLogoUrl?: string;

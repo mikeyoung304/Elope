@@ -1,16 +1,8 @@
-import { Edit, Trash2, Loader2, Layers } from "lucide-react";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-import { Card } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
+import { Edit, Trash2, Loader2, Layers, GripVertical } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { EmptyState } from "@/components/ui/empty-state";
+import { MobileActionDropdown } from "@/components/shared/MobileActionDropdown";
+import { StatusBadge } from "@/components/shared/StatusBadge";
+import { EmptyState } from "@/components/shared/EmptyState";
 import type { SegmentDto } from "@macon/contracts";
 
 interface SegmentsListProps {
@@ -20,108 +12,111 @@ interface SegmentsListProps {
   isLoading?: boolean;
 }
 
+/**
+ * SegmentsList Component
+ * Design: Matches landing page aesthetic with sage accents
+ */
 export function SegmentsList({
   segments,
   onEdit,
   onDelete,
   isLoading = false,
 }: SegmentsListProps) {
-  const truncateText = (text: string, maxLength: number) => {
-    if (text.length <= maxLength) return text;
-    return text.substring(0, maxLength) + "...";
-  };
-
-  if (!isLoading && segments.length === 0) {
+  if (isLoading) {
     return (
-      <Card className="p-6 bg-macon-navy-800 border-white/20">
-        <h2 className="text-2xl font-semibold mb-4 text-white">Segments</h2>
-        <EmptyState
-          icon={Layers}
-          title="Ready to organize your services"
-          description="Create your first segment to group related packages. Your segments will appear here."
-          className="py-8"
-        />
-      </Card>
+      <div className="bg-surface-alt rounded-2xl border border-sage-light/20 p-12 text-center">
+        <Loader2 className="w-8 h-8 animate-spin mx-auto text-sage" />
+        <p className="text-text-muted mt-3">Loading segments...</p>
+      </div>
+    );
+  }
+
+  if (segments.length === 0) {
+    return (
+      <EmptyState
+        icon={Layers}
+        title="Ready to organize your services"
+        description="Create segments to group related packages together. Segments help clients find exactly what they need."
+      />
     );
   }
 
   return (
-    <Card className="p-6 bg-macon-navy-800 border-white/20">
-      <h2 className="text-2xl font-semibold mb-4 text-white">Segments</h2>
-      <div className="overflow-x-auto">
-        <Table>
-          <TableHeader>
-            <TableRow className="border-white/20 hover:bg-macon-navy-700">
-              <TableHead className="bg-macon-navy-700 text-white/90 text-lg">Name</TableHead>
-              <TableHead className="bg-macon-navy-700 text-white/90 text-lg">Slug</TableHead>
-              <TableHead className="bg-macon-navy-700 text-white/90 text-lg">Hero Title</TableHead>
-              <TableHead className="bg-macon-navy-700 text-white/90 text-lg">Status</TableHead>
-              <TableHead className="bg-macon-navy-700 text-white/90 text-lg">Sort Order</TableHead>
-              <TableHead className="bg-macon-navy-700 text-white/90 text-lg">Actions</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {isLoading && (
-              <TableRow>
-                <TableCell colSpan={6} className="text-center py-8">
-                  <Loader2 className="w-6 h-6 animate-spin mx-auto text-white/60" />
-                </TableCell>
-              </TableRow>
-            )}
+    <div className="space-y-3">
+      {segments.map((segment, index) => (
+        <div
+          key={segment.id}
+          className="group bg-surface-alt rounded-2xl border border-sage-light/20 hover:border-sage-light/40 p-5 transition-all duration-200 hover:shadow-soft"
+          style={{ animationDelay: `${index * 0.05}s` }}
+        >
+          <div className="flex items-center gap-4">
+            {/* Drag Handle / Order Indicator */}
+            <div className="w-10 h-10 bg-sage/10 rounded-xl flex flex-col items-center justify-center flex-shrink-0">
+              <span className="text-xs font-medium text-sage">{segment.sortOrder}</span>
+            </div>
 
-            {!isLoading &&
-              segments.map((segment) => (
-                <TableRow key={segment.id} className="border-white/20 hover:bg-macon-navy-700 bg-macon-navy-800">
-                  <TableCell className="font-medium text-white text-base bg-transparent">
-                    {segment.name}
-                  </TableCell>
-                  <TableCell className="text-white/70 text-base font-mono bg-transparent">
-                    {segment.slug}
-                  </TableCell>
-                  <TableCell className="text-white/70 text-base bg-transparent">
-                    {truncateText(segment.heroTitle, 50)}
-                  </TableCell>
-                  <TableCell className="bg-transparent">
-                    {segment.active ? (
-                      <Badge className="bg-green-900 text-green-100 border-green-700">
-                        Active
-                      </Badge>
-                    ) : (
-                      <Badge variant="secondary" className="bg-macon-navy-700 text-white/70 border-white/20">
-                        Inactive
-                      </Badge>
-                    )}
-                  </TableCell>
-                  <TableCell className="text-white/70 text-base bg-transparent">
-                    {segment.sortOrder}
-                  </TableCell>
-                  <TableCell className="bg-transparent">
-                    <div className="flex gap-2">
-                      <Button
-                        variant="outline"
-                        size="default"
-                        onClick={() => onEdit(segment)}
-                        className="border-white/30 text-white/90 hover:bg-macon-navy-600"
-                      >
-                        <Edit className="w-4 h-4 mr-1" />
-                        Edit
-                      </Button>
-                      <Button
-                        variant="outline"
-                        size="default"
-                        onClick={() => onDelete(segment.id)}
-                        className="border-red-700 text-red-300 hover:bg-red-900/20"
-                      >
-                        <Trash2 className="w-4 h-4 mr-1" />
-                        Delete
-                      </Button>
-                    </div>
-                  </TableCell>
-                </TableRow>
-              ))}
-          </TableBody>
-        </Table>
-      </div>
-    </Card>
+            {/* Content */}
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center gap-3 flex-wrap">
+                <h3 className="font-serif text-lg font-bold text-text-primary">
+                  {segment.name}
+                </h3>
+                <StatusBadge status={segment.active ? "Active" : "Inactive"} />
+              </div>
+              <div className="flex items-center gap-4 mt-1.5 text-sm text-text-muted">
+                <span className="font-mono text-xs bg-surface px-2 py-0.5 rounded border border-sage-light/10">
+                  /{segment.slug}
+                </span>
+                {segment.heroTitle && (
+                  <span className="truncate max-w-[200px]">{segment.heroTitle}</span>
+                )}
+              </div>
+            </div>
+
+            {/* Actions */}
+            <div className="flex items-center gap-2 flex-shrink-0">
+              {/* Desktop actions */}
+              <div className="hidden sm:flex items-center gap-2">
+                <Button
+                  onClick={() => onEdit(segment)}
+                  variant="ghost"
+                  size="sm"
+                  className="text-text-muted hover:text-sage hover:bg-sage/10 transition-colors"
+                  aria-label={`Edit segment: ${segment.name}`}
+                >
+                  <Edit className="w-4 h-4" />
+                </Button>
+                <Button
+                  onClick={() => onDelete(segment.id)}
+                  variant="ghost"
+                  size="sm"
+                  className="text-text-muted hover:text-danger-600 hover:bg-danger-50 transition-colors"
+                  aria-label={`Delete segment: ${segment.name}`}
+                >
+                  <Trash2 className="w-4 h-4" />
+                </Button>
+              </div>
+
+              {/* Mobile dropdown */}
+              <MobileActionDropdown
+                actions={[
+                  {
+                    label: "Edit",
+                    icon: Edit,
+                    onClick: () => onEdit(segment),
+                  },
+                  {
+                    label: "Delete",
+                    icon: Trash2,
+                    onClick: () => onDelete(segment.id),
+                    variant: "danger",
+                  },
+                ]}
+              />
+            </div>
+          </div>
+        </div>
+      ))}
+    </div>
   );
 }

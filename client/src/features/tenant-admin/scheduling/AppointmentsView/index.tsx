@@ -7,21 +7,11 @@
 import { useState, useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { baseUrl } from '@/lib/api';
+import { getAuthToken } from '@/lib/auth';
 import type { AppointmentDto, ServiceDto } from '@macon/contracts';
 import type { AppointmentFilters, EnrichedAppointment, Customer } from './types';
 import { AppointmentFilters as Filters } from './AppointmentFilters';
 import { AppointmentsList } from './AppointmentsList';
-
-/**
- * Get authentication token, handling impersonation
- */
-function getAuthToken(): string | null {
-  const isImpersonating = localStorage.getItem('impersonationTenantKey');
-  if (isImpersonating) {
-    return localStorage.getItem('adminToken');
-  }
-  return localStorage.getItem('tenantToken');
-}
 
 /**
  * Initial filter state

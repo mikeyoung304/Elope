@@ -9,6 +9,7 @@ import { useState, useRef } from 'react';
 import { Upload, X, Loader2, AlertCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
+import { getAuthToken } from '@/lib/auth';
 
 interface ImageUploadFieldProps {
   label: string;
@@ -27,17 +28,6 @@ const ALLOWED_TYPES = [
   'image/webp',
   'image/svg+xml',
 ];
-
-/**
- * Get authentication token, handling impersonation
- */
-function getAuthToken(): string | null {
-  const isImpersonating = localStorage.getItem('impersonationTenantKey');
-  if (isImpersonating) {
-    return localStorage.getItem('adminToken');
-  }
-  return localStorage.getItem('tenantToken');
-}
 
 export function ImageUploadField({
   label,

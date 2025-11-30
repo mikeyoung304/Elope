@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   Building2,
@@ -58,10 +58,16 @@ export function TenantsTableSection({ tenants, isLoading }: TenantsTableSectionP
     }
   };
 
-  const filteredTenants = tenants.filter((tenant) =>
-    tenant.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    tenant.slug.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    tenant.email?.toLowerCase().includes(searchTerm.toLowerCase())
+  // Memoize filtered tenants to prevent re-filtering on every render
+  const filteredTenants = useMemo(
+    () =>
+      tenants.filter(
+        (tenant) =>
+          tenant.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          tenant.slug.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          tenant.email?.toLowerCase().includes(searchTerm.toLowerCase())
+      ),
+    [tenants, searchTerm]
   );
 
   return (

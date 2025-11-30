@@ -1,5 +1,5 @@
 ---
-status: pending
+status: complete
 priority: p2
 issue_id: "034"
 tags: [code-review, code-quality, dry]
@@ -49,13 +49,32 @@ return packages.map(mapPackageToDto);
 
 ## Acceptance Criteria
 
-- [ ] Single `mapPackageToDto` function
-- [ ] Both routes use shared mapper
-- [ ] No duplicate mapping code
-- [ ] TypeScript types preserved
+- [x] Single `mapPackageToDto` function
+- [x] Both routes use shared mapper
+- [x] No duplicate mapping code
+- [x] TypeScript types preserved
+
+## Resolution
+
+Created `server/src/lib/mappers/package.mapper.ts` with:
+- `mapPackageToDto()` - Maps single package with add-ons to PackageDto
+- `mapPackagesToDto()` - Convenience method for mapping arrays
+- Helper functions `mapPackagePhoto()` and `mapAddOn()` for clarity
+
+Updated `server/src/routes/packages.routes.ts`:
+- Removed 44 lines of duplicate mapping logic
+- Reduced controller from 69 lines to 22 lines (68% reduction)
+- Both `getPackages()` and `getPackageBySlug()` now use shared mappers
+
+**Benefits:**
+- Single source of truth for Package-to-DTO mapping
+- Future changes only need to be made in one place
+- Improved maintainability and consistency
+- All existing tests pass (4/4 HTTP package tests)
 
 ## Work Log
 
 | Date | Action | Notes |
 |------|--------|-------|
 | 2025-11-27 | Created | Found during code quality review |
+| 2025-11-30 | Resolved | Created shared mapper, updated routes, tests pass |

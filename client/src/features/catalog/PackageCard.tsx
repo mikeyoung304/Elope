@@ -8,17 +8,10 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import type { PackageDto } from '@macon/contracts';
 import { formatCurrency } from '@/lib/utils';
+import { truncateText } from '@/features/storefront';
 
 interface PackageCardProps {
   package: PackageDto;
-}
-
-/**
- * Truncate text to specified length with ellipsis
- */
-function truncate(text: string, maxLength: number): string {
-  if (text.length <= maxLength) return text;
-  return text.slice(0, maxLength) + '...';
 }
 
 export function PackageCard({ package: pkg }: PackageCardProps) {
@@ -53,7 +46,7 @@ export function PackageCard({ package: pkg }: PackageCardProps) {
 
           {/* Package Description (truncated to 120 chars) */}
           <p className="text-lg text-neutral-600 mb-4 line-clamp-2 leading-relaxed flex-1">
-            {truncate(pkg.description, 120)}
+            {truncateText(pkg.description, 120)}
           </p>
 
           {/* Price and CTA */}
