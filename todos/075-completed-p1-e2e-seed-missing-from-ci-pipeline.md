@@ -1,9 +1,11 @@
 ---
-status: pending
+status: completed
 priority: p1
 issue_id: "075"
 tags: [ci-cd, code-review, e2e-tests, deployment]
 dependencies: []
+resolution: "Already fixed - E2E seed step exists at main-pipeline.yml:409-413"
+completed_date: "2025-11-30"
 ---
 
 # P1: E2E Seed Missing from CI/CD Pipeline

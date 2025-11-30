@@ -1,5 +1,5 @@
 ---
-status: pending
+status: completed
 priority: p2
 issue_id: "087"
 tags:
@@ -8,6 +8,8 @@ tags:
   - e2e
   - storefront
 dependencies: []
+resolution: "Created comprehensive e2e/tests/storefront.spec.ts with tests for navigation, tier display, responsive layout, and image handling"
+completed_date: "2025-11-30"
 ---
 
 # Missing E2E Tests for Storefront Components

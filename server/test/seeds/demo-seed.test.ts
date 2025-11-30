@@ -1,0 +1,324 @@
+/**
+ * Unit tests for Demo seed (seeds/demo.ts)
+ *
+ * Tests:
+ * - Random key generation (security)
+ * - Tenant creation with demo data
+ * - Package and add-on creation
+ * - Blackout date creation
+ * - Idempotency (safe to run multiple times)
+ */
+
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
+
+// Mock logger before importing anything that uses it
+vi.mock('../../src/lib/core/logger', () => ({
+  logger: {
+    info: vi.fn(),
+    warn: vi.fn(),
+    error: vi.fn(),
+  },
+}));
+
+// Mock api-key service
+vi.mock('../../src/lib/api-key.service', () => ({
+  apiKeyService: {
+    hashSecretKey: vi.fn().mockReturnValue('hashed-secret-key'),
+  },
+}));
+
+// Mock crypto for deterministic testing
+vi.mock('crypto', () => ({
+  default: {
+    randomBytes: vi.fn().mockImplementation((size: number) => ({
+      toString: () => '0'.repeat(size * 2), // Hex encoding doubles size
+    })),
+  },
+}));
+
+import { seedDemo } from '../../prisma/seeds/demo';
+import type { PrismaClient } from '../../src/generated/prisma';
+
+describe('Demo Seed', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  describe('Demo Tenant Creation', () => {
+    it('should create tenant with slug "little-bit-farm"', async () => {
+      const mockPrisma = createMockPrisma();
+
+      await seedDemo(mockPrisma);
+
+      expect(mockPrisma.tenant.upsert).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: { slug: 'little-bit-farm' },
+        })
+      );
+    });
+
+    it('should set tenant as active', async () => {
+      const mockPrisma = createMockPrisma();
+
+      await seedDemo(mockPrisma);
+
+      const upsertCall = mockPrisma.tenant.upsert.mock.calls[0][0];
+      expect(upsertCall.create.isActive).toBe(true);
+    });
+
+    it('should set demo email', async () => {
+      const mockPrisma = createMockPrisma();
+
+      await seedDemo(mockPrisma);
+
+      const upsertCall = mockPrisma.tenant.upsert.mock.calls[0][0];
+      expect(upsertCall.create.email).toBe('demo@example.com');
+    });
+  });
+
+  describe('Random Key Generation (Security)', () => {
+    it('should generate public key with random suffix', async () => {
+      const mockPrisma = createMockPrisma();
+
+      await seedDemo(mockPrisma);
+
+      const upsertCall = mockPrisma.tenant.upsert.mock.calls[0][0];
+      // Public key format: pk_live_little-bit-farm_{16 hex chars}
+      expect(upsertCall.create.apiKeyPublic).toMatch(
+        /^pk_live_little-bit-farm_[0-9a-f]{16}$/
+      );
+    });
+
+    it('should regenerate keys on each seed (update operation)', async () => {
+      const mockPrisma = createMockPrisma();
+
+      await seedDemo(mockPrisma);
+
+      const upsertCall = mockPrisma.tenant.upsert.mock.calls[0][0];
+      // Update operation should also set new keys
+      expect(upsertCall.update.apiKeyPublic).toBeDefined();
+      expect(upsertCall.update.apiKeySecret).toBeDefined();
+    });
+
+    it('should hash secret key before storing', async () => {
+      const { apiKeyService } = await import('../../src/lib/api-key.service');
+      const mockPrisma = createMockPrisma();
+
+      await seedDemo(mockPrisma);
+
+      expect(apiKeyService.hashSecretKey).toHaveBeenCalled();
+      const hashCall = (apiKeyService.hashSecretKey as ReturnType<typeof vi.fn>).mock.calls[0][0];
+      // Secret key format: sk_live_little-bit-farm_{32 hex chars}
+      expect(hashCall).toMatch(/^sk_live_little-bit-farm_[0-9a-f]{32}$/);
+    });
+  });
+
+  describe('Demo Package Creation', () => {
+    it('should create starter, growth, and enterprise packages', async () => {
+      const mockPrisma = createMockPrisma();
+
+      await seedDemo(mockPrisma);
+
+      // Should be called 3 times (starter, growth, enterprise)
+      expect(mockPrisma.package.upsert).toHaveBeenCalledTimes(3);
+
+      const slugs = mockPrisma.package.upsert.mock.calls.map(
+        (call) => call[0].where.tenantId_slug.slug
+      );
+      expect(slugs).toContain('starter');
+      expect(slugs).toContain('growth');
+      expect(slugs).toContain('enterprise');
+    });
+
+    it('should set realistic prices for packages', async () => {
+      const mockPrisma = createMockPrisma();
+
+      await seedDemo(mockPrisma);
+
+      const prices = mockPrisma.package.upsert.mock.calls.map(
+        (call) => call[0].create.basePrice
+      );
+
+      // Verify prices are in cents and reasonable
+      prices.forEach((price) => {
+        expect(price).toBeGreaterThan(0);
+        expect(price).toBe(Math.floor(price)); // Should be integer (cents)
+      });
+    });
+
+    it('should include photo URLs for packages', async () => {
+      const mockPrisma = createMockPrisma();
+
+      await seedDemo(mockPrisma);
+
+      mockPrisma.package.upsert.mock.calls.forEach((call) => {
+        const photos = call[0].create.photos;
+        expect(photos).toBeDefined();
+        // Photos is stored as JSON string
+        const parsedPhotos = JSON.parse(photos);
+        expect(parsedPhotos).toBeInstanceOf(Array);
+      });
+    });
+  });
+
+  describe('Demo Add-On Creation', () => {
+    it('should create multiple add-ons', async () => {
+      const mockPrisma = createMockPrisma();
+
+      await seedDemo(mockPrisma);
+
+      // Should create 4 add-ons
+      expect(mockPrisma.addOn.upsert).toHaveBeenCalledTimes(4);
+    });
+
+    it('should create add-ons with expected slugs', async () => {
+      const mockPrisma = createMockPrisma();
+
+      await seedDemo(mockPrisma);
+
+      const slugs = mockPrisma.addOn.upsert.mock.calls.map(
+        (call) => call[0].where.tenantId_slug.slug
+      );
+
+      expect(slugs).toContain('social-media-management');
+      expect(slugs).toContain('email-marketing');
+      expect(slugs).toContain('crm-setup');
+      expect(slugs).toContain('dedicated-account-manager');
+    });
+
+    it('should link add-ons to appropriate packages', async () => {
+      const mockPrisma = createMockPrisma();
+
+      await seedDemo(mockPrisma);
+
+      // Should create package-addon links
+      expect(mockPrisma.packageAddOn.upsert).toHaveBeenCalled();
+      expect(mockPrisma.packageAddOn.upsert.mock.calls.length).toBeGreaterThan(0);
+    });
+  });
+
+  describe('Demo Blackout Dates', () => {
+    it('should create blackout dates for holidays', async () => {
+      const mockPrisma = createMockPrisma();
+
+      await seedDemo(mockPrisma);
+
+      expect(mockPrisma.blackoutDate.upsert).toHaveBeenCalledTimes(2);
+    });
+
+    it('should create Christmas blackout date', async () => {
+      const mockPrisma = createMockPrisma();
+
+      await seedDemo(mockPrisma);
+
+      const reasons = mockPrisma.blackoutDate.upsert.mock.calls.map(
+        (call) => call[0].create.reason
+      );
+      expect(reasons).toContain('Christmas Holiday');
+    });
+
+    it('should create New Years blackout date', async () => {
+      const mockPrisma = createMockPrisma();
+
+      await seedDemo(mockPrisma);
+
+      const reasons = mockPrisma.blackoutDate.upsert.mock.calls.map(
+        (call) => call[0].create.reason
+      );
+      expect(reasons).toContain('New Years Day');
+    });
+  });
+
+  describe('Idempotency', () => {
+    it('should use upsert for all operations (safe to run multiple times)', async () => {
+      const mockPrisma = createMockPrisma();
+
+      // Run twice
+      await seedDemo(mockPrisma);
+      await seedDemo(mockPrisma);
+
+      // All operations should use upsert
+      expect(mockPrisma.tenant.upsert).toHaveBeenCalled();
+      expect(mockPrisma.package.upsert).toHaveBeenCalled();
+      expect(mockPrisma.addOn.upsert).toHaveBeenCalled();
+      expect(mockPrisma.packageAddOn.upsert).toHaveBeenCalled();
+      expect(mockPrisma.blackoutDate.upsert).toHaveBeenCalled();
+    });
+  });
+
+  describe('Logging', () => {
+    it('should log created tenant info', async () => {
+      const { logger } = await import('../../src/lib/core/logger');
+      const mockPrisma = createMockPrisma();
+
+      await seedDemo(mockPrisma);
+
+      expect(logger.info).toHaveBeenCalledWith(
+        expect.stringContaining('Demo tenant created')
+      );
+    });
+
+    it('should warn about secret key (save it!)', async () => {
+      const { logger } = await import('../../src/lib/core/logger');
+      const mockPrisma = createMockPrisma();
+
+      await seedDemo(mockPrisma);
+
+      expect(logger.warn).toHaveBeenCalledWith(
+        expect.stringContaining('Secret Key')
+      );
+    });
+
+    it('should warn that keys change on each seed', async () => {
+      const { logger } = await import('../../src/lib/core/logger');
+      const mockPrisma = createMockPrisma();
+
+      await seedDemo(mockPrisma);
+
+      expect(logger.warn).toHaveBeenCalledWith(
+        expect.stringContaining('change on each seed')
+      );
+    });
+  });
+});
+
+/**
+ * Create a mock PrismaClient for testing
+ */
+function createMockPrisma(): PrismaClient {
+  const mockTenant = {
+    id: 'tenant-demo-123',
+    slug: 'little-bit-farm',
+    name: 'Little Bit Farm',
+  };
+
+  const mockPackage = {
+    id: 'pkg-1',
+    slug: 'starter',
+    tenantId: mockTenant.id,
+  };
+
+  const mockAddOn = {
+    id: 'addon-1',
+    slug: 'social-media-management',
+    tenantId: mockTenant.id,
+  };
+
+  return {
+    tenant: {
+      upsert: vi.fn().mockResolvedValue(mockTenant),
+    },
+    package: {
+      upsert: vi.fn().mockResolvedValue(mockPackage),
+    },
+    addOn: {
+      upsert: vi.fn().mockResolvedValue(mockAddOn),
+    },
+    packageAddOn: {
+      upsert: vi.fn().mockResolvedValue({ packageId: mockPackage.id, addOnId: mockAddOn.id }),
+    },
+    blackoutDate: {
+      upsert: vi.fn().mockResolvedValue({ id: 'blackout-1' }),
+    },
+  } as unknown as PrismaClient;
+}
