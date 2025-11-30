@@ -4,6 +4,8 @@
  */
 
 import { PrismaClient, Tenant } from '../../generated/prisma';
+import { TenantPublicDtoSchema, ALLOWED_FONT_FAMILIES } from '@macon/contracts';
+import type { TenantPublicDto } from '@macon/contracts';
 
 export interface CreateTenantInput {
   slug: string;
@@ -201,6 +203,93 @@ export class PrismaTenantRepository {
       bookingCount: tenant._count.bookings,
       packageCount: tenant._count.packages,
       addOnCount: tenant._count.addOns,
+    };
+  }
+
+  /**
+   * Find active tenant by slug with public fields only
+   * Used for public storefront routing - returns only safe fields
+   *
+   * SECURITY: Only returns allowlisted fields:
+   * - id, slug, name - Public identifiers
+   * - apiKeyPublic - Read-only API key for X-Tenant-Key header
+   * - branding - Visual customization (validated)
+   *
+   * @param slug - URL-safe tenant identifier
+   * @returns TenantPublicDto or null if not found/inactive
+   */
+  async findBySlugPublic(slug: string): Promise<TenantPublicDto | null> {
+    const tenant = await this.prisma.tenant.findUnique({
+      where: {
+        slug,
+        isActive: true,
+      },
+      select: {
+        id: true,
+        slug: true,
+        name: true,
+        apiKeyPublic: true,
+        branding: true,
+      },
+    });
+
+    if (!tenant) {
+      return null;
+    }
+
+    // Safely extract and validate branding fields
+    const rawBranding = tenant.branding as Record<string, unknown> | null;
+    let validatedBranding: TenantPublicDto['branding'] = undefined;
+
+    if (rawBranding) {
+      // Validate each branding field before including it
+      const safeBranding: TenantPublicDto['branding'] = {};
+
+      // Validate colors (must be hex format #XXXXXX)
+      const hexColorRegex = /^#[0-9A-Fa-f]{6}$/;
+      if (typeof rawBranding.primaryColor === 'string' && hexColorRegex.test(rawBranding.primaryColor)) {
+        safeBranding.primaryColor = rawBranding.primaryColor;
+      }
+      if (typeof rawBranding.secondaryColor === 'string' && hexColorRegex.test(rawBranding.secondaryColor)) {
+        safeBranding.secondaryColor = rawBranding.secondaryColor;
+      }
+      if (typeof rawBranding.accentColor === 'string' && hexColorRegex.test(rawBranding.accentColor)) {
+        safeBranding.accentColor = rawBranding.accentColor;
+      }
+      if (typeof rawBranding.backgroundColor === 'string' && hexColorRegex.test(rawBranding.backgroundColor)) {
+        safeBranding.backgroundColor = rawBranding.backgroundColor;
+      }
+
+      // Validate fontFamily (must be in allowlist)
+      if (typeof rawBranding.fontFamily === 'string' &&
+          (ALLOWED_FONT_FAMILIES as readonly string[]).includes(rawBranding.fontFamily)) {
+        safeBranding.fontFamily = rawBranding.fontFamily as typeof ALLOWED_FONT_FAMILIES[number];
+      }
+
+      // Validate logoUrl (must be valid URL)
+      // Note: Database stores 'logo', DTO expects 'logoUrl'
+      const logoValue = rawBranding.logo ?? rawBranding.logoUrl;
+      if (typeof logoValue === 'string') {
+        try {
+          new URL(logoValue); // Validate URL format
+          safeBranding.logoUrl = logoValue;
+        } catch {
+          // Invalid URL, skip this field
+        }
+      }
+
+      // Only include branding if we have at least one valid field
+      if (Object.keys(safeBranding).length > 0) {
+        validatedBranding = safeBranding;
+      }
+    }
+
+    return {
+      id: tenant.id,
+      slug: tenant.slug,
+      name: tenant.name,
+      apiKeyPublic: tenant.apiKeyPublic,
+      branding: validatedBranding,
     };
   }
 }

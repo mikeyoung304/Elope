@@ -254,7 +254,10 @@ export const Contracts = c.router({
     method: 'GET',
     path: '/v1/public/tenants/:slug',
     pathParams: z.object({
-      slug: z.string(),
+      slug: z.string()
+        .min(1, 'Slug is required')
+        .max(63, 'Slug must be 63 characters or less')
+        .regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/, 'Invalid slug format: must be lowercase alphanumeric with hyphens'),
     }),
     responses: {
       200: TenantPublicDtoSchema,

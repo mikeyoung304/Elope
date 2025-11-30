@@ -349,7 +349,8 @@ export function createV1Router(
     // Register public tenant lookup routes (for storefront routing)
     // NO authentication required - returns only safe public fields
     // Rate limited to prevent enumeration attacks
-    const publicTenantRoutes = createPublicTenantRoutes(prismaClient);
+    // Uses tenantRepo for DI (same repo used for tenant admin routes)
+    const publicTenantRoutes = createPublicTenantRoutes(tenantRepo);
     app.use('/v1/public/tenants', publicTenantLookupLimiter, publicTenantRoutes);
     logger.info('✅ Public tenant lookup routes mounted at /v1/public/tenants');
 

@@ -642,6 +642,21 @@ export type AppointmentCheckoutResponseDto = z.infer<typeof AppointmentCheckoutR
 // ============================================================================
 
 /**
+ * Hex color validation regex - matches #000000 through #FFFFFF (case insensitive)
+ */
+const HexColorSchema = z.string().regex(/^#[0-9A-Fa-f]{6}$/, 'Invalid hex color format');
+
+/**
+ * Allowed font families for tenant branding
+ * SECURITY: Allowlist prevents CSS injection via fontFamily field
+ */
+export const ALLOWED_FONT_FAMILIES = [
+  'Inter', 'Roboto', 'Open Sans', 'Lato', 'Montserrat',
+  'Poppins', 'Source Sans Pro', 'Nunito', 'Raleway', 'Work Sans',
+  'system-ui', 'sans-serif', 'serif', 'monospace',
+] as const;
+
+/**
  * Public tenant info for storefront routing
  * SECURITY: Only safe public fields - never expose secrets, Stripe IDs, or PII
  */
@@ -651,12 +666,12 @@ export const TenantPublicDtoSchema = z.object({
   name: z.string(),
   apiKeyPublic: z.string(), // Needed to set X-Tenant-Key for subsequent API calls
   branding: z.object({
-    primaryColor: z.string().optional(),
-    secondaryColor: z.string().optional(),
-    accentColor: z.string().optional(),
-    backgroundColor: z.string().optional(),
-    fontFamily: z.string().optional(),
-    logoUrl: z.string().optional(),
+    primaryColor: HexColorSchema.optional(),
+    secondaryColor: HexColorSchema.optional(),
+    accentColor: HexColorSchema.optional(),
+    backgroundColor: HexColorSchema.optional(),
+    fontFamily: z.enum(ALLOWED_FONT_FAMILIES).optional(),
+    logoUrl: z.string().url().optional(),
   }).optional(),
 });
 
