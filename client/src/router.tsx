@@ -43,6 +43,9 @@ const TenantSchedulingServicesPage = lazy(() => import("./pages/tenant/TenantSch
 const TenantSchedulingAvailabilityPage = lazy(() => import("./pages/tenant/TenantSchedulingAvailability").then(m => ({ default: m.TenantSchedulingAvailabilityPage })));
 const TenantSchedulingAppointmentsPage = lazy(() => import("./pages/tenant/TenantSchedulingAppointments").then(m => ({ default: m.TenantSchedulingAppointmentsPage })));
 
+// Tenant storefront layout (white-label customer-facing routes)
+const TenantStorefrontLayout = lazy(() => import("./app/TenantStorefrontLayout").then(m => ({ default: m.TenantStorefrontLayout })));
+
 // Wrapper with Suspense
 const SuspenseWrapper = ({ children }: { children: React.ReactNode }) => (
   <Suspense fallback={<Loading label="Loading page" />}>{children}</Suspense>
@@ -62,6 +65,20 @@ const ProtectedSuspenseWrapper = ({
 );
 
 export const router = createBrowserRouter([
+  // Tenant storefront routes (white-label, public, URL-based tenant resolution)
+  // e.g., /t/little-bit-farm, /t/little-bit-farm/s/wellness, /t/little-bit-farm/book
+  {
+    path: "t/:tenantSlug",
+    element: <SuspenseWrapper><TenantStorefrontLayout /></SuspenseWrapper>,
+    children: [
+      { index: true, element: <SuspenseWrapper><StorefrontHome /></SuspenseWrapper> },
+      { path: "s/:slug", element: <SuspenseWrapper><SegmentTiers /></SuspenseWrapper> },
+      { path: "s/:slug/:tier", element: <SuspenseWrapper><SegmentTierDetail /></SuspenseWrapper> },
+      { path: "tiers", element: <SuspenseWrapper><RootTiers /></SuspenseWrapper> },
+      { path: "tiers/:tier", element: <SuspenseWrapper><RootTierDetail /></SuspenseWrapper> },
+      { path: "book", element: <SuspenseWrapper><AppointmentBookingPage /></SuspenseWrapper> },
+    ],
+  },
   // Public routes with AppShell (header + footer)
   {
     path: "/",

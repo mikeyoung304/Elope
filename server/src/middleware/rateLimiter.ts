@@ -68,6 +68,25 @@ export const uploadLimiter = rateLimit({
     }),
 });
 
+/**
+ * Rate limiter for public tenant lookup (storefront routing)
+ * 100 requests per 15 minutes per IP - generous for legitimate storefront use
+ * Prevents enumeration attacks on tenant slugs
+ */
+export const publicTenantLookupLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: process.env.NODE_ENV === 'test' ? 500 : 100, // 100 lookups per 15 minutes
+  standardHeaders: true,
+  legacyHeaders: false,
+  handler: (_req: Request, res: Response) =>
+    res.status(429).json({
+      status: 'error',
+      statusCode: 429,
+      error: 'RATE_LIMIT_EXCEEDED',
+      message: 'Too many requests. Please try again later.',
+    }),
+});
+
 export const skipIfHealth = (req: Request, _res: Response, next: NextFunction) => {
   if (req.path === '/health' || req.path === '/ready') {
     return next();

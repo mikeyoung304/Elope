@@ -34,7 +34,8 @@ import { createSegmentsRouter } from './segments.routes';
 import { createTenantAdminSegmentsRouter } from './tenant-admin-segments.routes';
 import { createPublicSchedulingRoutes } from './public-scheduling.routes';
 import { createTenantAdminSchedulingRoutes } from './tenant-admin-scheduling.routes';
-import { loginLimiter } from '../middleware/rateLimiter';
+import { createPublicTenantRoutes } from './public-tenant.routes';
+import { loginLimiter, publicTenantLookupLimiter } from '../middleware/rateLimiter';
 import { logger } from '../lib/core/logger';
 import { apiKeyService } from '../lib/api-key.service';
 
@@ -344,6 +345,13 @@ export function createV1Router(
       mailProvider
     );
     app.use('/v1/auth', unifiedAuthRoutes);
+
+    // Register public tenant lookup routes (for storefront routing)
+    // NO authentication required - returns only safe public fields
+    // Rate limited to prevent enumeration attacks
+    const publicTenantRoutes = createPublicTenantRoutes(prismaClient);
+    app.use('/v1/public/tenants', publicTenantLookupLimiter, publicTenantRoutes);
+    logger.info('✅ Public tenant lookup routes mounted at /v1/public/tenants');
 
     // Register public segment routes (for customer browsing)
     // Requires tenant context via X-Tenant-Key header

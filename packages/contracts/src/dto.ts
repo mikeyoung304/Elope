@@ -636,3 +636,28 @@ export const AppointmentCheckoutResponseDtoSchema = z.object({
 });
 
 export type AppointmentCheckoutResponseDto = z.infer<typeof AppointmentCheckoutResponseDtoSchema>;
+
+// ============================================================================
+// Public Tenant DTOs (for storefront routing)
+// ============================================================================
+
+/**
+ * Public tenant info for storefront routing
+ * SECURITY: Only safe public fields - never expose secrets, Stripe IDs, or PII
+ */
+export const TenantPublicDtoSchema = z.object({
+  id: z.string().uuid(),
+  slug: z.string(),
+  name: z.string(),
+  apiKeyPublic: z.string(), // Needed to set X-Tenant-Key for subsequent API calls
+  branding: z.object({
+    primaryColor: z.string().optional(),
+    secondaryColor: z.string().optional(),
+    accentColor: z.string().optional(),
+    backgroundColor: z.string().optional(),
+    fontFamily: z.string().optional(),
+    logoUrl: z.string().optional(),
+  }).optional(),
+});
+
+export type TenantPublicDto = z.infer<typeof TenantPublicDtoSchema>;

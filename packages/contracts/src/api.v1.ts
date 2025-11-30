@@ -48,6 +48,8 @@ import {
   AppointmentDtoSchema,
   CreateAppointmentCheckoutDtoSchema,
   AppointmentCheckoutResponseDtoSchema,
+  // Public tenant DTO (for storefront routing)
+  TenantPublicDtoSchema,
   // Error response schemas
   BadRequestErrorSchema,
   UnauthorizedErrorSchema,
@@ -237,6 +239,30 @@ export const Contracts = c.router({
       500: InternalServerErrorSchema,
     },
     summary: 'Reset password with token',
+  },
+
+  // ============================================================================
+  // Public Tenant Lookup (for storefront routing)
+  // ============================================================================
+
+  /**
+   * Get public tenant info by slug (for storefront routing)
+   * Used by customer-facing storefronts to resolve tenant from URL
+   * Returns ONLY safe public fields - never secrets, Stripe IDs, or PII
+   */
+  getTenantPublic: {
+    method: 'GET',
+    path: '/v1/public/tenants/:slug',
+    pathParams: z.object({
+      slug: z.string(),
+    }),
+    responses: {
+      200: TenantPublicDtoSchema,
+      404: NotFoundErrorSchema,
+      429: TooManyRequestsErrorSchema,
+      500: InternalServerErrorSchema,
+    },
+    summary: 'Get public tenant info by slug (for storefront routing)',
   },
 
   // ============================================================================
