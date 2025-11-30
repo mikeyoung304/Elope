@@ -20,6 +20,7 @@ import { PrismaClient } from '../src/generated/prisma';
 import { seedPlatform } from './seeds/platform';
 import { seedE2E } from './seeds/e2e';
 import { seedDemo } from './seeds/demo';
+import { logger } from '../src/lib/core/logger';
 
 const prisma = new PrismaClient();
 
@@ -47,7 +48,7 @@ function getSeedMode(): SeedMode {
 
 async function main() {
   const mode = getSeedMode();
-  console.log(`\n🌱 Running seed in "${mode}" mode\n`);
+  logger.info({ mode }, 'Running seed');
 
   try {
     switch (mode) {
@@ -80,9 +81,9 @@ async function main() {
         break;
     }
 
-    console.log('\n✅ Database seeded successfully!\n');
+    logger.info('Database seeded successfully');
   } catch (error) {
-    console.error('\n❌ Seed failed:', error);
+    logger.error({ error }, 'Seed failed');
     process.exit(1);
   }
 }
