@@ -20,16 +20,17 @@ const prisma = new PrismaClient();
 
 // Validate required environment variables
 const SUPABASE_URL = process.env.SUPABASE_URL;
-const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
+// Support both naming conventions for the service role key
+const SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY;
 
-if (!SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY) {
+if (!SUPABASE_URL || !SUPABASE_SERVICE_KEY) {
   console.error('❌ Missing required environment variables:');
   if (!SUPABASE_URL) console.error('   - SUPABASE_URL');
-  if (!SUPABASE_SERVICE_ROLE_KEY) console.error('   - SUPABASE_SERVICE_ROLE_KEY');
+  if (!SUPABASE_SERVICE_KEY) console.error('   - SUPABASE_SERVICE_KEY (or SUPABASE_SERVICE_ROLE_KEY)');
   process.exit(1);
 }
 
-const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
+const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_KEY);
 
 const ONE_YEAR_SECONDS = 60 * 60 * 24 * 365;
 
