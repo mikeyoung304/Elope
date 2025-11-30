@@ -47,7 +47,15 @@ export interface TimeslotBooking {
  * Booking Repository - Booking persistence
  */
 export interface BookingRepository {
-  create(tenantId: string, booking: Booking): Promise<Booking>;
+  create(
+    tenantId: string,
+    booking: Booking,
+    paymentData?: {
+      amount: number;
+      processor: string;
+      processorId: string;
+    }
+  ): Promise<Booking>;
   findById(tenantId: string, id: string): Promise<Booking | null>;
   findAll(tenantId: string): Promise<Booking[]>;
   isDateBooked(tenantId: string, date: string): Promise<boolean>;

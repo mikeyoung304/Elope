@@ -52,21 +52,47 @@ export const signupLimiter = rateLimit({
 });
 
 /**
- * Rate limiter for file uploads
- * Prevents abuse of storage resources
- * 100 uploads per hour per IP (generous for legitimate use)
+ * IP-level rate limiter for file uploads (DDoS protection)
+ * Higher limit to accommodate multiple tenants behind shared IPs (NAT, corporate proxies)
+ * 200 uploads per hour per IP
  */
-export const uploadLimiter = rateLimit({
+export const uploadLimiterIP = rateLimit({
   windowMs: 60 * 60 * 1000, // 1 hour
-  max: process.env.NODE_ENV === 'test' ? 500 : 100, // 100 uploads per hour
+  max: process.env.NODE_ENV === 'test' ? 500 : 200, // 200 uploads per hour per IP
   standardHeaders: true,
   legacyHeaders: false,
+  keyGenerator: (req) => req.ip || 'unknown',
   handler: (_req: Request, res: Response) =>
     res.status(429).json({
-      error: 'too_many_uploads',
-      message: 'Upload rate limit exceeded. Please try again later.',
+      error: 'too_many_uploads_ip',
+      message: 'Too many uploads from this IP. Please try again later.',
     }),
 });
+
+/**
+ * Tenant-level rate limiter for file uploads (quota enforcement)
+ * Prevents individual tenant abuse regardless of IP rotation
+ * 50 uploads per hour per tenant
+ */
+export const uploadLimiterTenant = rateLimit({
+  windowMs: 60 * 60 * 1000, // 1 hour
+  max: process.env.NODE_ENV === 'test' ? 500 : 50, // 50 uploads per hour per tenant
+  standardHeaders: true,
+  legacyHeaders: false,
+  keyGenerator: (req, res) => res.locals.tenantAuth?.tenantId || req.ip || 'unknown',
+  skip: (req, res) => !res.locals.tenantAuth, // Only apply to authenticated requests
+  handler: (_req: Request, res: Response) =>
+    res.status(429).json({
+      error: 'too_many_uploads_tenant',
+      message: 'Upload quota exceeded for this tenant. Please try again later.',
+    }),
+});
+
+/**
+ * @deprecated Use uploadLimiterIP and uploadLimiterTenant instead
+ * Legacy single-layer rate limiter - kept for backwards compatibility
+ */
+export const uploadLimiter = uploadLimiterIP;
 
 /**
  * Rate limiter for public tenant lookup (storefront routing)

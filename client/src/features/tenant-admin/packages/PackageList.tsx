@@ -15,6 +15,7 @@ import { MobileActionDropdown } from "@/components/shared/MobileActionDropdown";
 import { EmptyState } from "@/components/shared/EmptyState";
 import { StatusBadge } from "@/components/shared/StatusBadge";
 import { formatCurrency } from "@/lib/utils";
+import { sanitizeImageUrl } from "@/lib/sanitize-url";
 import type { PackageDto } from "@macon/contracts";
 
 interface PackageListProps {
@@ -79,10 +80,21 @@ export const PackageList = memo(function PackageList({ packages, onEdit, onDelet
               {pkg.photos && pkg.photos.length > 0 ? (
                 <>
                   <img
-                    src={pkg.photos[0].url}
+                    src={sanitizeImageUrl(pkg.photos[0].url) || undefined}
                     alt={`${pkg.title} preview`}
                     className="w-full h-full object-cover min-h-[120px]"
+                    onError={(e) => {
+                      // Fallback to placeholder on image load error
+                      e.currentTarget.style.display = 'none';
+                      const placeholder = e.currentTarget.nextElementSibling;
+                      if (placeholder) {
+                        (placeholder as HTMLElement).style.display = 'flex';
+                      }
+                    }}
                   />
+                  <div className="hidden w-full h-full min-h-[120px] bg-sage-light/10 items-center justify-center">
+                    <Image className="w-10 h-10 text-sage-light/50" />
+                  </div>
                   {pkg.photos.length > 1 && (
                     <span className="absolute bottom-2 left-2 bg-text-primary/80 backdrop-blur-sm text-white text-xs font-medium px-2 py-0.5 rounded-full flex items-center gap-1">
                       <ImageIcon className="w-3 h-3" />

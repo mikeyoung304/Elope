@@ -15,7 +15,7 @@ import type { TenantRequest } from '../middleware/tenant';
 import type { ServiceRepository } from '../lib/ports';
 import type { SchedulingAvailabilityService } from '../services/scheduling-availability.service';
 import { AvailableSlotsQuerySchema } from '@macon/contracts';
-import type { ServiceDto, TimeSlotDto } from '@macon/contracts';
+import type { TimeSlotDto } from '@macon/contracts';
 import { logger } from '../lib/core/logger';
 import { NotFoundError } from '../lib/errors';
 import { z } from 'zod';
@@ -66,10 +66,9 @@ export function createPublicSchedulingRoutes(
       // Get all active services for tenant
       const services = await serviceRepo.getActiveServices(tenantId);
 
-      // Transform to DTO format
-      const serviceDtos: ServiceDto[] = services.map((service) => ({
+      // Transform to DTO format (excluding tenantId for public API)
+      const serviceDtos = services.map((service) => ({
         id: service.id,
-        tenantId: service.tenantId,
         slug: service.slug,
         name: service.name,
         description: service.description ?? null,
@@ -126,10 +125,9 @@ export function createPublicSchedulingRoutes(
         throw new NotFoundError(`Service not found: ${slug}`);
       }
 
-      // Transform to DTO format
-      const serviceDto: ServiceDto = {
+      // Transform to DTO format (excluding tenantId for public API)
+      const serviceDto = {
         id: service.id,
-        tenantId: service.tenantId,
         slug: service.slug,
         name: service.name,
         description: service.description ?? null,

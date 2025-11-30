@@ -524,7 +524,7 @@ export const CreateServiceDtoSchema = z.object({
   name: z.string().min(1).max(100),
   description: z.string().max(2000).optional(),
   durationMinutes: z.number().int().positive().min(5).max(480), // 5 min to 8 hours
-  bufferMinutes: z.number().int().min(0).max(120).default(0), // 0 to 2 hours
+  bufferMinutes: z.number().int().min(0).max(240).default(0), // 0 to 4 hours
   priceCents: z.number().int().min(0),
   timezone: z.string().default('America/New_York'),
   sortOrder: z.number().int().default(0),
@@ -538,7 +538,7 @@ export const UpdateServiceDtoSchema = z.object({
   name: z.string().min(1).max(100).optional(),
   description: z.string().max(2000).optional(),
   durationMinutes: z.number().int().positive().min(5).max(480).optional(),
-  bufferMinutes: z.number().int().min(0).max(120).optional(),
+  bufferMinutes: z.number().int().min(0).max(240).optional(),
   priceCents: z.number().int().min(0).optional(),
   timezone: z.string().optional(),
   active: z.boolean().optional(),

@@ -1,4 +1,5 @@
 import { Calendar, Check, Eye } from "lucide-react";
+import { sanitizeImageUrl } from "@/lib/sanitize-url";
 
 interface BrandingPreviewProps {
   primaryColor: string;
@@ -48,12 +49,23 @@ export function BrandingPreview({
           className="p-5 flex items-center justify-center"
           style={{ backgroundColor: primaryColor }}
         >
-          {logoUrl ? (
-            <img
-              src={logoUrl}
-              alt="Logo Preview"
-              className="max-h-12 max-w-[180px] object-contain"
-            />
+          {logoUrl && sanitizeImageUrl(logoUrl) ? (
+            <>
+              <img
+                src={sanitizeImageUrl(logoUrl) || undefined}
+                alt="Logo Preview"
+                className="max-h-12 max-w-[180px] object-contain"
+                onError={(e) => {
+                  // Fallback to text on image load error
+                  e.currentTarget.style.display = 'none';
+                  const fallback = e.currentTarget.nextElementSibling;
+                  if (fallback) {
+                    (fallback as HTMLElement).style.display = 'block';
+                  }
+                }}
+              />
+              <div className="hidden text-white text-lg font-semibold">Your Logo</div>
+            </>
           ) : (
             <div className="text-white text-lg font-semibold">Your Logo</div>
           )}

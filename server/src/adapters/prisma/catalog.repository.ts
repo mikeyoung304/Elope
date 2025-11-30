@@ -13,6 +13,7 @@ import type {
 } from '../lib/ports';
 import type { Package, AddOn } from '../lib/entities';
 import { DomainError } from '../lib/errors';
+import { NotFoundError } from '../lib/errors/http';
 import type { Prisma } from '../../generated/prisma';
 
 export class PrismaCatalogRepository implements CatalogRepository {
@@ -68,6 +69,19 @@ export class PrismaCatalogRepository implements CatalogRepository {
   }
 
   async getAddOnsByPackageId(tenantId: string, packageId: string): Promise<AddOn[]> {
+    // CRITICAL: Verify package belongs to tenant before querying add-ons
+    // This prevents cross-tenant reference attacks where an attacker
+    // provides a packageId from another tenant
+    const pkg = await this.prisma.package.findFirst({
+      where: { tenantId, id: packageId },
+      select: { id: true },
+    });
+
+    if (!pkg) {
+      throw new NotFoundError('Package not found or unauthorized');
+    }
+
+    // Now safe to query add-ons - package ownership verified
     const addOns = await this.prisma.addOn.findMany({
       where: {
         tenantId,

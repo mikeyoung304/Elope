@@ -103,6 +103,10 @@ export class PrismaBookingRepository implements BookingRepository {
    * 3. Explicit date availability check after lock acquisition
    * 4. Unique constraint enforcement at database level
    *
+   * CRITICAL FIX (P2 #037): Atomically creates both Booking and Payment records
+   * in a single transaction to prevent financial reconciliation issues. If either
+   * creation fails, both operations are rolled back to maintain data integrity.
+   *
    * Transaction configuration:
    * - Timeout: 5 seconds (BOOKING_TRANSACTION_TIMEOUT_MS)
    * - Isolation: READ COMMITTED (avoids phantom read issues with SERIALIZABLE)
@@ -113,7 +117,9 @@ export class PrismaBookingRepository implements BookingRepository {
    * - Waits for lock if another transaction holds it (queue buildup prevention via retry logic)
    * - Lock ID is deterministic hash of tenantId:eventDate
    *
+   * @param tenantId - Tenant ID for data isolation
    * @param booking - Domain booking entity to persist
+   * @param paymentData - Optional payment data to create alongside booking (for webhook flows)
    *
    * @returns Created booking with generated timestamps
    *
@@ -122,7 +128,7 @@ export class PrismaBookingRepository implements BookingRepository {
    * @example
    * ```typescript
    * try {
-   *   const booking = await repository.create({
+   *   const booking = await repository.create('tenant_123', {
    *     id: 'booking_123',
    *     packageId: 'pkg_abc',
    *     eventDate: '2025-06-15',
@@ -132,6 +138,10 @@ export class PrismaBookingRepository implements BookingRepository {
    *     totalCents: 150000,
    *     status: 'PAID',
    *     createdAt: new Date().toISOString()
+   *   }, {
+   *     amount: 150000,
+   *     processor: 'stripe',
+   *     processorId: 'cs_test_123'
    *   });
    * } catch (error) {
    *   if (error instanceof BookingConflictError) {
@@ -140,7 +150,15 @@ export class PrismaBookingRepository implements BookingRepository {
    * }
    * ```
    */
-  async create(tenantId: string, booking: Booking): Promise<Booking> {
+  async create(
+    tenantId: string,
+    booking: Booking,
+    paymentData?: {
+      amount: number;
+      processor: string;
+      processorId: string;
+    }
+  ): Promise<Booking> {
     return this.retryTransaction(async () => {
       try {
         return await this.prisma.$transaction(async (tx) => {
@@ -222,6 +240,23 @@ export class PrismaBookingRepository implements BookingRepository {
             },
           },
         });
+
+        // P2 #037 FIX: Create Payment record atomically with Booking
+        // This ensures financial reconciliation integrity - if booking succeeds
+        // but payment record creation fails, the entire transaction rolls back
+        if (paymentData) {
+          await tx.payment.create({
+            data: {
+              tenantId,
+              bookingId: created.id,
+              amount: paymentData.amount,
+              currency: 'USD',
+              status: 'CAPTURED', // Payment already completed via Stripe
+              processor: paymentData.processor,
+              processorId: paymentData.processorId,
+            },
+          });
+        }
 
         return this.toDomainBooking(created);
       }, {

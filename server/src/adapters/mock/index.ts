@@ -384,8 +384,16 @@ export class MockCatalogRepository implements CatalogRepository {
 
 // Mock Booking Repository
 export class MockBookingRepository implements BookingRepository {
-  async create(tenantId: string, booking: Booking): Promise<Booking> {
-    // Mock mode: Ignore tenantId
+  async create(
+    tenantId: string,
+    booking: Booking,
+    paymentData?: {
+      amount: number;
+      processor: string;
+      processorId: string;
+    }
+  ): Promise<Booking> {
+    // Mock mode: Ignore tenantId and paymentData (no Payment table in mock)
     const dateKey = toUtcMidnight(booking.eventDate);
 
     // Enforce unique by date
@@ -395,6 +403,17 @@ export class MockBookingRepository implements BookingRepository {
 
     bookings.set(booking.id, booking);
     bookingsByDate.set(dateKey, booking.id);
+
+    // P2 #037: In mock mode, we just log payment data
+    // Real Prisma implementation creates Payment record atomically
+    if (paymentData) {
+      console.log(`💳 [MOCK PAYMENT] Payment recorded for booking ${booking.id}:`, {
+        amount: paymentData.amount / 100,
+        processor: paymentData.processor,
+        processorId: paymentData.processorId,
+      });
+    }
+
     return booking;
   }
 

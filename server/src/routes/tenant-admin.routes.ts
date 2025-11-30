@@ -9,7 +9,7 @@ import multer from 'multer';
 import { z } from 'zod';
 import { ZodError } from 'zod';
 import { UpdateBrandingDtoSchema } from '@macon/contracts';
-import { uploadService } from '../services/upload.service';
+import { uploadService, checkUploadConcurrency, releaseUploadConcurrency } from '../services/upload.service';
 import { logger } from '../lib/core/logger';
 import type { PrismaTenantRepository } from '../adapters/prisma/tenant.repository';
 import type { CatalogService } from '../services/catalog.service';
@@ -27,7 +27,7 @@ import {
   ValidationError,
   ForbiddenError,
 } from '../lib/errors';
-import { uploadLimiter } from '../middleware/rateLimiter';
+import { uploadLimiterIP, uploadLimiterTenant } from '../middleware/rateLimiter';
 
 // Configure multer for memory storage
 const upload = multer({
@@ -76,16 +76,20 @@ export class TenantAdminController {
    * POST /v1/tenant/logo
    */
   async uploadLogo(req: Request, res: Response): Promise<void> {
+    const tenantAuth = res.locals.tenantAuth;
+    if (!tenantAuth) {
+      res.status(401).json({ error: 'Unauthorized: No tenant authentication' });
+      return;
+    }
+    const tenantId = tenantAuth.tenantId;
+
     try {
-      const tenantAuth = res.locals.tenantAuth;
-      if (!tenantAuth) {
-        res.status(401).json({ error: 'Unauthorized: No tenant authentication' });
-        return;
-      }
-      const tenantId = tenantAuth.tenantId;
+      // Check concurrency limit BEFORE processing file (memory exhaustion protection)
+      checkUploadConcurrency(tenantId);
 
       // Check if file was uploaded
       if (!req.file) {
+        releaseUploadConcurrency(tenantId);
         res.status(400).json({ error: 'No file uploaded' });
         return;
       }
@@ -96,6 +100,7 @@ export class TenantAdminController {
       // Update tenant branding with logo URL
       const tenant = await this.tenantRepository.findById(tenantId);
       if (!tenant) {
+        releaseUploadConcurrency(tenantId);
         res.status(404).json({ error: 'Tenant not found' });
         return;
       }
@@ -115,9 +120,17 @@ export class TenantAdminController {
         'Tenant logo uploaded and branding updated'
       );
 
+      releaseUploadConcurrency(tenantId);
       res.status(200).json(result);
     } catch (error) {
+      releaseUploadConcurrency(tenantId);
       logger.error({ error }, 'Error uploading logo');
+
+      // Handle 429 status from concurrency limiter
+      if (error instanceof Error && (error as any).status === 429) {
+        res.status(429).json({ error: error.message });
+        return;
+      }
 
       if (error instanceof Error) {
         res.status(400).json({ error: error.message });
@@ -242,6 +255,8 @@ export function createTenantAdminRoutes(
   // Logo upload endpoint
   router.post(
     '/logo',
+    uploadLimiterIP, // IP-level DDoS protection (200/hour)
+    uploadLimiterTenant, // Tenant-level quota enforcement (50/hour)
     upload.single('logo'),
     (req, res) => controller.uploadLogo(req, res)
   );
@@ -449,24 +464,31 @@ export function createTenantAdminRoutes(
    * @returns 403 - Package belongs to different tenant
    * @returns 404 - Package not found
    * @returns 413 - File too large (>5MB, handled by multer middleware)
+   * @returns 429 - Rate limit exceeded (IP or tenant)
    * @returns 500 - Internal server error (passed to global error handler)
    */
   router.post(
     '/packages/:id/photos',
+    uploadLimiterIP, // IP-level DDoS protection (200/hour)
+    uploadLimiterTenant, // Tenant-level quota enforcement (50/hour)
     uploadPackagePhoto.single('photo'),
     handleMulterError,
     async (req: Request, res: Response, next: NextFunction) => {
+      const tenantAuth = res.locals.tenantAuth;
+      if (!tenantAuth) {
+        res.status(401).json({ error: 'Unauthorized: No tenant authentication' });
+        return;
+      }
+      const tenantId = tenantAuth.tenantId;
+      const { id: packageId } = req.params;
+
       try {
-        const tenantAuth = res.locals.tenantAuth;
-        if (!tenantAuth) {
-          res.status(401).json({ error: 'Unauthorized: No tenant authentication' });
-          return;
-        }
-        const tenantId = tenantAuth.tenantId;
-        const { id: packageId } = req.params;
+        // Check concurrency limit BEFORE processing file (memory exhaustion protection)
+        checkUploadConcurrency(tenantId);
 
         // Check if file was uploaded
         if (!req.file) {
+          releaseUploadConcurrency(tenantId);
           res.status(400).json({ error: 'No photo uploaded' });
           return;
         }
@@ -474,10 +496,12 @@ export function createTenantAdminRoutes(
         // Verify package exists and belongs to tenant
         const pkg = await catalogService.getPackageById(tenantId, packageId);
         if (!pkg) {
+          releaseUploadConcurrency(tenantId);
           res.status(404).json({ error: 'Package not found' });
           return;
         }
         if (pkg.tenantId !== tenantId) {
+          releaseUploadConcurrency(tenantId);
           res.status(403).json({ error: 'Forbidden: Package belongs to different tenant' });
           return;
         }
@@ -485,6 +509,7 @@ export function createTenantAdminRoutes(
         // Check photo count (max 5)
         const currentPhotos = (pkg.photos as any[]) || [];
         if (currentPhotos.length >= 5) {
+          releaseUploadConcurrency(tenantId);
           res.status(400).json({ error: 'Maximum 5 photos per package' });
           return;
         }
@@ -512,9 +537,17 @@ export function createTenantAdminRoutes(
           'Package photo uploaded'
         );
 
+        releaseUploadConcurrency(tenantId);
         res.status(201).json(newPhoto);
       } catch (error) {
+        releaseUploadConcurrency(tenantId);
         logger.error({ error }, 'Error uploading package photo');
+
+        // Handle 429 status from concurrency limiter
+        if (error instanceof Error && (error as any).status === 429) {
+          res.status(429).json({ error: error.message });
+          return;
+        }
 
         // Discriminate error types for proper HTTP status codes
         if (error instanceof NotFoundError) {
@@ -775,24 +808,30 @@ export function createTenantAdminRoutes(
    * @returns 400 - No file uploaded or invalid file type
    * @returns 401 - No tenant authentication
    * @returns 413 - File too large (>5MB, handled by multer middleware)
+   * @returns 429 - Rate limit exceeded (IP or tenant)
    * @returns 500 - Internal server error
    */
   router.post(
     '/segment-image',
-    uploadLimiter, // Rate limit: 100 uploads per hour
+    uploadLimiterIP, // IP-level DDoS protection (200/hour)
+    uploadLimiterTenant, // Tenant-level quota enforcement (50/hour)
     uploadPackagePhoto.single('file'),
     handleMulterError,
     async (req: Request, res: Response, next: NextFunction) => {
+      const tenantAuth = res.locals.tenantAuth;
+      if (!tenantAuth) {
+        res.status(401).json({ error: 'Unauthorized: No tenant authentication' });
+        return;
+      }
+      const tenantId = tenantAuth.tenantId;
+
       try {
-        const tenantAuth = res.locals.tenantAuth;
-        if (!tenantAuth) {
-          res.status(401).json({ error: 'Unauthorized: No tenant authentication' });
-          return;
-        }
-        const tenantId = tenantAuth.tenantId;
+        // Check concurrency limit BEFORE processing file (memory exhaustion protection)
+        checkUploadConcurrency(tenantId);
 
         // Check if file was uploaded
         if (!req.file) {
+          releaseUploadConcurrency(tenantId);
           res.status(400).json({ error: 'No file uploaded' });
           return;
         }
@@ -805,9 +844,17 @@ export function createTenantAdminRoutes(
           'Segment image uploaded'
         );
 
+        releaseUploadConcurrency(tenantId);
         res.status(201).json(uploadResult);
       } catch (error) {
+        releaseUploadConcurrency(tenantId);
         logger.error({ error }, 'Error uploading segment image');
+
+        // Handle 429 status from concurrency limiter
+        if (error instanceof Error && (error as any).status === 429) {
+          res.status(429).json({ error: error.message });
+          return;
+        }
 
         // Handle generic errors from upload service (file validation)
         if (error instanceof Error) {

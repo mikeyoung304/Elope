@@ -15,6 +15,15 @@ const E2E_PUBLIC_KEY = 'pk_live_mais-e2e_0000000000000000'; // 16 hex chars
 const E2E_SECRET_KEY = 'sk_live_mais-e2e_00000000000000000000000000000000'; // 32 hex chars
 
 export async function seedE2E(prisma: PrismaClient): Promise<void> {
+  // CRITICAL: Block E2E seed in production
+  if (process.env.NODE_ENV === 'production') {
+    throw new Error(
+      'FATAL: E2E seed cannot run in production environment!\n' +
+      'E2E seeds contain fixed test keys that are publicly visible in source code.\n' +
+      'Use SEED_MODE=production for production environments.'
+    );
+  }
+
   // Create test tenant
   const tenant = await prisma.tenant.upsert({
     where: { slug: E2E_TENANT_SLUG },

@@ -281,6 +281,10 @@ export class BookingService {
    * Creates a PAID booking with commission data, enriches event data with package/add-on
    * details, and emits BookingPaid event for downstream processing.
    *
+   * CRITICAL FIX (P2 #037): Booking and Payment records are now created atomically
+   * within a single Prisma transaction to prevent financial reconciliation issues.
+   * If either operation fails, both are rolled back to maintain data integrity.
+   *
    * Uses race condition protection via the booking repository's SERIALIZABLE transaction
    * and pessimistic locking to prevent double-booking scenarios.
    *
@@ -358,8 +362,13 @@ export class BookingService {
       createdAt: new Date().toISOString(),
     };
 
-    // Persist booking (enforces unique-by-date per tenant)
-    const created = await this.bookingRepo.create(tenantId, booking);
+    // P2 #037 FIX: Create booking AND payment record atomically
+    // Pass payment data to repository for atomic transaction
+    const created = await this.bookingRepo.create(tenantId, booking, {
+      amount: input.totalCents,
+      processor: 'stripe',
+      processorId: input.sessionId,
+    });
 
     // Emit BookingPaid event for notifications with enriched data
     await this._eventEmitter.emit('BookingPaid', {

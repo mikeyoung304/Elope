@@ -34,6 +34,32 @@ export interface UploadResult {
   mimetype: string;
 }
 
+// Simple concurrency limiter for uploads to prevent memory exhaustion
+const uploadSemaphores = new Map<string, number>();
+const MAX_CONCURRENT_UPLOADS = 3;
+
+/**
+ * Check if tenant has available upload slots
+ * Throws 429 error if concurrency limit exceeded
+ */
+export function checkUploadConcurrency(tenantId: string): void {
+  const current = uploadSemaphores.get(tenantId) || 0;
+  if (current >= MAX_CONCURRENT_UPLOADS) {
+    const error = new Error('Too many concurrent uploads. Please wait and try again.');
+    (error as any).status = 429;
+    throw error;
+  }
+  uploadSemaphores.set(tenantId, current + 1);
+}
+
+/**
+ * Release tenant upload slot after completion
+ */
+export function releaseUploadConcurrency(tenantId: string): void {
+  const current = uploadSemaphores.get(tenantId) || 1;
+  uploadSemaphores.set(tenantId, Math.max(0, current - 1));
+}
+
 export class UploadService {
   private logoUploadDir: string;
   private packagePhotoUploadDir: string;
