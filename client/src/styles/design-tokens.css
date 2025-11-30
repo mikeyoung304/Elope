@@ -30,8 +30,8 @@
   --macon-orange-900: #7c2d12;        /* Darkest orange */
   --macon-orange-800: #9a3412;        /* Very dark */
   --macon-orange-700: #c2410c;        /* Dark */
-  --macon-orange: #fb923c;            /* Primary orange */
-  --macon-orange-600: #fb923c;        /* Same as primary */
+  --macon-orange: #d97706;            /* Primary orange - WCAG AA: 4.54:1 */
+  --macon-orange-600: #ea580c;        /* Slightly brighter */
   --macon-orange-500: #f97316;        /* Vibrant */
   --macon-orange-400: #fb923c;        /* Medium */
   --macon-orange-300: #fdba74;        /* Light */
@@ -93,8 +93,8 @@
   --interactive-primary-focus: #fb923c;  /* Orange focus ring */
 
   /* Secondary (Orange) Interactive States */
-  --interactive-secondary-default: #fb923c;
-  --interactive-secondary-hover: #f97316;
+  --interactive-secondary-default: #d97706;
+  --interactive-secondary-hover: #b45309;
   --interactive-secondary-active: #ea7c1c;
   --interactive-secondary-disabled: #fed7aa;
   --interactive-secondary-focus: #1a365d;  /* Navy focus ring */

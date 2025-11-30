@@ -159,7 +159,7 @@ export function StripeConnectCard() {
 
   if (loading) {
     return (
-      <div className="bg-white rounded-lg border border-neutral-200 p-6">
+      <div className="bg-white rounded-xl border border-neutral-200 p-6 shadow-elevation-1">
         <div className="flex items-center justify-center">
           <Loader2 className="w-5 h-5 animate-spin text-neutral-400" />
           <span className="ml-2 text-neutral-600">Loading Stripe status...</span>
@@ -171,7 +171,7 @@ export function StripeConnectCard() {
   // No account exists
   if (!status) {
     return (
-      <div className="bg-white rounded-lg border border-neutral-200 p-6">
+      <div className="bg-white rounded-xl border border-neutral-200 p-6 shadow-elevation-1 hover:shadow-elevation-2 transition-shadow">
         <h3 className="text-lg font-semibold text-neutral-900 mb-2">
           Connect Stripe
         </h3>
@@ -212,7 +212,7 @@ export function StripeConnectCard() {
   const hasRequirements = status.requirements.currentlyDue.length > 0 || status.requirements.pastDue.length > 0;
 
   return (
-    <div className="bg-white rounded-lg border border-neutral-200 p-6">
+    <div className="bg-white rounded-xl border border-neutral-200 p-6 shadow-elevation-1 hover:shadow-elevation-2 transition-shadow">
       <div className="flex items-center justify-between mb-4">
         <h3 className="text-lg font-semibold text-neutral-900">
           Stripe Connect

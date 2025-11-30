@@ -24,8 +24,8 @@ export function MetricsCards({
     <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
       <Card className="p-6 border-neutral-200 shadow-sm hover:shadow-md transition-shadow">
         <div className="flex items-center gap-3 mb-2">
-          <div className="p-2 bg-macon-navy-50 rounded">
-            <Package className="w-5 h-5 text-macon-navy-600" />
+          <div className="p-2 bg-macon-navy-50 rounded-lg">
+            <Package className="w-6 h-6 text-macon-navy-600" />
           </div>
           <div className="text-sm font-medium text-neutral-700">Total Packages</div>
         </div>
@@ -34,8 +34,8 @@ export function MetricsCards({
 
       <Card className="p-6 border-neutral-200 shadow-sm hover:shadow-md transition-shadow">
         <div className="flex items-center gap-3 mb-2">
-          <div className="p-2 bg-macon-orange-50 rounded">
-            <XCircle className="w-5 h-5 text-macon-orange-600" />
+          <div className="p-2 bg-macon-orange-50 rounded-lg">
+            <XCircle className="w-6 h-6 text-macon-orange-600" />
           </div>
           <div className="text-sm font-medium text-neutral-700">Blackout Dates</div>
         </div>
@@ -44,8 +44,8 @@ export function MetricsCards({
 
       <Card className="p-6 border-neutral-200 shadow-sm hover:shadow-md transition-shadow">
         <div className="flex items-center gap-3 mb-2">
-          <div className="p-2 bg-macon-navy-50 rounded">
-            <Calendar className="w-5 h-5 text-macon-navy-600" />
+          <div className="p-2 bg-macon-navy-50 rounded-lg">
+            <Calendar className="w-6 h-6 text-macon-navy-600" />
           </div>
           <div className="text-sm font-medium text-neutral-700">Total Bookings</div>
         </div>
@@ -54,8 +54,8 @@ export function MetricsCards({
 
       <Card className="p-6 border-neutral-200 shadow-sm hover:shadow-md transition-shadow">
         <div className="flex items-center gap-3 mb-2">
-          <div className="p-2 bg-macon-orange-50 rounded">
-            <Palette className="w-5 h-5 text-macon-orange-600" />
+          <div className="p-2 bg-macon-orange-50 rounded-lg">
+            <Palette className="w-6 h-6 text-macon-orange-600" />
           </div>
           <div className="text-sm font-medium text-neutral-700">Branding</div>
         </div>

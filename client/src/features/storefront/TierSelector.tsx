@@ -14,7 +14,7 @@
 
 import { useMemo } from 'react';
 import { Link } from 'react-router-dom';
-import { ArrowLeft, AlertCircle } from 'lucide-react';
+import { ArrowLeft, Package } from 'lucide-react';
 import { Container } from '@/ui/Container';
 import { TierCard } from './TierCard';
 import { ChoiceGrid } from './ChoiceGrid';
@@ -53,9 +53,8 @@ export function TierSelector({
     [tiers]
   );
 
-  // Check completeness for warning display
+  // Check completeness (used for pricing psychology note)
   const isComplete = configuredTiers.length === 3;
-  const missingTiers = TIER_LEVELS.filter((level) => !tiers[level]);
 
   return (
     <div className="py-12">
@@ -73,7 +72,7 @@ export function TierSelector({
 
         {/* Header */}
         <div className="text-center mb-12">
-          <h1 className="font-heading text-4xl md:text-5xl lg:text-6xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-macon-navy via-macon-orange to-macon-teal mb-4">
+          <h1 className="font-heading text-4xl md:text-5xl lg:text-6xl font-bold text-neutral-900 mb-4">
             {title}
           </h1>
           <p className="text-xl md:text-2xl text-neutral-600 max-w-3xl mx-auto">
@@ -81,32 +80,17 @@ export function TierSelector({
           </p>
         </div>
 
-        {/* Warning if incomplete tiers */}
-        {!isComplete && configuredTiers.length > 0 && (
-          <div className="mb-8 p-4 bg-amber-50 border border-amber-200 rounded-lg flex items-start gap-3">
-            <AlertCircle className="w-5 h-5 text-amber-500 flex-shrink-0 mt-0.5" />
-            <div>
-              <p className="text-amber-800 font-medium">
-                Some tiers are not yet configured
-              </p>
-              <p className="text-amber-700 text-sm">
-                Missing:{' '}
-                {missingTiers
-                  .map((t) => t.charAt(0).toUpperCase() + t.slice(1))
-                  .join(', ')}
-              </p>
-            </div>
-          </div>
-        )}
+        {/* Admin warning removed - customers shouldn't see incomplete tier warnings */}
 
         {/* Empty state if no tiers */}
         {configuredTiers.length === 0 && (
-          <div className="text-center py-20 bg-neutral-50 rounded-xl border-2 border-neutral-200">
-            <p className="text-2xl text-macon-navy-600 mb-3 font-semibold">
-              Packages coming soon
-            </p>
-            <p className="text-lg text-neutral-600">
-              We're putting together some wonderful options for you.
+          <div className="text-center py-16 bg-neutral-50 rounded-xl border border-neutral-200">
+            <Package className="w-12 h-12 mx-auto text-neutral-300 mb-4" />
+            <h3 className="text-xl font-semibold text-neutral-900 mb-2">
+              Coming Soon
+            </h3>
+            <p className="text-neutral-600">
+              We're preparing something special for you.
             </p>
           </div>
         )}

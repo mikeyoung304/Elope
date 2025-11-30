@@ -3,7 +3,8 @@
  * Displays all active packages with search, filter, and sort capabilities
  */
 
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useMemo } from 'react';
+import { Package, Search } from 'lucide-react';
 import { Container } from '@/ui/Container';
 import { PackageCard } from '@/features/catalog/PackageCard';
 import { CatalogFilters } from '@/features/catalog/CatalogFilters';
@@ -86,7 +87,7 @@ function PackageCatalogContent() {
   if (isLoading) {
     return (
       <Container className="py-12">
-        <h1 className="font-heading text-5xl md:text-6xl lg:text-7xl font-bold mb-3 text-transparent bg-clip-text bg-gradient-to-r from-macon-navy via-macon-orange to-macon-teal">
+        <h1 className="font-heading text-5xl md:text-6xl lg:text-7xl font-bold mb-3 text-neutral-900">
           Browse Packages
         </h1>
         <p className="text-xl md:text-2xl text-neutral-700 mb-12 leading-relaxed">
@@ -129,15 +130,16 @@ function PackageCatalogContent() {
   if (!packages || packages.length === 0) {
     return (
       <Container className="py-12">
-        <h1 className="font-heading text-5xl md:text-6xl font-bold mb-6 text-transparent bg-clip-text bg-gradient-to-r from-macon-navy via-macon-orange to-macon-teal">
+        <h1 className="font-heading text-5xl md:text-6xl font-bold mb-6 text-neutral-900">
           Browse Packages
         </h1>
-        <div className="text-center py-20 bg-neutral-50 rounded-xl border-2 border-neutral-200">
-          <p className="text-2xl text-macon-navy-600 mb-3 font-semibold">
-            Packages coming soon
-          </p>
-          <p className="text-xl text-white/50">
-            We're putting the finishing touches on some great offerings. Check back shortly!
+        <div className="text-center py-16 bg-neutral-50 rounded-xl border border-neutral-200">
+          <Package className="w-12 h-12 mx-auto text-neutral-300 mb-4" />
+          <h3 className="text-xl font-semibold text-neutral-900 mb-2">
+            Coming Soon
+          </h3>
+          <p className="text-neutral-600">
+            We're preparing something special for you.
           </p>
         </div>
       </Container>
@@ -150,7 +152,7 @@ function PackageCatalogContent() {
 
     return (
       <Container className="py-12">
-        <h1 className="font-heading text-5xl md:text-6xl lg:text-7xl font-bold mb-3 text-transparent bg-clip-text bg-gradient-to-r from-macon-navy via-macon-orange to-macon-teal">
+        <h1 className="font-heading text-5xl md:text-6xl lg:text-7xl font-bold mb-3 text-neutral-900">
           Browse Packages
         </h1>
         <p className="text-xl md:text-2xl text-neutral-700 mb-12 leading-relaxed">
@@ -166,9 +168,13 @@ function PackageCatalogContent() {
           onSortChange={setSortBy}
         />
 
-        <div className="text-center py-20 bg-neutral-50 rounded-xl border-2 border-neutral-200 mt-8">
-          <p className="text-2xl text-macon-navy-600 mb-6 font-semibold">
-            No packages match your filters
+        <div className="text-center py-16 bg-neutral-50 rounded-xl border border-neutral-200 mt-8">
+          <Search className="w-12 h-12 mx-auto text-neutral-300 mb-4" />
+          <h3 className="text-xl font-semibold text-neutral-900 mb-2">
+            No matches found
+          </h3>
+          <p className="text-neutral-600 mb-6">
+            Try adjusting your search or filter criteria.
           </p>
           {hasActiveFilters && (
             <Button
@@ -191,7 +197,7 @@ function PackageCatalogContent() {
   // Main catalog view
   return (
     <Container className="py-12">
-      <h1 className="font-heading text-5xl md:text-6xl lg:text-7xl font-bold mb-3 text-transparent bg-clip-text bg-gradient-to-r from-macon-navy via-macon-orange to-macon-teal">
+      <h1 className="font-heading text-5xl md:text-6xl lg:text-7xl font-bold mb-3 text-neutral-900">
         Browse Packages
       </h1>
       <p className="text-xl md:text-2xl text-neutral-700 mb-12 leading-relaxed">

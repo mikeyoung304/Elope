@@ -17,6 +17,7 @@
  */
 
 import { Navigate } from 'react-router-dom';
+import { AlertTriangle } from 'lucide-react';
 import { Container } from '@/ui/Container';
 import { Loading } from '@/ui/Loading';
 import { FeatureErrorBoundary } from '@/components/errors';
@@ -35,11 +36,12 @@ function StorefrontHomeContent() {
   if (error) {
     return (
       <Container className="py-12">
-        <div className="text-center py-20 bg-neutral-50 rounded-xl border-2 border-neutral-200">
-          <p className="text-2xl text-macon-navy-600 mb-3 font-semibold">
+        <div className="text-center py-16 bg-neutral-50 rounded-xl border border-neutral-200">
+          <AlertTriangle className="w-12 h-12 mx-auto text-neutral-300 mb-4" />
+          <h3 className="text-xl font-semibold text-neutral-900 mb-2">
             Unable to load storefront
-          </p>
-          <p className="text-lg text-neutral-600 mb-6">
+          </h3>
+          <p className="text-neutral-600">
             Please refresh the page to try again.
           </p>
         </div>
@@ -65,7 +67,7 @@ function StorefrontHomeContent() {
       <Container>
         {/* Header */}
         <div className="text-center mb-12">
-          <h1 className="font-heading text-4xl md:text-5xl lg:text-6xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-macon-navy via-macon-orange to-macon-teal mb-4">
+          <h1 className="font-heading text-4xl md:text-5xl lg:text-6xl font-bold text-neutral-900 mb-4">
             What brings you here today?
           </h1>
           <p className="text-xl md:text-2xl text-neutral-600 max-w-3xl mx-auto">

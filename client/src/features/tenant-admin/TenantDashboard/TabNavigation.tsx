@@ -33,7 +33,7 @@ export function TabNavigation({ activeTab, onTabChange }: TabNavigationProps) {
             className={cn(
               "py-4 px-1 border-b-2 font-medium text-sm transition-colors min-h-[44px]",
               activeTab === tab.id
-                ? "border-white/20 text-macon-navy-600"
+                ? "border-macon-orange text-macon-navy-900 font-semibold"
                 : "border-transparent text-neutral-600 hover:text-neutral-900 hover:border-neutral-300"
             )}
           >
